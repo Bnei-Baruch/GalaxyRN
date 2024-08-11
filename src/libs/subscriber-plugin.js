@@ -3,7 +3,7 @@ import {EventEmitter} from "events";
 import log from "loglevel";
 import mqtt from "../shared/mqtt";
 import {STUN_SRV_GXY} from "@env";
-import {RTCPeerConnection, MediaStream} from "react-native-webrtc";
+import {RTCPeerConnection, RTCSessionDescription} from "react-native-webrtc";
 
 export class SubscriberPlugin extends EventEmitter {
   constructor (list = [{urls: STUN_SRV_GXY}]) {
