@@ -418,7 +418,7 @@ export default class ClientApp extends Component {
         <View style={styles.container} key={i}>
           <RTCView
             streamURL={stream?.toURL()}
-            style={styles.remoteView}
+            style={styles.viewer}
             objectFit="contain"
           />
         </View>
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   viewer: {
-    aspectRatio: 9/16,
+    aspectRatio: 16/9,
     // marginTop: 16,
     height: 'auto',
     // width: '100%',
