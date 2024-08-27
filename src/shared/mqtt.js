@@ -61,6 +61,7 @@ class MqttMsg {
     }
 
     //const url = user.role !== userRolesEnum.user && !service && user?.isClient ? MQTT_URL : MSG_URL;
+    //const url = MQTT_URL;
     const url = MSG_URL;
     log.info(MQTT_URL)
     this.mq = mqtt.connect(`wss://${url}`, options);

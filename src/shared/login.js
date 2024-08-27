@@ -11,6 +11,7 @@ export default class LoginPage extends Component {
   };
 
   componentDidMount() {
+    console.log(this.props.navigation);
     this.appLogin();
   }
 
@@ -20,6 +21,7 @@ export default class LoginPage extends Component {
         console.log("getUser: ", user)
         this.setState({user, loading: !!this.props.loading});
         this.props.checkPermission(user);
+        //this.props.navigation.navigate("Stream");
       } else {
         this.setState({disabled: false, loading: false});
       }
