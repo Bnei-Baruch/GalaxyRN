@@ -6,7 +6,7 @@ import {StreamingPlugin} from "../libs/streaming-plugin";
 import {PublisherPlugin} from "../libs/publisher-plugin";
 import {SubscriberPlugin} from "../libs/subscriber-plugin";
 import { mediaDevices, RTCView } from "react-native-webrtc";
-import LoginPage from "../shared/login";
+import LoginPage from "../shared/Login";
 import devices from "../shared/devices";
 import { media_object, audiog_options, videos_options } from "../shared/consts";
 import log from "loglevel";

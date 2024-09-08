@@ -1,25 +1,19 @@
-import React, { Component, Fragment } from 'react'
-// import StreamApp from "./src/apps/StreamApp";
-// import LoginPage from "./src/shared/login";
-// import ClientApp from "./src/apps/ClientApp";
-import log from 'loglevel';
-import { NavApp } from "./src/apps/NavApp";
-log.setLevel('debug');
+import React from 'react'
+import log from 'loglevel'
+import Login from './src/shared/Login'
+import { SettingsDispatcher } from './src/settings/SettingsDispatcher'
+import { useSettingsStore } from './src/zustand/settings'
+import InRoom from './src/InRoom/InRoom'
 
-export default class App extends Component {
+log.setLevel('debug')
 
-  state = {}
+const App = () => {
 
-
-  render() {
-
-    return (
-      <Fragment>
-        {/*<StreamApp />*/}
-        {/*<LoginPage />*/}
-        {/*<ClientApp />*/}
-        <NavApp />
-      </Fragment>
-    )
-  }
+  const { joined } = useSettingsStore()
+  return (
+    <Login>
+      {joined ? <InRoom/> : <SettingsDispatcher/>}
+    </Login>
+  )
 }
+export default App
