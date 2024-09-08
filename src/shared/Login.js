@@ -1,61 +1,67 @@
-import React, { Component } from 'react'
-import { View, SafeAreaView, Text, Button, StatusBar, StyleSheet, Dimensions } from "react-native";
-import kc from "./keycloak";
+import React, { useEffect, useState } from 'react'
+import {
+  Button,
+  Dimensions,
+  SafeAreaView,
+  StyleSheet,
+  View,
+} from 'react-native'
+import kc from './keycloak'
+import { useUserStore } from '../zustand/user'
 
-export default class LoginPage extends Component {
+const LoginPage = ({ children }) => {
+  const [disabled, setDisabled] = useState(false)
+  const { setName, setToken, username, setUser } = useUserStore()
 
-  state = {
-    disabled: false,
-    loading: true,
-    user: null,
-  };
+  useEffect(() => {
+    const appLogin = () => {
+      kc.getUser((user) => {
+        if (user) {
+          setName(user.username)
+          setUser(user)
+          setToken(kc.session.accessToken)
+        } else {
+          setDisabled(false)
+        }
+      })
+    }
 
-  componentDidMount() {
-    console.log(this.props.navigation);
-    this.appLogin();
-  }
+    appLogin()
+  }, [])
 
-  appLogin = () => {
-    kc.getUser((user) => {
-      if (user) {
-        console.log("getUser: ", user)
-        this.setState({user, loading: !!this.props.loading});
-        this.props.checkPermission(user);
-        //this.props.navigation.navigate("Stream");
-      } else {
-        this.setState({disabled: false, loading: false});
-      }
-    });
-  };
+  /* useEffect(() => {
+     // Update loading state from props
+     if (user) {
+       //setDisabled(loading)
+     }
+   }, [loading, user])*/
 
-  userLogin = () => {
-    this.setState({disabled: true, loading: true});
+  const handleLogin = () => {
+    setDisabled(true)
     kc.Login(() => {
-      this.appLogin();
-    });
-  };
-
-  userLogout = () => {
-    this.setState({disabled: true, loading: true});
-    kc.Logout(user => {
-      this.setState({user: null, loading: !!this.props.loading});
-    });
-  };
-
-  render() {
-    const {user,disabled} = this.state;
-
-    return (
-        <SafeAreaView style={styles.container}>
-          <View style={styles.top} />
-            <View style={styles.middle}>
-              {user ? "" : <Button disabled={disabled} title="Login" onPress={this.userLogin} />}
-              {user ? <Button title="Logout" onPress={this.userLogout} />: ""}
-            </View>
-          <View style={styles.bottom} />
-        </SafeAreaView>
-      )
+      kc.getUser(setUser) // Directly update state after login
+    })
   }
+
+  const handleLogout = () => {
+    setDisabled(true)
+    kc.Logout(() => {
+      setUser(null)
+    })
+  }
+
+  if (username)
+    return children
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.top}/>
+      <View style={styles.middle}>
+        <Button disabled={disabled} title="Login" onPress={handleLogin}/>
+      </View>
+      <View style={styles.bottom}/>
+    </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -65,7 +71,7 @@ const styles = StyleSheet.create({
   },
   remoteView: {
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height/2.35
+    height: Dimensions.get('window').height / 2.35,
   },
   container: {
     flex: 1,
@@ -93,4 +99,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-});
+})
+
+export default LoginPage
