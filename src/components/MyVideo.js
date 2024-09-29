@@ -1,45 +1,58 @@
-import React, { useEffect, useRef } from 'react'
-import defaultDevices from '../shared/devices'
-import { useSettingsStore } from '../zustand/settings'
-import { Text } from 'react-native'
-import styles from './VideoStyle'
-import { useUserStore } from '../zustand/user'
-import Icon from 'react-native-vector-icons/MaterialIcons'
+import React, { useEffect, useState } from 'react';
+import { useSettingsStore } from '../zustand/settings';
+import { Text, View, StyleSheet } from 'react-native';
+//import styles from './VideoStyle';
+import { useUserStore } from '../zustand/user';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { RTCView } from 'react-native-webrtc';
+import defaultDevices from '../shared/devices';
 
-const MyMedia = (props) => {
-  const { name } = useUserStore()
-  const { joined, muted, cammuted, question } = useSettingsStore()
-  const device = defaultDevices?.[0]
-  const { setting: { height, width } = {}, stream } = device || {}
-  const videoRef = useRef()
+const MyMedia = () => {
+  const [media, setMedia] = useState();
+
+  const { user: { name } = {} }                     = useUserStore();
+  const { readyForJoin, muted, cammuted, question } = useSettingsStore();
 
   useEffect(() => {
-    stream && videoRef?.current && (videoRef.current.srcObject = stream)
-  }, [stream, videoRef])
+    defaultDevices.getMediaStream(true, true).then(([m, err]) => {
+      setMedia(m);
+    });
 
-  if (!device) return <Text>No device</Text>
+  }, []);
+
+  if (!media) return <Text>No device</Text>;
+
+  console.log('MyMedia', media);
 
   return (
-    <div style={styles.container}>
-      <div style={styles.container}>
-        <div style={styles.container}>
+    <View style={styles.container}>
+      <View style={styles.container}>
+        <View style={styles.container}>
           {muted
-            ? <Icon name="microphone slash" size="small" color="red"/>
+            ? <Icon name="mic" size={30} color="red" />
             : ''}
           {name}
-          <Icon style={{ marginLeft: '0.3rem' }} name="signal" size="small"/>
-        </div>
-      </div>
-      <video
-        ref={videoRef}
-        id="localVideo"
-        autoPlay={true}
-        controls={false}
-        muted={true}
-        playsInline={true}
-        style={{ width: '100%' }}
+          <Icon name="signal-cellular-alt" size={30} />
+        </View>
+      </View>
+      <RTCView
+        streamURL={media.toURL()}
+        style={styles.video}
+        objectFit="cover"
+        mirror={true}
       />
-    </div>
-  )
-}
-export default MyMedia
+    </View>
+  );
+};
+export default MyMedia;
+
+const styles = StyleSheet.create({
+  container: {
+    aspectRatio: 16 / 9, // Adjust aspect ratio as needed
+    overflow   : 'hidden', // Prevent video from overflowing
+  },
+  video    : {
+    height: "content",
+    right   : '50%',
+  },
+});

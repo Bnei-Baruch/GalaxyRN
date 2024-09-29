@@ -14,9 +14,9 @@ const IconWithText = ({ iconName, text }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems   : 'center',
   },
-  text: {
+  text     : {
     marginLeft: 5,
   },
 });

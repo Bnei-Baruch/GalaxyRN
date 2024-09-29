@@ -1,13 +1,13 @@
-import React, { useState } from 'react'
-import { View, Text, Switch, StyleSheet } from 'react-native'
+import React, { useState } from 'react';
+import { View, Text, Switch, StyleSheet } from 'react-native';
 
 const LabeledSwitch = ({ label, initialValue = false, onValueChange }) => {
-  const [isEnabled, setIsEnabled] = useState(initialValue)
+  const [isEnabled, setIsEnabled] = useState(initialValue);
 
   const toggleSwitch = () => {
-    setIsEnabled(previousState => !previousState)
-    onValueChange && onValueChange(!isEnabled)
-  }
+    setIsEnabled(previousState => !previousState);
+    onValueChange && onValueChange(!isEnabled);
+  };
 
   return (
     <View style={styles.container}>
@@ -20,19 +20,19 @@ const LabeledSwitch = ({ label, initialValue = false, onValueChange }) => {
         value={isEnabled}
       />
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection : 'row',
+    alignItems    : 'center',
     justifyContent: 'space-between',
-    padding: 10,
+    padding       : 10,
   },
-  label: {
+  label    : {
     fontSize: 16,
   },
-})
+});
 
-export default LabeledSwitch
+export default LabeledSwitch;

@@ -1,19 +1,22 @@
-import React from 'react'
-import log from 'loglevel'
-import Login from './src/shared/Login'
-import { SettingsDispatcher } from './src/settings/SettingsDispatcher'
-import { useSettingsStore } from './src/zustand/settings'
-import InRoom from './src/InRoom/InRoom'
+import React from 'react';
+import log from 'loglevel';
+import { useSettingsStore } from './src/zustand/settings';
+import InRoom from './src/InRoom/InRoom';
+import useInitDevices from './src/apps/useInitDevices';
+import Login from './src/auth/Login';
+import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 
-log.setLevel('debug')
+log.setLevel('debug');
 
 const App = () => {
 
-  const { joined } = useSettingsStore()
+  const { readyForJoin } = useSettingsStore();
+  useInitDevices();
+
   return (
     <Login>
-      {joined ? <InRoom/> : <SettingsDispatcher/>}
+      {readyForJoin ? <InRoom /> : <SettingsNotJoined />}
     </Login>
-  )
-}
-export default App
+  );
+};
+export default App;

@@ -1,7 +1,7 @@
-const [selectedCountry, setSelectedCountry] = useState('us')
-import React, { useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
-import { Picker } from '@react-native-picker/picker'
+const [selectedCountry, setSelectedCountry] = useState('us');
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
 const LabeledSelect = ({ label, options, selectedValue, onValueChange }) => {
   return (
@@ -21,22 +21,22 @@ const LabeledSelect = ({ label, options, selectedValue, onValueChange }) => {
         ))}
       </Picker>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
   },
-  label: {
-    fontSize: 16,
+  label    : {
+    fontSize    : 16,
     marginBottom: 5,
   },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#ccc',
+  picker   : {
+    borderWidth : 1,
+    borderColor : '#ccc',
     borderRadius: 5,
   },
-})
+});
 
-export default LabeledSelect
+export default LabeledSelect;

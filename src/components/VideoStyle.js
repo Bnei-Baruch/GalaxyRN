@@ -1,13 +1,13 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  video: {
+  video  : {
     fontSize: 20,
   },
   overlay: {
-    position: 'absolute',
+    position      : 'absolute',
     justifyContent: 'center',
   },
-})
+});
 
-export default styles
+export default styles;

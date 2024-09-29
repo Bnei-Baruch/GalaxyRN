@@ -1,10 +1,15 @@
-import Inits from './Init/Inits'
+import Inits from './Init/Inits';
+import Room from './Room';
 
 const InRoom = () => {
   return (
     <>
-      <Inits/>
+      <Inits>
+        {/*<MyVideo/>*/}
+        {/*<Stream/>*/}
+        <Room />
+      </Inits>
     </>
-  )
-}
-export default InRoom
+  );
+};
+export default InRoom;

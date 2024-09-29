@@ -1,38 +1,38 @@
-import * as React from 'react'
-import { useState } from 'react'
-import IconWithText from '../components/IconWithText'
-import LabeledInput from '../components/LabeledInput'
-import LabeledSelect from '../components/LabeledSelect'
-import MyVideo from '../components/MyVideo'
-import LabeledSwitch from '../components/LabeledSwitch'
-import { useSettingsStore } from '../zustand/settings'
-import RoomSelect from './RoomSelect'
+import * as React from 'react';
+import { useState } from 'react';
+import IconWithText from '../components/IconWithText';
+import LabeledInput from '../components/LabeledInput';
+import LabeledSelect from '../components/LabeledSelect';
+import MyVideo from '../components/MyVideo';
+import LabeledSwitch from '../components/LabeledSwitch';
+import { useSettingsStore } from '../zustand/settings';
+import RoomSelect from './RoomSelect';
 
 export const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
   { key: 'es', value: 'es', text: 'Español' },
   { key: 'he', value: 'he', text: 'עברית' },
   { key: 'ru', value: 'ru', text: 'Русский' },
-]
+];
 
 export const SettingsNotJoined = () => {
-  const [lang, setLang] = useState(languagesOptions[0].value)
+  const [lang, setLang] = useState(languagesOptions[0].value);
   const {
-    isBroadcast,
-    toggleIsBroadcast,
-    isTen,
-    toggleIsTen,
-  } = useSettingsStore()
+          isBroadcast,
+          toggleIsBroadcast,
+          isTen,
+          toggleIsTen,
+        }               = useSettingsStore();
 
-  const handleToggleIsTen = () => toggleIsTen()
-  const handleToggleIsBroadcast = () => toggleIsBroadcast()
+  const handleToggleIsTen       = () => toggleIsTen();
+  const handleToggleIsBroadcast = () => toggleIsBroadcast();
 
-  const handleLangChange = lang => setLang(lang)
+  const handleLangChange = lang => setLang(lang);
   return (
     <>
       {/*user settings*/}
-      <IconWithText iconName="account-circle" text="user settings"/>
-      <LabeledInput/>
+      <IconWithText iconName="account-circle" text="user settings" />
+      <LabeledInput />
       <LabeledSelect
         label="Country"
         options={languagesOptions}
@@ -40,8 +40,8 @@ export const SettingsNotJoined = () => {
         onValueChange={handleLangChange}
       />
       {/*Audio mode*/}
-      <IconWithText iconName="account-circle" text="Audio mode"/>
-      <MyVideo/>
+      <IconWithText iconName="account-circle" text="Audio mode" />
+      <MyVideo />
       <LabeledSwitch
         label={'Ten (Recommended)'}
         initialValue={isTen}
@@ -52,7 +52,7 @@ export const SettingsNotJoined = () => {
         initialValue={isBroadcast}
         onValueChange={handleToggleIsBroadcast}
       />
-      <RoomSelect/>
+      <RoomSelect />
     </>
-  )
-}
+  );
+};
