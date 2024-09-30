@@ -8,21 +8,21 @@ import { RTCView } from 'react-native-webrtc';
 import defaultDevices from '../shared/devices';
 
 const MyMedia = () => {
-  const [media, setMedia] = useState();
+  const [video, setVideo] = useState();
 
   const { user: { name } = {} }                     = useUserStore();
-  const { readyForJoin, muted, cammuted, question } = useSettingsStore();
+  const { muted, cammuted, question } = useSettingsStore();
 
   useEffect(() => {
     defaultDevices.getMediaStream(true, true).then(([m, err]) => {
-      setMedia(m);
+      setVideo(m);
     });
 
   }, []);
 
-  if (!media) return <Text>No device</Text>;
+  if (!video) return <Text>No device</Text>;
 
-  console.log('MyMedia', media);
+  console.log('MyMedia', video);
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ const MyMedia = () => {
         </View>
       </View>
       <RTCView
-        streamURL={media.toURL()}
+        streamURL={video.toURL()}
         style={styles.video}
         objectFit="cover"
         mirror={true}
@@ -48,11 +48,11 @@ export default MyMedia;
 
 const styles = StyleSheet.create({
   container: {
-    aspectRatio: 16 / 9, // Adjust aspect ratio as needed
-    overflow   : 'hidden', // Prevent video from overflowing
+    aspectRatio: 16 / 9,
+    overflow   : 'hidden',
   },
   video    : {
-    height: "content",
-    right   : '50%',
+    height: 'content',
+    right : '50%',
   },
 });
