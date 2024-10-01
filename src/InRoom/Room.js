@@ -4,6 +4,7 @@ import { Text } from 'react-native';
 import Member from './Member';
 import Shidur from './Shidur';
 import { TopBar } from '../topBar/TopBar';
+import { ChatModal } from '../chat/ChatModal';
 
 const Room = () => {
   const { joinRoom, exitRoom, memberByFeed } = useInRoomStore();
@@ -15,21 +16,11 @@ const Room = () => {
     };
   }, []);
 
-  /* initClient = (reconnect, retry = 0) => {
-     this.setState({ delay: true })
-     const { user, shidur } = this.state
-
-     log.info('[client] Got config: ', config)
-     this.initJanus(user, config, retry)
-     if (!reconnect && shidur) {
-       JanusStream.initStreaming()
-     }
-   }*/
-  console.log('render Members', Object.values(memberByFeed));
   return (
     <>
       <TopBar />
       <Shidur />
+      {/*<ChatModal />*/}
       <Text>feed ids</Text>
       {Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)}
     </>

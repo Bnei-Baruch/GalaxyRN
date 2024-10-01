@@ -17,17 +17,13 @@ export const languagesOptions = [
 
 export const SettingsNotJoined = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
-  const {
-          isBroadcast,
-          toggleIsBroadcast,
-          isTen,
-          toggleIsTen,
-        }               = useSettingsStore();
+
+  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen, } = useSettingsStore();
 
   const handleToggleIsTen       = () => toggleIsTen();
   const handleToggleIsBroadcast = () => toggleIsBroadcast();
+  const handleLangChange        = lang => setLang(lang);
 
-  const handleLangChange = lang => setLang(lang);
   return (
     <>
       {/*user settings*/}

@@ -4,32 +4,25 @@ import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';
 
 const RoomSelect = () => {
-  const [searchText, setSearchText]                     = useState();
-  const [rooms, setRooms]                               = useState([]);
-  const { isLoading, error, fetchRooms, setRoom, room } = useRoomStore();
-  const { setReadyForJoin }                             = useSettingsStore();
+  const [searchText, setSearchText]   = useState();
+  const [rooms, setRooms]             = useState([]);
+  const { fetchRooms, setRoom, room } = useRoomStore();
+  const { setReadyForJoin }           = useSettingsStore();
 
   useEffect(() => {
     fetchRooms().then(rooms => setRooms(rooms));
   }, []);
 
   useEffect(() => {
-    console.debug('update room', room);
     room && setSearchText(room.description);
   }, [room]);
 
   const filteredOptions = rooms?.filter(o => o.description.includes(searchText));
-  console.log('RoomSelect render', rooms?.length, filteredOptions.length);
-  const handleSearch = (text) => setSearchText(text);
 
-  const handleSelect   = (value) => {
-    console.log('handleSelect', value);
-    setRoom(value);
-  };
-  const handleJoinRoom = () => {
-    console.log('handleJoinRoom');
-    setReadyForJoin();
-  };
+  const handleSearch   = (text) => setSearchText(text);
+  const handleSelect   = (value) => setRoom(value);
+  const handleJoinRoom = () => setReadyForJoin();
+
   return (
     <View>
       <Text style={styles.label}>{'select ten'}</Text>

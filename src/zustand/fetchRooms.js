@@ -7,12 +7,11 @@ const useRoomStore = create((set) => ({
   room      : null,
   setRoom   : (room) => {
     try {
-      RNSecureStorage.setItem('room', room.room.toString(),
-        { accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK });
+      RNSecureStorage.setItem('room', room.room.toString(), { accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK });
     } catch (err) {
       log.error('saved room: ', err);
     }
-    set((state) => ({ room }));
+    set({ room });
   },
   isLoading : false,
   error     : null,

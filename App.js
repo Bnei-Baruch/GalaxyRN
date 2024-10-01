@@ -9,7 +9,6 @@ import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 log.setLevel('debug');
 
 const App = () => {
-
   const { readyForJoin } = useSettingsStore();
   useInitDevices();
 

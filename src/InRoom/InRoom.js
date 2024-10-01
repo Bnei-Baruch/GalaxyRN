@@ -1,15 +1,10 @@
-import Inits from './Init/Inits';
+import { useInits } from './Inits';
 import Room from './Room';
+import { Text } from 'react-native';
 
 const InRoom = () => {
-  return (
-    <>
-      <Inits>
-        {/*<MyVideo/>*/}
-        {/*<Stream/>*/}
-        <Room />
-      </Inits>
-    </>
-  );
+  const ready = useInits();
+
+  return ready ? <Room /> : <Text>preparing of room</Text>;
 };
 export default InRoom;
