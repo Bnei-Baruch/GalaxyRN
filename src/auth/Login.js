@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { Button, Dimensions, StyleSheet, View, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
-import Logout from './Logout';
 
 const LoginPage = ({ children }) => {
   const { user, setUser } = useUserStore();
@@ -12,7 +11,6 @@ const LoginPage = ({ children }) => {
   }, []);
 
   const handleLogin = () => {
-    console.log('Login');
     kc.Login(() => {
       kc.getUser(setUser); // Directly update state after login
     });
@@ -21,7 +19,6 @@ const LoginPage = ({ children }) => {
   if (user)
     return (
       <>
-        <Logout />
         {children}
       </>
     );

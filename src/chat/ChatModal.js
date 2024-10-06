@@ -1,5 +1,7 @@
 import { useChatStore, chatModes } from '../zustand/chat';
-import { View, Modal, Text, StyleSheet } from 'react-native';
+import { View, Modal, Text, StyleSheet, Button } from 'react-native';
+import { RoomChat } from './RoomChat';
+import ScreenTitle from '../components/ScreenTitle';
 
 export const ChatModal = () => {
   const { mode, setChatMode } = useChatStore();
@@ -8,10 +10,16 @@ export const ChatModal = () => {
 
   return (
     <Modal visible={mode !== chatModes.close}>
-      <View style={styles.container}>
-        <Text onPress={() => selectTab(chatModes.chat)}>Chat</Text>
-        <Text onPress={() => selectTab(chatModes.support)}>Support</Text>
-        <Text onPress={() => selectTab(chatModes.question)}>Question</Text>
+      <ScreenTitle text={'Communication'} />
+      <View style={styles.tabs}>
+        <Button title={'Chat'} onPress={() => selectTab(chatModes.chat)} />
+        <Button title={'SUPPORT'} onPress={() => selectTab(chatModes.support)} />
+        <Button title={'QUESTION'} onPress={() => selectTab(chatModes.question)} />
+      </View>
+      <View>
+        {mode === chatModes.chat && <RoomChat />}
+        {mode === chatModes.support && <Text></Text>}
+        {mode === chatModes.question && <Text></Text>}
       </View>
     </Modal>
   );
@@ -22,4 +30,8 @@ const styles = StyleSheet.create({
     flex         : 1,
     flexDirection: 'row'
   },
+  tabs     : {
+    flexDirection : 'row',
+    justifyContent: 'space-between'
+  }
 });

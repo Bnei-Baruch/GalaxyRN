@@ -4,6 +4,7 @@ import { TopMenuBtn } from './TopMenuBtn';
 import { MuteBtn } from './MuteBtn';
 import useRoomStore from '../zustand/fetchRooms';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { ChatBtn } from './ChatBtn';
 
 export const TopBar = () => {
   const { room } = useRoomStore();
@@ -16,10 +17,7 @@ export const TopBar = () => {
       <View>
         <Text>{room?.description}</Text>
       </View>
-
-      <TouchableOpacity>
-        <Icon name="forum" size={30} color="black" />
-      </TouchableOpacity>
+      <ChatBtn />
     </View>
   );
 };
@@ -31,7 +29,7 @@ const styles = StyleSheet.create({
     justifyContent : 'space-between',
     padding        : 10,
     backgroundColor: 'orange',
-    zIndex         : 1
+    zIndex         : 1000
   },
   left     : {
     flexDirection: 'row',

@@ -1,35 +1,49 @@
-import { StyleSheet, View, Button } from 'react-native';
-import { isRTLString, textWithLinks } from './helper';
-import { useChatStore } from '../zustand/chat';
+import { StyleSheet, Button, View, TextInput } from 'react-native';
+import { useState } from 'react';
+import useRoomStore from '../zustand/fetchRooms';
+import { useUserStore } from '../zustand/user';
+import mqtt from '../shared/mqtt';
 
 export const RoomChatForm = () => {
+  const [value, setValue] = useState('');
+
+  const { room } = useRoomStore();
+  const { user } = useUserStore();
+
+  const newChatMessage = () => {
+    const { id, display } = user;
+    /* const role            = getUserRole();
+     if (!role.match(/^(user|guest)$/) || value === '') {
+       return;
+     }*/
+    const role  = 'user';
+    const msg   = { user: { id, role, display }, type: 'client-chat', text: value };
+    const topic = id ? `galaxy/users/${id}` : `galaxy/room/${room}/chat`;
+
+    mqtt.send(JSON.stringify(msg), false, topic);
+  };
 
   return (
-      <Input
-        ref="input"
-        fluid
+    <View style={styles.container}>
+      <TextInput
         type="text"
-        placeholder={t("virtualChat.enterMessage")}
-        action
-        value={this.state.input_value}
-        onChange={(v, { value }) => this.setState({ input_value: value })}
+        placeholder={'virtualChat.enterMessage'}
+        value={value}
+        onChangeText={setValue}
       >
-        <input
-          dir={isRTLString(this.state.input_value) ? "rtl" : "ltr"}
-          style={{ textAlign: isRTLString(this.state.input_value) ? "right" : "left" }}
-        />
-        <Button size="mini" positive onClick={this.newChatMessage}>
-          {t("virtualChat.send")}
-        </Button>
-      </Input>
+      </TextInput>
+      <Button size={30} positive onPress={newChatMessage} title={'virtualChat.send'} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container   : {
-    flex           : 1,
-    padding        : 24,
-    backgroundColor: '#eaeaea',
+    borderRadius  : 4,
+    borderWidth   : 1,
+    borderColor   : 'grey',
+    flexDirection : 'row',
+    justifyContent: 'space-between'
   },
   containerRtl: {
     direction: 'rtl',

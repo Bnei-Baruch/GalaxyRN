@@ -20,7 +20,7 @@ const Room = () => {
     <>
       <TopBar />
       <Shidur />
-      {/*<ChatModal />*/}
+      <ChatModal />
       <Text>feed ids</Text>
       {Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)}
     </>

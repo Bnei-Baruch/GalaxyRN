@@ -7,7 +7,8 @@ const LabeledInput = ({ label, value, onChangeText, ...props }) => {
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={styles.input}
-        value={value} onChangeText={onChangeText}
+        value={value}
+        onChangeText={onChangeText}
         {...props}
       />
     </View>

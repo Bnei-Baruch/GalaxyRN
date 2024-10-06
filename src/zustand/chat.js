@@ -16,7 +16,19 @@ export const useChatStore = create((set) => ({
   supportCount: 0,
   roomCount   : 0,
   supportMsgs : [],
-  roomMsgs    : [],
+  roomMsgs    : [
+    {
+      'text': '55',
+      'time': '09:42:19',
+      'type': 'client-chat',
+      'user': { 'display': 'davgur davgur', 'id': '4d902c81-dac2-46eb-89bd-94ce926e4c85', 'role': 'user' }
+    }, {
+      'text': '66',
+      'time': '09:42:32',
+      'type': 'client-chat',
+      'user': { 'display': 'davgur davgur', 'id': '4d902c81-dac2-46eb-89bd-94ce926e4c85', 'role': 'user' }
+    }
+  ],
   resetRoom   : set(() => ({ roomCount: 0 })),
   resetSupport: set(() => ({ supportCount: 0 })),
   initRoom    : () => {

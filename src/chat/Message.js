@@ -1,41 +1,40 @@
-import { StyleSheet, View } from 'react-native';
-import { isRTLString, textWithLinks } from './helper';
+import { StyleSheet, View, Text } from 'react-native';
 
 export const Message = ({ msg }) => {
   const { text, user, time } = msg;
   const isRtl                = isRTLString(text);
   return (
     <View style={[styles.container, (isRtl ? styles.containerRtl : styles.containerLtr)]}>
-      <View>
-        <i style={styles.time}>{time}</i> -
-        <View
-          display="inline"
-          color={user.role.match(/^(admin|root)$/) ? 'secondary' : 'textSecondary'}
-        >
-          {user.display}
-        </View>
-        :
+      <View style={styles.containerTime}>
+        <Text>{user.display}</Text>
+        <Text style={styles.time}>{time}</Text>
       </View>
-      {textWithLinks(text)}
+      <Text>{text}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container   : {
-    flex           : 1,
-    padding        : 24,
+  container    : {
+    padding        : 20,
+    marginBottom   : 2,
     backgroundColor: '#eaeaea',
   },
-  containerRtl: {
+  containerRtl : {
     direction: 'rtl',
     textAlign: 'right',
   },
-  containerLtr: {
+  containerLtr : {
     direction: 'ltr',
     textAlign: 'left',
   },
-  time        : {
-    color: 'grey'
+  containerTime: {
+    flexDirection: 'row',
+  },
+  time         : {
+    color      : 'grey',
+    fontStyle  : 'italic',
+    marginLeft : 5,
+    marginRight: 5
   }
 });

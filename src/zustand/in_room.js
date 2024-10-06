@@ -9,6 +9,7 @@ import produce from 'immer';
 import { useUserStore } from './user';
 import useRoomStore from './fetchRooms';
 import { useSettingsStore } from './settings';
+import mqtt from '../shared/mqtt';
 
 let videoroom               = null;
 let janus                   = null;
@@ -263,6 +264,9 @@ export const useInRoomStore = create((set) => ({
         this.reinitClient(retry)
       })*/
     });
+
+    mqtt.join('galaxy/room/' + room.room);
+    mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom    : () => {
     if (videoroom) {
@@ -275,5 +279,8 @@ export const useInRoomStore = create((set) => ({
     } else {
       useSettingsStore.getState().setReadyForJoin(false);
     }
+
+    mqtt.exit('galaxy/room/' + room.room);
+    mqtt.exit('galaxy/room/' + room.room + '/chat');
   },
 }));
