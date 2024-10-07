@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Dimensions, StyleSheet, View, } from 'react-native';
+import { Button, Dimensions, StyleSheet, SafeAreaView, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
 
@@ -24,9 +24,9 @@ const LoginPage = ({ children }) => {
     );
 
   return (
-    <View>
+    <SafeAreaView style={styles.container}>
       <Button title="Login" onPress={handleLogin} />
-    </View>
+    </SafeAreaView>
   );
 };
 
