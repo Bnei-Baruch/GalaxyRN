@@ -10,6 +10,7 @@ import { useUserStore } from './user';
 import useRoomStore from './fetchRooms';
 import { useSettingsStore } from './settings';
 import mqtt from '../shared/mqtt';
+import { getUserMedia } from '../shared/tools';
 
 let videoroom               = null;
 let janus                   = null;
@@ -206,7 +207,7 @@ export const useInRoomStore = create((set) => ({
           is_group  : false,//isGroup,
           is_desktop: true,
         };
-        videoroom.join(room.room, d).then((data) => {
+        videoroom.join(room.room, d).then(async (data) => {
           log.info('[client] Joined respond :', data);
 
           // Feeds count with user role
@@ -223,32 +224,31 @@ export const useInRoomStore = create((set) => ({
           // const { id, room } = data
           // user.rfid = data.id
 
-          const { audio, video } = {}; //this.state.media
+          const stream = await getUserMedia();
+          videoroom.publish(stream).then((json) => {
+            log.debug('[client] videoroom published', json);
+            user.extra.streams = json.streams;
+            user.extra.isGroup = this.state.isGroup;
 
-          /* videoroom.publish(video, audio).then((json) => {
-             log.debug('[client] videoroom published', json)
-             user.extra.streams = json.streams
-             user.extra.isGroup = this.state.isGroup
+            const vst = json.streams.find(
+              (v) => v.type === 'video' && v.h264_profile);
+            if (vst && vst?.h264_profile !== '42e01f') {
+              //captureMessage('h264_profile', vst)
+            }
 
-             const vst = json.streams.find(
-               (v) => v.type === 'video' && v.h264_profile)
-             if (vst && vst?.h264_profile !== '42e01f') {
-               //captureMessage('h264_profile', vst)
-             }
+            this.setState(
+              { user, myid: id, delay: false, sourceLoading: false });
+            //updateSentryUser(user)
+            //updateGxyUser(user)
+            //this.keepAlive();
 
-             this.setState(
-               { user, myid: id, delay: false, sourceLoading: false })
-             //updateSentryUser(user)
-             //updateGxyUser(user)
-             //this.keepAlive();
-
-             mqtt.join('galaxy/room/' + room.id)
-             mqtt.join('galaxy/room/' + room.id + '/chat', true)
-             //if (isGroup) videoroom.setBitrate(600000)
-           }).catch((err) => {
-             log.error('[client] Publish error :', err)
-             //this.exitRoom(false)
-           })*/
+            mqtt.join('galaxy/room/' + room.id);
+            mqtt.join('galaxy/room/' + room.id + '/chat', true);
+            //if (isGroup) videoroom.setBitrate(600000)
+          }).catch((err) => {
+            log.error('[client] Publish error :', err);
+            //this.exitRoom(false)
+          });
         }).catch((err) => {
           log.error('[client] Join error :', err);
           // this.exitRoom(false)
@@ -269,9 +269,12 @@ export const useInRoomStore = create((set) => ({
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom    : () => {
+    console.log('useInRoomStore exitRoom', videoroom);
+
     if (videoroom) {
       videoroom.leave().then((data) => {
         videoroom = null;
+        janus?.destroy();
         useSettingsStore.getState().setReadyForJoin(false);
       }).catch(e => {
         //this.resetClient(reconnect, callback)
@@ -283,4 +286,7 @@ export const useInRoomStore = create((set) => ({
     mqtt.exit('galaxy/room/' + room.room);
     mqtt.exit('galaxy/room/' + room.room + '/chat');
   },
+  toggleMute  : (stream) => {
+    videoroom.mute(null, stream);
+  }
 }));
