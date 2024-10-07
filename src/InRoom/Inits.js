@@ -8,6 +8,9 @@ export const useInits = () => {
   useEffect(() => {
     initMQTT();
   }, []);
+  useEffect(() => {
+    initMQTT();
+  }, []);
 
   useEffect(() => {
     if (!mqttReady) return;

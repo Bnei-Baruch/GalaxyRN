@@ -18,11 +18,12 @@ export const languagesOptions = [
 export const SettingsNotJoined = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
 
-  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen, } = useSettingsStore();
+  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen, cammuted, toggleCammuted } = useSettingsStore();
 
   const handleToggleIsTen       = () => toggleIsTen();
   const handleToggleIsBroadcast = () => toggleIsBroadcast();
-  const handleLangChange        = lang => setLang(lang);
+  const handleLangChange                                                                 = lang => setLang(lang);
+  const handleCammute                                                                    = () => toggleCammuted(!cammuted);
 
   return (
     <>
@@ -42,6 +43,11 @@ export const SettingsNotJoined = () => {
         label={'Ten (Recommended)'}
         initialValue={isTen}
         onValueChange={handleToggleIsTen}
+      />
+      <LabeledSwitch
+        label={'Stop video'}
+        initialValue={cammuted}
+        onValueChange={handleCammute}
       />
       <LabeledSwitch
         label={'Broadcast'}

@@ -49,7 +49,7 @@ export default class Shidur extends Component {
     })
   }
 
-  setVideo = (selectedVideo) => {
+  setStream = (selectedVideo) => {
     console.log('VIDEO', selectedVideo)
     this.setState({ selectedVideo })
     if (this.state.videoStream)
@@ -87,7 +87,7 @@ export default class Shidur extends Component {
               useNativeAndroidPickerStyle={false}
               placeholder={{ label: 'Video:', value: null }}
               items={videos_options}
-              onValueChange={(value) => this.setVideo(value)}
+              onValueChange={(value) => this.setStream(value)}
               itemKey={selectedVideo}
             />
           </View>

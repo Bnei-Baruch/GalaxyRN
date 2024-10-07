@@ -8,7 +8,7 @@ export const useSettingsStore = create((set) => ({
   muted            : true,
   toggleMuted      : () => set((state) => ({ muted: !state.muted })),
   cammuted         : false,
-  setCammuted      : (cammuted) => set((state) => ({ cammuted: cammuted ?? !state.cammuted })),
+  toggleCammuted   : (cammuted) => set((state) => ({ cammuted: cammuted ?? !state.cammuted })),
   question         : false,
   toggleQuestion   : () => set((state) => ({ question: !state.question })),
   isBroadcast      : true,
