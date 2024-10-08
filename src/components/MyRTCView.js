@@ -26,7 +26,7 @@ const MyRTCView = () => {
 
     return () => {
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        //stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [stream]);
