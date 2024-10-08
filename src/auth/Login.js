@@ -2,17 +2,26 @@ import React, { useEffect } from 'react';
 import { Button, Dimensions, StyleSheet, SafeAreaView, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
+import { getUserRole } from '../shared/enums';
 
 const LoginPage = ({ children }) => {
   const { user, setUser } = useUserStore();
 
   useEffect(() => {
-    kc.getUser(setUser);
+    kc.getUser(u => {
+      if (!u) return;
+      const role = getUserRole(u.roles);
+      setUser({ ...u, role });
+    });
   }, []);
 
   const handleLogin = () => {
     kc.Login(() => {
-      kc.getUser(setUser); // Directly update state after login
+      kc.getUser(u => {
+        if (!u) return;
+        const role = getUserRole(u.roles);
+        setUser({ ...u, role });
+      });
     });
   };
 

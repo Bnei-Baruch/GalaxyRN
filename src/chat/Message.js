@@ -1,4 +1,5 @@
 import { StyleSheet, View, Text } from 'react-native';
+import { isRTLString } from './helper';
 
 export const Message = ({ msg }) => {
   const { text, user, time } = msg;

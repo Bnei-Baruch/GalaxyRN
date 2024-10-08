@@ -3,7 +3,7 @@ import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
 import { geoInfo } from '../shared/tools';
-import { GEO_IP_INFO } from '../shared/env';
+import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyJanus from '../shared/janus-utils';
@@ -12,9 +12,8 @@ export const useInitsStore = create((set) => ({
   mqttReady  : false,
   configReady: false,
   initMQTT   : () => {
-    const { user, token } = useUserStore.getState();
-
-    mqtt.init({ ...user, token }, (reconnected, error) => {
+    const { user } = useUserStore.getState();
+    mqtt.init(user, (reconnected, error) => {
       if (error) {
         log.info('[client] MQTT disconnected');
         set(() => ({ mqttReady: false }));

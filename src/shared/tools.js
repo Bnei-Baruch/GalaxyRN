@@ -1,4 +1,4 @@
-import { STUN_SRV_GXY, WKLI_ENTER, WKLI_LEAVE } from './env';
+import { STUN_SRV_GXY, WKLI_ENTER, WKLI_LEAVE } from '@env';
 import mqtt from './mqtt';
 import { Janus } from '../libs/janus';
 import { mediaDevices } from 'react-native-webrtc';

@@ -21,7 +21,7 @@ export const useInRoomStore = create((set) => ({
       janus.destroy();
     }
     const { user } = useUserStore.getState();
-    const { room } = useRoomStore.getState();
+    const { room }        = useRoomStore.getState();
 
     const makeSubscription = (pubs) => {
       log.info('Subscriber pubs: ', pubs);
@@ -88,7 +88,7 @@ export const useInRoomStore = create((set) => ({
     };
 
     const config = GxyJanus.instanceConfig(room.janus);
-    console.log('Room useEffect', config, user);
+
     janus          = new JanusMqtt(user, config.name);
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
@@ -179,92 +179,92 @@ export const useInRoomStore = create((set) => ({
     ));
     //subscriber.iceFailed = this.iceFailed
 
-    janus.init(config.token).then((data) => {
-      log.info('[client] Janus init', data);
+      janus.init(config.token).then((data) => {
+        log.info('[client] Janus init', data);
 
-      janus.attach(videoroom).then((data) => {
-        console.info('[client] Publisher Handle: ', data);
+        janus.attach(videoroom).then((data) => {
+          console.info('[client] Publisher Handle: ', data);
 
-        //const { video: { device } } = media
+          //const { video: { device } } = media
 
-        //user.camera = !!device && cammuted === false
-        user.question  = false;
-        user.timestamp = Date.now();
-        user.session   = janus.sessionId;
-        user.handle    = videoroom.janusHandleId;
+          //user.camera = !!device && cammuted === false
+          user.question  = false;
+          user.timestamp = Date.now();
+          user.session   = janus.sessionId;
+          user.handle    = videoroom.janusHandleId;
 
-        //this.setState({ janus, videoroom, user, room: selected_room })
+          //this.setState({ janus, videoroom, user, room: selected_room })
 
-        //this.micMute()
+          //this.micMute()
 
-        const { id, timestamp, role, username } = user;
-        const d                                 = {
-          id,
-          timestamp,
-          role: userRolesEnum.user,
-          display   : username,
-          is_group  : false,//isGroup,
-          is_desktop: true,
-        };
-        videoroom.join(room.room, d).then(async (data) => {
-          log.info('[client] Joined respond :', data);
+          const { id, timestamp, role, username } = user;
+          const d                                 = {
+            id,
+            timestamp,
+            role      : userRolesEnum.user,
+            display   : username,
+            is_group  : false,//isGroup,
+            is_desktop: true,
+          };
+          videoroom.join(room.room, d).then(async (data) => {
+            log.info('[client] Joined respond :', data);
 
-          // Feeds count with user role
-          let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
-          if (feeds_count > 25) {
-            alert(t('oldClient.maxUsersInRoom'));
-            //this.exitRoom(false)
-            return;
-          }
-
-          makeSubscription(data.publishers);
-
-          // const { id, room } = data
-          // user.rfid = data.id
-
-          const stream = await getUserMedia();
-          console.log('videoroom published stream before', stream.getVideoTracks()[0]);
-          stream.getAudioTracks().forEach(t => t.enabled = true);
-          stream.getVideoTracks().forEach(t => t.enabled = true);
-
-          console.log('videoroom published stream after', stream.getVideoTracks()[0]);
-          videoroom.publish(stream).then((json) => {
-            log.debug('[client] videoroom published', json);
-            //user.extra.streams = json.streams;
-            //user.extra.isGroup = this.state.isGroup;
-
-            const vst = json.streams.find((v) => v.type === 'video' && v.h264_profile);
-            if (vst && vst?.h264_profile !== '42e01f') {
-              //captureMessage('h264_profile', vst)
+            // Feeds count with user role
+            let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
+            if (feeds_count > 25) {
+              alert(t('oldClient.maxUsersInRoom'));
+              //this.exitRoom(false)
+              return;
             }
 
-            //this.setState({ user, myid: id, delay: false, sourceLoading: false });
-            //updateSentryUser(user)
-            //updateGxyUser(user)
-            //this.keepAlive();
+            makeSubscription(data.publishers);
 
-            mqtt.join('galaxy/room/' + room.room);
-            mqtt.join('galaxy/room/' + room.room + '/chat', true);
-            //if (isGroup) videoroom.setBitrate(600000)
+            // const { id, room } = data
+            // user.rfid = data.id
+
+            const stream = await getUserMedia();
+            console.log('videoroom published stream before', stream.getVideoTracks()[0]);
+            stream.getAudioTracks().forEach(t => t.enabled = true);
+            stream.getVideoTracks().forEach(t => t.enabled = true);
+
+            console.log('videoroom published stream after', stream.getVideoTracks()[0]);
+            videoroom.publish(stream).then((json) => {
+              log.debug('[client] videoroom published', json);
+              //user.extra.streams = json.streams;
+              //user.extra.isGroup = this.state.isGroup;
+
+              const vst = json.streams.find((v) => v.type === 'video' && v.h264_profile);
+              if (vst && vst?.h264_profile !== '42e01f') {
+                //captureMessage('h264_profile', vst)
+              }
+
+              //this.setState({ user, myid: id, delay: false, sourceLoading: false });
+              //updateSentryUser(user)
+              //updateGxyUser(user)
+              //this.keepAlive();
+
+              mqtt.join('galaxy/room/' + room.room);
+              mqtt.join('galaxy/room/' + room.room + '/chat', true);
+              //if (isGroup) videoroom.setBitrate(600000)
+            }).catch((err) => {
+              log.error('[client] Publish error :', err);
+              //this.exitRoom(false)
+            });
           }).catch((err) => {
-            log.error('[client] Publish error :', err);
-            //this.exitRoom(false)
+            log.error('[client] Join error :', err);
+            // this.exitRoom(false)
           });
-        }).catch((err) => {
-          log.error('[client] Join error :', err);
-          // this.exitRoom(false)
         });
-      });
 
-      janus.attach(subscriber).then((data) => {
-        console.info('[client] Subscriber Handle: ', data);
+        janus.attach(subscriber).then((data) => {
+          console.info('[client] Subscriber Handle: ', data);
+        });
+      }).catch((err) => {
+        log.error('[client] Janus init', err);
+        /*this.exitRoom(true, () => {
+          this.reinitClient(retry)
+        })*/
       });
-    }).catch((err) => {
-      log.error('[client] Janus init', err);
-      /*this.exitRoom(true, () => {
-        this.reinitClient(retry)
-      })*/
-    });
 
     mqtt.join('galaxy/room/' + room.room);
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
@@ -275,13 +275,11 @@ export const useInRoomStore = create((set) => ({
 
     if (videoroom) {
       console.log('videoroom exit', videoroom);
-      videoroom.leave().then((data) => {
-        videoroom = null;
-        janus?.destroy();
-        useSettingsStore.getState().setReadyForJoin(false);
-      }).catch(e => {
-        //this.resetClient(reconnect, callback)
-      });
+      videoroom.leave();
+
+      videoroom = null;
+      janus?.destroy();
+      useSettingsStore.getState().setReadyForJoin(false);
     } else {
       useSettingsStore.getState().setReadyForJoin(false);
     }

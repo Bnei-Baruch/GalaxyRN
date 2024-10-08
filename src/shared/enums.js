@@ -1,4 +1,3 @@
-import kc from "../auth/keycloak";
 export const userRolesEnum = {
   none           : null,
   ghost          : 'ghost',
@@ -8,17 +7,18 @@ export const userRolesEnum = {
   user           : 'user',
 };
 
-export const getUserRole = () => {
+export const getUserRole = (roles) => {
+  console.log('getUserRole', roles);
   switch (true) {
-    case kc.hasRealmRole('pending_approval'):
+    case roles.some(r => r === 'pending_approval'):
       return userRolesEnum.ghost;
-    case kc.hasRealmRole('gxy_user'):
+    case roles.some(r => r === 'gxy_user'):
       return userRolesEnum.user;
-    case kc.hasRealmRole('gxy_pending_approval'):
+    case roles.some(r => r === 'gxy_pending_approval'):
       return userRolesEnum.pending_approve;
-    case kc.hasRealmRole('gxy_guest'):
+    case roles.some(r => r === 'gxy_guest'):
       return userRolesEnum.viewer;
-    case kc.hasRealmRole('new_user'):
+    case roles.some(r => r === 'new_user'):
       return userRolesEnum.new_user;
     default:
       return userRolesEnum.none;
