@@ -201,7 +201,7 @@ export const useInRoomStore = create((set) => ({
         const d                                 = {
           id,
           timestamp,
-          role,
+          role: userRolesEnum.user,
           display   : username,
           is_group  : false,//isGroup,
           is_desktop: true,

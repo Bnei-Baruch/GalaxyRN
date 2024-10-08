@@ -4,7 +4,6 @@ import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import { decode } from 'base-64';
 import log from 'loglevel';
 import api from '../shared/Api';
-import { userRolesEnum } from '../shared/enums';
 
 const authConfig = {
   issuer     : 'https://accounts.kab.info/auth/realms/main',
@@ -142,7 +141,7 @@ class Keycloak {
     const user = {
       display   : name,
       email,
-      role      : userRolesEnum.user,
+      roles,
       id        : sub,
       username  : given_name,
       familyname: family_name,
