@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useInRoomStore } from '../zustand/in_room';
+import { useInRoomStore } from '../zustand/inRoom';
 import { Text, StyleSheet, FlatList } from 'react-native';
 import Member from './Member';
 import Shidur from './Shidur';

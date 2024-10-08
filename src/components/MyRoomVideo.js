@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
 import { useSettingsStore } from '../zustand/settings';
-import { useInRoomStore } from '../zustand/in_room';
+import { useInRoomStore } from '../zustand/inRoom';
 import { getUserMedia } from '../shared/tools';
 
 const MyRoomMedia = () => {

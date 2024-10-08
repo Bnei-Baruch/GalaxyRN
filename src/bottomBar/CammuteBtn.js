@@ -3,7 +3,7 @@ import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import { useSettingsStore } from '../zustand/settings';
-import { useInRoomStore } from '../zustand/in_room';
+import { useInRoomStore } from '../zustand/inRoom';
 
 export const CammuteBtn = () => {
   const { cammuted, toggleCammuted } = useSettingsStore();
