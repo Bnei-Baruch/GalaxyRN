@@ -74,11 +74,16 @@ const styles = StyleSheet.create({
   },
   searchInput    : {
     height: 40,
+    width : '80%',
   },
   list           : {
-    borderWidth : 1,
-    borderColor : '#ccc',
-    borderRadius: 5,
+    borderWidth    : 1,
+    borderColor    : '#ccc',
+    borderRadius   : 5,
+    bottom         : 60,
+    position       : 'absolute',
+    width          : '100%',
+    backgroundColor: 'white',
   },
   itemText       : {
     padding: 10,

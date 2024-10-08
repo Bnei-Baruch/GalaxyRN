@@ -253,7 +253,7 @@ export const createContext = (e) => {
 export const getUserMedia = () => mediaDevices
   .getUserMedia({
     audio: true,
-    video: { frameRate: 30, facingMode: 'user' }
+    video: { frameRate: 30, width: 320, height: 180, facingMode: 'user' }
   }).catch((error) => {
     console.error('Error accessing media devices:', error);
   });

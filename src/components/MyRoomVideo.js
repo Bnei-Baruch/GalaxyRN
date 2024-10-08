@@ -25,6 +25,7 @@ export default MyRoomMedia;
 const styles = StyleSheet.create({
   container: {
     aspectRatio: 16 / 9,
+    width      : '50%'
   },
   overlay  : {
     position       : 'absolute',

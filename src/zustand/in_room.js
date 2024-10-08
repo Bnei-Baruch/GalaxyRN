@@ -137,7 +137,7 @@ export const useInRoomStore = create((set) => ({
       }
     };
     videoroom.talkEvent = (id, talking) => {
-      useInRoomStore.getState().memberByFeed[id].talking = talking;
+      //useInRoomStore.getState().memberByFeed[id].talking = talking;
     };
 
     /**
@@ -180,7 +180,6 @@ export const useInRoomStore = create((set) => ({
     //subscriber.iceFailed = this.iceFailed
 
     janus.init(config.token).then((data) => {
-      console.info('janus init');
       log.info('[client] Janus init', data);
 
       janus.attach(videoroom).then((data) => {
@@ -211,8 +210,7 @@ export const useInRoomStore = create((set) => ({
           log.info('[client] Joined respond :', data);
 
           // Feeds count with user role
-          let feeds_count = data.publishers.filter(
-            (feed) => feed.display.role === userRolesEnum.user).length;
+          let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
           if (feeds_count > 25) {
             alert(t('oldClient.maxUsersInRoom'));
             //this.exitRoom(false)
@@ -225,25 +223,28 @@ export const useInRoomStore = create((set) => ({
           // user.rfid = data.id
 
           const stream = await getUserMedia();
+          console.log('videoroom published stream before', stream.getVideoTracks()[0]);
+          stream.getAudioTracks().forEach(t => t.enabled = true);
+          stream.getVideoTracks().forEach(t => t.enabled = true);
+
+          console.log('videoroom published stream after', stream.getVideoTracks()[0]);
           videoroom.publish(stream).then((json) => {
             log.debug('[client] videoroom published', json);
-            user.extra.streams = json.streams;
-            user.extra.isGroup = this.state.isGroup;
+            //user.extra.streams = json.streams;
+            //user.extra.isGroup = this.state.isGroup;
 
-            const vst = json.streams.find(
-              (v) => v.type === 'video' && v.h264_profile);
+            const vst = json.streams.find((v) => v.type === 'video' && v.h264_profile);
             if (vst && vst?.h264_profile !== '42e01f') {
               //captureMessage('h264_profile', vst)
             }
 
-            this.setState(
-              { user, myid: id, delay: false, sourceLoading: false });
+            //this.setState({ user, myid: id, delay: false, sourceLoading: false });
             //updateSentryUser(user)
             //updateGxyUser(user)
             //this.keepAlive();
 
-            mqtt.join('galaxy/room/' + room.id);
-            mqtt.join('galaxy/room/' + room.id + '/chat', true);
+            mqtt.join('galaxy/room/' + room.room);
+            mqtt.join('galaxy/room/' + room.room + '/chat', true);
             //if (isGroup) videoroom.setBitrate(600000)
           }).catch((err) => {
             log.error('[client] Publish error :', err);
@@ -270,8 +271,10 @@ export const useInRoomStore = create((set) => ({
   },
   exitRoom    : () => {
     console.log('useInRoomStore exitRoom', videoroom);
+    const { room } = useRoomStore.getState();
 
     if (videoroom) {
+      console.log('videoroom exit', videoroom);
       videoroom.leave().then((data) => {
         videoroom = null;
         janus?.destroy();
