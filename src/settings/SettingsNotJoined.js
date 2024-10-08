@@ -7,6 +7,7 @@ import MyVideo from '../components/MyVideo';
 import LabeledSwitch from '../components/LabeledSwitch';
 import { useSettingsStore } from '../zustand/settings';
 import RoomSelect from './RoomSelect';
+import { useMyStreamStore } from '../zustand/myStream';
 
 export const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
@@ -18,12 +19,13 @@ export const languagesOptions = [
 export const SettingsNotJoined = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
 
-  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen, cammuted, toggleCammuted } = useSettingsStore();
+  const { cammute, toggleCammute }                            = useMyStreamStore();
+  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen } = useSettingsStore();
 
   const handleToggleIsTen       = () => toggleIsTen();
   const handleToggleIsBroadcast = () => toggleIsBroadcast();
-  const handleLangChange                                                                 = lang => setLang(lang);
-  const handleCammute                                                                    = () => toggleCammuted(!cammuted);
+  const handleLangChange        = lang => setLang(lang);
+  const handleCammute           = () => toggleCammute();
 
   return (
     <>
@@ -40,15 +42,16 @@ export const SettingsNotJoined = () => {
       <IconWithText iconName="account-circle" text="Audio mode" />
       <MyVideo />
       <LabeledSwitch
+        label={'Stop video'}
+        initialValue={cammute}
+        onValueChange={handleCammute}
+      />
+      <LabeledSwitch
         label={'Ten (Recommended)'}
         initialValue={isTen}
         onValueChange={handleToggleIsTen}
       />
-      <LabeledSwitch
-        label={'Stop video'}
-        initialValue={cammuted}
-        onValueChange={handleCammute}
-      />
+
       <LabeledSwitch
         label={'Broadcast'}
         initialValue={isBroadcast}

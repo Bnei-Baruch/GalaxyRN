@@ -2,14 +2,13 @@ import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
-import { useSettingsStore } from '../zustand/settings';
-import { useInRoomStore } from '../zustand/inRoom';
+import { useMyStreamStore } from '../zustand/myStream';
 
 export const CammuteBtn = () => {
-  const { cammuted, toggleCammuted } = useSettingsStore();
+  const { cammute, toggleCammute } = useMyStreamStore();
 
   const handlePress = () => {
-    toggleCammuted(!cammuted);
+    toggleCammute();
   };
 
   return (

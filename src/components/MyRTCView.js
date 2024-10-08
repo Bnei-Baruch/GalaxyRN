@@ -1,53 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useSettingsStore } from '../zustand/settings';
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import { getUserMedia } from '../shared/tools';
+import { useMyStreamStore } from '../zustand/myStream';
 
 const MyRTCView = () => {
-  const { muted, cammuted } = useSettingsStore();
-
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [stream, setStream]                 = useState(null);
-
-  const videoRef      = useRef(null);
-  const audioTrackRef = useRef(null);
-  const videoTrackRef = useRef(null);
-
-  useEffect(() => {
-    if (!stream) {
-      getUserMedia().then(s => {
-        setStream(s);
-        audioTrackRef.current = s.getAudioTracks()[0];
-        videoTrackRef.current = s.getVideoTracks()[0];
-      });
-    }
-
-    return () => {
-      if (stream) {
-        //stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [stream]);
-
-  useEffect(() => {
-    if (audioTrackRef.current) {
-      audioTrackRef.current.enabled = !isAudioEnabled;
-      setIsAudioEnabled(!isAudioEnabled);
-    }
-  }, [muted]);
-
-  useEffect(() => {
-    if (videoTrackRef.current) {
-      videoTrackRef.current.enabled = !isVideoEnabled;
-      setIsVideoEnabled(!isVideoEnabled);
-    }
-  }, [cammuted]);
+  const { url } = useMyStreamStore();
 
   return (
     <RTCView
-      streamURL={stream?.toURL()}
+      streamURL={url}
       style={styles.video}
       objectFit="cover"
       mirror={true}

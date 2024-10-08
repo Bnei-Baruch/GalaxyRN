@@ -1,21 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
-import { useSettingsStore } from '../zustand/settings';
-import { useInRoomStore } from '../zustand/inRoom';
-import { getUserMedia } from '../shared/tools';
+import { useMyStreamStore } from '../zustand/myStream';
 
 const MyRoomMedia = () => {
-  const { cammuted }   = useSettingsStore();
-  const { toggleMute } = useInRoomStore();
-
-  useEffect(() => {
-    getUserMedia().then(toggleMute);
-  }, [cammuted]);
+  const { cammute } = useMyStreamStore();
 
   return (
     <View style={styles.container}>
-      {cammuted && <View style={styles.overlay} />}
+      {cammute && <View style={styles.overlay} />}
       <MyRTCView />
     </View>
   );

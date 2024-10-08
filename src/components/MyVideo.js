@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
-import { useSettingsStore } from '../zustand/settings';
+import { useMyStreamStore } from '../zustand/myStream';
 
 const MyMedia = () => {
-  const { cammuted } = useSettingsStore();
+  const { cammute } = useMyStreamStore();
 
   return (
     <View style={styles.container}>
-      {cammuted && <View style={styles.overlay} />}
+      {cammute && <View style={styles.overlay} />}
       <MyRTCView />
     </View>
   );

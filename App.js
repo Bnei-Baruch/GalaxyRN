@@ -4,13 +4,16 @@ import { useSettingsStore } from './src/zustand/settings';
 import InRoom from './src/InRoom/InRoom';
 import Login from './src/auth/Login';
 import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
-import RNSecureStorage from 'rn-secure-storage';
+import { useMyStreamStore } from './src/zustand/myStream';
 
 log.setLevel('debug');
 
 const App = () => {
   const { readyForJoin } = useSettingsStore();
+  const { init }         = useMyStreamStore();
+
   useEffect(() => {
+    init();
     //RNSecureStorage.clear()
   }, []);
 
