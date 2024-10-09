@@ -110,21 +110,22 @@ export const useInRoomStore = create((set) => ({
     videoroom = new PublisherPlugin(config.iceServers);
     videoroom.subTo     = makeSubscription;
     videoroom.unsubFrom = (ids, onlyVideo) => {
-      const idsSet  = new Set(ids);
       const streams = [];
-      Object.values(useInRoomStore.getState().memberByFeed).filter((feed) => idsSet.has(feed.id)).forEach((feed) => {
+      ids.forEach(id => {
+        const feed = useInRoomStore.getState().memberByFeed[id];
+        if (!feed) return;
+
         if (onlyVideo) {
           // Unsubscribe only from one video stream (not all publisher feed).
           // Acutally expecting only one video stream, but writing more generic code.
-          feed.streams.filter((stream) => stream.type === 'video').map((stream) => ({
-            feed: feed.id,
-            mid : stream.mid
-          })).forEach((stream) => streams.push(stream));
+          feed.streams
+            .filter((stream) => stream.type === 'video')
+            .map((stream) => ({ feed: feed.id, mid: stream.mid }))
+            .forEach((stream) => streams.push(stream));
         } else {
           // Unsubscribe the whole feed (all it's streams).
           streams.push({ feed: feed.id });
-          log.info('[client] Feed ' + JSON.stringify(feed) + ' (' + feed.id +
-            ') has left the room, detaching');
+          log.info('[client] Feed ' + JSON.stringify(feed) + ' (' + feed.id + ') has left the room, detaching');
         }
       });
       // Send an unsubscribe request.
@@ -133,11 +134,19 @@ export const useInRoomStore = create((set) => ({
         subscriber.unsub(streams)
       }*/
       if (!onlyVideo) {
-        //this.setState({ feeds: feeds.filter((feed) => !idsSet.has(feed.id)) })
+        set(produce(state => {
+          ids.forEach(id => {
+            state.memberByFeed[id] && delete state.memberByFeed[id];
+          });
+        }));
       }
     };
     videoroom.talkEvent = (id, talking) => {
-      //useInRoomStore.getState().memberByFeed[id].talking = talking;
+      set(produce(state => {
+        if (state.memberByFeed[id])
+          state.memberByFeed[id].talking = talking;
+      }));
+
     };
 
     /**
@@ -145,39 +154,31 @@ export const useInRoomStore = create((set) => ({
      */
     const subscriber    = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack  = (track, stream, on) => {
-      let mid  = track.id;
-      let feed = stream.id;
-      log.info('[client] >> This track is coming from feed ' + feed + ':',
-        mid,
-        track,
-        stream);
+      const { id } = stream;
+      log.info('[client] >> This track is coming from feed ' + id + ':', track.id, track, stream);
       if (on) {
-        set(produce(
-          state => {
-            if (!state.memberByFeed[feed])
-              state.memberByFeed[feed] = {};
+        set(produce(state => {
+          if (!state.memberByFeed[id])
+            state.memberByFeed[id] = {};
 
-            state.memberByFeed[feed].mid = mid;
-            if (track.kind === 'audio') {
-              log.debug('[client] Created remote audio stream:', stream);
-              state.memberByFeed[feed].audio = stream;
-            } else if (track.kind === 'video') {
-              log.debug('[client] Created remote video stream:', stream);
-              state.memberByFeed[feed].video = stream;
-            }
-          },
-        ));
+          state.memberByFeed[id].mid = track.id;
+          if (track.kind === 'audio') {
+            log.debug('[client] Created remote audio stream:', stream);
+            state.memberByFeed[id].audio = stream;
+          } else if (track.kind === 'video') {
+            log.debug('[client] Created remote video stream:', stream);
+            state.memberByFeed[id].video = stream;
+          }
+        }));
       }
     };
     subscriber.onUpdate = (streams) => set(produce(state => {
-        //const { mids } = this.state
         log.debug('[client] Updated streams :', streams);
         streams.forEach((s) => {
           state.memberByFeed[s.feed_id].mid = s.mid;
         });
       },
     ));
-    //subscriber.iceFailed = this.iceFailed
 
     janus.init(config.token).then((data) => {
       log.info('[client] Janus init', data);
