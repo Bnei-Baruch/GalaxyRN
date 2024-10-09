@@ -43,7 +43,7 @@ export class StreamingPlugin extends EventEmitter {
     const body    = { request: 'watch', id, restart };
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event').then((param) => {
-        log.info('[streaming] watch: ', param);
+        log.debug('[streaming] watch: ', param);
         const { session_id, json } = param;
 
         let audioTransceiver = null, videoTransceiver = null;
@@ -66,7 +66,7 @@ export class StreamingPlugin extends EventEmitter {
         }
 
         if (json?.jsep) {
-          log.info('[streaming] sdp: ', json);
+          log.debug('[streaming] sdp: ', json);
           this.sdpExchange(json.jsep);
         }
 

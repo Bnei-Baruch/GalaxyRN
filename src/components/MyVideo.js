@@ -18,7 +18,7 @@ export default MyMedia;
 const styles = StyleSheet.create({
   container: {
     aspectRatio: 9 / 16,
-    width      : '50%'
+    width      : '10%'
   },
   overlay  : {
     position       : 'absolute',

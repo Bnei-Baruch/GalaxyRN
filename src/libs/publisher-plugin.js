@@ -117,7 +117,7 @@ export class PublisherPlugin extends EventEmitter {
         return this.transaction('message', {body, jsep}, 'event').then((param) => {
           const {data, json} = param || {}
           const jsep = json.jsep
-          log.info('[publisher] Configure respond: ', param)
+          log.debug('[publisher] Configure respond: ', param)
           resolve(data)
           this.pc.setRemoteDescription(jsep)
         }).catch(error => reject(error))
@@ -197,7 +197,7 @@ export class PublisherPlugin extends EventEmitter {
       return this.transaction('message', {body, jsep: offer}, 'event').then((param) => {
         const {data, json} = param || {}
         const jsep = json.jsep
-        log.info('[publisher] Configure respond: ', param)
+        log.debug('[publisher] Configure respond: ', param)
         this.pc.setRemoteDescription(jsep).then(e => log.info(e)).catch(e => log.error(e))
       })
     })

@@ -6,7 +6,7 @@ import useSoundStream from '../components/useSoundStream';
 const Member = ({ member }) => {
   const { mid, display, video, audio } = member;
   console.log('render Member', audio, video);
-  useSoundStream(audio);
+  //useSoundStream(audio);
 
   return (
     <View style={styles.container}>

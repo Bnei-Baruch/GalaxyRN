@@ -119,7 +119,7 @@ const Shidur = () => {
           init,
         } = useShidurStore();
 
-  useSoundStream(audioStream);
+  //useSoundStream(audioStream);
 
   useEffect(() => {
     init();

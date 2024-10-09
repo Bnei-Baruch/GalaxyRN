@@ -27,9 +27,9 @@ const LoginPage = ({ children }) => {
 
   if (user)
     return (
-      <>
+      <SafeAreaView>
         {children}
-      </>
+      </SafeAreaView>
     );
 
   return (

@@ -6,7 +6,7 @@ import Login from './src/auth/Login';
 import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 import { useMyStreamStore } from './src/zustand/myStream';
 
-log.setLevel('debug');
+log.setLevel('info');
 
 const App = () => {
   const { readyForJoin } = useSettingsStore();
