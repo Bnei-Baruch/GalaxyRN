@@ -165,7 +165,8 @@ export const useInRoomStore = create((set) => ({
     subscriber.onUpdate = (streams) => set(produce(state => {
         log.debug('[client] Updated streams :', streams);
         streams.forEach((s) => {
-          state.memberByFeed[s.feed_id].mid = s.mid;
+          if (state.memberByFeed[s.feed_id])
+            state.memberByFeed[s.feed_id].mid = s.mid;
         });
       },
     ));
