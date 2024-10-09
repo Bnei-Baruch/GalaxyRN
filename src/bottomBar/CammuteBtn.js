@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { topMenuBtns } from './helper';
 import { useMyStreamStore } from '../zustand/myStream';
+import { bottomBar } from './helper';
 
 export const CammuteBtn = () => {
   const { cammute, toggleCammute } = useMyStreamStore();
@@ -12,8 +12,8 @@ export const CammuteBtn = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
-      <Icon name={cammuted ? 'videocam' : 'videocam-off'} size={30} color="red" />
+    <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
+      <Icon name={cammute ? 'videocam-off' : 'videocam'} size={40} color="red" />
     </TouchableOpacity>
   );
 };
