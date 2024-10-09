@@ -20,10 +20,10 @@ export const BottomBar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    position       : 'absolute',
+    /*position       : 'absolute',
     bottom         : 0,
     left           : 0,
-    right          : 0,
+    right          : 0,*/
     flexDirection  : 'row',
     alignItems     : 'flex-start',
     justifyContent : 'space-between',

@@ -4,7 +4,6 @@ import { RTCView } from 'react-native-webrtc';
 import { audiog_options, videos_options } from '../shared/consts';
 import RNPickerSelect from 'react-native-picker-select';
 import { useShidurStore } from '../zustand/shidur';
-import useSoundStream from '../components/useSoundStream';
 
 /*
 export default class Shidur extends Component {
@@ -115,11 +114,9 @@ const Shidur = () => {
           setVideo,
           video,
           audio,
-          audioStream,
           init,
         } = useShidurStore();
 
-  //useSoundStream(audioStream);
 
   useEffect(() => {
     init();

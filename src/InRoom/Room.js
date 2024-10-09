@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
-import { StyleSheet, FlatList, ScrollView, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Member from './Member';
 import Shidur from './Shidur';
 import { TopBar } from '../topBar/TopBar';
@@ -29,12 +29,15 @@ const Room = () => {
       <ChatModal />
       <View style={styles.roomsContainer}>
         <MyRoomMedia />
-        <FlatList
+        {
+          Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)
+        }
+        {/*<FlatList
           data={Object.values(memberByFeed)}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
-        />
+        />*/}
       </View>
       <BottomBar />
     </>
@@ -43,7 +46,5 @@ const Room = () => {
 export default Room;
 
 const styles = StyleSheet.create({
-  roomsContainer: {
-    flex: 1,
-  }
+  roomsContainer: {}
 });

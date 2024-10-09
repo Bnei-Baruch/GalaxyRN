@@ -20,28 +20,22 @@ export const useInRoomStore = create((set) => ({
     if (janus) {
       janus.destroy();
     }
-    const { user } = useUserStore.getState();
-    const { room } = useRoomStore.getState();
+    const { user }        = useUserStore.getState();
+    const { room }        = useRoomStore.getState();
+    let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
       log.info('Subscriber pubs: ', pubs);
       const subs = getSubscriptionFromPublishers(pubs);
-
-      /*if (this.state.remoteFeed) {
-        this.state.subscriber.sub(subscription);
+      if (_subscriberJoined) {
+        subscriber.sub(subs);
         return;
-      }*/
+      }
+      if (subs.length === 0) return;
 
-      /*if (this.state.creatingFeed) {
-        setTimeout(() => {
-          this.subscribeTo(subscription);
-        }, 500);
-        return;
-      }*/
-
-      //this.setState({creatingFeed: true});
       log.info('Subscriber before join: ', subs, room.room);
       subscriber.join(subs, room.room).then((data) => {
+        _subscriberJoined = true;
         log.info('[client] Subscriber join: ', data);
         set(produce(state => {
           data.streams.forEach(({ mid, feed_display, feed_id }) => {
@@ -53,8 +47,6 @@ export const useInRoomStore = create((set) => ({
             };
           });
         }));
-
-        //this.setState({remoteFeed: true, creatingFeed: false});
       });
     };
 
@@ -129,10 +121,9 @@ export const useInRoomStore = create((set) => ({
         }
       });
       // Send an unsubscribe request.
-      /*const { remoteFeed } = this.state
-      if (remoteFeed !== null && streams.length > 0) {
-        subscriber.unsub(streams)
-      }*/
+      if (_subscriberJoined && streams.length > 0) {
+        subscriber.unsub(streams);
+      }
       if (!onlyVideo) {
         set(produce(state => {
           ids.forEach(id => {
@@ -164,10 +155,9 @@ export const useInRoomStore = create((set) => ({
           state.memberByFeed[id].mid = track.id;
           if (track.kind === 'audio') {
             log.debug('[client] Created remote audio stream:', stream);
-            state.memberByFeed[id].audio = stream;
           } else if (track.kind === 'video') {
             log.debug('[client] Created remote video stream:', stream);
-            state.memberByFeed[id].video = stream;
+            state.memberByFeed[id].url = stream.toURL();
           }
         }));
       }

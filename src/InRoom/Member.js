@@ -1,20 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React from 'react';
-import useSoundStream from '../components/useSoundStream';
 
 const Member = ({ member }) => {
-  const { mid, display, video, audio } = member;
-  console.log('render Member', audio, video);
-  //useSoundStream(audio);
+  const { mid, display, url } = member;
+  console.log('render Member', display, mid, url);
 
   return (
     <View style={styles.container}>
       <Text>{mid}</Text>
       <Text>{display?.display}</Text>
-      {video && (
-        <RTCView streamURL={video.toURL()} style={styles.viewer} />
-      )}
+      {url && <RTCView streamURL={url} style={styles.viewer} />}
 
     </View>
   );
