@@ -2,7 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export const bottomBar = StyleSheet.create({
   btn    : {
-    //flex           : 1,
     alignItems     : 'center',
     justifyContent : 'center',
     width          : 75,

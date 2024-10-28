@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
   container: {
     width          : '50%',
     backgroundColor: '#eaeaea',
+    padding: 1
   },
   viewer   : {
     aspectRatio: 16 / 9,

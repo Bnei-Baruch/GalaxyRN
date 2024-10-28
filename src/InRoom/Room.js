@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
-import { StyleSheet, FlatList, View } from 'react-native';
+import { StyleSheet, ScrollView, View } from 'react-native';
 import Member from './Member';
-import { Shidur } from '../shidur/Shidur';
-import { TopBar } from '../topBar/TopBar';
 import { BottomBar } from '../bottomBar/BottomBar';
-import MyRoomMedia from '../components/MyRoomVideo';
 import { ChatModal } from '../chat/ChatModal';
+import { TopBar } from '../topBar/TopBar';
+import { Shidur } from '../shidur/Shidur';
 
 const Room = () => {
   const { joinRoom, exitRoom, memberByFeed } = useInRoomStore();
@@ -18,34 +17,41 @@ const Room = () => {
     };
   }, []);
 
-  const renderItem = ({ item }) => (
-    <Member key={item.id} member={item} />
-  );
-
   return (
-    <>
-      <TopBar />
-      <Shidur />
+    <View style={styles.container}>
       <ChatModal />
-      <View style={styles.roomsContainer}>
-        <MyRoomMedia />
-        {
-          Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)
-        }
-        <FlatList
-          data={Object.values(memberByFeed)}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          numColumns={2}
-        />
+
+      <View style={styles.stickyHeader}>
+        <TopBar />
+        <Shidur />
       </View>
+      <ScrollView>
+        <View style={styles.roomsContainer}>
+
+          {/*<MyRoomMedia />*/}
+          {
+            Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)
+          }
+        </View>
+      </ScrollView>
 
       <BottomBar />
-    </>
+    </View>
   );
 };
 export default Room;
 
 const styles = StyleSheet.create({
-  roomsContainer: {}
+  container     : {
+    flex           : 1,
+    backgroundColor: 'green',
+  },
+  stickyHeader  : {
+    flexDirection: 'column'
+  },
+  roomsContainer: {
+    flex         : 1,
+    flexDirection: 'row',
+    flexWrap     : 'wrap',
+  }
 });

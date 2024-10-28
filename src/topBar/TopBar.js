@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { TopMenuBtn } from './TopMenuBtn';
 import { MuteBtn } from './MuteBtn';
 import useRoomStore from '../zustand/fetchRooms';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ChatBtn } from './ChatBtn';
 
 export const TopBar = () => {
