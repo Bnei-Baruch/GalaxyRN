@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, FlatList, View } from 'react-native';
 import Member from './Member';
-import Shidur from './Shidur';
+import { Shidur } from '../shidur/Shidur';
 import { TopBar } from '../topBar/TopBar';
-import { ChatModal } from '../chat/ChatModal';
-import MyRoomMedia from '../components/MyRoomVideo';
 import { BottomBar } from '../bottomBar/BottomBar';
+import MyRoomMedia from '../components/MyRoomVideo';
+import { ChatModal } from '../chat/ChatModal';
 
 const Room = () => {
   const { joinRoom, exitRoom, memberByFeed } = useInRoomStore();
@@ -32,13 +32,14 @@ const Room = () => {
         {
           Object.values(memberByFeed).map(m => <Member key={m.id} member={m} />)
         }
-        {/*<FlatList
+        <FlatList
           data={Object.values(memberByFeed)}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
-        />*/}
+        />
       </View>
+
       <BottomBar />
     </>
   );

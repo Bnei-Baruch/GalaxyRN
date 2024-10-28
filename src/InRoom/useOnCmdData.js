@@ -1,52 +1,49 @@
-import { useContext, useEffect } from 'react';
-import mqtt from '../../../shared/mqtt';
-import { updateSentryUser } from '../../../shared/sentry';
-import { AuthContext } from '../providers/AuthProvider';
-import { GlobalOptionsContext } from '../providers/GlobalOptions';
-import kc from '../../../components/UserManager';
+import { useEffect } from 'react';
+import mqtt from '../shared/mqtt';
+import { useSettingsStore } from '../zustand/settings';
+import { useUserStore } from '../zustand/user';
+import { useMyStreamStore } from '../zustand/myStream';
+import JanusStream from '../zustand/streaming-utils';
 
 const useOnCmdData = () => {
-  const { user }                   = useContext(AuthContext);
-  const { cammuted }               = useContext(GlobalOptionsContext);
-  const { mqttReady, setCammuted } = useContext(GlobalOptionsContext);
+  const { user, setUser }                       = useUserStore();
+  const { toggleCammute, toggleMute, cammmute } = useMyStreamStore();
+  const { mqttReady, toggleQuestion }           = useSettingsStore();
 
   useEffect(() => {
     if (mqttReady) return;
 
-    mqtt.watch((message) => {
-      handleCmdData(message);
+    mqtt.watch(data => {
+      const { type, id, bitrate } = data;
+
+      if (user.id === id && ['client-reconnect', 'client-reload', 'client-disconnect'].includes(type)) {
+        useSettingsStore().setReadyForJoin(false);
+      } else if (type === 'client-kicked' && user.id === id) {
+        setUser(null);
+      } else if (type === 'client-question' && user.id === id) {
+        toggleQuestion();
+      } else if (type === 'client-mute' && user.id === id) {
+        toggleMute();
+      } else if (type === 'video-mute' && user.id === id) {
+        toggleCammute();
+      } else if (type === 'audio-out') {
+        JanusStream.streamGalaxy(data.status, 4, '');
+        if (data.status) {
+          // remove question mark when sndman unmute our room
+          toggleQuestion(false);
+        }
+      } else if (type === 'reload-config') {
+        //this.reloadConfig();
+      } else if (type === 'client-reload-all') {
+        window.location.reload();
+      } else if (type === 'client-state') {
+        //this.userState(data.user);
+      }
+
     });
 
   }, [mqttReady]);
 
-  const handleCmdData = (data) => {
-    const { type, id, bitrate } = data;
-
-    if (type === 'client-reconnect' && user.id === id) {
-      window.location.reload();
-    } else if (type === 'client-reload' && user.id === id) {
-      window.location.reload();
-    } else if (type === 'client-disconnect' && user.id === id) {
-      window.location.reload();
-    } else if (type === 'client-kicked' && user.id === id) {
-      kc.logout();
-      updateSentryUser(null);
-    } else if (type === 'client-question' && user.id === id) {
-      //this.handleQuestion();
-    } else if (type === 'client-mute' && user.id === id) {
-      //this.micMute();
-    } else if (type === 'video-mute' && user.id === id) {
-      setCammuted(cammuted);
-    } else if (type === 'audio-out') {
-      //this.handleAudioOut(data);
-    } else if (type === 'reload-config') {
-      //this.reloadConfig();
-    } else if (type === 'client-reload-all') {
-      window.location.reload();
-    } else if (type === 'client-state') {
-      //this.userState(data.user);
-    }
-  };
   return null;
 };
 

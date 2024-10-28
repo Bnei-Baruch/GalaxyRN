@@ -5,8 +5,9 @@ import InRoom from './src/InRoom/InRoom';
 import Login from './src/auth/Login';
 import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 import { useMyStreamStore } from './src/zustand/myStream';
+import RNSecureStorage from 'rn-secure-storage';
 
-log.setLevel('info');
+log.setLevel('debug');
 
 const App = () => {
   const { readyForJoin } = useSettingsStore();

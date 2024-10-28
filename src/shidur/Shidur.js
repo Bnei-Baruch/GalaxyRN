@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text, Button } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import { audiog_options, videos_options } from '../shared/consts';
-import RNPickerSelect from 'react-native-picker-select';
 import { useShidurStore } from '../zustand/shidur';
+import { PlayPauseBtn } from './PlayPauseBtn';
+import { OptionsBtn } from './OptionsBtn';
 
 /*
 export default class Shidur extends Component {
@@ -106,73 +106,53 @@ export default class Shidur extends Component {
 }
 */
 
-const Shidur = () => {
-
-  const {
-          videoStream,
-          setAudio,
-          setVideo,
-          video,
-          audio,
-          init,
-        } = useShidurStore();
-
+export const Shidur = () => {
+  const { videoUrl, init, ready, toggleTalking, talking } = useShidurStore();
 
   useEffect(() => {
     init();
   }, []);
 
   return (
-    <View style={{ backgroundColor: 'red' }}>
-      <RTCView
-        streamURL={videoStream?.toURL()}
-        style={styles.viewer}
-      />
-      <View style={styles.select}>
-        <View style={styles.video}>
-          <RNPickerSelect
-            useNativeAndroidPickerStyle={false}
-            placeholder={{ label: 'Video:', value: null }}
-            items={videos_options}
-            onValueChange={setVideo}
-            itemKey={video}
+    <View style={styles.container}>
+      {
+        ready ? (
+          <RTCView
+            streamURL={videoUrl}
+            style={styles.viewer}
           />
-        </View>
-        <View style={styles.audio}>
-          <RNPickerSelect
-            useNativeAndroidPickerStyle={false}
-            placeholder={{ label: 'Language:', value: null }}
-            items={audiog_options}
-            onValueChange={setAudio}
-            itemKey={audio}
-          />
-        </View>
+        ) : <Text>still not ready</Text>
+      }
+
+      <View style={styles.toolbar}>
+        <PlayPauseBtn />
+        <OptionsBtn />
       </View>
+      <Button
+        title="toggle on air"
+        onPress={toggleTalking}
+        style={{ backgroundColor: talking ? 'red' : 'green' }}
+      />
     </View>
   );
 };
-export default Shidur;
 
 const styles = StyleSheet.create({
   container: {
-    flex           : 1,
-    padding        : 24,
-    backgroundColor: '#eaeaea',
+    //flex           : 1,
+    backgroundColor: 'red',
   },
   viewer   : {
-    aspectRatio: 16 / 9,
-    // marginTop: 16,
-    height: 'auto',
-    // width: '100%',
+    aspectRatio    : 16 / 9,
+    height         : 'auto',
     backgroundColor: 'black',
     justifyContent : 'center',
     alignItems     : 'center',
   },
-  select   : {
-    padding       : 24,
+  toolbar  : {
+    padding       : 4,
     flexDirection : 'row',
     justifyContent: 'space-between',
-    // justifyContent: 'left',
   },
   video    : {
     // flex:2

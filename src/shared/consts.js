@@ -165,8 +165,7 @@ export const subtitle_options = [
   { key: 'es', value: 'es', eng_text: 'Spanish', text: 'Español' },
 ];
 export const audiog_options2  = [
-  {
-    header     : true,
+  { header     : true,
     text       : 'oldClient.streamForWorkshop',
     description: 'oldClient.streamForWorkshopDescription',
     icon       : 'group',

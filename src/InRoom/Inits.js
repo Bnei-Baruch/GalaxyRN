@@ -7,13 +7,15 @@ export const useInits = () => {
   const { initRoom, initSupport }                        = useChatStore();
 
   useEffect(() => {
-    initMQTT();
+    initConfig().then(() => {
+      initMQTT();
+    });
   }, []);
 
   useEffect(() => {
-    if (!mqttReady) return;
-    initConfig();
-    initRoom();
+    if (mqttReady) {
+      initRoom();
+    }
   }, [mqttReady]);
 
   return mqttReady && configReady;

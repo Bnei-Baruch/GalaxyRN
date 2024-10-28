@@ -13,6 +13,7 @@ export const useInitsStore = create((set) => ({
   configReady: false,
   initMQTT   : () => {
     const { user } = useUserStore.getState();
+
     mqtt.init(user, (reconnected, error) => {
       if (error) {
         log.info('[client] MQTT disconnected');
@@ -33,16 +34,14 @@ export const useInitsStore = create((set) => ({
     });
   },
   initConfig : () => {
-    if (!useInitsStore.getState().mqttReady)
-      return;
     const userInfo = {};
-    geoInfo(`${GEO_IP_INFO}`, (data) => {
+    return geoInfo(GEO_IP_INFO, (data) => {
       userInfo.ip      = data && data.ip ? data.ip : '127.0.0.1';
       userInfo.country = data && data.country ? data.country : 'XX';
 
       //setUserInfo(userInfo)
 
-      api.fetchConfig().then((data) => {
+      return api.fetchConfig().then((data) => {
         log.debug('[client] got config: ', data);
         ConfigStore.setGlobalConfig(data);
         /*
