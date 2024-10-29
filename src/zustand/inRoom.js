@@ -12,8 +12,12 @@ import { useSettingsStore } from './settings';
 import mqtt from '../shared/mqtt';
 import { getStream } from './myStream';
 
-let videoroom               = null;
-let janus                   = null;
+let subscriber               = null;
+let videoroom                = null;
+let janus                    = null;
+const activeFeeds            = [];
+export const MEMBER_PER_PAGE = 6;
+
 export const useInRoomStore = create((set) => ({
   memberByFeed: {},
   joinRoom    : () => {
@@ -143,7 +147,7 @@ export const useInRoomStore = create((set) => ({
     /**
      * subscribe to members of the room
      */
-    const subscriber    = new SubscriberPlugin(config.iceServers);
+    subscriber = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack  = (track, stream, on) => {
       const { id } = stream;
       log.info('[client] >> This track is coming from feed ' + id + ':', track.id, track, stream);
@@ -275,5 +279,28 @@ export const useInRoomStore = create((set) => ({
   },
   toggleMute  : (stream) => {
     videoroom.mute(null, stream);
+  },
+  activatePage: async (page) => {
+    const forActivate = Object.values(this.memberByFeed).slice(page * MEMBER_PER_PAGE, (page + 1) * MEMBER_PER_PAGE);
+    await deactivateFeeds(activeFeeds);
+    return activateFeeds(forActivate);
   }
 }));
+
+const activateFeeds = (feeds) => {
+  const streams = [];
+  for (const f of feeds) {
+    const v_streams = f.streams?.filter((s) => (s.type === 'video' && s.codec === 'h264' && (s.h264_profile !== '42e01f')));
+    streams.push(...v_streams);
+  }
+  return subscriber.sub(streams);
+};
+
+const deactivateFeeds = (feeds) => {
+  const streams = [];
+  for (const f of feeds) {
+    const v_streams = f.streams?.filter((s) => (s.type === 'video' && s.codec === 'h264' && (s.h264_profile !== '42e01f')));
+    streams.push(...v_streams);
+  }
+  return subscriber.unsub(streams);
+};

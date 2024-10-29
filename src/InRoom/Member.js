@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React from 'react';
+import { memberItemWidth } from './helper';
 
 const Member = ({ member }) => {
   const { mid, display, url } = member;
@@ -19,15 +20,12 @@ export default Member;
 
 const styles = StyleSheet.create({
   container: {
-    width          : '50%',
+    width          : memberItemWidth,
     backgroundColor: '#eaeaea',
-    padding: 1
   },
   viewer   : {
-    aspectRatio: 16 / 9,
-    // marginTop: 16,
-    height: 'auto',
-    // width: '100%',
+    aspectRatio    : 16 / 9,
+    height         : 'auto',
     backgroundColor: 'black',
     justifyContent : 'center',
     alignItems     : 'center',
@@ -36,9 +34,5 @@ const styles = StyleSheet.create({
     padding       : 24,
     flexDirection : 'row',
     justifyContent: 'space-between',
-    // justifyContent: 'left',
-  },
-  video    : {
-    // flex:2
-  },
+  }
 });

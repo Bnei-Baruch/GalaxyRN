@@ -6,9 +6,10 @@ import { BottomBar } from '../bottomBar/BottomBar';
 import { ChatModal } from '../chat/ChatModal';
 import { TopBar } from '../topBar/TopBar';
 import { Shidur } from '../shidur/Shidur';
+import { memberItemWidth } from './helper';
 
 const Room = () => {
-  const { joinRoom, exitRoom, memberByFeed } = useInRoomStore();
+  const { joinRoom, exitRoom, memberByFeed, activatePage } = useInRoomStore();
 
   useEffect(() => {
     joinRoom();
@@ -17,6 +18,10 @@ const Room = () => {
     };
   }, []);
 
+  const handleScrollEnd = e => {
+    const contentOffsetX = e.nativeEvent.contentOffset.x;
+    activatePage(Math.round(contentOffsetX / memberItemWidth));
+  };
   return (
     <View style={styles.container}>
       <ChatModal />
@@ -25,7 +30,12 @@ const Room = () => {
         <TopBar />
         <Shidur />
       </View>
-      <ScrollView>
+      <ScrollView
+        disableScrollViewPanResponder={true}
+        snapToInterval={memberItemWidth}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleScrollEnd}
+      >
         <View style={styles.roomsContainer}>
 
           {/*<MyRoomMedia />*/}
@@ -50,8 +60,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   roomsContainer: {
-    flex         : 1,
-    flexDirection: 'row',
-    flexWrap     : 'wrap',
+    flex          : 1,
+    flexDirection : 'row',
+    flexWrap      : 'wrap',
+    justifyContent: 'space-between',
   }
 });
