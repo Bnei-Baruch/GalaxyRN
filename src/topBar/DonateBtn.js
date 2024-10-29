@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import { useSettingsStore } from '../zustand/settings';
+import { baseStyles } from '../constants';
 
 const params = new URLSearchParams({
   utm_source  : 'arvut_system',
@@ -30,7 +31,7 @@ export const DonateBtn = () => {
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
       <Icon name="favorite" size={30} color="black" />
-      <Text>{'oldClient.material'}</Text>
+      <Text style={baseStyles.text}>{'oldClient.material'}</Text>
     </TouchableOpacity>
   );
 };

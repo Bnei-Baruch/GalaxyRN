@@ -1,11 +1,12 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { baseStyles } from '../constants';
 
 const LabeledSelect = ({ label, options, selectedValue, onValueChange }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, baseStyles.text]}>{label}</Text>
       <Picker
         selectedValue={selectedValue}
         onValueChange={onValueChange}
@@ -16,6 +17,7 @@ const LabeledSelect = ({ label, options, selectedValue, onValueChange }) => {
             key={option.key || option.value}
             label={option.text}
             value={option.value}
+            style={baseStyles.text}
           />
         ))}
       </Picker>
@@ -35,6 +37,7 @@ const styles = StyleSheet.create({
     borderWidth : 1,
     borderColor : '#ccc',
     borderRadius: 5,
+    color       : 'white'
   },
 });
 

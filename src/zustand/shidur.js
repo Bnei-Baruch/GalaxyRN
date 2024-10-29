@@ -105,7 +105,7 @@ export const useShidurStore = create((set) => ({
     setToStorage('vrt_langtext', text);
     set({ videoUrl: videoStream.toURL(), ready: true, audio });
   },
-  init         : async (srv) => {
+  initShidur   : async (srv) => {
     const { user }        = useUserStore.getState();
     const { isBroadcast } = useSettingsStore.getState();
 
@@ -124,8 +124,9 @@ export const useShidurStore = create((set) => ({
     if (!srv) {
       const gw_list = GxyJanus.gatewayNames('streaming');
       let inst      = gw_list[Math.floor(Math.random() * gw_list.length)];
-      config        = GxyJanus.instanceConfig(inst);
-      str           = config.name;
+
+      config = GxyJanus.instanceConfig(inst);
+      str    = config.name;
       console.log('[shidur] init build janus', inst, config);
 
     }
@@ -165,7 +166,7 @@ export const useShidurStore = create((set) => ({
         );
       }
       if (!trlAudioJanus) {
-        const id = await getFromStorage('vrt_langtext', 301).then(x => Number(x));
+        const id = await getFromStorage('vrt_langtext', 'Original').then(x => trllang[x]);
         promises.push(
           initStream(janus, id).then(res => {
             trlAudioStream = res[0];
@@ -185,18 +186,20 @@ export const useShidurStore = create((set) => ({
     });
 
   },
-  clean        : () => {
+  cleanShidur  : () => {
     if (useShidurStore.getState().talking) {
       clearInterval(this.talking);
       this.talking = null;
     }
     if (!janus) return;
-    stopStream(videoStream);
-    videoJanus = null;
-    stopStream(audioStream);
-    audioJanus = null;
-    stopStream(trlAudioStream);
-    trlAudioJanus = null;
+    janus?.destroy();
+    janus          = null;
+    videoStream    = null;
+    audioStream    = null;
+    trlAudioStream = null;
+    videoJanus     = null;
+    audioJanus     = null;
+    trlAudioJanus  = null;
   },
   toggleTalking: () => {
     const _nextOnAir = !state.talking;
@@ -210,16 +213,9 @@ export const useShidurStore = create((set) => ({
 
     videoStream.getVideoTracks().forEach(t => t.enabled = isPlay);
     audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
-    //stopStream(trlAudioStream);
     return { isPlay };
   })
 }));
-
-const stopStream = (stream) => {
-  stream.getVideoTracks().forEach(t => t.stop());
-  stream.getAudioTracks().forEach(t => t.stop());
-  stream = null;
-};
 
 const getFromStorage = async (key, def) => {
   try {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
+import { baseStyles } from '../constants';
 
 const LabeledSwitch = ({ label, initialValue = false, onValueChange }) => {
   const [isEnabled, setIsEnabled] = useState(initialValue);
@@ -11,7 +12,7 @@ const LabeledSwitch = ({ label, initialValue = false, onValueChange }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, baseStyles.text]}>{label}</Text>
       <Switch
         trackColor={{ false: '#767577', true: '#81b0ff' }}
         thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}

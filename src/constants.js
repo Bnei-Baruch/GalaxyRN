@@ -1,4 +1,4 @@
-import { Dimensions } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 
 export const win        = Dimensions.get('window');
 export const w          = win.width;
@@ -9,3 +9,9 @@ export const responsive = {
   mobile8plus: w > 375 && w < 415,
   tablet     : w < 990 && w > 415
 };
+
+export const baseStyles = StyleSheet.create({
+  text: {
+    color: 'white',
+  },
+});

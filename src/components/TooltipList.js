@@ -93,9 +93,6 @@ export const styles = StyleSheet.create({
     padding: 5,
 
   },
-  itemText      : {
-    color: 'white'
-  },
   selected      : {
     backgroundColor: '#222222'
   }

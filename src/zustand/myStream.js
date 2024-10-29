@@ -9,7 +9,7 @@ export const useMyStreamStore = create((set) => ({
   url          : null,
   mute         : true,
   cammmute     : true,
-  init         : async () => {
+  myInit         : async () => {
     let cammute;
     try {
       cammute = await RNSecureStorage.getItem('cammute');

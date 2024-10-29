@@ -1,9 +1,10 @@
-import TooltipList, { styles } from '../components/TooltipList';
 import React from 'react';
+import { Text } from 'react-native';
+
+import TooltipList from '../components/TooltipList';
 import { audiog_options2 } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
-
-import { Text } from 'react-native';
+import { baseStyles } from '../constants';
 
 const AudioSelect = () => {
   const { audio, setAudio } = useShidurStore();
@@ -14,7 +15,7 @@ const AudioSelect = () => {
   };
 
   const selected   = audiog_options2.find(option => option.value === audio);
-  const renderItem = (item) => <Text style={styles.itemText}>{item.text}</Text>;
+  const renderItem = (item) => <Text style={baseStyles.text}>{item.text}</Text>;
 
   return (
     <TooltipList

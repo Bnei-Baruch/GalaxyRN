@@ -10,7 +10,8 @@ import { useUserStore } from './user';
 import useRoomStore from './fetchRooms';
 import { useSettingsStore } from './settings';
 import mqtt from '../shared/mqtt';
-import { getStream } from './myStream';
+import { getStream, useMyStreamStore } from './myStream';
+import { sendUserState } from '../shared/tools';
 
 let subscriber               = null;
 let videoroom                = null;
@@ -24,8 +25,11 @@ export const useInRoomStore = create((set) => ({
     if (janus) {
       janus.destroy();
     }
-    const { user }        = useUserStore.getState();
-    const { room }        = useRoomStore.getState();
+    const { user }     = useUserStore.getState();
+    const { room }     = useRoomStore.getState();
+    const { question } = useSettingsStore.getState();
+    const { cammmute } = useMyStreamStore.getState();
+
     let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
@@ -38,7 +42,7 @@ export const useInRoomStore = create((set) => ({
       if (subs.length === 0) return;
 
       log.info('Subscriber before join: ', subs, room.room);
-      subscriber.join(subs, room.room).then((data) => {
+      return subscriber.join(subs, room.room).then((data) => {
         _subscriberJoined = true;
         log.info('[client] Subscriber join: ', data);
         set(produce(state => {
@@ -51,6 +55,7 @@ export const useInRoomStore = create((set) => ({
             };
           });
         }));
+        return subs.map(s => s.feed);
       });
     };
 
@@ -64,7 +69,7 @@ export const useInRoomStore = create((set) => ({
         const prevAudio = prevFeed?.streams?.find(
           (a) => a.type === 'audio' && a.codec === 'opus');
 
-        pub.streams.forEach((s) => {
+        pub.streams?.forEach((s) => {
           let hasVideo = /*!muteOtherCams && */s.type === 'video' &&
             s.codec === 'h264' && !prevVideo;
           if (s?.h264_profile && s?.h264_profile !== '42e01f') {
@@ -104,7 +109,10 @@ export const useInRoomStore = create((set) => ({
      * publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo     = makeSubscription;
+    videoroom.subTo     = (...args) => makeSubscription(args).then(() => {
+      const { rfid } = useUserStore.getState();
+      sendUserState({ camera: cammmute, question, rfid, room: room.room });
+    });
     videoroom.unsubFrom = (ids, onlyVideo) => {
       const streams = [];
       ids.forEach(id => {
@@ -177,7 +185,6 @@ export const useInRoomStore = create((set) => ({
 
     janus.init(config.token).then((data) => {
       log.info('[client] Janus init', data);
-
       janus.attach(videoroom).then((data) => {
         console.info('[client] Publisher Handle: ', data);
 
@@ -199,11 +206,12 @@ export const useInRoomStore = create((set) => ({
           timestamp,
           role      : userRolesEnum.user,
           display   : username,
-          is_group  : false,//isGroup,
-          is_desktop: true,
+          is_group  : false,
+          is_desktop: false,
         };
         videoroom.join(room.room, d).then(async (data) => {
           log.info('[client] Joined respond :', data);
+          useUserStore.getState().setRfid(data.id);
 
           // Feeds count with user role
           let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
@@ -218,7 +226,7 @@ export const useInRoomStore = create((set) => ({
           const stream = getStream();
 
           console.log('videoroom published stream after', stream.getVideoTracks()[0]);
-          videoroom.publish(stream).then((json) => {
+          return videoroom.publish(stream).then((json) => {
             log.debug('[client] videoroom published', json);
             //user.extra.streams = json.streams;
             //user.extra.isGroup = this.state.isGroup;
@@ -260,11 +268,9 @@ export const useInRoomStore = create((set) => ({
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom    : () => {
-    console.log('useInRoomStore exitRoom', videoroom);
     const { room } = useRoomStore.getState();
 
     if (videoroom) {
-      console.log('videoroom exit', videoroom);
       videoroom.leave();
 
       videoroom = null;

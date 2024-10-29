@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { useChatStore, chatModes } from '../zustand/chat';
 import { View, Modal, Text, StyleSheet, Button } from 'react-native';
+
 import { RoomChat } from './RoomChat';
 import ScreenTitle from '../components/ScreenTitle';
 
 export const ChatModal = () => {
-  const { mode, setChatMode } = useChatStore();
+  const { mode, setChatMode, initRoom, initSupport, cleanChat } = useChatStore();
+
+  useEffect(() => {
+    initRoom();
+    return () => {
+      cleanChat();
+    };
+  }, []);
 
   const selectTab = (m) => setChatMode(m);
 

@@ -11,7 +11,7 @@ export const QuestionBtn = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name="question-mark" size={40} color={question ? 'red' : 'grey'} />
+      <Icon name="question-mark" size={40} color={!question ? 'red' : 'grey'} />
     </TouchableOpacity>
   );
 };

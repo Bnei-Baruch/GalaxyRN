@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+import useRoomStore from './fetchRooms';
+import { useMyStreamStore } from './myStream';
+import { sendUserState } from '../shared/tools';
+import { useUserStore } from './user';
 
 export const useSettingsStore = create((set) => ({
   uiLang           : 'en',
@@ -6,7 +10,14 @@ export const useSettingsStore = create((set) => ({
   readyForJoin     : false,
   setReadyForJoin  : (readyForJoin = true) => set({ readyForJoin }),
   question         : false,
-  toggleQuestion   : () => set((state) => ({ question: !state.question })),
+  toggleQuestion   : () => {
+    const { room } = useRoomStore.getState();
+    const { rfid } = useUserStore.getState();
+    const { question }   = useSettingsStore.getState();
+    const { cammmute }   = useMyStreamStore.getState();
+    sendUserState({ camera: cammmute, question, room: room.room, rfid });
+    set((state) => ({ question: !state.question }));
+  },
   isBroadcast      : true,
   toggleIsBroadcast: () => set((state) => ({ isBroadcast: !state.isBroadcast })),
   isTen            : false,

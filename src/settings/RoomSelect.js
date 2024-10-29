@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, } from 'react-native';
 import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';
+import { baseStyles } from '../constants';
 
 const RoomSelect = () => {
   const [searchText, setSearchText]   = useState();
@@ -28,7 +29,7 @@ const RoomSelect = () => {
       <Text style={styles.label}>{'select ten'}</Text>
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, baseStyles.text]}
           placeholder="Search..."
           value={searchText}
           onChangeText={handleSearch}
@@ -36,13 +37,13 @@ const RoomSelect = () => {
 
         <Button title={'join room'} onPress={handleJoinRoom} disabled={!room} />
       </View>
-      <View style={styles.container}>
+      <View>
         <FlatList
           data={filteredOptions}
           keyExtractor={(item) => item.room}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handleSelect(item)}>
-              <Text style={styles.itemText}>{item.description}</Text>
+              <Text style={[styles.itemText, baseStyles.text]}>{item.description}</Text>
             </TouchableOpacity>
           )}
           style={styles.list}
@@ -53,9 +54,6 @@ const RoomSelect = () => {
 };
 
 const styles = StyleSheet.create({
-  container      : {
-    marginBottom: 15,
-  },
   label          : {
     fontSize    : 16,
     marginBottom: 5,
@@ -83,7 +81,8 @@ const styles = StyleSheet.create({
     bottom         : 60,
     position       : 'absolute',
     width          : '100%',
-    backgroundColor: 'white',
+    backgroundColor: 'black',
+    maxHeight      : 200,
   },
   itemText       : {
     padding: 10,

@@ -1,7 +1,6 @@
 import { STUN_SRV_GXY, WKLI_ENTER, WKLI_LEAVE } from '@env';
 import mqtt from './mqtt';
 import { Janus } from '../libs/janus';
-import { mediaDevices } from 'react-native-webrtc';
 
 export const initJanus = (cb, er, server, token = '', iceServers = [{ urls: STUN_SRV_GXY }]) => {
   Janus.init({
@@ -227,7 +226,7 @@ export const isRTLString = (text) => {
 
 export const sendUserState = (user) => {
   const { camera, question, rfid, room } = user;
-  const msg                              = { type: 'client-state', user: { camera, question, rfid, room } };
+  const msg = { type: 'client-state', user: { camera, question, rfid, room } };
   mqtt.send(JSON.stringify(msg), false, 'galaxy/room/' + room);
 };
 

@@ -1,10 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { baseStyles } from '../constants';
 
 const LabeledInput = ({ label, value, onChangeText, ...props }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, baseStyles.text]}>{label}</Text>
       <TextInput
         style={styles.input}
         value={value}

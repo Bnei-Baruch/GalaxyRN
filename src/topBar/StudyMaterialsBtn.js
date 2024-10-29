@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { TouchableOpacity, Animated, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
+import { baseStyles } from '../constants';
 
 export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
@@ -31,7 +32,7 @@ export const StudyMaterialsBtn = () => {
   return (
     <TouchableOpacity onPress={toggleOpen} style={topMenuBtns.btn}>
       <Icon name="library-books" size={30} color="black" />
-      <Text>{'oldClient.material'}</Text>
+      <Text style={baseStyles.text}>{'oldClient.material'}</Text>
     </TouchableOpacity>
   );
 };

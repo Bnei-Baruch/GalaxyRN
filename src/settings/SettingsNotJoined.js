@@ -8,6 +8,7 @@ import LabeledSwitch from '../components/LabeledSwitch';
 import { useSettingsStore } from '../zustand/settings';
 import RoomSelect from './RoomSelect';
 import { useMyStreamStore } from '../zustand/myStream';
+import { View, StyleSheet } from 'react-native';
 
 export const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
@@ -19,7 +20,7 @@ export const languagesOptions = [
 export const SettingsNotJoined = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
 
-  const { cammute, toggleCammute }                            = useMyStreamStore();
+  const { cammute, toggleCammute }                             = useMyStreamStore();
   const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen } = useSettingsStore();
 
   const handleToggleIsTen       = () => toggleIsTen();
@@ -28,7 +29,7 @@ export const SettingsNotJoined = () => {
   const handleCammute           = () => toggleCammute();
 
   return (
-    <>
+    <View style={styles.container}>
       {/*user settings*/}
       <IconWithText iconName="account-circle" text="user settings" />
       <LabeledInput />
@@ -58,6 +59,13 @@ export const SettingsNotJoined = () => {
         onValueChange={handleToggleIsBroadcast}
       />
       <RoomSelect />
-    </>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex           : 1,
+    backgroundColor: 'black',
+  }
+});

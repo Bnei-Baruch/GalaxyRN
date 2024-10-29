@@ -1,8 +1,9 @@
-import TooltipList, { styles } from '../components/TooltipList';
+import TooltipList from '../components/TooltipList';
 import React from 'react';
 import { videos_options2 } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
 import { Text } from 'react-native';
+import { baseStyles } from '../constants';
 
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
@@ -14,7 +15,7 @@ const VideoSelect = () => {
 
   const selected = videos_options2.find(option => option.value === video);
 
-  const renderItem = (item) => <Text style={styles.itemText}>{item.description}</Text>;
+  const renderItem = (item) => <Text style={baseStyles.text}>{item.description}</Text>;
 
   return (
     <TooltipList
