@@ -1,3 +1,14 @@
 import { Dimensions } from 'react-native';
 
-export const memberItemWidth = Dimensions.get('window').width / 2 - 1;
+class MemberItemWidth {
+  w              = Dimensions.get('window').width / 2 - 1;
+  isPortrait     = true;
+  set            = (isPortrait) => {
+    this.w          = isPortrait ? Dimensions.get('window').width / 2 - 1 : Dimensions.get('window').width / 4 - 1;
+    this.isPortrait = isPortrait;
+  };
+  get            = () => this.w;
+  getAspectRatio = (_isPortrait) => _isPortrait ?? this.isPortrait ? 16 / 9 : 9 / 16;
+}
+
+export const memberItemWidth = new MemberItemWidth();

@@ -4,6 +4,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useEffect } from 'react';
 
 const PrepareRoom = () => {
+
   const { initMQTT, initConfig, mqttReady, configReady } = useInitsStore();
 
   useEffect(() => {

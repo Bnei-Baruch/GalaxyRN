@@ -19,8 +19,10 @@ let janus                    = null;
 const activeFeeds            = [];
 export const MEMBER_PER_PAGE = 6;
 
-export const useInRoomStore = create((set) => ({
+export const useInRoomStore  = create((set) => ({
   memberByFeed: {},
+  showBars    : true,
+  setShowBars : (showBars) => set({ showBars }),
   joinRoom    : () => {
     if (janus) {
       janus.destroy();
@@ -35,11 +37,14 @@ export const useInRoomStore = create((set) => ({
     const makeSubscription = (pubs) => {
       log.info('Subscriber pubs: ', pubs);
       const subs = getSubscriptionFromPublishers(pubs);
+      log.info('Subscriber subs: ', subs);
+      if (subs.length === 0)
+        return Promise.resolve();
+
       if (_subscriberJoined) {
         subscriber.sub(subs);
-        return;
+        return Promise.resolve();
       }
-      if (subs.length === 0) return;
 
       log.info('Subscriber before join: ', subs, room.room);
       return subscriber.join(subs, room.room).then((data) => {
@@ -62,14 +67,16 @@ export const useInRoomStore = create((set) => ({
     const getSubscriptionFromPublishers = (pubs) => {
       const result = [];
       for (const pub of pubs) {
-        console.info('getSubscriptionFromPublishers pub', pub);
         const prevFeed  = useInRoomStore.getState().memberByFeed[pub.id];
+        console.info('getSubscriptionFromPublishers prevFeed', prevFeed);
         const prevVideo = prevFeed?.streams?.find(
           (v) => v.type === 'video' && v.codec === 'h264');
         const prevAudio = prevFeed?.streams?.find(
           (a) => a.type === 'audio' && a.codec === 'opus');
 
         pub.streams?.forEach((s) => {
+
+          console.info('getSubscriptionFromPublishers pub streams', s);
           let hasVideo = /*!muteOtherCams && */s.type === 'video' &&
             s.codec === 'h264' && !prevVideo;
           if (s?.h264_profile && s?.h264_profile !== '42e01f') {
@@ -109,7 +116,7 @@ export const useInRoomStore = create((set) => ({
      * publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo     = (...args) => makeSubscription(args).then(() => {
+    videoroom.subTo     = (pubs) => makeSubscription(pubs).then(() => {
       const { rfid } = useUserStore.getState();
       sendUserState({ camera: cammmute, question, rfid, room: room.room });
     });
@@ -176,7 +183,7 @@ export const useInRoomStore = create((set) => ({
     };
     subscriber.onUpdate = (streams) => set(produce(state => {
         log.debug('[client] Updated streams :', streams);
-        streams.forEach((s) => {
+        streams?.forEach((s) => {
           if (state.memberByFeed[s.feed_id])
             state.memberByFeed[s.feed_id].mid = s.mid;
         });
@@ -224,6 +231,7 @@ export const useInRoomStore = create((set) => ({
           makeSubscription(data.publishers);
 
           const stream = getStream();
+          stream.getAudioTracks().forEach(track => track.enabled = false);
 
           console.log('videoroom published stream after', stream.getVideoTracks()[0]);
           return videoroom.publish(stream).then((json) => {
@@ -299,6 +307,10 @@ const activateFeeds = (feeds) => {
     const v_streams = f.streams?.filter((s) => (s.type === 'video' && s.codec === 'h264' && (s.h264_profile !== '42e01f')));
     streams.push(...v_streams);
   }
+
+  if (streams.length === 0)
+    return Promise.resolve();
+
   return subscriber.sub(streams);
 };
 
@@ -308,5 +320,9 @@ const deactivateFeeds = (feeds) => {
     const v_streams = f.streams?.filter((s) => (s.type === 'video' && s.codec === 'h264' && (s.h264_profile !== '42e01f')));
     streams.push(...v_streams);
   }
+
+  if (streams.length === 0)
+    return Promise.resolve();
+
   return subscriber.unsub(streams);
 };

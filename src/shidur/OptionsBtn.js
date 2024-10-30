@@ -36,7 +36,7 @@ export const OptionsBtn = () => {
       items={items}
       onSelect={handleSelect}
       renderItem={renderItem}
-      trigger={<Icon name="settings" size={30} color="black" />}
+      trigger={<Icon name="settings" size={30} color="white" />}
     />
   );
 };

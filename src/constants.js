@@ -14,4 +14,12 @@ export const baseStyles = StyleSheet.create({
   text: {
     color: 'white',
   },
+  full: {
+    flex: 1,
+  }
 });
+
+export const ORIENTATIONS = {
+  'landscape': 1,
+  'portrait' : 2
+};

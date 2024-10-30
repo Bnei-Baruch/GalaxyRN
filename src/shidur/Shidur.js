@@ -4,9 +4,11 @@ import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { OptionsBtn } from './OptionsBtn';
+import { useInitsStore } from '../zustand/inits';
 
 export const Shidur = () => {
   const { videoUrl, initShidur, ready, toggleTalking, talking, cleanShidur } = useShidurStore();
+  const { isPortrait }                                                       = useInitsStore();
 
   useEffect(() => {
     initShidur();
@@ -21,44 +23,42 @@ export const Shidur = () => {
         ready ? (
           <RTCView
             streamURL={videoUrl}
-            style={styles.viewer}
+            style={[styles.viewer, isPortrait ? styles.portrait : styles.landscape]}
           />
         ) : <Text>still not ready</Text>
       }
 
       <View style={styles.toolbar}>
         <PlayPauseBtn />
+        <Button
+          title="toggle on air"
+          onPress={toggleTalking}
+          style={{ backgroundColor: talking ? 'red' : 'green' }}
+        />
         <OptionsBtn />
       </View>
-      <Button
-        title="toggle on air"
-        onPress={toggleTalking}
-        style={{ backgroundColor: talking ? 'red' : 'green' }}
-      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'red',
+    alignItems    : 'center',
+    width         : '100%',
+    justifyContent: 'center'
   },
-  viewer   : {
-    aspectRatio    : 16 / 9,
-    height         : 'auto',
-    backgroundColor: 'black',
-    justifyContent : 'center',
-    alignItems     : 'center',
+  //portrait : { width: '100%' },
+  //landscape: { height: '100%' },
+  viewer : {
+    aspectRatio   : 16 / 9,
+    width         : '100%',
+    justifyContent: 'center',
+    alignItems    : 'center',
   },
-  toolbar  : {
+  toolbar: {
     padding       : 4,
     flexDirection : 'row',
     justifyContent: 'space-between',
-  },
-  video    : {
-    // flex:2
-  },
-  audio    : {
-    marginRight: 1,
-  },
+    width         : '100%',
+  }
 });

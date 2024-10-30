@@ -2,12 +2,13 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
 import { useMyStreamStore } from '../zustand/myStream';
+import { memberItemWidth } from '../InRoom/helper';
 
 const MyMedia = () => {
   const { cammute } = useMyStreamStore();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { aspectRatio: memberItemWidth.getAspectRatio(), maxWidth: '100%' }]}>
       {cammute && <View style={styles.overlay} />}
       <MyRTCView />
     </View>
@@ -17,8 +18,8 @@ export default MyMedia;
 
 const styles = StyleSheet.create({
   container: {
-    aspectRatio: 9 / 16,
-    width      : '10%'
+    flex : 1,
+    width: '100%'
   },
   overlay  : {
     position       : 'absolute',

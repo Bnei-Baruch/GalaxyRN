@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import log from 'loglevel';
 import { useSettingsStore } from './src/zustand/settings';
 import PrepareRoom from './src/InRoom/PrepareRoom';
@@ -6,22 +6,42 @@ import Login from './src/auth/Login';
 import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 import { useMyStreamStore } from './src/zustand/myStream';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
+import { memberItemWidth } from './src/InRoom/helper';
+import { useInitsStore } from './src/zustand/inits';
+import { baseStyles } from './src/constants';
 
 log.setLevel('debug');
 
 const App = () => {
-  const { readyForJoin } = useSettingsStore();
-  const { myInit }       = useMyStreamStore();
+  const [isListenerActive, setIsListenerActive] = useState(false);
+  const { setIsPortrait }                       = useInitsStore();
+  const { readyForJoin }                        = useSettingsStore();
+  const { myInit }                              = useMyStreamStore();
 
   useEffect(() => {
     myInit();
     //RNSecureStorage.clear()
   }, []);
 
+  useEffect(() => {
+    const onChange = () => {
+      const dim         = Dimensions.get('screen');
+      const _isPortrait = dim.height >= dim.width;
+      memberItemWidth.set(_isPortrait);
+      setIsPortrait(_isPortrait);
+    };
+    //TODO: change after upgrade RN > 0.66
+    if (!isListenerActive) {
+      Dimensions.addEventListener('change', onChange);
+      setIsListenerActive(true);
+    }
+    onChange();
+  }, []);
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={baseStyles.full}>
         <Login>
           {readyForJoin ? <PrepareRoom /> : <SettingsNotJoined />}
         </Login>
@@ -30,9 +50,4 @@ const App = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 export default App;
