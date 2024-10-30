@@ -9,6 +9,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
 import MemberNoVideo from './MemberNoVideo';
 import { BottomBar } from '../bottomBar/BottomBar';
+import { TopBar } from '../topBar/TopBar';
 
 const Room = () => {
   const { joinRoom, exitRoom, memberByFeed, activatePage, setShowBars } = useInRoomStore();
@@ -28,14 +29,14 @@ const Room = () => {
   };
   const handleAnyPress  = () => {
     setShowBars(true);
-    setTimeout(() => setShowBars(false), 5000);
+    setTimeout(() => setShowBars(false), 1000);
   };
 
   return (
     <TouchableWithoutFeedback onPress={handleAnyPress}>
       <View style={styles.container}>
         <ChatModal />
-        {/*<TopBar />*/}
+        <TopBar />
 
         <View style={[styles.orientation, isPortrait ? styles.portrait : styles.landscape]}>
           <View style={isPortrait ? styles.shidurPortrait : styles.shidurLandscape}>
@@ -85,14 +86,14 @@ const styles = StyleSheet.create({
     flexDirection: 'column'
   },
   roomsContainer : {
-    flex           : 1,
-    flexDirection  : 'row',
-    flexWrap       : 'wrap',
-    justifyContent : 'space-around',
+    flex          : 1,
+    flexDirection : 'row',
+    flexWrap      : 'wrap',
+    justifyContent: 'space-around',
   },
   orientation    : {
-    flex           : 1,
-    position       : 'relative'
+    flex    : 1,
+    position: 'relative'
   },
   portrait       : { flexDirection: 'column' },
   landscape      : { flexDirection: 'row' },

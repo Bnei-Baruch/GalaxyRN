@@ -10,7 +10,7 @@ export const TopBar = () => {
   const { room }                  = useRoomStore();
   const { showBars, setShowBars } = useInRoomStore();
 
-  if (showBars) return null;
+  if (!showBars) return null;
 
   const handleAnyPress = () => setShowBars(true);
 

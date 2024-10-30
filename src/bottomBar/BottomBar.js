@@ -10,7 +10,7 @@ import { useInRoomStore } from '../zustand/inRoom';
 export const BottomBar = () => {
   const { showBars, setShowBars } = useInRoomStore();
 
-  if (showBars) return null;
+  if (!showBars) return null;
 
   const handleAnyPress = () => setShowBars(true);
 
