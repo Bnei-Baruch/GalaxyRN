@@ -30,7 +30,7 @@ export const SettingsNotJoined = () => {
       <IconWithText iconName="account-circle" text="user settings" />
       <LabeledInput label="Screen Name" value={user.display} disabled={true} />
       <SelectUiLanguage />
-      <MyVideo />
+      <MyVideo isPortrait={false} />
       <LabeledSwitch
         label={'Stop video'}
         initialValue={cammute}
