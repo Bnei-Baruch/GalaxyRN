@@ -1,7 +1,7 @@
 import Room from './Room';
-import { Text } from 'react-native';
 import { useInitsStore } from '../zustand/inits';
 import { useEffect } from 'react';
+import WIP from '../components/WIP';
 
 const PrepareRoom = () => {
 
@@ -15,6 +15,10 @@ const PrepareRoom = () => {
     }
   }, [mqttReady]);
 
-  return mqttReady && configReady ? <Room /> : <Text>preparing of room</Text>;
+  return (
+    <WIP isReady={mqttReady && configReady}>
+      <Room />
+    </WIP>
+  );
 };
 export default PrepareRoom;
