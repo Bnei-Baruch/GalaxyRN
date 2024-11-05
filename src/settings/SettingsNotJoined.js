@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { useState } from 'react';
 import IconWithText from '../components/IconWithText';
 import LabeledInput from '../components/LabeledInput';
-import LabeledSelect from '../components/LabeledSelect';
+import SelectUiLanguage from '../components/SelectUiLanguage';
 import MyVideo from '../components/MyVideo';
 import LabeledSwitch from '../components/LabeledSwitch';
 import { useSettingsStore } from '../zustand/settings';
@@ -10,39 +9,27 @@ import RoomSelect from './RoomSelect';
 import { useMyStreamStore } from '../zustand/myStream';
 import { View, StyleSheet } from 'react-native';
 import { useInitsStore } from '../zustand/inits';
-
-export const languagesOptions = [
-  { key: 'en', value: 'en', text: 'English' },
-  { key: 'es', value: 'es', text: 'Español' },
-  { key: 'he', value: 'he', text: 'עברית' },
-  { key: 'ru', value: 'ru', text: 'Русский' },
-];
+import PageHeader from '../components/PageHeader';
+import { useUserStore } from '../zustand/user';
 
 export const SettingsNotJoined = () => {
-  const [lang, setLang] = useState(languagesOptions[0].value);
 
-  const { cammute, toggleCammute }                             = useMyStreamStore();
-  const { isBroadcast, toggleIsBroadcast, isTen, toggleIsTen } = useSettingsStore();
-  const { isPortrait }                                         = useInitsStore();
+  const { cammute, toggleCammute }                                     = useMyStreamStore();
+  const { isBroadcast, toggleIsBroadcast, audioMode, toggleAudioMode } = useSettingsStore();
+  const { isPortrait }                                                 = useInitsStore();
+  const { user }                                                       = useUserStore();
 
-  const handleToggleIsTen       = () => toggleIsTen();
+  const handleToggleAudioMode   = () => toggleAudioMode();
   const handleToggleIsBroadcast = () => toggleIsBroadcast();
-  const handleLangChange        = lang => setLang(lang);
   const handleCammute           = () => toggleCammute();
 
-  return isPortrait ? (
+  return (
     <View style={styles.container}>
+      <PageHeader page="Settings" />
       {/*user settings*/}
       <IconWithText iconName="account-circle" text="user settings" />
-      <LabeledInput />
-      <LabeledSelect
-        label="Country"
-        options={languagesOptions}
-        selectedValue={lang}
-        onValueChange={handleLangChange}
-      />
-      {/*Audio mode*/}
-      <IconWithText iconName="account-circle" text="Audio mode" />
+      <LabeledInput label="Screen Name" value={user.display} disabled={true} />
+      <SelectUiLanguage />
       <MyVideo />
       <LabeledSwitch
         label={'Stop video'}
@@ -50,56 +37,18 @@ export const SettingsNotJoined = () => {
         onValueChange={handleCammute}
       />
       <LabeledSwitch
-        label={'Ten (Recommended)'}
-        initialValue={isTen}
-        onValueChange={handleToggleIsTen}
+        label={'Audio Mode'}
+        initialValue={audioMode}
+        onValueChange={handleToggleAudioMode}
       />
 
       <LabeledSwitch
-        label={'Broadcast'}
+        label={'Mute Broadcast'}
         initialValue={isBroadcast}
         onValueChange={handleToggleIsBroadcast}
       />
       <RoomSelect />
     </View>
-  ) : (
-    <View style={[styles.container, styles.landscape]}>
-
-      <View style={[styles.row]}>
-        <IconWithText iconName="account-circle" text="user settings" />
-        {/*user settings*/}
-        <LabeledInput />
-        <MyVideo />
-      </View>
-      <View style={styles.row}>
-        <LabeledSelect
-          label="Country"
-          options={languagesOptions}
-          selectedValue={lang}
-          onValueChange={handleLangChange}
-        />
-        {/*Audio mode*/}
-        <IconWithText iconName="account-circle" text="Audio mode" />
-        <LabeledSwitch
-          label={'Stop video'}
-          initialValue={cammute}
-          onValueChange={handleCammute}
-        />
-        <LabeledSwitch
-          label={'Ten (Recommended)'}
-          initialValue={isTen}
-          onValueChange={handleToggleIsTen}
-        />
-
-        <LabeledSwitch
-          label={'Broadcast'}
-          initialValue={isBroadcast}
-          onValueChange={handleToggleIsBroadcast}
-        />
-        <RoomSelect />
-      </View>
-    </View>
-
   );
 };
 
@@ -115,5 +64,12 @@ const styles = StyleSheet.create({
   },
   row      : {
     flex: 1,
-  }
+  },
+  selected : {
+    borderWidth : 1,
+    borderColor : 'rgba(255, 255, 255, 0.23)',
+    borderRadius: 5,
+    padding     : 10,
+    color       : 'white',
+  },
 });
