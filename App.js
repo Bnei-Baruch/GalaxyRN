@@ -10,6 +10,7 @@ import { Dimensions } from 'react-native';
 import { memberItemWidth } from './src/InRoom/helper';
 import { useInitsStore } from './src/zustand/inits';
 import { baseStyles } from './src/constants';
+import './src/i18n/i18n';
 
 log.setLevel('debug');
 

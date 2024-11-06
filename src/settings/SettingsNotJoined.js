@@ -11,9 +11,10 @@ import { View, StyleSheet } from 'react-native';
 import { useInitsStore } from '../zustand/inits';
 import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
+import { useTranslation } from 'react-i18next';
 
 export const SettingsNotJoined = () => {
-
+  const { t }                                                          = useTranslation();
   const { cammute, toggleCammute }                                     = useMyStreamStore();
   const { isBroadcast, toggleIsBroadcast, audioMode, toggleAudioMode } = useSettingsStore();
   const { isPortrait }                                                 = useInitsStore();
@@ -25,7 +26,7 @@ export const SettingsNotJoined = () => {
 
   return (
     <View style={styles.container}>
-      <PageHeader page="Settings" />
+      <PageHeader page={t('settings.page')} />
       {/*user settings*/}
       <IconWithText iconName="account-circle" text="user settings" />
       <LabeledInput label="Screen Name" value={user.display} disabled={true} />

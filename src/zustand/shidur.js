@@ -9,11 +9,11 @@ import {
 import JanusStream from './streaming-utils';
 import { useUserStore } from './user';
 import { useSettingsStore } from './settings';
-import RNSecureStorage from 'rn-secure-storage';
 import GxyJanus from '../shared/janus-utils';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import log from 'loglevel';
 import { StreamingPlugin } from '../libs/streaming-plugin';
+import { getFromStorage, setToStorage } from '../shared/tools';
 
 let janus = null;
 
@@ -216,20 +216,3 @@ export const useShidurStore = create((set) => ({
     return { isPlay };
   })
 }));
-
-const getFromStorage = async (key, def) => {
-  try {
-    return await RNSecureStorage.getItem(key);
-  } catch (err) {
-    return def;
-  }
-};
-const setToStorage   = async (key, val) => {
-  try {
-    console.log('setToStorage', key, val);
-    return await RNSecureStorage.setItem(key, val.toString());
-  } catch (err) {
-    console.error('RNSecureStorage setToStorage error', err);
-    return err;
-  }
-};

@@ -3,9 +3,11 @@ import { Button, StyleSheet, SafeAreaView, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
 import { getUserRole } from '../shared/enums';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = ({ children }) => {
   const { user, setUser } = useUserStore();
+  const { t }             = useTranslation();
 
   useEffect(() => {
     kc.getUser(u => {
@@ -34,7 +36,7 @@ const LoginPage = ({ children }) => {
 
   return (
     <SafeAreaView style={[styles.container, styles.login]}>
-      <Button title="Login" onPress={handleLogin} />
+      <Button title={t('loginPage.login')} onPress={handleLogin} />
     </SafeAreaView>
   );
 };

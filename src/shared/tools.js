@@ -1,6 +1,7 @@
 import { STUN_SRV_GXY, WKLI_ENTER, WKLI_LEAVE } from '@env';
 import mqtt from './mqtt';
 import { Janus } from '../libs/janus';
+import RNSecureStorage from 'rn-secure-storage';
 
 export const initJanus = (cb, er, server, token = '', iceServers = [{ urls: STUN_SRV_GXY }]) => {
   Janus.init({
@@ -249,3 +250,20 @@ export const createContext = (e) => {
   };
 };
 
+
+export const getFromStorage = async (key, def) => {
+  try {
+    return await RNSecureStorage.getItem(key);
+  } catch (err) {
+    return def;
+  }
+};
+export const setToStorage   = async (key, val) => {
+  try {
+    console.log('setToStorage', key, val);
+    return await RNSecureStorage.setItem(key, val.toString());
+  } catch (err) {
+    console.error('RNSecureStorage setToStorage error', err);
+    return err;
+  }
+};

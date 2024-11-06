@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { baseStyles } from '../constants';
 import TooltipList from './TooltipList';
+import { setLanguage } from '../i18n/i18n';
 
 const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
@@ -12,7 +13,10 @@ const languagesOptions = [
 const SelectUiLanguage = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
 
-  const handleLangChange = lang => setLang(lang.value);
+  const handleLangChange = lang => {
+    setLanguage(lang.value);
+    setLang(lang.value);
+  };
   const selected         = languagesOptions.find(option => option.value === lang);
   const renderItem       = (item) => <Text style={baseStyles.text}>{item.text}</Text>;
 
