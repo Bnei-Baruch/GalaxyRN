@@ -5,7 +5,7 @@ import { DonateBtn } from './DonateBtn';
 import { SupportBtn } from './SupportBtn';
 import { SettingsBtn } from './SettingsBtn';
 import LogoutBtn from './LogoutBtn';
-import TooltipList from '../components/TooltipList';
+import ListInModal from '../components/ListInModal';
 
 export const TopMenuBtn = () => {
   const items = [
@@ -19,7 +19,7 @@ export const TopMenuBtn = () => {
   const renderItem = (item) => item.component;
 
   return (
-    <TooltipList
+    <ListInModal
       items={items}
       renderItem={renderItem}
       trigger={<Icon name="menu" size={30} color="black" />}

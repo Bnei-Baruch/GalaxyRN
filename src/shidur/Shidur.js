@@ -1,31 +1,33 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, Button } from 'react-native';
+import { StyleSheet, View, Button } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { OptionsBtn } from './OptionsBtn';
 import { useInitsStore } from '../zustand/inits';
+import { PlayPauseOverlay } from './PlayPauseOverlay';
 
 export const Shidur = () => {
-  const { videoUrl, initShidur, ready, toggleTalking, talking, cleanShidur } = useShidurStore();
-  const { isPortrait }                                                       = useInitsStore();
+  const { videoUrl, isPlay, toggleTalking, talking, cleanShidur } = useShidurStore();
+  const { isPortrait }                                            = useInitsStore();
 
   useEffect(() => {
-    initShidur();
     return () => {
       cleanShidur();
     };
   }, []);
 
+
+  console.log("Shidur render", isPlay)
   return (
     <View style={styles.container}>
       {
-        ready ? (
+        isPlay ? (
           <RTCView
             streamURL={videoUrl}
             style={[styles.viewer, isPortrait ? styles.portrait : styles.landscape]}
           />
-        ) : <Text>still not ready</Text>
+        ) : <PlayPauseOverlay />
       }
 
       <View style={styles.toolbar}>

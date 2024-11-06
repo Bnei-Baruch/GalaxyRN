@@ -1,9 +1,9 @@
 import * as React from 'react';
-import IconWithText from '../components/IconWithText';
-import LabeledInput from '../components/LabeledInput';
-import SelectUiLanguage from '../components/SelectUiLanguage';
+import IconWithText from './IconWithText';
+import LabeledInput from './LabeledInput';
+import SelectUiLanguage from './SelectUiLanguage';
 import MyVideo from '../components/MyVideo';
-import LabeledSwitch from '../components/LabeledSwitch';
+import LabeledSwitch from './LabeledSwitch';
 import { useSettingsStore } from '../zustand/settings';
 import RoomSelect from './RoomSelect';
 import { useMyStreamStore } from '../zustand/myStream';

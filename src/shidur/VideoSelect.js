@@ -1,4 +1,4 @@
-import TooltipList from '../components/TooltipList';
+import ListInModal from '../components/ListInModal';
 import React from 'react';
 import { videos_options2 } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
@@ -18,7 +18,7 @@ const VideoSelect = () => {
   const renderItem = (item) => <Text style={baseStyles.text}>{item.description}</Text>;
 
   return (
-    <TooltipList
+    <ListInModal
       items={videos_options2}
       selected={selected?.text}
       onSelect={handleSetVideo}

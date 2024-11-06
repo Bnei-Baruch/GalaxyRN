@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { styles } from '../components/TooltipList';
+import { styles } from '../components/ListInModal';
 import { useSettingsStore } from '../zustand/settings';
 import { baseStyles } from '../constants';
 

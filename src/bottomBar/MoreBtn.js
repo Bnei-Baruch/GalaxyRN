@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import TooltipList from '../components/TooltipList';
+import ListInModal from '../components/ListInModal';
 import { GroupsBtn } from './GroupsBtn';
 import { bottomBar } from './helper';
 import { View } from 'react-native';
@@ -25,7 +25,7 @@ export const MoreBtn = () => {
   const renderItem = (item) => item.component;
 
   return (
-    <TooltipList
+    <ListInModal
       items={items}
       renderItem={renderItem}
       trigger={

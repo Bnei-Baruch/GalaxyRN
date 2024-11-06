@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { baseStyles } from '../constants';
-import TooltipList from './TooltipList';
+import ListInModal from '../components/ListInModal';
 import { setLanguage } from '../i18n/i18n';
 
 const languagesOptions = [
@@ -24,7 +24,7 @@ const SelectUiLanguage = () => {
     <View style={styles.container}>
       <Text style={[styles.label, baseStyles.text]}>Interface language</Text>
 
-      <TooltipList
+      <ListInModal
         items={languagesOptions}
         selected={selected?.text}
         onSelect={handleLangChange}

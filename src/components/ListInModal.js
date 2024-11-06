@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 
-const TooltipList = ({ items, selected, onSelect, renderItem, open = false, trigger }) => {
+const ListInModal = ({ items, selected, onSelect, renderItem, open = false, trigger }) => {
   const [visible, setVisible] = useState(open);
   const tooltipRef            = useRef(null);
 
@@ -80,13 +80,13 @@ export const styles = StyleSheet.create({
     bottom         : 0,
     padding        : 10,
     borderRadius   : 5,
-    elevation      : 5, // Android shadow
-    shadowColor    : '#000', // iOS shadow
-    shadowOffset   : { width: 0, height: 2 },
+    elevation      : 5,
+    shadowColor    : '#FFF',
+    shadowOffset   : { width: 2, height: 2 },
     shadowOpacity  : 0.2,
     shadowRadius   : 2,
     alignSelf      : 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#1c1c1c',
     color          : 'white'
   },
   item          : {
@@ -98,4 +98,4 @@ export const styles = StyleSheet.create({
   }
 });
 
-export default TooltipList;
+export default ListInModal;

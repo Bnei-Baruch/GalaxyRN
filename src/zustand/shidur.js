@@ -68,7 +68,7 @@ export const useShidurStore = create((set) => ({
   quadUrl : null,
   ready   : false,
   talking : false,
-  isPlay  : true,
+  isPlay  : false,
 
   setVideo     : async (video) => {
     if (!janus) return;
@@ -116,9 +116,11 @@ export const useShidurStore = create((set) => ({
     console.log('[shidur] init', audio, video);
     set({ video, audio });
 
-    if (!isBroadcast) return;
+    if (!isBroadcast)
+      return;
 
-    if (janus) this.clean();
+    if (janus)
+      useShidurStore.getState().cleanShidur();
 
     let str = srv;
     if (!srv) {
@@ -128,7 +130,6 @@ export const useShidurStore = create((set) => ({
       config = GxyJanus.instanceConfig(inst);
       str    = config.name;
       console.log('[shidur] init build janus', inst, config);
-
     }
     janus = new JanusMqtt(user, str);
 
@@ -143,48 +144,48 @@ export const useShidurStore = create((set) => ({
       }
     };
 
-    janus.init(config.token).then(async data => {
-      log.debug('[shidur] init janus ready ', data);
+    return janus.init(config.token)
+      .then(async data => {
+        log.debug('[shidur] init janus ready ', data);
 
-      const promises = [];
-      if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
-        promises.push(
-          initStream(janus, video).then(res => {
-            videoStream = res[0];
-            videoJanus  = res[1];
-            return true;
-          })
-        );
-      }
-      if (!audioJanus) {
-        promises.push(
-          initStream(janus, audio).then(res => {
-            audioStream = res[0];
-            audioJanus  = res[1];
-            return true;
-          })
-        );
-      }
-      if (!trlAudioJanus) {
-        const id = await getFromStorage('vrt_langtext', 'Original').then(x => trllang[x]);
-        promises.push(
-          initStream(janus, id).then(res => {
-            trlAudioStream = res[0];
-            trlAudioJanus  = res[1];
-            return true;
-          })
-        );
-      }
-      console.log('[shidur] wait all', promises.length);
-      //wait for ready all streams
-      return Promise.all(promises);
-    }).then(() => {
-      console.log('[shidur] streams are ready', videoStream.toURL());
-      set(() => ({ videoUrl: videoStream.toURL(), ready: true }));
-    }).catch(err => {
-      console.error('[shidur] stream error', err);
-    });
-
+        const promises = [];
+        if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
+          promises.push(
+            initStream(janus, video).then(res => {
+              videoStream = res[0];
+              videoJanus  = res[1];
+              return true;
+            })
+          );
+        }
+        if (!audioJanus) {
+          promises.push(
+            initStream(janus, audio).then(res => {
+              audioStream = res[0];
+              audioJanus  = res[1];
+              return true;
+            })
+          );
+        }
+        if (!trlAudioJanus) {
+          const id = await getFromStorage('vrt_langtext', 'Original').then(x => trllang[x]);
+          promises.push(
+            initStream(janus, id).then(res => {
+              trlAudioStream = res[0];
+              trlAudioJanus  = res[1];
+              return true;
+            })
+          );
+        }
+        console.log('[shidur] wait all', promises.length);
+        //wait for ready all streams
+        return Promise.all(promises);
+      }).then(() => {
+        console.log('[shidur] streams are ready', videoStream.toURL());
+        set(() => ({ videoUrl: videoStream.toURL(), ready: true }));
+      }).catch(err => {
+        console.error('[shidur] stream error', err);
+      });
   },
   cleanShidur  : () => {
     if (useShidurStore.getState().talking) {
@@ -208,11 +209,15 @@ export const useShidurStore = create((set) => ({
     //JanusStream.trlAudioJanusStream.enabled = _nextOnAir;
     set({ talking: _nextOnAir });
   },
-  toggleIsPlay : () => set(state => {
-    const isPlay = !state.isPlay;
+  toggleIsPlay : async () => {
+    const { initShidur, ready } = useShidurStore.getState();
+    if (!ready) {
+      await initShidur();
+    }
 
+    const isPlay = !useShidurStore.getState().isPlay;
     videoStream.getVideoTracks().forEach(t => t.enabled = isPlay);
     audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
-    return { isPlay };
-  })
+    set(() => ({ isPlay }));
+  }
 }));

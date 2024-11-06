@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useShidurStore } from '../zustand/shidur';
-import TooltipList from '../components/TooltipList';
+import ListInModal from '../components/ListInModal';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Text } from 'react-native';
 import AudioSelect from './AudioSelect';
@@ -32,7 +32,7 @@ export const OptionsBtn = () => {
     }
   };
   return (
-    <TooltipList
+    <ListInModal
       items={items}
       onSelect={handleSelect}
       renderItem={renderItem}
