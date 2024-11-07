@@ -61,7 +61,7 @@ const initQuadStream = (callback) => {
   });
 };
 */
-export const useShidurStore = create((set) => ({
+export const useShidurStore = create((set, get) => ({
   video   : VIDEO_240P_OPTION_VALUE,
   audio   : 64,
   videoUrl: null,
@@ -89,7 +89,7 @@ export const useShidurStore = create((set) => ({
     setToStorage('vrt_video', video);
   },
   setAudio     : async (audio, text) => {
-    if (useShidurStore.getState().talking) {
+    if (get().talking) {
       const audio_option = audiog_options2.find((option) => option.value === audio);
       const id           = trllang[audio_option.eng_text];
       if (id) {
@@ -120,7 +120,7 @@ export const useShidurStore = create((set) => ({
       return;
 
     if (janus)
-      useShidurStore.getState().cleanShidur();
+      get().cleanShidur();
 
     let str = srv;
     if (!srv) {
@@ -139,7 +139,7 @@ export const useShidurStore = create((set) => ({
         if (this.janus) janus.destroy();
         janus = null;
         setTimeout(() => {
-          useShidurStore.getState().init();
+          get().init();
         }, 7000);
       }
     };
@@ -188,7 +188,7 @@ export const useShidurStore = create((set) => ({
       });
   },
   cleanShidur  : () => {
-    if (useShidurStore.getState().talking) {
+    if (get().talking) {
       clearInterval(this.talking);
       this.talking = null;
     }
@@ -210,12 +210,12 @@ export const useShidurStore = create((set) => ({
     set({ talking: _nextOnAir });
   },
   toggleIsPlay : async () => {
-    const { initShidur, ready } = useShidurStore.getState();
+    const { initShidur, ready } = get();
     if (!ready) {
       await initShidur();
     }
 
-    const isPlay = !useShidurStore.getState().isPlay;
+    const isPlay = !get().isPlay;
     videoStream.getVideoTracks().forEach(t => t.enabled = isPlay);
     audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
     set(() => ({ isPlay }));

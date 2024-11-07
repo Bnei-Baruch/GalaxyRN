@@ -5,11 +5,11 @@ import RNSecureStorage from 'rn-secure-storage';
 let stream             = null;
 export const getStream = () => stream;
 
-export const useMyStreamStore = create((set) => ({
+export const useMyStreamStore = create((set, get) => ({
   url          : null,
   mute         : true,
   cammmute     : true,
-  myInit         : async () => {
+  myInit       : async () => {
     let cammute;
     try {
       cammute = await RNSecureStorage.getItem('cammute');
@@ -29,13 +29,13 @@ export const useMyStreamStore = create((set) => ({
     set(() => ({ url: stream.toURL(), cammute }));
   },
   toggleMute   : () => {
-    const enabled = !useMyStreamStore.getState().mute;
+    const enabled = !get().mute;
     stream.getAudioTracks().forEach(track => track.enabled = !enabled);
     set(() => ({ mute: enabled }));
   },
   toggleCammute: () => {
-    const enabled = !useMyStreamStore.getState().cammute;
-    console.log('toggleCammute', useMyStreamStore.getState().cammute, enabled);
+    const enabled = !get().cammute;
+    console.log('toggleCammute', get().cammute, enabled);
     stream.getVideoTracks().forEach(track => track.enabled = !enabled);
     set(() => ({ cammute: enabled }));
   }

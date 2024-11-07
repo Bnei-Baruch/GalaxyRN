@@ -19,7 +19,7 @@ let janus                    = null;
 const activeFeeds            = [];
 export const MEMBER_PER_PAGE = 6;
 
-export const useInRoomStore  = create((set) => ({
+export const useInRoomStore = create((set, get) => ({
   memberByFeed: {},
   showBars    : true,
   setShowBars : (showBars) => set({ showBars }),
@@ -67,7 +67,7 @@ export const useInRoomStore  = create((set) => ({
     const getSubscriptionFromPublishers = (pubs) => {
       const result = [];
       for (const pub of pubs) {
-        const prevFeed  = useInRoomStore.getState().memberByFeed[pub.id];
+        const prevFeed = get().memberByFeed[pub.id];
         console.info('getSubscriptionFromPublishers prevFeed', prevFeed);
         const prevVideo = prevFeed?.streams?.find(
           (v) => v.type === 'video' && v.codec === 'h264');
@@ -123,7 +123,7 @@ export const useInRoomStore  = create((set) => ({
     videoroom.unsubFrom = (ids, onlyVideo) => {
       const streams = [];
       ids.forEach(id => {
-        const feed = useInRoomStore.getState().memberByFeed[id];
+        const feed = get().memberByFeed[id];
         if (!feed) return;
 
         if (onlyVideo) {

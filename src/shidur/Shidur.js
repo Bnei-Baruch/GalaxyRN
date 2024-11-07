@@ -17,8 +17,6 @@ export const Shidur = () => {
     };
   }, []);
 
-
-  console.log("Shidur render", isPlay)
   return (
     <View style={styles.container}>
       {

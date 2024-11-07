@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React from 'react';
+import { useInRoomStore } from '../zustand/inRoom';
 
-const Member = ({ member }) => {
-  const { mid, display, url } = member;
-  console.log('render Member', display, mid, url);
+const Member = ({ id }) => {
+  const { memberByFeed }      = useInRoomStore();
+  const { mid, display, url } = memberByFeed[id];
 
   return (
     <View style={styles.container}>

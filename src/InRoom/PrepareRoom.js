@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import WIP from '../components/WIP';
 
 const PrepareRoom = () => {
-
   const { initMQTT, initConfig, mqttReady, configReady } = useInitsStore();
 
   useEffect(() => {
