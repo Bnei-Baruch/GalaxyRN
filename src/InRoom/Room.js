@@ -29,13 +29,10 @@ const Room = () => {
       <View style={[styles.orientation, isPortrait ? styles.portrait : styles.landscape]}>
         <ScrollView
           showsHorizontalScrollIndicator={false}
-          style={[baseStyles.full, { backgroundColor: 'blue' }]}
+          style={baseStyles.full}
         >
-          <TouchableWithoutFeedback onPress={handleAnyPress} style={[baseStyles.full, {
-            backgroundColor: 'orange',
-            height         : '100%'
-          }]}>
-            <View style={[baseStyles.full, { backgroundColor: 'green' }]}>
+          <TouchableWithoutFeedback onPress={handleAnyPress}>
+            <View style={styles.scrollContent}>
               <View style={isPortrait ? styles.shidurPortrait : styles.shidurLandscape}>
                 <Shidur />
               </View>
@@ -59,6 +56,10 @@ const styles = StyleSheet.create({
   orientation    : {
     flex    : 1,
     position: 'relative',
+  },
+  scrollContent  : {
+    flex     : 1,
+    minHeight: '100%'
   },
   portrait       : { flexDirection: 'column' },
   landscape      : { flexDirection: 'row' },
