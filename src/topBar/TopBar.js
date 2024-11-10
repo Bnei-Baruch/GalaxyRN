@@ -12,7 +12,7 @@ export const TopBar = () => {
 
   if (!showBars) return null;
 
-  const handleAnyPress = () => setShowBars(true);
+  const handleAnyPress = () => setShowBars(false);
 
   return (
     <TouchableWithoutFeedback onPress={handleAnyPress}>

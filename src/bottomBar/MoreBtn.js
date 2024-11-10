@@ -1,14 +1,14 @@
 import * as React from 'react';
-import { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ListInModal from '../components/ListInModal';
 import { GroupsBtn } from './GroupsBtn';
 import { bottomBar } from './helper';
 import { View } from 'react-native';
 import { LeaveBtn } from './LeaveBtn';
+import { useInRoomStore } from '../zustand/inRoom';
 
 export const MoreBtn = () => {
-  const { open, setOpen } = useState();
+  const { setShowBars } = useInRoomStore();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
@@ -20,7 +20,7 @@ export const MoreBtn = () => {
     { component: <LeaveBtn />, key: 5 },
   ];
 
-  const handlePress = () => setOpen(!open);
+  const handlePress = () => setShowBars(false);
 
   const renderItem = (item) => item.component;
 
@@ -28,6 +28,7 @@ export const MoreBtn = () => {
     <ListInModal
       items={items}
       renderItem={renderItem}
+      onOpen={handlePress}
       trigger={
         <View style={[bottomBar.btn, bottomBar.btnMore]}>
           <Icon name="more-vert" size={40} color="grey" />

@@ -10,11 +10,14 @@ import {
   Dimensions,
 } from 'react-native';
 
-const ListInModal = ({ items, selected, onSelect, renderItem, open = false, trigger }) => {
+const ListInModal = ({ items, selected, onSelect, onOpen, renderItem, open = false, trigger }) => {
   const [visible, setVisible] = useState(open);
   const tooltipRef            = useRef(null);
 
-  const toggleTooltip = () => setVisible(!visible);
+  const toggleTooltip = () => {
+    setVisible(!visible);
+    onOpen && onOpen(!visible);
+  };
 
   const handleSelect = (item) => {
     onSelect && onSelect(item);

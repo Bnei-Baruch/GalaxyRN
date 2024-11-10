@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, View, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { MuteBtn } from './MuteBtn';
 import { CammuteBtn } from './CammuteBtn';
 import { QuestionBtn } from './QuestionBtn';
@@ -8,22 +8,18 @@ import { MoreBtn } from './MoreBtn';
 import { useInRoomStore } from '../zustand/inRoom';
 
 export const BottomBar = () => {
-  const { showBars, setShowBars } = useInRoomStore();
+  const { showBars } = useInRoomStore();
 
   if (!showBars) return null;
 
-  const handleAnyPress = () => setShowBars(true);
-
   return (
-    <TouchableWithoutFeedback onPress={handleAnyPress}>
-      <View style={styles.container}>
-        <MuteBtn />
-        <CammuteBtn />
-        <QuestionBtn />
-        <AudioModeBtn />
-        <MoreBtn />
-      </View>
-    </TouchableWithoutFeedback>
+    <View style={styles.container}>
+      <MuteBtn />
+      <CammuteBtn />
+      <QuestionBtn />
+      <AudioModeBtn />
+      <MoreBtn />
+    </View>
   );
 };
 

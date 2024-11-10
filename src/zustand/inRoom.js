@@ -19,10 +19,20 @@ let janus                    = null;
 const activeFeeds            = [];
 export const MEMBER_PER_PAGE = 6;
 
+let showBarTimeout         = null;
+const HIDE_BARS_TIMEOUT_MS = 5000;
+
 export const useInRoomStore = create((set, get) => ({
   memberByFeed: {},
   showBars    : true,
-  setShowBars : (showBars) => set({ showBars }),
+  setShowBars : (hideOnTimeout) => {
+    console.log('show hide bars: setShowBars', hideOnTimeout);
+    clearTimeout(showBarTimeout);
+    if (hideOnTimeout) {
+      showBarTimeout = setTimeout(() => set({ showBars: false }), HIDE_BARS_TIMEOUT_MS);
+    }
+    set({ showBars: true });
+  },
   joinRoom    : () => {
     if (janus) {
       janus.destroy();

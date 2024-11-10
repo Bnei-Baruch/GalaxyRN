@@ -20,10 +20,7 @@ const Room = () => {
     };
   }, []);
 
-  const handleAnyPress = () => {
-    setShowBars(true);
-    setTimeout(() => setShowBars(false), 1000);
-  };
+  const handleAnyPress = () => setShowBars(true);
 
   return (
     <View style={styles.container}>

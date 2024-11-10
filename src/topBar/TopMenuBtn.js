@@ -6,8 +6,11 @@ import { SupportBtn } from './SupportBtn';
 import { SettingsBtn } from './SettingsBtn';
 import LogoutBtn from './LogoutBtn';
 import ListInModal from '../components/ListInModal';
+import { useInRoomStore } from '../zustand/inRoom';
 
 export const TopMenuBtn = () => {
+  const { setShowBars } = useInRoomStore();
+
   const items = [
     { component: <StudyMaterialsBtn />, key: 1 },
     { component: <DonateBtn />, key: 2 },
@@ -18,8 +21,11 @@ export const TopMenuBtn = () => {
 
   const renderItem = (item) => item.component;
 
+  const handlePress = () => setShowBars(false);
+
   return (
     <ListInModal
+      onOpen={handlePress}
       items={items}
       renderItem={renderItem}
       trigger={<Icon name="menu" size={30} color="black" />}
