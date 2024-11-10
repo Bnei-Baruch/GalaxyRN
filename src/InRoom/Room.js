@@ -29,7 +29,6 @@ const Room = () => {
     <View style={styles.container}>
       <ChatModal />
       <TopBar />
-
       <View style={[styles.orientation, isPortrait ? styles.portrait : styles.landscape]}>
         <ScrollView
           showsHorizontalScrollIndicator={false}
@@ -61,8 +60,8 @@ const styles = StyleSheet.create({
     padding        : 10
   },
   orientation    : {
-    flex           : 1,
-    position       : 'relative',
+    flex    : 1,
+    position: 'relative',
   },
   portrait       : { flexDirection: 'column' },
   landscape      : { flexDirection: 'row' },

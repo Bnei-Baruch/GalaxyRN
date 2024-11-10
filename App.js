@@ -10,8 +10,11 @@ import { Dimensions } from 'react-native';
 import { memberItemWidth } from './src/InRoom/helper';
 import { useInitsStore } from './src/zustand/inits';
 import { baseStyles } from './src/constants';
+import 'intl-pluralrules';
+import { register } from '@formatjs/intl-pluralrules';
 import './src/i18n/i18n';
 
+if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {

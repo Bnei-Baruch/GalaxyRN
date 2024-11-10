@@ -26,6 +26,7 @@ export const useInRoomStore = create((set, get) => ({
   joinRoom    : () => {
     if (janus) {
       janus.destroy();
+      janus = null;
     }
     const { user }     = useUserStore.getState();
     const { room }     = useRoomStore.getState();
@@ -275,18 +276,16 @@ export const useInRoomStore = create((set, get) => ({
     mqtt.join('galaxy/room/' + room.room);
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
-  exitRoom    : () => {
+  exitRoom    : async () => {
     const { room } = useRoomStore.getState();
 
-    if (videoroom) {
-      videoroom.leave();
-
-      videoroom = null;
-      janus?.destroy();
-      useSettingsStore.getState().setReadyForJoin(false);
-    } else {
-      useSettingsStore.getState().setReadyForJoin(false);
-    }
+    await videoroom?.leave();
+    videoroom = null;
+    subscriber?.detach();
+    subscriber = null;
+    janus?.destroy();
+    janus = null;
+    useSettingsStore.getState().setReadyForJoin(false);
 
     mqtt.exit('galaxy/room/' + room.room);
     mqtt.exit('galaxy/room/' + room.room + '/chat');

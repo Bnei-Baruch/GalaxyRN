@@ -201,6 +201,7 @@ export const useShidurStore = create((set, get) => ({
     videoJanus     = null;
     audioJanus     = null;
     trlAudioJanus  = null;
+    set({ ready: false, isPlay: false });
   },
   toggleTalking: () => {
     const _nextOnAir = !state.talking;
