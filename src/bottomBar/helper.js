@@ -10,10 +10,5 @@ export const bottomBar = StyleSheet.create({
     marginRight    : 2,
     marginLeft     : 2,
     backgroundColor: 'rgba(34, 34, 34, 1)'
-  },
-  btnMore: {
-    display    : 'flex',
-    textAlign  : 'center',
-    alignItems : 'center'
   }
 });

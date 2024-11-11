@@ -11,7 +11,7 @@ export const AudioModeBtn = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name="hearing" size={40} color={audioMode ? 'red' : 'grey'} />
+      <Icon name="hearing" size={40} color={audioMode ? 'white' : 'red'} />
     </TouchableOpacity>
   );
 };

@@ -13,7 +13,7 @@ export const CammuteBtn = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name={cammute ? 'videocam-off' : 'videocam'} size={40} color="red" />
+      <Icon name={cammute ? 'videocam' : 'videocam-off'} size={40} color={cammute ? 'white' : 'red'} />
     </TouchableOpacity>
   );
 };

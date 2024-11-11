@@ -3,7 +3,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import ListInModal from '../components/ListInModal';
 import { GroupsBtn } from './GroupsBtn';
 import { bottomBar } from './helper';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { LeaveBtn } from './LeaveBtn';
 import { useInRoomStore } from '../zustand/inRoom';
 
@@ -30,10 +30,21 @@ export const MoreBtn = () => {
       renderItem={renderItem}
       onOpen={handlePress}
       trigger={
-        <View style={[bottomBar.btn, bottomBar.btnMore]}>
-          <Icon name="more-vert" size={40} color="grey" />
+        <View style={[styles.btn, bottomBar.btnMore]}>
+          <Icon name="more-vert" size={40} color="white" />
         </View>
       }
     />
   );
 };
+
+export const styles = StyleSheet.create({
+  btn: {
+    display         : 'flex',
+    textAlign       : 'center',
+    alignItems      : 'center',
+    justifyContent  : 'center',
+    height          : 75,
+    marginHorizontal: 2,
+  },
+});
