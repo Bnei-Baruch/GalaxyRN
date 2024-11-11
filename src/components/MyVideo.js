@@ -6,12 +6,12 @@ import { memberItemWidth } from '../InRoom/helper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../zustand/settings';
 
-const MyMedia = ({ isPortrait }) => {
+const MyVideo = ({ isPortrait }) => {
   const { cammute }   = useMyStreamStore();
   const { audioMode } = useSettingsStore();
 
   return (
-    <View style={[styles.container, { aspectRatio: memberItemWidth.getAspectRatio(isPortrait), maxWidth: '100%' }]}>
+    <View style={[styles.container, { aspectRatio: memberItemWidth.getAspectRatio() }]}>
       {
         (cammute || audioMode) && (
           <View style={styles.overlay}>
@@ -23,7 +23,7 @@ const MyMedia = ({ isPortrait }) => {
     </View>
   );
 };
-export default MyMedia;
+export default MyVideo;
 
 const styles = StyleSheet.create({
   container: {
@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     right          : 0,
     zIndex         : 1,
     backgroundColor: 'black',
-    flex           : 1,
     justifyContent : 'center',
     alignItems     : 'center'
   }

@@ -8,7 +8,7 @@ class MemberItemWidth {
     this.isPortrait = isPortrait;
   };
   get            = () => this.w;
-  getAspectRatio = (_isPortrait) => _isPortrait ?? this.isPortrait ? 16 / 9 : 9 / 16;
+  getAspectRatio = (_isPortrait) => (_isPortrait ?? !this.isPortrait) ? 16 / 9 : 9 / 16;
 }
 
 export const memberItemWidth = new MemberItemWidth();

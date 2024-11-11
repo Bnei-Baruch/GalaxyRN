@@ -30,11 +30,11 @@ export const Shidur = () => {
 
       <View style={styles.toolbar}>
         <PlayPauseBtn />
-        <Button
+        {/*<Button
           title="toggle on air"
           onPress={toggleTalking}
           style={{ backgroundColor: talking ? 'red' : 'green' }}
-        />
+        />*/}
         <OptionsBtn />
       </View>
     </View>

@@ -8,8 +8,11 @@ const MyRoomMedia = () => {
 
   return (
     <View style={styles.container}>
-      {cammute && <View style={styles.overlay} />}
-      <MyRTCView />
+      <View style={styles.contant}>
+        {cammute && <View style={styles.overlay} />}
+        <MyRTCView />
+
+      </View>
     </View>
   );
 };
@@ -17,8 +20,13 @@ export default MyRoomMedia;
 
 const styles = StyleSheet.create({
   container: {
+    width      : '49%',
+  },
+  contant: {
     aspectRatio: 16 / 9,
-    width      : '50%'
+    flex       : 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   overlay  : {
     position       : 'absolute',

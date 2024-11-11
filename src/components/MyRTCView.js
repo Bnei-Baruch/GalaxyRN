@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useMyStreamStore } from '../zustand/myStream';
+import { baseStyles } from '../constants';
+import { memberItemWidth } from '../InRoom/helper';
 
 const MyRTCView = () => {
   const { url } = useMyStreamStore();
@@ -9,7 +11,7 @@ const MyRTCView = () => {
   return (
     <RTCView
       streamURL={url}
-      style={styles.video}
+      style={[baseStyles.full, styles.video]}
       objectFit="cover"
       mirror={true}
     />
@@ -19,10 +21,6 @@ export default MyRTCView;
 
 const styles = StyleSheet.create({
   video: {
-    position: 'absolute',
-    top     : 0,
-    left    : 0,
-    bottom  : 0,
-    right   : 0,
+    aspectRatio: memberItemWidth.getAspectRatio()
   },
 });

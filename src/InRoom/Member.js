@@ -4,9 +4,10 @@ import React from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
 
 const Member = ({ id }) => {
-  const { memberByFeed }      = useInRoomStore();
-  const { mid, display, url } = memberByFeed[id];
+  const { memberByFeed } = useInRoomStore();
+  console.log('Member render', id, memberByFeed[id]);
 
+  const { mid, display, url } = memberByFeed[id];
   return (
     <View style={styles.container}>
       <Text>{mid}</Text>

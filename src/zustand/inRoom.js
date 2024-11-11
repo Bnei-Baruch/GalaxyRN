@@ -25,6 +25,7 @@ const HIDE_BARS_TIMEOUT_MS = 5000;
 export const useInRoomStore = create((set, get) => ({
   memberByFeed: {},
   showBars    : true,
+  myTymstemp  : Date.now(),
   setShowBars : (hideOnTimeout) => {
     console.log('show hide bars: setShowBars', hideOnTimeout);
     clearTimeout(showBarTimeout);
@@ -53,6 +54,17 @@ export const useInRoomStore = create((set, get) => ({
         return Promise.resolve();
 
       if (_subscriberJoined) {
+        set(produce(state => {
+          pubs
+            .filter(p => subs.find(s => s.feed === p.id))
+            .forEach(({ display, id }) => {
+              state.memberByFeed[id] = {
+                ...state.memberByFeed[id],
+                id,
+                display: JSON.parse(display),
+              };
+            });
+        }));
         subscriber.sub(subs);
         return Promise.resolve();
       }
@@ -86,7 +98,6 @@ export const useInRoomStore = create((set, get) => ({
           (a) => a.type === 'audio' && a.codec === 'opus');
 
         pub.streams?.forEach((s) => {
-
           console.info('getSubscriptionFromPublishers pub streams', s);
           let hasVideo = /*!muteOtherCams && */s.type === 'video' &&
             s.codec === 'h264' && !prevVideo;
@@ -112,7 +123,7 @@ export const useInRoomStore = create((set, get) => ({
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
         alert('Janus Server - ' + srv + ' - Offline');
-        window.location.reload();
+        get().exitRoom()
       }
 
       if (status === 'error') {
@@ -174,7 +185,7 @@ export const useInRoomStore = create((set, get) => ({
      * subscribe to members of the room
      */
     subscriber = new SubscriberPlugin(config.iceServers);
-    subscriber.onTrack  = (track, stream, on) => {
+    subscriber.onTrack = (track, stream, on) => {
       const { id } = stream;
       log.info('[client] >> This track is coming from feed ' + id + ':', track.id, track, stream);
       if (on) {
@@ -192,6 +203,7 @@ export const useInRoomStore = create((set, get) => ({
         }));
       }
     };
+
     subscriber.onUpdate = (streams) => set(produce(state => {
         log.debug('[client] Updated streams :', streams);
         streams?.forEach((s) => {
