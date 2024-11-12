@@ -18,7 +18,7 @@ const SelectUiLanguage = () => {
     setLang(lang.value);
   };
   const selected         = languagesOptions.find(option => option.value === lang);
-  const renderItem       = (item) => <Text style={baseStyles.text}>{item.text}</Text>;
+  const renderItem       = (item) => <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>;
 
   return (
     <View style={styles.container}>

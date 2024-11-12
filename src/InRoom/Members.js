@@ -18,20 +18,20 @@ const Members = () => {
       }
       return a.display?.timestamp - b.display?.timestamp;
     });
-    console.log('Members sort', _ms);
-    let _myAdded = false;
+
+    let needAdd = !useSettingsStore.getState().hideSelf;
     return _ms.reduce((acc, x, i) => {
       if (!x)
         return acc;
 
-      if (!_myAdded && x.timestamp < state.myTymstemp) {
+      if (needAdd && x.timestamp < state.myTymstemp) {
         acc.push('my');
-        _myAdded = true;
+        needAdd = false;
       }
 
       acc.push(x.id);
 
-      if (!_myAdded && i === _ms.length - 1) {
+      if (needAdd && i === _ms.length - 1) {
         acc.push('my');
       }
       return acc;

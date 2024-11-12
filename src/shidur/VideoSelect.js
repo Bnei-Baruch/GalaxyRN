@@ -15,7 +15,7 @@ const VideoSelect = () => {
 
   const selected = videos_options2.find(option => option.value === video);
 
-  const renderItem = (item) => <Text style={baseStyles.text}>{item.description}</Text>;
+  const renderItem = (item) => <Text style={[baseStyles.text, baseStyles.listItem]}>{item.description}</Text>;
 
   return (
     <ListInModal

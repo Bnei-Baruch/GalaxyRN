@@ -15,7 +15,7 @@ const AudioSelect = () => {
   };
 
   const selected   = audiog_options2.find(option => option.value === audio);
-  const renderItem = (item) => <Text style={baseStyles.text}>{item.text}</Text>;
+  const renderItem = (item) => <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>;
 
   return (
     <ListInModal

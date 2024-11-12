@@ -26,6 +26,7 @@
     "react-native-vector-icons": "^10.1.0",
     "react-native-vision-camera": "^4.5.2",
     "react-native-webrtc": "^124.0.3",
+    "react-native-webview": "^13.12.3",
     "rn-secure-storage": "^3.0.1",
     "url": "^0.11.4",
     "webrtc-adapter": "^9.0.1",

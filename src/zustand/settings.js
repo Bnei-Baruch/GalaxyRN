@@ -24,4 +24,6 @@ export const useSettingsStore = create((set, get) => ({
   toggleAudioMode  : () => set((state) => ({ audioMode: !state.audioMode })),
   showGroups       : false,
   toggleShowGroups : () => set((state) => ({ showGroups: !state.showGroups })),
+  hideSelf         : false,
+  toggleHideSelf   : () => set((state) => ({ hideSelf: !state.hideSelf })),
 }));

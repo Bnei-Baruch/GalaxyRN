@@ -11,11 +11,14 @@ export const responsive = {
 };
 
 export const baseStyles = StyleSheet.create({
-  text: {
+  text    : {
     color: 'white',
   },
-  full: {
+  full    : {
     flex: 1,
+  },
+  listItem: {
+    padding: 10
   }
 });
 

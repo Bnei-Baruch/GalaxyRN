@@ -1,22 +1,23 @@
 import * as React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ListInModal from '../components/ListInModal';
-import { GroupsBtn } from './GroupsBtn';
+import { GroupsBtn } from './moreBtns/GroupsBtn';
 import { bottomBar } from './helper';
 import { View, StyleSheet } from 'react-native';
-import { LeaveBtn } from './LeaveBtn';
+import { LeaveBtn } from './moreBtns/LeaveBtn';
 import { useInRoomStore } from '../zustand/inRoom';
+import { ShidurBtn } from './moreBtns/ShidurBtn';
+import { HideSelfBtn } from './moreBtns/HideSelfBtn';
+import { VoteBtn } from './moreBtns/VoteBtn';
 
 export const MoreBtn = () => {
   const { setShowBars } = useInRoomStore();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
-    /*
-    { component: 'broadcast', key: 2 },
-    { component: 'hideSelf', key: 3 },
-    { component: 'vote', key: 4 },
-    */
+    { component: <ShidurBtn />, key: 2 },
+    { component: <HideSelfBtn />, key: 3 },
+    { component: <VoteBtn />, key: 4 },
     { component: <LeaveBtn />, key: 5 },
   ];
 
@@ -29,6 +30,7 @@ export const MoreBtn = () => {
       items={items}
       renderItem={renderItem}
       onOpen={handlePress}
+      styles={{ padding: 0, margin: 0 }}
       trigger={
         <View style={[styles.btn, bottomBar.btnMore]}>
           <Icon name="more-vert" size={40} color="white" />

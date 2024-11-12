@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Text } from 'react-native';
 import AudioSelect from './AudioSelect';
 import VideoSelect from './VideoSelect';
+import { baseStyles } from '../constants';
 
 export const OptionsBtn = () => {
   const { ready } = useShidurStore();
@@ -28,7 +29,7 @@ export const OptionsBtn = () => {
           <VideoSelect />
         </>);
       default:
-        return <Text>{item.text}</Text>;
+        return <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>;
     }
   };
   return (

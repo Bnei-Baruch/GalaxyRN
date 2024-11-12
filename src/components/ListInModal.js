@@ -10,7 +10,15 @@ import {
   Dimensions,
 } from 'react-native';
 
-const ListInModal = ({ items, selected, onSelect, onOpen, renderItem, open = false, trigger }) => {
+const ListInModal = ({
+                       items,
+                       selected,
+                       onSelect,
+                       onOpen,
+                       renderItem,
+                       open = false,
+                       trigger
+                     }) => {
   const [visible, setVisible] = useState(open);
   const tooltipRef            = useRef(null);
 
@@ -81,7 +89,6 @@ export const styles = StyleSheet.create({
     width          : '70%',
     maxHeight      : Dimensions.get('window').height * 0.8,
     bottom         : 0,
-    padding        : 10,
     borderRadius   : 5,
     elevation      : 5,
     shadowColor    : '#FFF',
@@ -91,10 +98,6 @@ export const styles = StyleSheet.create({
     alignSelf      : 'center',
     backgroundColor: '#1c1c1c',
     color          : 'white'
-  },
-  item          : {
-    padding: 5,
-
   },
   selected      : {
     backgroundColor: '#222222'

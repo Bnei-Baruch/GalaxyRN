@@ -3260,6 +3260,7 @@ __metadata:
     react-native-vector-icons: "npm:^10.1.0"
     react-native-vision-camera: "npm:^4.5.2"
     react-native-webrtc: "npm:^124.0.3"
+    react-native-webview: "npm:^13.12.3"
     react-test-renderer: "npm:18.2.0"
     rn-secure-storage: "npm:^3.0.1"
     typescript: "npm:5.0.4"
@@ -9318,6 +9319,19 @@ __metadata:
   peerDependencies:
     react-native: ">=0.60.0"
   checksum: 10c0/a5075e81b8def841ad3fd70ece2a10ce1e425c41198b19e36e0e2d8add3bc7c3e258816760372f900c871f0a3f5118ce833858a77afc6244e0ea9e9013e23ee2
+  languageName: node
+  linkType: hard
+
+"react-native-webview@npm:^13.12.3":
+  version: 13.12.3
+  resolution: "react-native-webview@npm:13.12.3"
+  dependencies:
+    escape-string-regexp: "npm:^4.0.0"
+    invariant: "npm:2.2.4"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/3649d144a69f632953eb545f92c18aac22758dbb4e046a94946925e2307fdf02cfe6053b255e3250e7ddbd98c6d616d5c1289087e3ae81d1833d3a6a75bee3e1
   languageName: node
   linkType: hard
 

@@ -1,7 +1,9 @@
 import { StyleSheet } from 'react-native';
+import { topMenuBtns } from '../topBar/helper';
+import { baseStyles } from '../constants';
 
 export const bottomBar = StyleSheet.create({
-  btn    : {
+  btn       : {
     alignItems     : 'center',
     justifyContent : 'center',
     width          : 75,
@@ -10,5 +12,8 @@ export const bottomBar = StyleSheet.create({
     marginRight    : 2,
     marginLeft     : 2,
     backgroundColor: 'rgba(34, 34, 34, 1)'
+  },
+  moreSelBtn: {
+    backgroundColor: 'gray'
   }
 });
