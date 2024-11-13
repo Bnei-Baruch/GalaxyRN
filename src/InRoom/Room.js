@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { ChatModal } from '../chat/ChatModal';
-import { Shidur } from '../shidur/Shidur';
 import { useInitsStore } from '../zustand/inits';
 import { BottomBar } from '../bottomBar/BottomBar';
 import { TopBar } from '../topBar/TopBar';
 import { baseStyles } from '../constants';
 import Members from './Members';
+import { Shidurs } from '../shidur/Shidurs';
 
 const Room = () => {
   const { joinRoom, exitRoom, setShowBars } = useInRoomStore();
@@ -33,9 +33,7 @@ const Room = () => {
         >
           <TouchableWithoutFeedback onPress={handleAnyPress}>
             <View style={styles.scrollContent}>
-              <View style={isPortrait ? styles.shidurPortrait : styles.shidurLandscape}>
-                <Shidur />
-              </View>
+              <Shidurs />
               <Members />
             </View>
           </TouchableWithoutFeedback>
@@ -63,6 +61,4 @@ const styles = StyleSheet.create({
   },
   portrait       : { flexDirection: 'column' },
   landscape      : { flexDirection: 'row' },
-  shidurPortrait : { width: '100%' },
-  shidurLandscape: { maxWidth: '50%' }
 });

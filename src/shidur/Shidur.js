@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Button } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
@@ -8,8 +8,8 @@ import { useInitsStore } from '../zustand/inits';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 
 export const Shidur = () => {
-  const { videoUrl, isPlay, toggleTalking, talking, cleanShidur } = useShidurStore();
-  const { isPortrait }                                            = useInitsStore();
+  const { videoUrl, isPlay, cleanShidur } = useShidurStore();
+  const { isPortrait }                    = useInitsStore();
 
   useEffect(() => {
     return () => {
@@ -30,11 +30,6 @@ export const Shidur = () => {
 
       <View style={styles.toolbar}>
         <PlayPauseBtn />
-        {/*<Button
-          title="toggle on air"
-          onPress={toggleTalking}
-          style={{ backgroundColor: talking ? 'red' : 'green' }}
-        />*/}
         <OptionsBtn />
       </View>
     </View>
@@ -47,15 +42,13 @@ const styles = StyleSheet.create({
     width         : '100%',
     justifyContent: 'center'
   },
-  //portrait : { width: '100%' },
-  //landscape: { height: '100%' },
-  viewer : {
+  viewer   : {
     aspectRatio   : 16 / 9,
     width         : '100%',
     justifyContent: 'center',
     alignItems    : 'center',
   },
-  toolbar: {
+  toolbar  : {
     padding       : 4,
     flexDirection : 'row',
     justifyContent: 'space-between',

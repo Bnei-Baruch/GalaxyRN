@@ -8,8 +8,7 @@ import VideoSelect from './VideoSelect';
 import { baseStyles } from '../constants';
 
 export const OptionsBtn = () => {
-  const { ready } = useShidurStore();
-  const items     = [
+  const items           = [
     { value: 'audio', text: 'Audio' },
     { value: 'video', text: 'Video' },
   ];
