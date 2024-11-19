@@ -3,6 +3,9 @@ import useRoomStore from './fetchRooms';
 import { useMyStreamStore } from './myStream';
 import { sendUserState } from '../shared/tools';
 import { useUserStore } from './user';
+//import { NativeModules } from 'react-native';
+
+//const { KeepAwakeModule } = NativeModules;
 
 export const useSettingsStore = create((set, get) => ({
   uiLang           : 'en',
@@ -21,7 +24,11 @@ export const useSettingsStore = create((set, get) => ({
   isBroadcast      : true,
   toggleIsBroadcast: () => set((state) => ({ isBroadcast: !state.isBroadcast })),
   audioMode        : false,
-  toggleAudioMode  : () => set((state) => ({ audioMode: !state.audioMode })),
+  toggleAudioMode  : () => set((state) => {
+    const audioMode = !state.audioMode;
+   // KeepAwakeModule.activate(audioMode);
+    return ({ audioMode });
+  }),
   showGroups       : false,
   toggleShowGroups : () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf         : false,

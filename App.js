@@ -18,10 +18,10 @@ if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {
-  const [isListenerActive, setIsListenerActive] = useState(false);
+  const [isListenerActive, setIsListenerActive]                    = useState(false);
   const { setIsPortrait }                       = useInitsStore();
-  const { readyForJoin }                        = useSettingsStore();
-  const { myInit }                              = useMyStreamStore();
+  const { readyForJoin }                                           = useSettingsStore();
+  const { myInit }                                                 = useMyStreamStore();
 
   useEffect(() => {
     myInit();

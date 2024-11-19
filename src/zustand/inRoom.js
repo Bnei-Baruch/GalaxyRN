@@ -12,6 +12,9 @@ import { useSettingsStore } from './settings';
 import mqtt from '../shared/mqtt';
 import { getStream, useMyStreamStore } from './myStream';
 import { sendUserState } from '../shared/tools';
+import InCallManager from 'react-native-incall-manager';
+//import { NativeModules } from 'react-native';
+//const { KeepAwakeModule } = NativeModules;
 
 let subscriber               = null;
 let videoroom                = null;
@@ -39,11 +42,13 @@ export const useInRoomStore = create((set, get) => ({
       janus.destroy();
       janus = null;
     }
-    const { user }     = useUserStore.getState();
-    const { room }     = useRoomStore.getState();
-    const { question } = useSettingsStore.getState();
-    const { cammmute } = useMyStreamStore.getState();
-
+    const { user }                = useUserStore.getState();
+    const { room }                = useRoomStore.getState();
+    const { question, audioMode } = useSettingsStore.getState();
+    const { cammmute }            = useMyStreamStore.getState();
+    InCallManager.start({ media: 'video' });
+    InCallManager.setKeepScreenOn(audioMode);
+    //KeepAwakeModule.activate(audioMode);
     let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
@@ -123,7 +128,7 @@ export const useInRoomStore = create((set, get) => ({
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
         alert('Janus Server - ' + srv + ' - Offline');
-        get().exitRoom()
+        get().exitRoom();
       }
 
       if (status === 'error') {
@@ -311,6 +316,9 @@ export const useInRoomStore = create((set, get) => ({
 
     mqtt.exit('galaxy/room/' + room.room);
     mqtt.exit('galaxy/room/' + room.room + '/chat');
+    InCallManager.stop();
+    InCallManager.setKeepScreenOn(false);
+    //KeepAwakeModule.deactivate();
   },
   toggleMute  : (stream) => {
     videoroom.mute(null, stream);

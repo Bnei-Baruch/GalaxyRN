@@ -19,7 +19,6 @@ export const TopBar = () => {
       <View style={styles.container}>
         <View style={styles.left}>
           <TopMenuBtn />
-          <MuteBtn />
         </View>
         <View>
           <Text>{room?.description}</Text>
