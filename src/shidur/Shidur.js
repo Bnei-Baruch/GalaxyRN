@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Button } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
@@ -8,8 +8,8 @@ import { useInitsStore } from '../zustand/inits';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 
 export const Shidur = () => {
-  const { videoUrl, isPlay, cleanShidur } = useShidurStore();
-  const { isPortrait }                    = useInitsStore();
+  const { videoUrl, isPlay, cleanShidur, talking, streamGalaxy } = useShidurStore();
+  const { isPortrait }                                                             = useInitsStore();
 
   useEffect(() => {
     return () => {
@@ -27,9 +27,13 @@ export const Shidur = () => {
           />
         ) : <PlayPauseOverlay />
       }
-
       <View style={styles.toolbar}>
         <PlayPauseBtn />
+        <Button
+          title={talking ? 'on air' : 'off air'}
+          onPress={() => streamGalaxy(!talking)}
+          color={talking ? 'red' : 'green'}
+        />
         <OptionsBtn />
       </View>
     </View>

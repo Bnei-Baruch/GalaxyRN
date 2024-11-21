@@ -950,6 +950,27 @@ PODS:
   - react-native-webrtc (124.0.3):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
+  - react-native-webview (13.12.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - React-nativeconfig (0.74.5)
   - React-NativeModulesApple (0.74.5):
     - glog
@@ -1179,6 +1200,8 @@ PODS:
     - React-logger (= 0.74.5)
     - React-perflogger (= 0.74.5)
     - React-utils (= 0.74.5)
+  - ReactNativeIncallManager (4.2.0):
+    - React-Core
   - RNCPicker (2.7.7):
     - React-Core
   - RNScreens (3.34.0):
@@ -1271,6 +1294,7 @@ DEPENDENCIES:
   - react-native-app-auth (from `../node_modules/react-native-app-auth`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webrtc (from `../node_modules/react-native-webrtc`)
+  - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1294,6 +1318,7 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSecureStorage (from `../node_modules/rn-secure-storage`)
@@ -1375,6 +1400,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-webrtc:
     :path: "../node_modules/react-native-webrtc"
+  react-native-webview:
+    :path: "../node_modules/react-native-webview"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1421,6 +1448,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  ReactNativeIncallManager:
+    :path: "../node_modules/react-native-incall-manager"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNScreens:
@@ -1470,6 +1499,7 @@ SPEC CHECKSUMS:
   react-native-app-auth: 63fa4e58c5bd29aeb974d3a06a23c5858322d533
   react-native-safe-area-context: ab8f4a3d8180913bd78ae75dd599c94cce3d5e9a
   react-native-webrtc: 41f6602490c618e3ec0e2108e46b84e2c731c127
+  react-native-webview: 445e447f227f775d8dd2b4823bca55c458d4eff7
   React-nativeconfig: ba9a2e54e2f0882cf7882698825052793ed4c851
   React-NativeModulesApple: 8d11ff8955181540585c944cf48e9e7236952697
   React-perflogger: ed4e0c65781521e0424f2e5e40b40cc7879d737e
@@ -1493,14 +1523,15 @@ SPEC CHECKSUMS:
   React-runtimescheduler: cfbe85c3510c541ec6dc815c7729b41304b67961
   React-utils: f242eb7e7889419d979ca0e1c02ccc0ea6e43b29
   ReactCommon: f7da14a8827b72704169a48c929bcde802698361
+  ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
   RNCPicker: b7873ba797dc586bfaf3307d737cbdc620a9ff3e
   RNScreens: aa943ad421c3ced3ef5a47ede02b0cbfc43a012e
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
   RNVectorIcons: 2a2f79274248390b80684ea3c4400bd374a15c90
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   VisionCamera: b69c637dc7388008c717b9566a006e5f9266fafe
-  Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
+  Yoga: 2246eea72aaf1b816a68a35e6e4b74563653ae09
 
 PODFILE CHECKSUM: 8428c0a2e0d786800d58dee4f6d11094cbcbbd97
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

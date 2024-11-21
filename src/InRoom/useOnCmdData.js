@@ -3,12 +3,13 @@ import mqtt from '../shared/mqtt';
 import { useSettingsStore } from '../zustand/settings';
 import { useUserStore } from '../zustand/user';
 import { useMyStreamStore } from '../zustand/myStream';
-import JanusStream from '../zustand/streaming-utils';
+import { useShidurStore } from '../zustand/shidur';
 
 const useOnCmdData = () => {
-  const { user, setUser }                       = useUserStore();
-  const { toggleCammute, toggleMute, cammmute } = useMyStreamStore();
-  const { mqttReady, toggleQuestion }           = useSettingsStore();
+  const { user, setUser }             = useUserStore();
+  const { toggleCammute, toggleMute } = useMyStreamStore();
+  const { streamGalaxy }              = useShidurStore();
+  const { mqttReady, toggleQuestion } = useSettingsStore();
 
   useEffect(() => {
     if (mqttReady) return;
@@ -27,7 +28,7 @@ const useOnCmdData = () => {
       } else if (type === 'video-mute' && user.id === id) {
         toggleCammute();
       } else if (type === 'audio-out') {
-        JanusStream.streamGalaxy(data.status, 4, '');
+        streamGalaxy(data.status);
         if (data.status) {
           // remove question mark when sndman unmute our room
           toggleQuestion(false);

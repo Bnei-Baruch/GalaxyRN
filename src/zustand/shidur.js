@@ -5,8 +5,8 @@ import {
   audiog_options2,
   trllang,
   NOTRL_STREAM_ID,
+  gxycol,
 } from '../shared/consts';
-import JanusStream from './streaming-utils';
 import { useUserStore } from './user';
 import { useSettingsStore } from './settings';
 import GxyJanus from '../shared/janus-utils';
@@ -31,8 +31,7 @@ let audioStream = null;
 let trlAudioJanus  = null;
 let trlAudioStream = null;
 
-let mixvolume = null;
-let config    = null;
+let config = null;
 
 const initStream = async (_janus, media) => {
   const janusStream    = new StreamingPlugin(config?.iceServers);
@@ -50,6 +49,8 @@ export const useShidurStore = create((set, get) => ({
   audio      : 64,
   videoUrl   : null,
   quadUrl    : null,
+  trlUrl     : null,
+  audioUrl   : null,
   readyShidur: false,
   talking    : null,
   isPlay     : false,
@@ -131,7 +132,7 @@ export const useShidurStore = create((set, get) => ({
     janus = null;
   },
 
-  initShidur   : async (srv) => {
+  initShidur  : async (srv) => {
     const { isBroadcast } = useSettingsStore.getState();
 
     console.log('[shidur] init');
@@ -177,12 +178,17 @@ export const useShidurStore = create((set, get) => ({
     try {
       await Promise.all(promises);
       console.log('[shidur] streams are ready', videoStream.toURL());
-      set(() => ({ videoUrl: videoStream.toURL(), readyShidur: true }));
+      set(() => ({
+        videoUrl   : videoStream.toURL(),
+        audioUrl   : audioStream.toURL(),
+        trlUrl     : trlAudioStream.toURL(),
+        readyShidur: true
+      }));
     } catch (err) {
       console.error('[shidur] stream error', err);
     }
   },
-  cleanShidur  : () => {
+  cleanShidur : () => {
     const { talking } = get();
     if (talking) {
       clearInterval(talking);
@@ -204,14 +210,45 @@ export const useShidurStore = create((set, get) => ({
 
     set({ readyShidur: false, videoUrl: null });
   },
-  toggleTalking: () => {
-    const _nextOnAir = !state.talking;
-    JanusStream.streamGalaxy(_nextOnAir, 4, 'test');
-    //JanusStream.audioMediaStream.enabled    = !_nextOnAir;
-    //JanusStream.trlAudioJanusStream.enabled = _nextOnAir;
-    set({ talking: _nextOnAir });
+  streamGalaxy: async (isOn) => {
+    log.debug('[shidur] got talk event: ', isOn);
+    if (!trlAudioJanus) {
+      log.debug('[shidur] look like we got talk event before stream init finished');
+      setTimeout(() => {
+        get().streamGalaxy(isOn);
+      }, 1000);
+      return;
+    }
+
+    if (isOn) {
+      // Switch to -1 stream
+      const col = 4;
+      log.debug('[shidur] Switch audio stream: ', gxycol[col]);
+      audioJanus.switch(gxycol[col]);
+      const _langtext = await getFromStorage('vrt_langtext');
+      const id        = trllang[_langtext];
+      // Don't bring translation on toggle trl stream
+      if (!id) {
+        log.debug('[shidur] no id in local storage or client use togle stream');
+      } else {
+        log.debug(`[shidur] Switch trl stream: langtext - ${_langtext}, id - ${id}`);
+        await trlAudioJanus.switch(id);
+      }
+      audioStream.getAudioTracks().forEach(track => track._setVolume(0.2));
+      log.debug('[shidur] You now talking');
+    } else {
+      log.debug('[shidur] Stop talking');
+      // Bring back source if was choosen before
+      const id = await getFromStorage('vrt_lang', 2).then(x => Number(x));
+      log.debug('[shidur] get stream back id: ', id);
+      await audioJanus.switch(id);
+      log.debug('[shidur] Switch audio stream back');
+      audioStream.getAudioTracks().forEach(track => track._setVolume(1));
+    }
+    trlAudioStream.getAudioTracks().forEach(track => track.enabled = isOn);
+    set({ talking: isOn });
   },
-  toggleIsPlay : async () => {
+  toggleIsPlay: async () => {
     const { initShidur, readyShidur } = get();
     if (!readyShidur) {
       await initShidur();
@@ -222,15 +259,14 @@ export const useShidurStore = create((set, get) => ({
     audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
     set(() => ({ isPlay }));
   },
-  initQuad     : async () => {
+  initQuad    : async () => {
     const [stream, janusStream] = await initStream(janus, 102);
     set({ quadUrl: stream.toURL() });
     quadJanus = janusStream;
   },
-  cleanQuads   : () => {
+  cleanQuads  : () => {
     quadJanus?.detach();
     quadJanus = null;
     set({ quadUrl: null });
   }
-
 }));
