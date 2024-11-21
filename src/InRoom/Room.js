@@ -33,8 +33,8 @@ const Room = () => {
         >
           <TouchableWithoutFeedback onPress={handleAnyPress}>
             <View style={styles.scrollContent}>
-              <Shidurs />
-              <Members />
+              <Shidurs key="shidurs" />
+              <Members key="members" />
             </View>
           </TouchableWithoutFeedback>
         </ScrollView>
@@ -46,19 +46,19 @@ const Room = () => {
 export default Room;
 
 const styles = StyleSheet.create({
-  container      : {
+  container    : {
     flex           : 1,
     backgroundColor: 'black',
     padding        : 10
   },
-  orientation    : {
+  orientation  : {
     flex    : 1,
     position: 'relative',
   },
-  scrollContent  : {
+  scrollContent: {
     flex     : 1,
     minHeight: '100%'
   },
-  portrait       : { flexDirection: 'column' },
-  landscape      : { flexDirection: 'row' },
+  portrait     : { flexDirection: 'column' },
+  landscape    : { flexDirection: 'row' },
 });

@@ -135,6 +135,7 @@ class MqttMsg {
       responseTopic : rxTopic,
       correlationData,
     } : { userProperties: user || this.user };
+
     let options    = { qos: 1, retain, properties };
     this.mq.publish(topic, message, { ...options }, (err) => {
       err && log.error('[mqtt] Error: ', err);

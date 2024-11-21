@@ -13,8 +13,7 @@ import mqtt from '../shared/mqtt';
 import { getStream, useMyStreamStore } from './myStream';
 import { sendUserState } from '../shared/tools';
 import InCallManager from 'react-native-incall-manager';
-//import { NativeModules } from 'react-native';
-//const { KeepAwakeModule } = NativeModules;
+import i18n from '../i18n/i18n';
 
 let subscriber               = null;
 let videoroom                = null;
@@ -24,6 +23,7 @@ export const MEMBER_PER_PAGE = 6;
 
 let showBarTimeout         = null;
 const HIDE_BARS_TIMEOUT_MS = 5000;
+let attempts               = 0;
 
 export const useInRoomStore = create((set, get) => ({
   memberByFeed: {},
@@ -48,7 +48,6 @@ export const useInRoomStore = create((set, get) => ({
     const { cammmute }            = useMyStreamStore.getState();
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(audioMode);
-    //KeepAwakeModule.activate(audioMode);
     let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
@@ -128,14 +127,13 @@ export const useInRoomStore = create((set, get) => ({
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
         alert('Janus Server - ' + srv + ' - Offline');
-        get().exitRoom();
+        get().restartRoom();
+        return;
       }
 
       if (status === 'error') {
         console.error('[client] Janus error, reconnecting...');
-        /*this.exitRoom(true, () => {
-          this.reinitClient(retry)
-        })*/
+        get().restartRoom();
       }
     };
 
@@ -222,37 +220,29 @@ export const useInRoomStore = create((set, get) => ({
       log.info('[client] Janus init', data);
       janus.attach(videoroom).then((data) => {
         console.info('[client] Publisher Handle: ', data);
-
-        //const { video: { device } } = media
-
-        //user.camera = !!device && cammuted === false
+        user.camera    = cammmute;
         user.question  = false;
         user.timestamp = Date.now();
         user.session   = janus.sessionId;
         user.handle    = videoroom.janusHandleId;
 
-        //this.setState({ janus, videoroom, user, room: selected_room })
-
-        //this.micMute()
-
         const { id, timestamp, role, username } = user;
         const d                                 = {
-          id,
-          timestamp,
-          role      : userRolesEnum.user,
+          id, timestamp, role,
           display   : username,
           is_group  : false,
           is_desktop: false,
         };
+        log.info(`[client] Videoroom init: d - ${d} room - ${room.room}`);
         videoroom.join(room.room, d).then(async (data) => {
-          log.info('[client] Joined respond :', data);
+          log.info('[client] Joined respond:', data);
           useUserStore.getState().setRfid(data.id);
 
           // Feeds count with user role
           let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
           if (feeds_count > 25) {
-            alert(t('oldClient.maxUsersInRoom'));
-            //this.exitRoom(false)
+            alert(i18n.t('oldClient.maxUsersInRoom'));
+            get().restartRoom();
             return;
           }
 
@@ -261,7 +251,6 @@ export const useInRoomStore = create((set, get) => ({
           const stream = getStream();
           stream.getAudioTracks().forEach(track => track.enabled = false);
 
-          console.log('videoroom published stream after', stream.getVideoTracks()[0]);
           return videoroom.publish(stream).then((json) => {
             log.debug('[client] videoroom published', json);
             //user.extra.streams = json.streams;
@@ -282,11 +271,11 @@ export const useInRoomStore = create((set, get) => ({
             //if (isGroup) videoroom.setBitrate(600000)
           }).catch((err) => {
             log.error('[client] Publish error :', err);
-            //this.exitRoom(false)
+            get().restartRoom();
           });
         }).catch((err) => {
-          log.error('[client] Join error :', err);
-          // this.exitRoom(false)
+          log.error('[client] Join error:', err);
+          get().restartRoom();
         });
       });
 
@@ -294,10 +283,8 @@ export const useInRoomStore = create((set, get) => ({
         console.info('[client] Subscriber Handle: ', data);
       });
     }).catch((err) => {
-      log.error('[client] Janus init', err);
-      /*this.exitRoom(true, () => {
-        this.reinitClient(retry)
-      })*/
+      log.error('[client] Janus init error', err);
+      get().restartRoom();
     });
 
     mqtt.join('galaxy/room/' + room.room);
@@ -318,7 +305,12 @@ export const useInRoomStore = create((set, get) => ({
     mqtt.exit('galaxy/room/' + room.room + '/chat');
     InCallManager.stop();
     InCallManager.setKeepScreenOn(false);
-    //KeepAwakeModule.deactivate();
+  },
+  restartRoom : async () => {
+    await get().exitRoom();
+    if (attempts < 5) {
+      get().joinRoom();
+    }
   },
   toggleMute  : (stream) => {
     videoroom.mute(null, stream);
