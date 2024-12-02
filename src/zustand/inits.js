@@ -9,12 +9,15 @@ import ConfigStore from '../shared/ConfigStore';
 import GxyJanus from '../shared/janus-utils';
 
 export const useInitsStore = create((set) => ({
-  mqttReady           : false,
-  configReady         : false,
-  isPortrait          : true,
-  setIsPortrait       : (isPortrait) => (set({ isPortrait })),
-  initMQTT            : () => {
+  mqttReady    : false,
+  configReady  : false,
+  isPortrait   : true,
+  setIsPortrait: (isPortrait) => (set({ isPortrait })),
+  initMQTT     : () => {
     const { user } = useUserStore.getState();
+
+    const _timer = mqtt.getTimer('native');
+    console.log(`check mqtt get timer: ${_timer}`);
 
     mqtt.init(user, (reconnected, error) => {
       if (error) {
@@ -35,7 +38,7 @@ export const useInitsStore = create((set) => ({
       }
     });
   },
-  initConfig          : () => {
+  initConfig   : () => {
     const userInfo = {};
     return geoInfo(GEO_IP_INFO, (data) => {
       userInfo.ip      = data && data.ip ? data.ip : '127.0.0.1';
