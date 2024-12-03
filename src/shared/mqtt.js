@@ -4,6 +4,7 @@ import { randomString } from './tools';
 //import GxyJanus from "./janus-utils";
 import log from 'loglevel';
 import { MQTT_URL, MSG_URL } from '@env';
+import BackgroundTimer from 'react-native-background-timer';
 
 const mqttTimeout   = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
@@ -49,6 +50,13 @@ class MqttMsg {
         requestResponseInformation: true,
         requestProblemInformation : true,
       },
+      timerVariant: {
+        set: (func, time) => {
+          console.log('get timer use BackgroundTimer')
+          return BackgroundTimer.setInterval(func, time)
+        },
+        clear: (timerId) => BackgroundTimer.clearInterval(timerId),
+      }
     };
 
     if (service) {

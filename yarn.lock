@@ -8214,20 +8214,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt-packet@npm:^9.0.0":
-  version: 9.0.0
-  resolution: "mqtt-packet@npm:9.0.0"
+"mqtt-packet@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "mqtt-packet@npm:9.0.1"
   dependencies:
     bl: "npm:^6.0.8"
     debug: "npm:^4.3.4"
     process-nextick-args: "npm:^2.0.1"
-  checksum: 10c0/e088b8075588d97ba76bbcf586731294d6ebfc37c659a4079c5c275fd098a2bc07b8ae175ecd99e651d12549a8d2d0001be7562941ea6376f6956a8e47a655c4
+  checksum: 10c0/0fb78ad73064e7a3d2e97ffebc09c47bb3e3e2894abef6f88a4f4daf817dfd7b6c1792effc6c39e746abb8e7a9f47b576e97ec3eb2497bd3b1d5c6279b797894
   languageName: node
   linkType: hard
 
-"mqtt@npm:^5.2.0, mqtt@npm:^5.9.1":
-  version: 5.9.1
-  resolution: "mqtt@npm:5.9.1"
+"mqtt@npm:^5.9.1":
+  version: 5.10.3
+  resolution: "mqtt@npm:5.10.3"
   dependencies:
     "@types/readable-stream": "npm:^4.0.5"
     "@types/ws": "npm:^8.5.9"
@@ -8237,8 +8237,7 @@ __metadata:
     help-me: "npm:^5.0.0"
     lru-cache: "npm:^10.0.1"
     minimist: "npm:^1.2.8"
-    mqtt: "npm:^5.2.0"
-    mqtt-packet: "npm:^9.0.0"
+    mqtt-packet: "npm:^9.0.1"
     number-allocator: "npm:^1.0.14"
     readable-stream: "npm:^4.4.2"
     reinterval: "npm:^1.1.0"
@@ -8250,7 +8249,7 @@ __metadata:
     mqtt: build/bin/mqtt.js
     mqtt_pub: build/bin/pub.js
     mqtt_sub: build/bin/sub.js
-  checksum: 10c0/fa109a216cbe7e3b7d851189c10b7762d09cd7f1516ad8513ba45b86a80be78241d582d6f2923677778cd80eb50528520d3b012e28c164d823e028ab5c199013
+  checksum: 10c0/91cf452eeaa3fb0a6ee7058c8c2b975afb8612f2bbecf721236d47c5efda47d7ac869d19f50f5d4ac27c1ac56f3010f1fcfe25a39ca71c20fd9b71cb6d798f39
   languageName: node
   linkType: hard
 

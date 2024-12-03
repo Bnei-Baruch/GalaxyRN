@@ -1,6 +1,7 @@
 import {randomString} from "../shared/tools";
 import mqtt from "../shared/mqtt";
 import log from "loglevel";
+import BackgroundTimer from 'react-native-background-timer';
 
 export class JanusMqtt {
   constructor(user, srv, mit) {
@@ -143,7 +144,7 @@ export class JanusMqtt {
 
     return new Promise((resolve, reject) => {
       if (timeoutMs) {
-        setTimeout(() => {
+        BackgroundTimer.setTimeout(() => {
           reject('[janus] Transaction timed out after ' + timeoutMs + ' ms')
         }, timeoutMs)
       }
@@ -175,12 +176,12 @@ export class JanusMqtt {
     }
 
     if (isScheduled) {
-      setTimeout(() => this.keepAlive(), 20 * 1000)
+      BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000)
     } else {
       log.debug('[janus] Sending keepalive to: ' + this.srv)
       this.transaction('keepalive', null, null, 20 * 1000).then(() => {
         this.keeptry = 0
-        setTimeout(() => this.keepAlive(), 20 * 1000)
+        BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000)
       }).catch(err => {
         log.debug(err, this.keeptry)
         if(this.keeptry === 3) {
@@ -189,7 +190,7 @@ export class JanusMqtt {
           this.onStatus(this.srv, "error")
           return
         }
-        setTimeout(() => this.keepAlive(), 20 * 1000)
+        BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000)
         this.keeptry++
       })
     }

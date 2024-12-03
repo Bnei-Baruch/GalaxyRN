@@ -16,9 +16,6 @@ export const useInitsStore = create((set) => ({
   initMQTT     : () => {
     const { user } = useUserStore.getState();
 
-    const _timer = mqtt.getTimer('native');
-    console.log(`check mqtt get timer: ${_timer}`);
-
     mqtt.init(user, (reconnected, error) => {
       if (error) {
         log.info('[client] MQTT disconnected');

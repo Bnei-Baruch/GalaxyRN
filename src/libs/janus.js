@@ -23,6 +23,8 @@
 	OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import BackgroundTimer from 'react-native-background-timer';
+
 // List of sessions
 Janus.sessions = {};
 const adapter  = require('webrtc-adapter');
@@ -133,7 +135,7 @@ Janus.useDefaultDependencies = function (deps) {
 
       if (options.timeout) {
         var timeout = new p(function (resolve, reject) {
-          var timerId = setTimeout(function () {
+          var timerId = BackgroundTimer.setTimeout(function () {
             clearTimeout(timerId);
             return reject({ message: 'Request timed out', timeout: options.timeout });
           }, options.timeout);
@@ -847,7 +849,7 @@ export function Janus(gatewayCallbacks) {
   function keepAlive() {
     if (!server || !websockets || !connected)
       return;
-    wsKeepaliveTimeoutId = setTimeout(keepAlive, keepAlivePeriod);
+    wsKeepaliveTimeoutId = BackgroundTimer.setTimeout(keepAlive, keepAlivePeriod);
     var request          = { 'janus': 'keepalive', 'session_id': sessionId, 'transaction': Janus.randomString(12) };
     if (token)
       request['token'] = token;
@@ -905,7 +907,7 @@ export function Janus(gatewayCallbacks) {
             }
             // Let's try the next server
             server = null;
-            setTimeout(function () {
+            BackgroundTimer.setTimeout(function () {
               createSession(callbacks);
             }, 200);
             return;
@@ -922,7 +924,7 @@ export function Janus(gatewayCallbacks) {
               callbacks.error(json['error'].reason);
               return;
             }
-            wsKeepaliveTimeoutId = setTimeout(keepAlive, keepAlivePeriod);
+            wsKeepaliveTimeoutId = BackgroundTimer.setTimeout(keepAlive, keepAlivePeriod);
             connected            = true;
             sessionId            = json['session_id'] ? json['session_id'] : json.data['id'];
             if (callbacks['reconnect']) {
@@ -989,7 +991,7 @@ export function Janus(gatewayCallbacks) {
           }
           // Let's try the next server
           server = null;
-          setTimeout(function () {
+          BackgroundTimer.setTimeout(function () {
             createSession(callbacks);
           }, 200);
           return;
@@ -2041,7 +2043,7 @@ export function Janus(gatewayCallbacks) {
         event.track.onmute   = function (ev) {
           Janus.log('Remote track muted:', ev);
           if (config.remoteStream && trackMutedTimeoutId == null) {
-            trackMutedTimeoutId = setTimeout(function () {
+            trackMutedTimeoutId = BackgroundTimer.setTimeout(function () {
               Janus.log('Removing remote track');
               if (config.remoteStream) {
                 config.remoteStream.removeTrack(ev.target);
