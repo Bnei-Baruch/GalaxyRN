@@ -1,7 +1,7 @@
 import log from 'loglevel';
 import { gxycol, trllang, NO_VIDEO_OPTION_VALUE, NOTRL_STREAM_ID, audiog_options2 } from '../shared/consts';
 
-import GxyJanus from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-utils';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { StreamingPlugin } from '../libs/streaming-plugin';
 import RNSecureStorage from 'rn-secure-storage';
@@ -83,9 +83,9 @@ class JanusStream {
     let str = srv;
 
     if (!srv) {
-      const gw_list = GxyJanus.gatewayNames('streaming');
+      const gw_list = GxyConfig.gatewayNames('streaming');
       let inst      = gw_list[Math.floor(Math.random() * gw_list.length)];
-      this.config   = GxyJanus.instanceConfig(inst);
+      this.config   = GxyConfig.instanceConfig(inst);
       str           = this.config.name;
     }
 

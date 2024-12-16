@@ -1,8 +1,28 @@
 import { create } from 'zustand';
+import useRoomStore from './fetchRooms';
+import { useSettingsStore } from './settings';
+import { useMyStreamStore } from './myStream';
+import mqtt from '../shared/mqtt';
 
-export const useUserStore = create((set) => ({
-  user   : null,
-  setUser: (user) => set(() => ({ user })),
-  rfid   : null,
-  setRfid: (rfid) => set({ rfid }),
+export const useUserStore = create((set, get) => ({
+  user         : null,
+  setUser      : (user) => set(() => ({ user })),
+  rfid         : null,
+  setRfid      : (rfid) => set({ rfid }),
+  sendUserState: (opts = {}) => {
+    const { room }                = useRoomStore.getState();
+    const { question, audioMode } = useSettingsStore.getState();
+    const { cammmute }            = useMyStreamStore.getState();
+    const defaultOpts             = {
+      camera: cammmute || audioMode,
+      question,
+      rfid  : get().rfid,
+      room  : room.room,
+      ...opts
+    };
+
+    const msg = { type: 'client-state', user: { ...defaultOpts, ...opts } };
+    console.log('sendUserState', msg, room);
+    mqtt.send(JSON.stringify(msg), false, 'galaxy/room/' + room.room);
+  }
 }));

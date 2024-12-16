@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import { isServiceID, userRolesEnum } from './enums';
 import { randomString } from './tools';
-//import GxyJanus from "./janus-utils";
+//import GxyConfig from "./janus-utils";
 import log from 'loglevel';
 import { MQTT_URL, MSG_URL } from '@env';
 import BackgroundTimer from 'react-native-background-timer';
@@ -24,7 +24,7 @@ class MqttMsg {
     this.user     = user;
     const RC      = mqttTimeout;
     const service = isServiceID(user.id);
-    //const svc_token = GxyJanus?.globalConfig?.dynamic_config?.mqtt_auth;
+    //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
     const token   = service ? svc_token : this.token;
     const id      = service ? user.id : user.id + '-' + randomString(3);
 

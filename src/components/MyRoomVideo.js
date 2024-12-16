@@ -20,13 +20,14 @@ export default MyRoomMedia;
 
 const styles = StyleSheet.create({
   container: {
-    width      : '49%',
+    width: '49%',
   },
-  contant: {
-    aspectRatio: 16 / 9,
-    flex       : 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  contant  : {
+    aspectRatio    : 16 / 9,
+    flex           : 1,
+    alignItems     : 'center',
+    justifyContent : 'center',
+    backgroundColor: 'grey'
   },
   overlay  : {
     position       : 'absolute',
@@ -35,6 +36,6 @@ const styles = StyleSheet.create({
     bottom         : 0,
     right          : 0,
     zIndex         : 1,
-    backgroundColor: 'black',
+    backgroundColor: 'grey',
   }
 });

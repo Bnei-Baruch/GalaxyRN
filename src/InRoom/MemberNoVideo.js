@@ -1,10 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useInRoomStore } from '../zustand/inRoom';
 
-const MemberNoVideo = ({ member }) => {
-  const { mid, display, url, talk } = member;
-  console.log('render Member', display, mid, url);
+const MemberNoVideo = ({ id }) => {
+  const { memberByFeed } = useInRoomStore();
+
+  const { display, talk } = memberByFeed[id];
 
   return (
     <View style={styles.container}>

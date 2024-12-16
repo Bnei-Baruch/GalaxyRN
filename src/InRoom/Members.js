@@ -2,13 +2,13 @@ import { useInRoomStore } from '../zustand/inRoom';
 import { StyleSheet, View } from 'react-native';
 import Member from './Member';
 import { useSettingsStore } from '../zustand/settings';
-import MemberNoVideo from './MemberNoVideo';
 import MyRoomMedia from '../components/MyRoomVideo';
+import MemberNoVideo from './MemberNoVideo';
 
 const Members = () => {
-  const members       = useInRoomStore((state) => {
-    console.log('Members from map tp list', state.memberByFeed);
-    const _ms = Object.values(state.memberByFeed).filter(m => !!m);
+  const { hideSelf }  = useSettingsStore();
+  const memberIds     = useInRoomStore((state) => {
+    const _ms = Object.values(state.memberByFeed);
     _ms.sort((a, b) => {
       if (!!a.display?.is_group && !b.display?.is_group) {
         return -1;
@@ -19,7 +19,7 @@ const Members = () => {
       return a.display?.timestamp - b.display?.timestamp;
     });
 
-    let needAdd = !useSettingsStore.getState().hideSelf;
+    let needAdd = !hideSelf;
     return _ms.reduce((acc, x, i) => {
       if (!x)
         return acc;
@@ -38,12 +38,11 @@ const Members = () => {
     }, []);
   });
   const { audioMode } = useSettingsStore();
-  console.log('Members render', members);
   return (
     <View style={styles.container}>
       {
-        members.length > 0 ? (
-          members
+        memberIds.length > 0 ? (
+          memberIds
             .map(id => {
               if (!id)
                 return null;
@@ -52,7 +51,7 @@ const Members = () => {
                 return <MyRoomMedia key={id} />;
 
               if (audioMode)
-                return <MemberNoVideo key={id} member={id} />;
+                return <MemberNoVideo key={id} id={id} />;
 
               return <Member key={id} id={id} />;
             })

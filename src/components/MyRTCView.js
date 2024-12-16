@@ -6,11 +6,13 @@ import { baseStyles } from '../constants';
 import { memberItemWidth } from '../InRoom/helper';
 
 const MyRTCView = () => {
-  const { url } = useMyStreamStore();
+  const { stream } = useMyStreamStore();
+
+  if (!stream) return null;
 
   return (
     <RTCView
-      streamURL={url}
+      streamURL={stream.toURL()}
       style={[baseStyles.full, styles.video]}
       objectFit="cover"
       mirror={true}

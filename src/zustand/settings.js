@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import useRoomStore from './fetchRooms';
 import { useMyStreamStore } from './myStream';
-import { sendUserState } from '../shared/tools';
+import { useShidurStore } from './shidur';
+import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
 import { useUserStore } from './user';
 //import { NativeModules } from 'react-native';
 
@@ -14,21 +14,45 @@ export const useSettingsStore = create((set, get) => ({
   setReadyForJoin  : (readyForJoin = true) => set({ readyForJoin }),
   question         : false,
   toggleQuestion   : () => {
-    const { room }     = useRoomStore.getState();
-    const { rfid }     = useUserStore.getState();
     const { question } = get();
-    const { cammmute } = useMyStreamStore.getState();
-    sendUserState({ camera: cammmute, question, room: room.room, rfid });
+    useUserStore.getState().sendUserState({ question });
     set((state) => ({ question: !state.question }));
   },
   isBroadcast      : true,
   toggleIsBroadcast: () => set((state) => ({ isBroadcast: !state.isBroadcast })),
   audioMode        : false,
-  toggleAudioMode  : () => set((state) => {
-    const audioMode = !state.audioMode;
-   // KeepAwakeModule.activate(audioMode);
-    return ({ audioMode });
-  }),
+  toggleAudioMode  : async (audioMode = !get().audioMode) => {
+    audioMode ? get().enterAudioMode() : get().exitAudioMode();
+    set({ audioMode });
+  },
+  enterAudioMode   : async () => {
+    const { toggleCammute } = useMyStreamStore.getState();
+    toggleCammute(true, false);
+
+    const feeds = Object.values(useInRoomStore.getState().memberByFeed);
+    deactivateFeedsVideos(feeds);
+
+    const { enterAudioMode, cleanQuads, isQuad, } = useShidurStore.getState();
+    enterAudioMode();
+    if (isQuad) {
+      cleanQuads(false);
+    }
+  },
+  exitAudioMode    : async () => {
+    const { toggleCammute, cammmute } = useMyStreamStore.getState();
+    toggleCammute(cammmute, false);
+
+    const feeds = Object.values(useInRoomStore.getState().memberByFeed);
+    activateFeedsVideos(feeds);
+
+    const { exitAudioMode, initQuad, isQuad, isBroadcast } = useShidurStore.getState();
+    if (isBroadcast) {
+      exitAudioMode();
+    }
+    if (isQuad) {
+      initQuad();
+    }
+  },
   showGroups       : false,
   toggleShowGroups : () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf         : false,

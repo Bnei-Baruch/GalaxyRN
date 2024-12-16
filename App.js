@@ -22,11 +22,12 @@ const App = () => {
   const [isListenerActive, setIsListenerActive] = useState(false);
   const { setIsPortrait }                       = useInitsStore();
   const { readyForJoin }                        = useSettingsStore();
-  const { myInit }                              = useMyStreamStore();
+  const { myInit, myAbort }                     = useMyStreamStore();
 
   useEffect(() => {
     myInit();
     //RNSecureStorage.clear()
+    return myAbort;
   }, []);
 
   useEffect(() => {

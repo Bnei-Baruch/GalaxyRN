@@ -127,11 +127,7 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   initPcEvents(resolve) {
-    this.pc.onicecandidate = (e) => {
-      return this.transaction('trickle', { candidate: e.candidate });
-    };
-
-    this.pc.onconnectionstatechange = (e) => {
+    this.pc.addEventListener('connectionstatechange', (e) => {
       log.info('[streaming] ICE State: ', e.target.connectionState);
       this.iceState = e.target.connectionState;
       if (this.iceState === 'disconnected') {
@@ -142,14 +138,15 @@ export class StreamingPlugin extends EventEmitter {
       if (this.iceState === 'failed') {
         this.onStatus(this.iceState);
       }
-
-    };
-
-    this.pc.ontrack = (e) => {
+    });
+    this.pc.addEventListener('icecandidate', (e) => {
+      return this.transaction('trickle', { candidate: e.candidate });
+    });
+    this.pc.addEventListener('track', (e) => {
       log.info('[streaming] Got track: ', e);
       let stream = new MediaStream([e.track]);
       resolve(stream);
-    };
+    });
   }
 
   iceRestart() {

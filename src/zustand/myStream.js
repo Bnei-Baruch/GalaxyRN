@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { mediaDevices } from 'react-native-webrtc';
 import RNSecureStorage from 'rn-secure-storage';
+import { useUserStore } from './user';
 
 let stream             = null;
 export const getStream = () => stream;
 
 export const useMyStreamStore = create((set, get) => ({
-  url          : null,
+  stream       : null,
   mute         : true,
-  cammmute     : true,
+  cammmute     : false,
   myInit       : async () => {
     let cammute;
     try {
@@ -26,17 +27,21 @@ export const useMyStreamStore = create((set, get) => ({
       console.error('Error accessing media devices:', e);
     }
     console.log('useMyStreamStore init', cammute, stream);
-    set(() => ({ url: stream.toURL(), cammute }));
+    set(() => ({ stream, cammute }));
   },
-  toggleMute   : () => {
-    const enabled = !get().mute;
-    stream.getAudioTracks().forEach(track => track.enabled = !enabled);
-    set(() => ({ mute: enabled }));
+  myAbort      : async () => {
+    if (!stream) return;
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
   },
-  toggleCammute: () => {
-    const enabled = !get().cammute;
-    console.log('toggleCammute', get().cammute, enabled);
-    stream.getVideoTracks().forEach(track => track.enabled = !enabled);
-    set(() => ({ cammute: enabled }));
-  }
+  toggleMute   : (mute = !get().mute) => {
+    stream.getAudioTracks().forEach(track => track.enabled = !mute);
+    set(() => ({ mute: mute }));
+  },
+  toggleCammute: (cammute = !get().cammute, updateState = true) => {
+    console.log('toggleCammute', cammute);
+    stream.getVideoTracks().forEach(track => track.enabled = !cammute);
+    updateState && set(() => ({ cammute }));
+    useUserStore.getState().sendUserState({ camera: !cammute });
+  },
 }));

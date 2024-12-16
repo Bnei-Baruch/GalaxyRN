@@ -6,7 +6,7 @@ import { geoInfo } from '../shared/tools';
 import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
-import GxyJanus from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-utils';
 
 export const useInitsStore = create((set) => ({
   mqttReady    : false,
@@ -50,7 +50,7 @@ export const useInitsStore = create((set) => ({
         const premodStatus = ConfigStore.dynamicConfig(ConfigStore.PRE_MODERATION_KEY) === "true";
         this.setState({premodStatus});
         */
-        GxyJanus.setGlobalConfig(data);
+        GxyConfig.setGlobalConfig(data);
         set(() => ({ configReady: true }));
       }).catch((err) => {
         log.error('[client] error initializing app', err);

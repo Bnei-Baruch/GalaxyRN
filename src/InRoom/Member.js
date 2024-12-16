@@ -2,19 +2,30 @@ import { StyleSheet, Text, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React from 'react';
 import { useInRoomStore } from '../zustand/inRoom';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const Member = ({ id }) => {
   const { memberByFeed } = useInRoomStore();
-  console.log('Member render', id, memberByFeed[id]);
 
-  const { mid, display, url } = memberByFeed[id];
+  const { display, url } = memberByFeed[id];
   return (
     <View style={styles.container}>
       <View style={styles.display}>
         <Text style={styles.displayMark}>.</Text>
         <Text style={styles.displayText}>{display?.display}</Text>
       </View>
-      {url && <RTCView streamURL={url} style={styles.viewer} />}
+      {
+        url ? (
+          <RTCView
+            streamURL={url}
+            style={styles.viewer}
+          />
+        ) : (
+          <View style={styles.overlay}>
+            <Icon name="account-circle" size={80} color="white" />
+          </View>
+        )
+      }
     </View>
   );
 };
@@ -36,9 +47,9 @@ const styles = StyleSheet.create({
     zIndex         : 1
   },
   displayMark: {
-    color            : 'red',
-    fontSize         : 30,
-    lineHeight       : 18,
+    color       : 'red',
+    fontSize    : 30,
+    lineHeight  : 18,
     paddingRight: 5
   },
   displayText: {
@@ -53,5 +64,12 @@ const styles = StyleSheet.create({
     padding       : 24,
     flexDirection : 'row',
     justifyContent: 'space-between',
+  },
+  overlay    : {
+    flex           : 1,
+    backgroundColor: 'grey',
+    aspectRatio    : 16 / 9,
+    alignItems     : 'center',
+    justifyContent : 'center'
   }
 });

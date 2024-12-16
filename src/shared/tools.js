@@ -1,31 +1,6 @@
-import { STUN_SRV_GXY, WKLI_ENTER, WKLI_LEAVE } from '@env';
+import { WKLI_ENTER, WKLI_LEAVE } from '@env';
 import mqtt from './mqtt';
-import { Janus } from '../libs/janus';
 import RNSecureStorage from 'rn-secure-storage';
-
-export const initJanus = (cb, er, server, token = '', iceServers = [{ urls: STUN_SRV_GXY }]) => {
-  Janus.init({
-    debug   : process.env.NODE_ENV !== 'production' ? ['log', 'error'] : ['log', 'error'],
-    callback: () => {
-      let janus = new Janus({
-        server,
-        token,
-        iceServers,
-        success  : () => {
-          Janus.log(' :: Connected to JANUS');
-          cb(janus);
-        },
-        error    : (error) => {
-          Janus.error(error);
-          er(error);
-        },
-        destroyed: () => {
-          Janus.error(' :: Janus destroyed :: ');
-        },
-      });
-    },
-  });
-};
 
 export const notifyMe = (title, message, tout) => {
   if (!!window.Notification) {
@@ -224,32 +199,6 @@ export const isRTLString = (text) => {
   }
   return rtl > ltr;
 };
-
-export const sendUserState = (user) => {
-  const { camera, question, rfid, room } = user;
-  const msg = { type: 'client-state', user: { camera, question, rfid, room } };
-  mqtt.send(JSON.stringify(msg), false, 'galaxy/room/' + room);
-};
-
-export const createContext = (e) => {
-  const left   = e.clientX;
-  const top    = e.clientY;
-  const right  = left + 1;
-  const bottom = top + 1;
-
-  return {
-    getBoundingClientRect: () => ({
-      left,
-      top,
-      right,
-      bottom,
-
-      height: 0,
-      width : 0,
-    }),
-  };
-};
-
 
 export const getFromStorage = async (key, def) => {
   try {

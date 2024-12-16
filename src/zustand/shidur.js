@@ -9,7 +9,7 @@ import {
 } from '../shared/consts';
 import { useUserStore } from './user';
 import { useSettingsStore } from './settings';
-import GxyJanus from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-utils';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import log from 'loglevel';
 import { StreamingPlugin } from '../libs/streaming-plugin';
@@ -56,9 +56,9 @@ export const useShidurStore = create((set, get) => ({
   isPlay     : false,
   janusReady : false,
 
-  setVideo  : async (video) => {
+  setVideo      : async (video, updateState = true) => {
     if (!janus) return;
-    console.log('setVideo', video);
+
     if (video === NO_VIDEO_OPTION_VALUE) {
       if (videoJanus !== null) {
         janus.detach(videoJanus);
@@ -71,10 +71,12 @@ export const useShidurStore = create((set, get) => ({
         await initStream(janus, video);
       }
     }
-    set({ videoUrl: videoStream.toURL(), readyShidur: true, video });
-    setToStorage('vrt_video', video);
+    if (updateState) {
+      set({ videoUrl: videoStream.toURL(), readyShidur: true, video });
+      await setToStorage('vrt_video', video);
+    }
   },
-  setAudio  : async (audio, text) => {
+  setAudio      : async (audio, text) => {
     if (get().talking) {
       const audio_option = audiog_options2.find((option) => option.value === audio);
       const id           = trllang[audio_option.eng_text];
@@ -91,17 +93,17 @@ export const useShidurStore = create((set, get) => ({
     setToStorage('vrt_langtext', text);
     set({ videoUrl: videoStream.toURL(), readyShidur: true, audio });
   },
-  initJanus : async (srv) => {
+  initJanus     : async (srv) => {
     const { user } = useUserStore.getState();
     if (janus)
       get().cleanShidur();
 
     let str = srv;
     if (!srv) {
-      const gw_list = GxyJanus.gatewayNames('streaming');
+      const gw_list = GxyConfig.gatewayNames('streaming');
       let inst      = gw_list[Math.floor(Math.random() * gw_list.length)];
 
-      config = GxyJanus.instanceConfig(inst);
+      config = GxyConfig.instanceConfig(inst);
       str    = config.name;
       console.log('[shidur] init build janus', inst, config);
     }
@@ -122,7 +124,7 @@ export const useShidurStore = create((set, get) => ({
     log.debug('[shidur] init janus ready');
     set({ janusReady: true });
   },
-  cleanJanus: () => {
+  cleanJanus    : () => {
     if (!janus)
       return;
 
@@ -131,8 +133,7 @@ export const useShidurStore = create((set, get) => ({
     janus?.destroy();
     janus = null;
   },
-
-  initShidur  : async (srv) => {
+  initShidur    : async (srv) => {
     const { isBroadcast } = useSettingsStore.getState();
 
     console.log('[shidur] init');
@@ -188,7 +189,7 @@ export const useShidurStore = create((set, get) => ({
       console.error('[shidur] stream error', err);
     }
   },
-  cleanShidur : () => {
+  cleanShidur   : () => {
     const { talking } = get();
     if (talking) {
       clearInterval(talking);
@@ -210,7 +211,7 @@ export const useShidurStore = create((set, get) => ({
 
     set({ readyShidur: false, videoUrl: null });
   },
-  streamGalaxy: async (isOn) => {
+  streamGalaxy  : async (isOn) => {
     log.debug('[shidur] got talk event: ', isOn);
     if (!trlAudioJanus) {
       log.debug('[shidur] look like we got talk event before stream init finished');
@@ -248,7 +249,7 @@ export const useShidurStore = create((set, get) => ({
     trlAudioStream.getAudioTracks().forEach(track => track.enabled = isOn);
     set({ talking: isOn });
   },
-  toggleIsPlay: async () => {
+  toggleIsPlay  : async () => {
     const { initShidur, readyShidur } = get();
     if (!readyShidur) {
       await initShidur();
@@ -259,14 +260,30 @@ export const useShidurStore = create((set, get) => ({
     audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
     set(() => ({ isPlay }));
   },
-  initQuad    : async () => {
+  initQuad      : async () => {
     const [stream, janusStream] = await initStream(janus, 102);
-    set({ quadUrl: stream.toURL() });
+    set({ quadUrl: stream.toURL(), isQuad: true });
     quadJanus = janusStream;
   },
-  cleanQuads  : () => {
+  cleanQuads    : (updateState = true) => {
     quadJanus?.detach();
     quadJanus = null;
-    set({ quadUrl: null });
-  }
+    if (updateState) {
+      set({ quadUrl: null });
+    }
+  },
+  enterAudioMode: () => {
+    if (videoJanus) {
+      videoJanus.detach();
+      videoJanus = null;
+    }
+
+    if (trlAudioJanus) {
+      trlAudioJanus.detach();
+      trlAudioJanus = null;
+    }
+  },
+  exitAudioMode : () => {
+    get().initShidur();
+  },
 }));
