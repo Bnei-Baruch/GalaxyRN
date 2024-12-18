@@ -4,10 +4,13 @@ import Member from './Member';
 import { useSettingsStore } from '../zustand/settings';
 import MyRoomMedia from '../components/MyRoomVideo';
 import MemberNoVideo from './MemberNoVideo';
+import { useMyStreamStore } from '../zustand/myStream';
 
 const Members = () => {
-  const { hideSelf }  = useSettingsStore();
-  const memberIds     = useInRoomStore((state) => {
+  const { hideSelf, audioMode } = useSettingsStore();
+  const { cammute, timestamp }  = useMyStreamStore();
+
+  const memberIds = useInRoomStore((state) => {
     const _ms = Object.values(state.memberByFeed);
     _ms.sort((a, b) => {
       if (!!a.display?.is_group && !b.display?.is_group) {
@@ -19,25 +22,28 @@ const Members = () => {
       return a.display?.timestamp - b.display?.timestamp;
     });
 
-    let needAdd = !hideSelf;
+    let notAddMy = hideSelf || (cammute && audioMode);
+    if (_ms.length === 0) {
+      return notAddMy ? [] : ['my'];
+    }
+
     return _ms.reduce((acc, x, i) => {
       if (!x)
         return acc;
 
-      if (needAdd && x.timestamp < state.myTymstemp) {
-        acc.push('my');
-        needAdd = false;
+      if (!notAddMy) {
+        const next = _ms[i + 1];
+        if (x.display?.timestamp > timestamp || !next) {
+          acc.push('my');
+          notAddMy = true;
+        }
       }
 
       acc.push(x.id);
-
-      if (needAdd && i === _ms.length - 1) {
-        acc.push('my');
-      }
       return acc;
     }, []);
   });
-  const { audioMode } = useSettingsStore();
+
   return (
     <View style={styles.container}>
       {

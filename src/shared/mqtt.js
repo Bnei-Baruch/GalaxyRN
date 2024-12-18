@@ -50,11 +50,8 @@ class MqttMsg {
         requestResponseInformation: true,
         requestProblemInformation : true,
       },
-      timerVariant: {
-        set: (func, time) => {
-          console.log('get timer use BackgroundTimer')
-          return BackgroundTimer.setInterval(func, time)
-        },
+      timerVariant   : {
+        set  : (func, time) => BackgroundTimer.setInterval(func, time),
         clear: (timerId) => BackgroundTimer.clearInterval(timerId),
       }
     };
@@ -126,8 +123,11 @@ class MqttMsg {
     if (!this.mq) return;
     let options = {};
     log.info('[mqtt] Unsubscribe from: ', topic);
-    this.mq.unsubscribe(topic, { ...options }, (err) => {
-      err && log.error('[mqtt] Error: ', err);
+    return new Promise((resolve, reject) => {
+      this.mq.unsubscribe(topic, { ...options }, (err) => {
+        err && log.error('[mqtt] Error: ', err);
+        err ? reject(err) : resolve();
+      });
     });
   };
 
@@ -144,7 +144,7 @@ class MqttMsg {
       correlationData,
     } : { userProperties: user || this.user };
 
-    let options    = { qos: 1, retain, properties };
+    let options = { qos: 1, retain, properties };
     this.mq.publish(topic, message, { ...options }, (err) => {
       err && log.error('[mqtt] Error: ', err);
     });
@@ -212,6 +212,25 @@ class MqttMsg {
     this.token = token;
   };
 
+  end = () => {
+    this.isConnected     = false;
+    this.reconnect_count = 0;
+    return new Promise((resolve, reject) => {
+      if (!this.mq) {
+        resolve();
+        return;
+      }
+      this.mq.removeAllListeners();
+      this.mq.end(err => {
+        this.mq = null;
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  };
 }
 
 const defaultMqtt = new MqttMsg();

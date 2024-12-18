@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { JanusMqtt } from '../libs/janus-mqtt';
-import GxyConfig from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-config';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
 import log from 'loglevel';
@@ -13,6 +13,7 @@ import mqtt from '../shared/mqtt';
 import { useMyStreamStore, getStream } from './myStream';
 import InCallManager from 'react-native-incall-manager';
 import i18n from '../i18n/i18n';
+import { useInitsStore } from './inits';
 
 let subscriber = null;
 let videoroom  = null;
@@ -27,7 +28,6 @@ const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h2
 export const useInRoomStore = create((set, get) => ({
   memberByFeed   : {},
   showBars       : true,
-  myTymstemp     : Date.now(),
   setShowBars    : (hideOnTimeout) => {
     console.log('show hide bars: setShowBars', hideOnTimeout);
     clearTimeout(showBarTimeout);
@@ -41,10 +41,12 @@ export const useInRoomStore = create((set, get) => ({
       janus.destroy();
       janus = null;
     }
-    const { user }                = useUserStore.getState();
-    const { room }                = useRoomStore.getState();
-    const { question, audioMode } = useSettingsStore.getState();
-    const { cammmute }            = useMyStreamStore.getState();
+    const { user }                   = useUserStore.getState();
+    const { room }                   = useRoomStore.getState();
+    const { audioMode }    = useSettingsStore.getState();
+    const { cammmute, setTimestmap } = useMyStreamStore.getState();
+
+    setTimestmap();
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(audioMode);
     let _subscriberJoined = false;
@@ -252,17 +254,17 @@ export const useInRoomStore = create((set, get) => ({
   },
   exitRoom       : async () => {
     const { room } = useRoomStore.getState();
-
-    await videoroom?.leave();
-    videoroom = null;
-    subscriber?.detach();
+    set({ memberByFeed: {} });
+    await janus?.destroy();
+    janus      = null;
+    videoroom  = null;
     subscriber = null;
-    janus?.destroy();
-    janus = null;
     useSettingsStore.getState().setReadyForJoin(false);
 
-    mqtt.exit('galaxy/room/' + room.room);
-    mqtt.exit('galaxy/room/' + room.room + '/chat');
+    await mqtt.exit('galaxy/room/' + room.room);
+    await mqtt.exit('galaxy/room/' + room.room + '/chat');
+    await useInitsStore.getState().endMqtt();
+
     InCallManager.stop();
     InCallManager.setKeepScreenOn(false);
   },

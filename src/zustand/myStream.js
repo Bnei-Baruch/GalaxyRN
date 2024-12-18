@@ -10,6 +10,8 @@ export const useMyStreamStore = create((set, get) => ({
   stream       : null,
   mute         : true,
   cammmute     : false,
+  timestamp    : Date.now(),
+  setTimestmap : () => set({ timestamp: Date.now() }),
   myInit       : async () => {
     let cammute;
     try {
@@ -38,10 +40,10 @@ export const useMyStreamStore = create((set, get) => ({
     stream.getAudioTracks().forEach(track => track.enabled = !mute);
     set(() => ({ mute: mute }));
   },
-  toggleCammute: (cammute = !get().cammute, updateState = true) => {
+  toggleCammute: (cammute = !get().cammute) => {
     console.log('toggleCammute', cammute);
     stream.getVideoTracks().forEach(track => track.enabled = !cammute);
-    updateState && set(() => ({ cammute }));
+    set(() => ({ cammute }));
     useUserStore.getState().sendUserState({ camera: !cammute });
   },
 }));

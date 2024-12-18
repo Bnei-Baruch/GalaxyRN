@@ -1,6 +1,73 @@
-import { Text } from 'react-native';
+import { View, StyleSheet, Button } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useMyStreamStore } from '../zustand/myStream';
+import { useSettingsStore } from '../zustand/settings';
+import { useInitsStore } from '../zustand/inits';
+import { useUserStore } from '../zustand/user';
+import PageHeader from '../components/PageHeader';
+import IconWithText from './IconWithText';
+import LabeledInput from './LabeledInput';
+import SelectUiLanguage from './SelectUiLanguage';
+import LabeledSwitch from './LabeledSwitch';
+import * as React from 'react';
+import { baseStyles } from '../constants';
 
-export const SettingsJoined = () => {
+export const SettingsJoined = ({ toggleVisible }) => {
+  const { t }                                                          = useTranslation();
+  const { cammute, toggleCammute }                                     = useMyStreamStore();
+  const { isBroadcast, toggleIsBroadcast, audioMode, toggleAudioMode } = useSettingsStore();
+  const { isPortrait }                                                 = useInitsStore();
+  const { user }                                                       = useUserStore();
 
-  return <Text>SettingsJoined</Text>;
+  const handleToggleAudioMode   = () => toggleAudioMode();
+  const handleToggleIsBroadcast = () => toggleIsBroadcast();
+  const handleCammute           = () => toggleCammute();
+
+  return (
+    <View style={styles.container}>
+      <PageHeader page={t('settings.page')} />
+      {/*user settings*/}
+      <IconWithText iconName="account-circle" text="user settings" />
+      <LabeledInput label="Screen Name" value={user.display} disabled={true} />
+      <SelectUiLanguage />
+      <LabeledSwitch
+        label={'Stop video'}
+        initialValue={cammute}
+        onValueChange={handleCammute}
+      />
+      <LabeledSwitch
+        label={'Audio Mode'}
+        initialValue={audioMode}
+        onValueChange={handleToggleAudioMode}
+      />
+      <LabeledSwitch
+        label={'Mute Broadcast'}
+        initialValue={isBroadcast}
+        onValueChange={handleToggleIsBroadcast}
+      />
+      <View style={baseStyles.full} />
+      <View style={styles.containerBack}>
+        <Button
+          title={t('settings.backToTen')}
+          onPress={toggleVisible}
+        />
+      </View>
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  container    : {
+    padding        : 3,
+    flex           : 1,
+    backgroundColor: 'black',
+  },
+  landscape    : {
+    flexDirection: 'row',
+    flexWrap     : 'wrap',
+  },
+  containerBack: {
+    alignItems   : 'flex-end',
+    padding: 10,
+  }
+});

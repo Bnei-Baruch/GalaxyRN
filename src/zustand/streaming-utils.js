@@ -1,7 +1,7 @@
 import log from 'loglevel';
 import { gxycol, trllang, NO_VIDEO_OPTION_VALUE, NOTRL_STREAM_ID, audiog_options2 } from '../shared/consts';
 
-import GxyConfig from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { StreamingPlugin } from '../libs/streaming-plugin';
 import RNSecureStorage from 'rn-secure-storage';
@@ -91,14 +91,14 @@ class JanusStream {
 
     let janus = new JanusMqtt(this.user, str);
 
-    janus.onStatus = (srv, status) => {
+    janus.onStatus = async (srv, status) => {
       if (status !== 'online') {
         log.warn('[shidur] janus status: ', status);
-        if (this.janus) this.janus.destroy();
-        this.janus = null;
-        setTimeout(() => {
-          this.initJanus();
-        }, 7000);
+        if (this.janus) {
+          await this.janus.destroy();
+          this.janus = null;
+        }
+        this.initJanus();
       }
     };
 
@@ -210,9 +210,10 @@ class JanusStream {
     }
   }
 
-  destroy() {
+  async destroy() {
     this.clean();
-    if (this.janus) this.janus.destroy();
+    if (this.janus)
+      await this.janus.destroy();
     this.janus = null;
   }
 

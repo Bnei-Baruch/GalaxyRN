@@ -7,6 +7,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 const Member = ({ id }) => {
   const { memberByFeed } = useInRoomStore();
 
+  if (!memberByFeed[id])
+    return null;
+
   const { display, url } = memberByFeed[id];
   return (
     <View style={styles.container}>

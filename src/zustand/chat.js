@@ -54,7 +54,7 @@ export const useChatStore = create((set) => ({
     });
   },
   cleanChat       : () => {
-    mqtt.mq.removeAllListeners('MqttChatEvent');
+    mqtt.mq?.removeAllListeners('MqttChatEvent');
     set(produce(state => {
       state.supportCount = 0;
       state.supportMsgs  = [];

@@ -9,7 +9,7 @@ import {
 } from '../shared/consts';
 import { useUserStore } from './user';
 import { useSettingsStore } from './settings';
-import GxyConfig from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import log from 'loglevel';
 import { StreamingPlugin } from '../libs/streaming-plugin';
@@ -17,7 +17,8 @@ import { getFromStorage, setToStorage } from '../shared/tools';
 
 let janus = null;
 
-let quadJanus = null;
+let quadJanus  = null;
+let quadStream = null;
 
 // Streaming plugin for video.
 let videoJanus  = null;
@@ -43,6 +44,8 @@ const initStream = async (_janus, media) => {
   const stream = await janusStream.watch(media);
   return [stream, janusStream];
 };
+
+const cleanStream = stream => stream?.getTracks().forEach(track => track.stop());
 
 export const useShidurStore = create((set, get) => ({
   video      : VIDEO_240P_OPTION_VALUE,
@@ -124,13 +127,13 @@ export const useShidurStore = create((set, get) => ({
     log.debug('[shidur] init janus ready');
     set({ janusReady: true });
   },
-  cleanJanus    : () => {
+  cleanJanus    : async () => {
     if (!janus)
       return;
 
     get().cleanShidur();
     get().cleanQuads();
-    janus?.destroy();
+    await janus?.destroy();
     janus = null;
   },
   initShidur    : async (srv) => {
@@ -190,26 +193,23 @@ export const useShidurStore = create((set, get) => ({
     }
   },
   cleanShidur   : () => {
-    const { talking } = get();
-    if (talking) {
-      clearInterval(talking);
-      set({ talking: null });
-    }
-
-    videoStream    = null;
-    audioStream    = null;
-    trlAudioStream = null;
-
+    log.debug('close stream bug: shidur cleanShidur');
+    cleanStream(videoStream);
+    videoStream = null;
     videoJanus?.detach();
     videoJanus = null;
 
+    cleanStream(audioStream);
+    audioStream = null;
     audioJanus?.detach();
     audioJanus = null;
 
+    cleanStream(trlAudioStream);
+    trlAudioStream = null;
     trlAudioJanus?.detach();
     trlAudioJanus = null;
 
-    set({ readyShidur: false, videoUrl: null });
+    set({ readyShidur: false, videoUrl: null, talking: null });
   },
   streamGalaxy  : async (isOn) => {
     log.debug('[shidur] got talk event: ', isOn);
@@ -263,22 +263,30 @@ export const useShidurStore = create((set, get) => ({
   initQuad      : async () => {
     const [stream, janusStream] = await initStream(janus, 102);
     set({ quadUrl: stream.toURL(), isQuad: true });
-    quadJanus = janusStream;
+    quadStream = stream;
+    quadJanus  = janusStream;
   },
   cleanQuads    : (updateState = true) => {
+    cleanStream(quadStream);
+    quadStream = null;
+    log.debug('close stream bug: shidur cleanQuads', quadStream);
     quadJanus?.detach();
     quadJanus = null;
-    if (updateState) {
+
+    if (updateState)
+      set({ quadUrl: null, isQuad: false });
+    else
       set({ quadUrl: null });
-    }
   },
   enterAudioMode: () => {
     if (videoJanus) {
+      cleanStream(videoStream);
       videoJanus.detach();
       videoJanus = null;
     }
 
     if (trlAudioJanus) {
+      cleanStream(trlAudioStream);
       trlAudioJanus.detach();
       trlAudioJanus = null;
     }

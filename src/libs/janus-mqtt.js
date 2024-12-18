@@ -106,7 +106,8 @@ export class JanusMqtt {
           log.debug('[janus] Janus destroyed: ', data)
           this._cleanupTransactions()
           resolve()
-        }).catch(() => {
+        }).catch((err) => {
+          log.debug('[janus] destroy err', err)
           this._cleanupTransactions()
           resolve()
         })
@@ -222,6 +223,7 @@ export class JanusMqtt {
       const plugin = this.pluginHandles[pluginId]
       //delete this.pluginHandles[pluginId]
       arr.push(new Promise((resolve, reject) => {
+        log.debug('[janus] _cleanupPlugins ', plugin.pluginName)
         if (!this.pluginHandles[plugin.janusHandleId]) {
           reject(new Error('[janus] unknown plugin'))
           return
@@ -233,6 +235,7 @@ export class JanusMqtt {
 
           resolve()
         }).catch((err) => {
+          log.debug('[janus] _cleanupPlugins err', plugin.pluginName, err)
           delete this.pluginHandles[plugin.janusHandleId]
           plugin.detach()
 

@@ -6,7 +6,7 @@ import { geoInfo } from '../shared/tools';
 import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
-import GxyConfig from '../shared/janus-utils';
+import GxyConfig from '../shared/janus-config';
 
 export const useInitsStore = create((set) => ({
   mqttReady    : false,
@@ -15,7 +15,6 @@ export const useInitsStore = create((set) => ({
   setIsPortrait: (isPortrait) => (set({ isPortrait })),
   initMQTT     : () => {
     const { user } = useUserStore.getState();
-
     mqtt.init(user, (reconnected, error) => {
       if (error) {
         log.info('[client] MQTT disconnected');
@@ -34,6 +33,10 @@ export const useInitsStore = create((set) => ({
         });
       }
     });
+  },
+  endMqtt      : async () => {
+    await mqtt.end();
+    set(() => ({ mqttReady: false, configReady: false }));
   },
   initConfig   : () => {
     const userInfo = {};

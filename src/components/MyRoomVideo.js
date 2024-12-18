@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
 import { useMyStreamStore } from '../zustand/myStream';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const MyRoomMedia = () => {
   const { cammute } = useMyStreamStore();
@@ -9,9 +10,13 @@ const MyRoomMedia = () => {
   return (
     <View style={styles.container}>
       <View style={styles.contant}>
-        {cammute && <View style={styles.overlay} />}
-        <MyRTCView />
-
+        {
+          cammute ? (
+            <View style={styles.overlay}>
+              <Icon name="account-circle" size={80} color="white" />
+            </View>
+          ) : <MyRTCView />
+        }
       </View>
     </View>
   );
@@ -24,18 +29,12 @@ const styles = StyleSheet.create({
   },
   contant  : {
     aspectRatio    : 16 / 9,
-    flex           : 1,
     alignItems     : 'center',
     justifyContent : 'center',
     backgroundColor: 'grey'
   },
   overlay  : {
-    position       : 'absolute',
-    top            : 0,
-    left           : 0,
-    bottom         : 0,
-    right          : 0,
-    zIndex         : 1,
-    backgroundColor: 'grey',
+    alignItems     : 'center',
+    justifyContent : 'center'
   }
 });

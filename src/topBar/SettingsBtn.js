@@ -24,7 +24,7 @@ export const SettingsBtn = () => {
         presentationStyle="fullScreen"
         statusBarTranslucent={true}
       >
-        <SettingsJoined />
+        <SettingsJoined toggleVisible={toggleVisible} />
       </Modal>
     </>
   );
