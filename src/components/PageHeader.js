@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
 import { baseStyles } from '../constants';
 
 const PageHeader = ({ page }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, baseStyles.text]}>Arvut-virtual ten</Text>
+      <Text style={[styles.title, baseStyles.text]}>{t('pageTitle')}</Text>
       <Text style={[styles.page, baseStyles.text]}>{page}</Text>
     </View>
   );

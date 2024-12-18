@@ -3,20 +3,18 @@ import { useState } from 'react';
 import useRoomStore from '../zustand/fetchRooms';
 import { useUserStore } from '../zustand/user';
 import mqtt from '../shared/mqtt';
+import { useTranslation } from 'react-i18next';
 
 export const RoomChatForm = () => {
   const [value, setValue] = useState('');
+  const { t }             = useTranslation();
 
   const { room } = useRoomStore();
   const { user } = useUserStore();
 
   const newChatMessage = () => {
-    const { id, display } = user;
-    /* const role            = getUserRole();
-     if (!role.match(/^(user|guest)$/) || value === '') {
-       return;
-     }*/
-    const role  = 'user';
+    const { id, display, role } = user;
+
     const msg   = { user: { id, role, display }, type: 'client-chat', text: value };
     const topic = id ? `galaxy/users/${id}` : `galaxy/room/${room}/chat`;
 
@@ -27,12 +25,12 @@ export const RoomChatForm = () => {
     <View style={styles.container}>
       <TextInput
         type="text"
-        placeholder={'virtualChat.enterMessage'}
+        placeholder={t('chat.newMsg')}
         value={value}
         onChangeText={setValue}
       >
       </TextInput>
-      <Button size={30} positive onPress={newChatMessage} title={'virtualChat.send'} />
+      <Button size={30} positive onPress={newChatMessage} title={t('chat.send')} />
     </View>
   );
 };

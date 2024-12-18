@@ -3,12 +3,10 @@ import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
 import { useUserStore } from './user';
-//import { NativeModules } from 'react-native';
-
-//const { KeepAwakeModule } = NativeModules;
 
 export const useSettingsStore = create((set, get) => ({
   uiLang           : 'en',
+  autoEnterRoom    : true,
   changeUiLang     : (lang) => set({ uiLang: lang }),
   readyForJoin     : false,
   setReadyForJoin  : (readyForJoin = true) => set({ readyForJoin }),

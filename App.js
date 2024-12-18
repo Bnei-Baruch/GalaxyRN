@@ -26,7 +26,6 @@ const App = () => {
 
   useEffect(() => {
     myInit();
-    //RNSecureStorage.clear()
     return myAbort;
   }, []);
 

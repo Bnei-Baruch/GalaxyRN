@@ -1,6 +1,31 @@
 {
+  "pageTitle": "Arvut-virtual ten",
   "login": "Login",
   "settings": {
-    "page": "Settings en"
+    "page": "Settings en",
+    "uiLanguage": "Interface language",
+    "cammute": "Stop video",
+    "audioMode": "Audio Mode",
+    "isBroadcast": "Mute Broadcast",
+    "search": "Search...",
+    "join": "join room",
+    "user": {
+      "title": "user settings",
+      "name": "Screen Name"
+    }
+  },
+  "topBar": {
+    "materials": "topBar.materials",
+    "communicationTitle": "Communication",
+    "materialsTitle": "Study Materials"
+  },
+  "chat": {
+    "send": "Send",
+    "newMsg": "Enter new message...",
+    "tab": {
+      "chat": "Chat",
+      "support": "Support",
+      "question": "Question"
+    }
   }
 }

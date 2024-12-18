@@ -1,34 +1,46 @@
 import { useEffect } from 'react';
-import { useChatStore, chatModes } from '../zustand/chat';
+import { useChatStore } from '../zustand/chat';
+import { modalModes } from '../zustand/helper';
 import { View, Modal, Text, StyleSheet, Button } from 'react-native';
 
 import { RoomChat } from './RoomChat';
 import ScreenTitle from '../components/ScreenTitle';
+import { useTranslation } from 'react-i18next';
 
 export const ChatModal = () => {
-  const { mode, setChatMode, initRoom, initSupport, cleanChat } = useChatStore();
+  const { mode, setChatMode, cleanChat } = useChatStore();
+  const { t }                            = useTranslation();
 
   useEffect(() => {
-    initRoom();
     return () => {
       cleanChat();
     };
   }, []);
 
-  const selectTab = (m) => setChatMode(m);
+  const selectTab  = (m) => setChatMode(m);
+  const closeModal = () => setChatMode(modalModes.close);
 
   return (
-    <Modal visible={mode !== chatModes.close}>
-      <ScreenTitle text={'Communication'} />
+    <Modal visible={mode !== modalModes.close}>
+      <ScreenTitle text={t('topBar.communicationTitle')} close={closeModal} />
       <View style={styles.tabs}>
-        <Button title={'Chat'} onPress={() => selectTab(chatModes.chat)} />
-        <Button title={'SUPPORT'} onPress={() => selectTab(chatModes.support)} />
-        <Button title={'QUESTION'} onPress={() => selectTab(chatModes.question)} />
+        <Button
+          title={t('chat.tab.chat')}
+          onPress={() => selectTab(modalModes.chat)}
+        />
+        <Button
+          title={t('chat.tab.support')}
+          onPress={() => selectTab(modalModes.support)}
+        />
+        <Button
+          title={t('chat.tab.question')}
+          onPress={() => selectTab(modalModes.question)}
+        />
       </View>
       <View>
-        {mode === chatModes.chat && <RoomChat />}
-        {mode === chatModes.support && <Text></Text>}
-        {mode === chatModes.question && <Text></Text>}
+        {mode === modalModes.chat && <RoomChat />}
+        {mode === modalModes.support && <Text></Text>}
+        {mode === modalModes.question && <Text></Text>}
       </View>
     </Modal>
   );
@@ -40,7 +52,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   tabs     : {
-    flexDirection : 'row',
-    justifyContent: 'space-between'
+    flexDirection  : 'row',
+    justifyContent : 'space-around',
+    backgroundColor: 'grey'
   }
 });

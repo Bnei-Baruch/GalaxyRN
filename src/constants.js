@@ -11,14 +11,20 @@ export const responsive = {
 };
 
 export const baseStyles = StyleSheet.create({
-  text    : {
+  text        : {
     color: 'white',
   },
-  full    : {
+  full        : {
     flex: 1,
   },
-  listItem: {
+  listItem    : {
     padding: 10
+  },
+  videoOverlay: {
+    flex           : 1,
+    backgroundColor: 'black',
+    alignItems     : 'center',
+    justifyContent : 'center'
   }
 });
 

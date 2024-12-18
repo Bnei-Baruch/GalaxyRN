@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { baseStyles } from '../constants';
 import ListInModal from '../components/ListInModal';
 import { setLanguage } from '../i18n/i18n';
+import { useTranslation } from 'react-i18next';
 
 const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
@@ -12,6 +13,7 @@ const languagesOptions = [
 ];
 const SelectUiLanguage = () => {
   const [lang, setLang] = useState(languagesOptions[0].value);
+  const { t }           = useTranslation();
 
   const handleLangChange = lang => {
     setLanguage(lang.value);
@@ -22,7 +24,7 @@ const SelectUiLanguage = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, baseStyles.text]}>Interface language</Text>
+      <Text style={[styles.label, baseStyles.text]}>{t('settings.uiLanguage')}</Text>
 
       <ListInModal
         items={languagesOptions}

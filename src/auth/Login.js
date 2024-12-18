@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, StyleSheet, SafeAreaView, } from 'react-native';
+import { Button, StyleSheet, View, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
 import { getUserRole } from '../shared/enums';
@@ -17,6 +17,13 @@ const LoginPage = ({ children }) => {
     });
   }, []);
 
+  if (user)
+    return (
+      <View style={styles.container}>
+        {children}
+      </View>
+    );
+
   const handleLogin = () => {
     kc.Login(() => {
       kc.getUser(u => {
@@ -27,17 +34,10 @@ const LoginPage = ({ children }) => {
     });
   };
 
-  if (user)
-    return (
-      <SafeAreaView style={styles.container}>
-        {children}
-      </SafeAreaView>
-    );
-
   return (
-    <SafeAreaView style={[styles.container, styles.login]}>
+    <View style={[styles.container, styles.login]}>
       <Button title={t('loginPage.login')} onPress={handleLogin} />
-    </SafeAreaView>
+    </View>
   );
 };
 

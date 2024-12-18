@@ -3,6 +3,7 @@ import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, 
 import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';
 import { baseStyles } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();
@@ -11,6 +12,7 @@ const RoomSelect = () => {
 
   const { fetchRooms, setRoom, room } = useRoomStore();
   const { setReadyForJoin }           = useSettingsStore();
+  const { t }                         = useTranslation();
 
   useEffect(() => {
     fetchRooms().then(rooms => setRooms(rooms));
@@ -36,13 +38,16 @@ const RoomSelect = () => {
       <View style={styles.searchContainer}>
         <TextInput
           style={[styles.searchInput, baseStyles.text]}
-          placeholder="Search..."
+          placeholder={t('settings.search')}
           value={searchText}
           onChangeText={handleSearch}
           onFocus={() => toggleOpen(true)}
         />
 
-        <Button title={'join room'} onPress={handleJoinRoom} disabled={!room} styles={{ flex: 1, height: '100%' }} />
+        <Button title={t('settings.join')} onPress={handleJoinRoom} disabled={!room} styles={{
+          flex  : 1,
+          height: '100%'
+        }} />
       </View>
       {
         open && filteredOptions.length > 0 && (filteredOptions.length > 1 || !room) && (

@@ -5,6 +5,7 @@ import { randomString } from './tools';
 import log from 'loglevel';
 import { MQTT_URL, MSG_URL } from '@env';
 import BackgroundTimer from 'react-native-background-timer';
+import { useChatStore } from '../zustand/chat';
 
 const mqttTimeout   = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
@@ -98,7 +99,6 @@ class MqttMsg {
         if (typeof callback === 'function') callback(false, true);
       }
     });
-
   };
 
   join = (topic, chat) => {
@@ -169,7 +169,7 @@ class MqttMsg {
         case 'galaxy':
           // FIXME: we need send cmd messages to separate topic
           if (service === 'room' && target === 'chat')
-            this.mq.emit('MqttChatEvent', data);
+            useChatStore.getState().addRoomMsg(data);
           else if (service === 'room' && target !== 'chat' || service ===
             'service' && id !== 'user') {
             try {
@@ -187,7 +187,8 @@ class MqttMsg {
               }
             }
           } else if (service === 'users' && id === 'broadcast')
-            this.mq.emit('MqttBroadcastMessage', data);
+            useChatStore.getState().addSupportMsg(data);
+          //this.mq.emit('MqttBroadcastMessage', data);
           else if (service === 'users' && id === 'notification')
             this.mq.emit('MqttNotificationMessage', data);
           else if (service === 'users' && id === 'notification_test')

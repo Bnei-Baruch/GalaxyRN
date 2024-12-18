@@ -1,38 +1,49 @@
 import * as React from 'react';
-import { useState, useRef } from 'react';
-import { TouchableOpacity, Animated, Text } from 'react-native';
+import { useState } from 'react';
+import { TouchableOpacity, Text, Modal, View, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import { baseStyles } from '../constants';
+import useMaterials from '../zustand/fetchMaterials';
+import WIP from '../components/WIP';
+import { useTranslation } from 'react-i18next';
+import { StudyMaterialItem } from './StudyMaterialItem';
+import ScreenTitle from '../components/ScreenTitle';
 
 export const StudyMaterialsBtn = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]                          = useState(false);
+  const { fetchMaterials, materials, isLoading } = useMaterials();
+  const { t }                                    = useTranslation();
 
-  const toggleOpen = () => {
-    if (open) {
-      // Close the menu with animation
-      Animated.timing(menuHeight, {
-        toValue        : 0,
-        duration       : 300, // Adjust animation duration as needed
-        useNativeDriver: false, // 'false' for layout animations
-      }).start();
-    } else {
-      // Open the menu with animation
-      Animated.timing(menuHeight, {
-        toValue        : 100, // Adjust height based on menu content
-        duration       : 300,
-        useNativeDriver: false,
-      }).start();
-    }
+  const toggleModal = () => {
+    if (!open)
+      fetchMaterials();
     setOpen(!open);
   };
 
-  const menuHeight = useRef(new Animated.Value(0)).current;
-
   return (
-    <TouchableOpacity onPress={toggleOpen} style={topMenuBtns.btn}>
-      <Icon name="library-books" size={30} color="black" />
-      <Text style={baseStyles.text}>{'oldClient.material'}</Text>
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity onPress={toggleModal} style={topMenuBtns.btn}>
+        <Icon name="library-books" size={30} color="white" />
+        <Text style={baseStyles.text}>{t('topBar.materials')}</Text>
+      </TouchableOpacity>
+      <Modal
+        animationType="fade"
+        transparent={false}
+        visible={open}
+        onRequestClose={toggleModal}
+      >
+        <ScreenTitle text={t('topBar.materialsTitle')} close={toggleModal} />
+        <WIP isReady={!isLoading}>
+          <ScrollView>
+            <View>
+              {
+                materials.map(m => <StudyMaterialItem msg={m} key={m.Title} />)
+              }
+            </View>
+          </ScrollView>
+        </WIP>
+      </Modal>
+    </>
   );
 };
