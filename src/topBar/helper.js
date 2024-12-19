@@ -2,9 +2,13 @@ import { StyleSheet } from 'react-native';
 import { baseStyles } from '../constants';
 
 export const topMenuBtns = StyleSheet.create({
-  btn: {
+  btn         : {
     flexDirection: 'row',
     alignItems   : 'center',
     ...baseStyles.listItem
+  },
+  menuItemText: {
+    paddingHorizontal: 5,
+    ...baseStyles.text
   }
 });

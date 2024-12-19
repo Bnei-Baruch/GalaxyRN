@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import { useSettingsStore } from '../zustand/settings';
-import { baseStyles } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 const params = new URLSearchParams({
   utm_source  : 'arvut_system',
@@ -22,7 +22,9 @@ const iso2ByIso1 = {
 };
 
 export const DonateBtn = () => {
-  const { uiLang }  = useSettingsStore();
+  const { uiLang } = useSettingsStore();
+  const { t }      = useTranslation();
+
   const isHe        = uiLang === 'he';
   const handlePress = () => {
     params.set('utm_term', iso2ByIso1[uiLang]);
@@ -30,8 +32,10 @@ export const DonateBtn = () => {
   };
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
-      <Icon name="favorite" size={30} color="black" />
-      <Text style={baseStyles.text}>{'oldClient.material'}</Text>
+      <Icon name="favorite" size={30} color="white" />
+      <Text style={topMenuBtns.menuItemText}>
+        {t('topBar.donate')}
+      </Text>
     </TouchableOpacity>
   );
 };

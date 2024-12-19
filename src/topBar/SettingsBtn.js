@@ -4,7 +4,6 @@ import { TouchableOpacity, Text, Modal, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import { SettingsJoined } from '../settings/SettingsJoined';
-import { baseStyles } from '../constants';
 
 export const SettingsBtn = () => {
   const [visible, setVisible] = useState(false);
@@ -13,8 +12,8 @@ export const SettingsBtn = () => {
   return (
     <>
       <TouchableOpacity onPress={toggleVisible} style={topMenuBtns.btn}>
-        <Icon name="settings" size={30} color="black" />
-        <Text style={baseStyles.text}>{'oldClient.settings'}</Text>
+        <Icon name="settings" size={30} color="white" />
+        <Text style={topMenuBtns.menuItemText}>{'topBar.settings'}</Text>
       </TouchableOpacity>
       <Modal
         style={styles.bg}

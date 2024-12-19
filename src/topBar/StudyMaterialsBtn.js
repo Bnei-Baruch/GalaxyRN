@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { TouchableOpacity, Text, Modal, View, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
-import { baseStyles } from '../constants';
 import useMaterials from '../zustand/fetchMaterials';
 import WIP from '../components/WIP';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +24,9 @@ export const StudyMaterialsBtn = () => {
     <>
       <TouchableOpacity onPress={toggleModal} style={topMenuBtns.btn}>
         <Icon name="library-books" size={30} color="white" />
-        <Text style={baseStyles.text}>{t('topBar.materials')}</Text>
+        <Text style={topMenuBtns.menuItemText}>
+          {t('topBar.materials')}
+        </Text>
       </TouchableOpacity>
       <Modal
         animationType="fade"

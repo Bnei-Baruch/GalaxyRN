@@ -16,6 +16,10 @@
   },
   "topBar": {
     "materials": "topBar.materials",
+    "donate": "Donate",
+    "support": "Support",
+    "settings": "Settings",
+    "logout": "Logout",
     "communicationTitle": "Communication",
     "materialsTitle": "Study Materials"
   },
