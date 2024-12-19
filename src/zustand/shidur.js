@@ -193,7 +193,6 @@ export const useShidurStore = create((set, get) => ({
     }
   },
   cleanShidur   : () => {
-    log.debug('close stream bug: shidur cleanShidur');
     cleanStream(videoStream);
     videoStream = null;
     videoJanus?.detach();
@@ -269,7 +268,6 @@ export const useShidurStore = create((set, get) => ({
   cleanQuads    : (updateState = true) => {
     cleanStream(quadStream);
     quadStream = null;
-    log.debug('close stream bug: shidur cleanQuads', quadStream);
     quadJanus?.detach();
     quadJanus = null;
 

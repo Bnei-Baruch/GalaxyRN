@@ -28,7 +28,6 @@ export const useChatStore = create((set) => ({
   resetSupport : set(() => ({ supportCount: 0 })),
   addRoomMsg   : (data) => {
     let json = JSON.parse(data);
-    console.log('chat bug: new room msg', json);
     if (json?.type === 'client-chat') {
       set(produce(state => {
         state.roomCount++;
@@ -38,7 +37,6 @@ export const useChatStore = create((set) => ({
   },
   addSupportMsg: (data) => {
     let json = JSON.parse(data);
-    console.log('chat bug: new support msg', json);
     if (json?.type === 'client-chat') {
       set(produce(state => {
         state.supportCount++;
