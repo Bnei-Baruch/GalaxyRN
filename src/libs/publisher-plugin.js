@@ -109,9 +109,7 @@ export class PublisherPlugin extends EventEmitter {
 
       this.pc.createOffer().then((offer) => {
         this.pc.setLocalDescription(offer);
-        let sdp    = offer.sdp;
-        sdp        = offer.sdp.replaceAll('profile-level-id=640c33', 'profile-level-id=42e01f');
-        sdp        = offer.sdp.replaceAll('profile-level-id=640c34', 'profile-level-id=42e01f');
+        const sdp  = offer.sdp.replaceAll('profile-level-id=640c34', 'profile-level-id=42e01f');
         const jsep = { type: offer.type, sdp };
         const body = { request: 'configure', video: true, audio: true };
         return this.transaction('message', { body, jsep }, 'event').then((param) => {

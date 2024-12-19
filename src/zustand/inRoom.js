@@ -43,12 +43,11 @@ export const useInRoomStore = create((set, get) => ({
     }
     const { user }                   = useUserStore.getState();
     const { room }                   = useRoomStore.getState();
-    const { audioMode }    = useSettingsStore.getState();
     const { cammmute, setTimestmap } = useMyStreamStore.getState();
 
     setTimestmap();
     InCallManager.start({ media: 'video' });
-    InCallManager.setKeepScreenOn(audioMode);
+    InCallManager.setKeepScreenOn(true);
     let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
@@ -216,12 +215,12 @@ export const useInRoomStore = create((set, get) => ({
           // Feeds count with user role
           let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
           if (feeds_count > 25) {
-            alert(i18n.t('oldClient.maxUsersInRoom'));
+            alert(i18n.t('messages.maxUsersInRoom'));
             get().restartRoom();
             return;
           }
 
-          makeSubscription(data.publishers);
+          await makeSubscription(data.publishers);
           useUserStore.getState().sendUserState();
           useMyStreamStore.getState().toggleMute(true);
 
@@ -265,8 +264,8 @@ export const useInRoomStore = create((set, get) => ({
     await mqtt.exit('galaxy/room/' + room.room + '/chat');
     await useInitsStore.getState().endMqtt();
 
-    InCallManager.stop();
     InCallManager.setKeepScreenOn(false);
+    InCallManager.stop();
   },
   restartRoom    : async () => {
     await get().exitRoom();

@@ -10,11 +10,11 @@ export const useUserStore = create((set, get) => ({
   rfid         : null,
   setRfid      : (rfid) => set({ rfid }),
   sendUserState: (opts = {}) => {
-    const { room }                = useRoomStore.getState();
-    const { question, audioMode } = useSettingsStore.getState();
-    const { cammmute }            = useMyStreamStore.getState();
-    const defaultOpts             = {
-      camera: cammmute || audioMode,
+    const { room }     = useRoomStore.getState();
+    const { question } = useSettingsStore.getState();
+    const { cammmute } = useMyStreamStore.getState();
+    const defaultOpts  = {
+      camera: !cammmute,
       question,
       rfid  : get().rfid,
       room  : room.room,

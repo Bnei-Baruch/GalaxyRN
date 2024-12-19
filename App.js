@@ -6,8 +6,8 @@ import Login from './src/auth/Login';
 import { SettingsNotJoined } from './src/settings/SettingsNotJoined';
 import { useMyStreamStore } from './src/zustand/myStream';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-
 import { Dimensions } from 'react-native';
+import 'react-native-url-polyfill';
 import { memberItemWidth } from './src/InRoom/helper';
 import { useInitsStore } from './src/zustand/inits';
 import { baseStyles } from './src/constants';

@@ -41,7 +41,6 @@ export const useMyStreamStore = create((set, get) => ({
     set(() => ({ mute: mute }));
   },
   toggleCammute: (cammute = !get().cammute) => {
-    console.log('toggleCammute', cammute);
     stream.getVideoTracks().forEach(track => track.enabled = !cammute);
     set(() => ({ cammute }));
     useUserStore.getState().sendUserState({ camera: !cammute });
