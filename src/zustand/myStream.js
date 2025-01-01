@@ -30,7 +30,6 @@ export const useMyStreamStore = create((set, get) => ({
     } catch (e) {
       console.error('Error accessing media devices:', e);
     }
-    console.log('useMyStreamStore init', cammute, stream);
     set(() => ({ stream, cammute }));
   },
   myAbort      : () => {

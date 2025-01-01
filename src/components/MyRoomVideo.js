@@ -3,12 +3,17 @@ import { View, StyleSheet } from 'react-native';
 import MyRTCView from './MyRTCView';
 import { useMyStreamStore } from '../zustand/myStream';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSettingsStore } from '../zustand/settings';
+import { feedWidth } from '../InRoom/helper';
 
 const MyRoomMedia = () => {
-  const { cammute } = useMyStreamStore();
+  const { cammute }       = useMyStreamStore();
+  const { numFeedsInCol } = useSettingsStore();
+
+  const width = feedWidth(numFeedsInCol);
 
   return (
-    <View style={styles.container}>
+    <View style={{ width }}>
       <View style={styles.contant}>
         {
           cammute ? (
@@ -24,17 +29,14 @@ const MyRoomMedia = () => {
 export default MyRoomMedia;
 
 const styles = StyleSheet.create({
-  container: {
-    width: '49%',
-  },
-  contant  : {
+  contant: {
     aspectRatio    : 16 / 9,
     alignItems     : 'center',
     justifyContent : 'center',
     backgroundColor: 'grey'
   },
-  overlay  : {
-    alignItems     : 'center',
-    justifyContent : 'center'
+  overlay: {
+    alignItems    : 'center',
+    justifyContent: 'center'
   }
 });

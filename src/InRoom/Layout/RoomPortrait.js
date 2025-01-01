@@ -14,10 +14,7 @@ const RoomPortrait = ({ shidur, quads, members }) => {
 
   const handleAnyPress = () => setShowBars(true);
 
-  const handleScroll = e => {
-    console.log('unsub on scroll e.nativeEvent.contentOffset.y', e.nativeEvent.contentOffset.y);
-    setFeedsScrollY(e.nativeEvent.contentOffset.y);
-  };
+  const handleScroll = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
 
   return (
     <View style={styles.container}>

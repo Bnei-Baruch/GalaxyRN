@@ -5,12 +5,17 @@ import { useSettingsStore } from '../zustand/settings';
 import MyRoomMedia from '../components/MyRoomVideo';
 import MemberNoVideo from './MemberNoVideo';
 import { useMyStreamStore } from '../zustand/myStream';
+import { useRef } from 'react';
+import { useUiActions } from '../zustand/uiActions';
 
 const Members = () => {
-  const { hideSelf, audioMode } = useSettingsStore();
-  const { cammute, timestamp }  = useMyStreamStore();
+  const { hideSelf, audioMode, isBroadcast, showGroups } = useSettingsStore();
+  const { cammute, timestamp }                           = useMyStreamStore();
+  const { setFeedsPos }                                  = useUiActions();
 
-  const memberIds = useInRoomStore((state) => {
+  const ref = useRef({});
+
+  const memberIds    = useInRoomStore((state) => {
     const _ms = Object.values(state.memberByFeed);
     _ms.sort((a, b) => {
       if (!!a.display?.is_group && !b.display?.is_group) {
@@ -43,9 +48,10 @@ const Members = () => {
       return acc;
     }, []);
   });
+  const handleLayout = (event) => setFeedsPos(event.nativeEvent.layout.y);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleLayout} ref={ref}>
       {
         memberIds.length > 0 ? (
           memberIds

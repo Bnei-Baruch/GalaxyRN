@@ -1,18 +1,75 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import React from 'react';
-import { useInRoomStore } from '../zustand/inRoom';
+import React, { useRef, useEffect } from 'react';
+import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../zustand/inRoom';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSettingsStore } from '../zustand/settings';
+import { feedWidth } from './helper';
+import { useUiActions } from '../zustand/uiActions';
+
+const SCROLL_STEP              = 20;
+const { height: screenHeight } = Dimensions.get('window');
 
 const Member = ({ id }) => {
-  const { memberByFeed } = useInRoomStore();
+  const { memberByFeed }           = useInRoomStore();
+  const { numFeedsInCol }          = useSettingsStore();
+  const { feedsScrollY, feedsPos } = useUiActions();
 
-  if (!memberByFeed[id])
+  const feed             = memberByFeed[id];
+  const { display, url } = feed;
+  const ref              = useRef({ prevScrollY: 0, isOn: !!url });
+
+  const scrollPos = Math.round((feedsScrollY - feedsPos) / SCROLL_STEP) * SCROLL_STEP;
+
+  useEffect(() => {
+    if (!ref.current)
+      return;
+
+    const { height, y, prevScrollY, isOn } = ref.current;
+
+    //when scroll up dir > 0, when scroll down dir < 0
+    const dir = scrollPos - prevScrollY;
+    if (dir === 0)
+      return;
+
+    if (y + height - 3 * SCROLL_STEP < scrollPos && y + height - SCROLL_STEP > scrollPos) {
+      //when feed is near top screen border
+      if (dir > 0) {
+        isOn && deactivateFeedsVideos([feed]);
+        ref.current.isOn = false;
+      } else {
+        !isOn && activateFeedsVideos([feed]);
+        ref.current.isOn = true;
+      }
+    } else if (scrollPos + screenHeight < y + 4 * SCROLL_STEP && scrollPos + screenHeight > y + 2 * SCROLL_STEP) {
+      //when feed is near bottom screen border
+      if (dir > 0) {
+        !isOn && activateFeedsVideos([feed]);
+        ref.current.isOn = true;
+      } else {
+        isOn && deactivateFeedsVideos([feed]);
+        ref.current.isOn = false;
+      }
+    }
+    ref.current.prevScrollY = scrollPos;
+
+  }, [scrollPos, feed]);
+
+  if (!feed)
     return null;
 
-  const { display, url } = memberByFeed[id];
+  const handleLayout = (event) => {
+    const { y, height } = event.nativeEvent.layout;
+    ref.current.y       = y;
+    ref.current.height  = height;
+  };
+
+  const width = feedWidth(numFeedsInCol);
   return (
-    <View style={styles.container}>
+    <View
+      onLayout={handleLayout}
+      style={[styles.container, { width }]}
+    >
       <View style={styles.display}>
         <Text style={styles.displayMark}>.</Text>
         <Text style={styles.displayText}>{display?.display}</Text>
@@ -36,7 +93,6 @@ export default Member;
 
 const styles = StyleSheet.create({
   container  : {
-    width          : '49%',
     backgroundColor: '#eaeaea',
   },
   display    : {
@@ -69,7 +125,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   overlay    : {
-    flex           : 1,
     backgroundColor: 'grey',
     aspectRatio    : 16 / 9,
     alignItems     : 'center',

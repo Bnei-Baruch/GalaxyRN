@@ -10,18 +10,13 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 
 class MainApplication : Application(), ReactApplication {
 
-    private val executor: ExecutorService = Executors.newSingleThreadExecutor()
-
     override val reactNativeHost: ReactNativeHost =
         object : DefaultReactNativeHost(this) {
             override fun getPackages(): List<ReactPackage> = PackageList(this).packages.apply {
-                add(GxyPackage())
             }
 
             override fun getJSMainModuleName(): String = "index"
@@ -45,10 +40,4 @@ class MainApplication : Application(), ReactApplication {
         }
     }
 
-    override fun onTerminate() {
-        super.onTerminate()
-
-        ForegroundService.abort(applicationContext)
-
-    }
 }
