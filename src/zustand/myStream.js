@@ -19,11 +19,13 @@ export const useMyStreamStore = create((set, get) => ({
     } catch (e) {
       console.log(e);
     }
-    console.log('useMyStreamStore init cammute', cammute);
+
+    get().myAbort();
+
     try {
       stream = await mediaDevices.getUserMedia({
         audio: true,
-        video: { frameRate: 30, width: 320, height: 180, facingMode: 'user' }
+        video: { facingMode: 'user' }
       });
     } catch (e) {
       console.error('Error accessing media devices:', e);
@@ -31,7 +33,7 @@ export const useMyStreamStore = create((set, get) => ({
     console.log('useMyStreamStore init', cammute, stream);
     set(() => ({ stream, cammute }));
   },
-  myAbort      : async () => {
+  myAbort      : () => {
     if (!stream) return;
     stream.getTracks().forEach(t => t.stop());
     stream = null;

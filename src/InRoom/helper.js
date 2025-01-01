@@ -12,3 +12,8 @@ class MemberItemWidth {
 }
 
 export const memberItemWidth = new MemberItemWidth();
+
+export const feedWidth = coef => {
+  const w = (100 - 100 % coef) / coef;
+  return w + '%';
+};

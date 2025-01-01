@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { PermissionsAndroid } from 'react-native';
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
@@ -8,12 +9,60 @@ import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
 
+async function checkPermission(permission) {
+  try {
+    const granted = await PermissionsAndroid.check(permission);
+    if (granted) {
+      log.debug(`permission ${permission} granted`);
+      return true;
+    } else {
+      log.debug(`permission ${permission} denied`);
+      return await requestPermission(permission);
+    }
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+}
+
+async function requestPermission(permission) {
+  try {
+    const granted = await PermissionsAndroid.request(
+      permission,
+      {
+        title         : `${permission} Permission`,
+        message       : `Arvut needs access to your ${permission}`,
+        buttonNeutral : 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+}
+
 export const useInitsStore = create((set) => ({
-  mqttReady    : false,
-  configReady  : false,
-  isPortrait   : true,
-  setIsPortrait: (isPortrait) => (set({ isPortrait })),
-  initMQTT     : () => {
+  mqttReady      : false,
+  configReady    : false,
+  isPortrait     : true,
+  setIsPortrait  : (isPortrait) => (set({ isPortrait })),
+  initPermissions: async () => {
+    if (!await checkPermission('android.permission.CAMERA'))
+      return false;
+
+    return (
+      await checkPermission('android.permission.BLUETOOTH_CONNECT')
+      || (
+        await checkPermission('android.permission.BLUETOOTH')
+        && await checkPermission('android.permission.BLUETOOTH_ADMIN')
+      )
+    );
+
+  },
+  initMQTT       : () => {
     const { user } = useUserStore.getState();
     mqtt.init(user, (reconnected, error) => {
       if (error) {
@@ -34,11 +83,11 @@ export const useInitsStore = create((set) => ({
       }
     });
   },
-  endMqtt      : async () => {
+  endMqtt        : async () => {
     await mqtt.end();
     set(() => ({ mqttReady: false, configReady: false }));
   },
-  initConfig   : () => {
+  initConfig     : () => {
     const userInfo = {};
     return geoInfo(GEO_IP_INFO, (data) => {
       userInfo.ip      = data && data.ip ? data.ip : '127.0.0.1';
@@ -60,5 +109,5 @@ export const useInitsStore = create((set) => ({
         //this.setState({appInitError: err});
       });
     });
-  }
+  },
 }));

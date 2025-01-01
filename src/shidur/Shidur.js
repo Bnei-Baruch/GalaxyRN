@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Button } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
@@ -8,24 +8,14 @@ import { useInitsStore } from '../zustand/inits';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 
 export const Shidur = () => {
-  const { videoUrl, isPlay, cleanShidur, talking, streamGalaxy, exitAudioMode, enterAudioMode } = useShidurStore();
-  const { isPortrait }                                                                          = useInitsStore();
-
-  const [isFor, setIsFor] = useState(false);
+  const { videoUrl, isPlay, cleanShidur } = useShidurStore();
+  const { isPortrait }                    = useInitsStore();
 
   useEffect(() => {
     return () => {
       cleanShidur();
     };
   }, []);
-
-  const toggleForeground = () => {
-    if (isFor)
-      exitAudioMode();
-    else
-      enterAudioMode();
-    setIsFor(!isFor);
-  };
 
   return (
     <View style={styles.container}>
@@ -39,16 +29,6 @@ export const Shidur = () => {
       }
       <View style={styles.toolbar}>
         <PlayPauseBtn />
-        <Button
-          title={talking ? 'on air' : 'off air'}
-          onPress={() => streamGalaxy(!talking)}
-          color={talking ? 'red' : 'green'}
-        />
-        <Button
-          title={isFor ? 'in background' : 'active'}
-          onPress={toggleForeground}
-          color={isFor ? 'red' : 'green'}
-        />
         <OptionsBtn />
       </View>
     </View>

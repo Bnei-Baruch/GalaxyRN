@@ -55,4 +55,6 @@ export const useSettingsStore = create((set, get) => ({
   toggleShowGroups : () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf         : false,
   toggleHideSelf   : () => set((state) => ({ hideSelf: !state.hideSelf })),
+  numFeedsInCol    : 2,
+  setNumFeedsInCol : (numFeedsInCol = 2) => set({ numFeedsInCol }),
 }));
