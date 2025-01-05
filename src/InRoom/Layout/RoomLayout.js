@@ -10,9 +10,9 @@ import { Quads } from '../../shidur/Quads';
 import { Shidur } from '../../shidur/Shidur';
 
 const RoomLayout = () => {
-  const { isPortrait }                            = useInitsStore();
-  const { isBroadcast, showGroups, isFullscreen } = useSettingsStore();
-  const { cleanJanus, initJanus }                 = useShidurStore();
+  const { isPortrait }                         = useInitsStore();
+  const { isShidur, showGroups, isFullscreen } = useSettingsStore();
+  const { cleanJanus, initJanus }              = useShidurStore();
 
   useEffect(() => {
     initJanus();
@@ -21,7 +21,7 @@ const RoomLayout = () => {
     };
   }, []);
 
-  const shidur  = isBroadcast && <Shidur />;
+  const shidur  = isShidur && <Shidur />;
   const quads   = showGroups && <Quads />;
   const members = <Members key="members" />;
 

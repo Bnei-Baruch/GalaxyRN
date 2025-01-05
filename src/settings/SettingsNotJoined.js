@@ -8,21 +8,19 @@ import { useSettingsStore } from '../zustand/settings';
 import RoomSelect from './RoomSelect';
 import { useMyStreamStore } from '../zustand/myStream';
 import { View, StyleSheet } from 'react-native';
-import { useInitsStore } from '../zustand/inits';
 import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
 
 export const SettingsNotJoined = () => {
-  const { t }                                                          = useTranslation();
-  const { cammute, toggleCammute }                                     = useMyStreamStore();
-  const { isBroadcast, toggleIsBroadcast, audioMode, toggleAudioMode } = useSettingsStore();
-  const { isPortrait }                                                 = useInitsStore();
-  const { user }                                                       = useUserStore();
+  const { t }                                                    = useTranslation();
+  const { cammute, toggleCammute }                               = useMyStreamStore();
+  const { isShidur, toggleIsShidur, audioMode, toggleAudioMode } = useSettingsStore();
+  const { user }                                                 = useUserStore();
 
-  const handleToggleAudioMode   = () => toggleAudioMode();
-  const handleToggleIsBroadcast = () => toggleIsBroadcast();
-  const handleCammute           = () => toggleCammute();
+  const handleToggleAudioMode = () => toggleAudioMode();
+  const handleToggleIsShidur  = () => toggleIsShidur();
+  const handleCammute         = () => toggleCammute();
 
   return (
     <View style={styles.container}>
@@ -44,9 +42,9 @@ export const SettingsNotJoined = () => {
       />
 
       <LabeledSwitch
-        label={t('settings.isBroadcast')}
-        initialValue={isBroadcast}
-        onValueChange={handleToggleIsBroadcast}
+        label={t('settings.isShidur')}
+        initialValue={isShidur}
+        onValueChange={handleToggleIsShidur}
       />
       <RoomSelect />
     </View>

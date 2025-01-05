@@ -9,8 +9,8 @@ import { useRef } from 'react';
 import { useUiActions } from '../zustand/uiActions';
 
 const Members = () => {
-  const { hideSelf, audioMode, isBroadcast, showGroups } = useSettingsStore();
-  const { cammute, timestamp }                           = useMyStreamStore();
+  const { hideSelf, audioMode, isShidur, showGroups } = useSettingsStore();
+  const { cammute, timestamp }                        = useMyStreamStore();
   const { setFeedsPos }                                  = useUiActions();
 
   const ref = useRef({});

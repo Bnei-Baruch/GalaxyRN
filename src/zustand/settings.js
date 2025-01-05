@@ -7,23 +7,23 @@ import { useUserStore } from './user';
 export const useSettingsStore = create((set, get) => ({
   uiLang           : 'en',
   autoEnterRoom    : true,
-  changeUiLang     : (lang) => set({ uiLang: lang }),
-  readyForJoin     : false,
-  setReadyForJoin  : (readyForJoin = true) => set({ readyForJoin }),
-  question         : false,
-  toggleQuestion   : () => {
+  changeUiLang   : (lang) => set({ uiLang: lang }),
+  readyForJoin   : false,
+  setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
+  question       : false,
+  toggleQuestion : () => {
     const question = !get().question;
     useUserStore.getState().sendUserState({ question });
     set({ question });
   },
-  isBroadcast      : true,
-  toggleIsBroadcast: () => set((state) => ({ isBroadcast: !state.isBroadcast })),
-  audioMode        : false,
-  toggleAudioMode  : async (audioMode = !get().audioMode) => {
+  isShidur       : true,
+  toggleIsShidur : () => set((state) => ({ isShidur: !state.isShidur })),
+  audioMode      : false,
+  toggleAudioMode: async (audioMode = !get().audioMode) => {
     audioMode ? get().enterAudioMode() : get().exitAudioMode();
     set({ audioMode });
   },
-  enterAudioMode   : async () => {
+  enterAudioMode : async () => {
     const { toggleCammute } = useMyStreamStore.getState();
     toggleCammute(true);
 
@@ -43,8 +43,8 @@ export const useSettingsStore = create((set, get) => ({
     const feeds = Object.values(useInRoomStore.getState().memberByFeed);
     activateFeedsVideos(feeds);
 
-    const { exitAudioMode, initQuad, isQuad, isBroadcast } = useShidurStore.getState();
-    if (isBroadcast) {
+    const { exitAudioMode, initQuad, isQuad, isShidur } = useShidurStore.getState();
+    if (isShidur) {
       exitAudioMode();
     }
     if (isQuad) {

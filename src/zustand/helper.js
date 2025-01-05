@@ -4,3 +4,6 @@ export const modalModes = {
   support : 2,
   question: 3,
 };
+
+
+export const HIDE_BARS_TIMEOUT_MS = 5000;

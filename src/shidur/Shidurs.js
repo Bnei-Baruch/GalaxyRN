@@ -9,8 +9,8 @@ import { useSettingsStore } from '../zustand/settings';
 
 export const Shidurs = () => {
   const { cleanJanus, initJanus, janusReady } = useShidurStore();
-  const { isPortrait }                         = useInitsStore();
-  const { isBroadcast, showGroups }            = useSettingsStore();
+  const { isPortrait }           = useInitsStore();
+  const { isShidur, showGroups } = useSettingsStore();
 
   useEffect(() => {
     initJanus();
@@ -22,7 +22,7 @@ export const Shidurs = () => {
   return (
     <WIP isReady={janusReady}>
       <View style={isPortrait ? styles.portrait : styles.landscape}>
-        {isBroadcast && <Shidur />}
+        {isShidur && <Shidur />}
         {showGroups && <Quads />}
       </View>
     </WIP>

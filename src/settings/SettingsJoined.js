@@ -13,15 +13,15 @@ import * as React from 'react';
 import { baseStyles } from '../constants';
 
 export const SettingsJoined = ({ toggleVisible }) => {
-  const { t }                                                          = useTranslation();
-  const { cammute, toggleCammute }                                     = useMyStreamStore();
-  const { isBroadcast, toggleIsBroadcast, audioMode, toggleAudioMode } = useSettingsStore();
-  const { isPortrait }                                                 = useInitsStore();
-  const { user }                                                       = useUserStore();
+  const { t }                                                    = useTranslation();
+  const { cammute, toggleCammute }                               = useMyStreamStore();
+  const { isShidur, toggleIsShidur, audioMode, toggleAudioMode } = useSettingsStore();
+  const { isPortrait }                                           = useInitsStore();
+  const { user }                                                 = useUserStore();
 
-  const handleToggleAudioMode   = () => toggleAudioMode();
-  const handleToggleIsBroadcast = () => toggleIsBroadcast();
-  const handleCammute           = () => toggleCammute();
+  const handleToggleAudioMode = () => toggleAudioMode();
+  const handleToggleIsShidur  = () => toggleIsShidur();
+  const handleCammute         = () => toggleCammute();
 
   return (
     <View style={styles.container}>
@@ -42,8 +42,8 @@ export const SettingsJoined = ({ toggleVisible }) => {
       />
       <LabeledSwitch
         label={'Mute Broadcast'}
-        initialValue={isBroadcast}
-        onValueChange={handleToggleIsBroadcast}
+        initialValue={isShidur}
+        onValueChange={handleToggleIsShidur}
       />
       <View style={baseStyles.full} />
       <View style={styles.containerBack}>
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flexWrap     : 'wrap',
   },
   containerBack: {
-    alignItems   : 'flex-end',
-    padding: 10,
+    alignItems: 'flex-end',
+    padding   : 10,
   }
 });

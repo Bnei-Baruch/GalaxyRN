@@ -7,14 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { baseStyles } from '../../constants';
 
 export const ShidurBtn = () => {
-  const { isBroadcast, toggleIsBroadcast } = useSettingsStore();
+  const { isShidur, toggleIsShidur } = useSettingsStore();
 
   const { t } = useTranslation();
 
   return (
     <TouchableOpacity
-      onPress={toggleIsBroadcast}
-      style={[baseStyles.listItem, isBroadcast && bottomBar.moreSelBtn]}
+      onPress={toggleIsShidur}
+      style={[baseStyles.listItem, isShidur && bottomBar.moreSelBtn]}
     >
       <IconWithText iconName="public" text={t('bottomBar.toggleShidur')} />
     </TouchableOpacity>

@@ -14,13 +14,13 @@ import { useMyStreamStore, getStream } from './myStream';
 import InCallManager from 'react-native-incall-manager';
 import i18n from '../i18n/i18n';
 import { useInitsStore } from './inits';
+import { HIDE_BARS_TIMEOUT_MS } from './helper';
 
 let subscriber = null;
 let videoroom  = null;
 let janus      = null;
 
 let showBarTimeout         = null;
-const HIDE_BARS_TIMEOUT_MS = 5000;
 let attempts               = 0;
 
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h264_profile !== '42e01f')*/);

@@ -5,10 +5,15 @@ import { useShidurStore } from '../zustand/shidur';
 import { topMenuBtns } from '../topBar/helper';
 
 export const PlayPauseBtn = () => {
-  const { isPlay, toggleIsPlay } = useShidurStore();
+  const { isPlay, toggleIsPlay, toggleShidurBar } = useShidurStore();
+
+  const toggle = () => {
+    toggleIsPlay();
+    toggleShidurBar(false);
+  };
 
   return (
-    <TouchableOpacity onPress={toggleIsPlay} style={topMenuBtns.btn}>
+    <TouchableOpacity onPress={toggle} style={topMenuBtns.btn}>
       <Icon name={isPlay ? 'stop' : 'play-arrow'} size={30} color="white" />
     </TouchableOpacity>
   );

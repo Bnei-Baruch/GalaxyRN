@@ -8,14 +8,18 @@ import VideoSelect from './VideoSelect';
 import { baseStyles } from '../constants';
 
 export const OptionsBtn = () => {
-  const items           = [
+  const { toggleShidurBar } = useShidurStore();
+
+  const items = [
     { value: 'audio', text: 'Audio' },
     { value: 'video', text: 'Video' },
   ];
-  console.log('OptionsBtn render', items);
-  const handleSelect = () => {
+
+  const handleOpen = () => {
+    toggleShidurBar(false);
   };
-  const renderItem   = (item) => {
+
+  const renderItem = (item) => {
     console.log('renderItem', item);
 
     switch (item.value) {
@@ -34,7 +38,8 @@ export const OptionsBtn = () => {
   return (
     <ListInModal
       items={items}
-      onSelect={handleSelect}
+      onSelect={toggleShidurBar}
+      onOpen={handleOpen}
       renderItem={renderItem}
       trigger={<Icon name="settings" size={30} color="white" />}
     />
