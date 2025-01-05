@@ -25,6 +25,7 @@ const RoomLayout = () => {
   const quads   = showGroups && <Quads />;
   const members = <Members key="members" />;
 
+
   if (isFullscreen)
     return <RoomFullscreen shidur={shidur} quads={quads} members={members} />;
 

@@ -8,12 +8,12 @@ import { useInRoomStore } from '../zustand/inRoom';
 import { baseStyles } from '../constants';
 
 export const TopBar = () => {
-  const { room }                  = useRoomStore();
-  const { showBars, setShowBars } = useInRoomStore();
+  const { room }                     = useRoomStore();
+  const { showBars, toggleShowBars } = useInRoomStore();
 
   if (!showBars) return null;
 
-  const handleAnyPress = () => setShowBars(false);
+  const handleAnyPress = () => toggleShowBars(false, true);
 
   return (
     <TouchableWithoutFeedback onPress={handleAnyPress}>

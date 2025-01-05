@@ -9,7 +9,7 @@ import ListInModal from '../components/ListInModal';
 import { useInRoomStore } from '../zustand/inRoom';
 
 export const TopMenuBtn = () => {
-  const { setShowBars } = useInRoomStore();
+  const { toggleShowBars } = useInRoomStore();
 
   const items = [
     { component: <StudyMaterialsBtn />, key: 1 },
@@ -21,7 +21,7 @@ export const TopMenuBtn = () => {
 
   const renderItem = (item) => item.component;
 
-  const handlePress = () => setShowBars(false);
+  const handlePress = () => toggleShowBars(false, true);
 
   return (
     <ListInModal

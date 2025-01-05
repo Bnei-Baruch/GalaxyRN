@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
     padding       : 4,
     flexDirection : 'row',
     justifyContent: 'space-between',
+    alignItems    : 'center',
     width         : '100%',
   }
 });

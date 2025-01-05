@@ -8,11 +8,11 @@ import WIP from '../../components/WIP';
 import { useUiActions } from '../../zustand/uiActions';
 
 const RoomPortrait = ({ shidur, quads, members }) => {
-  const { setShowBars }     = useInRoomStore();
-  const { janusReady }      = useShidurStore();
+  const { toggleShowBars } = useInRoomStore();
+  const { janusReady }     = useShidurStore();
   const { setFeedsScrollY } = useUiActions();
 
-  const handleAnyPress = () => setShowBars(true);
+  const handleAnyPress = () => toggleShowBars(true);
 
   const handleScroll = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
 

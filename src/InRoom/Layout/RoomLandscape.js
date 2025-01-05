@@ -8,8 +8,8 @@ import { memberItemWidth } from '../helper';
 import { useSettingsStore } from '../../zustand/settings';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
-  const { setShowBars }      = useInRoomStore();
-  const { janusReady }       = useShidurStore();
+  const { toggleShowBars } = useInRoomStore();
+  const { janusReady }     = useShidurStore();
   const { setNumFeedsInCol } = useSettingsStore();
 
   const isShidur = !!shidur;
@@ -22,17 +22,20 @@ const RoomLandscape = ({ shidur, quads, members }) => {
 
   }, [isShidur]);
 
-  const handleAnyPress = () => setShowBars(true);
+  const handleAnyPress = () => toggleShowBars(true);
 
   return (
     <View style={styles.container}>
-      <WIP isReady={janusReady}>
-        <View style={{ height: '100%', paddingVertical: 15 }}>
-          <View style={shidur && styles.shidur}>
-            {shidur}
+      {isShidur && (
+        <WIP isReady={janusReady}>
+          <View style={styles.shidurWrapper}>
+            <View style={styles.shidur}>
+              {shidur}
+            </View>
           </View>
-        </View>
-      </WIP>
+        </WIP>
+      )
+      }
       <View style={baseStyles.full}>
         <ScrollView
           showsHorizontalScrollIndicator={false}
@@ -54,7 +57,6 @@ export default RoomLandscape;
 const styles = StyleSheet.create({
   container    : {
     flex           : 1,
-    padding        : 10,
     backgroundColor: 'black',
     flexDirection  : 'row'
   },
@@ -62,10 +64,15 @@ const styles = StyleSheet.create({
     flex     : 1,
     minHeight: '100%'
   },
-  shidur       : {
+  shidurWrapper: {
+    flex          : 1,
     height        : '100%',
     alignItems    : 'center',
     justifyContent: 'center',
-    aspectRatio   : memberItemWidth.getAspectRatio()
+
+  },
+  shidur       : {
+    width      : '100%',
+    aspectRatio: memberItemWidth.getAspectRatio(true)
   }
 });

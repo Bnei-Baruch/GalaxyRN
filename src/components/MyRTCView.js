@@ -1,5 +1,4 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useMyStreamStore } from '../zustand/myStream';
 import { baseStyles } from '../constants';
@@ -13,16 +12,10 @@ const MyRTCView = () => {
   return (
     <RTCView
       streamURL={stream.toURL()}
-      style={[baseStyles.full, styles.video]}
+      style={[baseStyles.full, { aspectRatio: memberItemWidth.getAspectRatio() }]}
       objectFit="cover"
       mirror={true}
     />
   );
 };
 export default MyRTCView;
-
-const styles = StyleSheet.create({
-  video: {
-    aspectRatio: memberItemWidth.getAspectRatio()
-  },
-});

@@ -20,7 +20,7 @@ let videoroom  = null;
 let janus      = null;
 
 let showBarTimeout         = null;
-const HIDE_BARS_TIMEOUT_MS = 5000;
+const HIDE_BARS_TIMEOUT_MS = 2000;
 let attempts               = 0;
 
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h264_profile !== '42e01f')*/);
@@ -28,13 +28,12 @@ const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h2
 export const useInRoomStore = create((set, get) => ({
   memberByFeed   : {},
   showBars       : true,
-  setShowBars    : (hideOnTimeout) => {
-    console.log('show hide bars: setShowBars', hideOnTimeout);
+  toggleShowBars : (hideOnTimeout, showBars = !get().showBars) => {
     clearTimeout(showBarTimeout);
-    if (hideOnTimeout) {
+    if (hideOnTimeout && showBars) {
       showBarTimeout = setTimeout(() => set({ showBars: false }), HIDE_BARS_TIMEOUT_MS);
     }
-    set({ showBars: true });
+    set({ showBars });
   },
   joinRoom       : () => {
     if (janus) {

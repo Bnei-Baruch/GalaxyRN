@@ -11,7 +11,7 @@ import { HideSelfBtn } from './moreBtns/HideSelfBtn';
 import { VoteBtn } from './moreBtns/VoteBtn';
 
 export const MoreBtn = () => {
-  const { setShowBars } = useInRoomStore();
+  const { toggleShowBars } = useInRoomStore();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
@@ -21,7 +21,7 @@ export const MoreBtn = () => {
     { component: <LeaveBtn />, key: 5 },
   ];
 
-  const handlePress = () => setShowBars(false);
+  const handlePress = () => toggleShowBars(false, true);
 
   const renderItem = (item) => item.component;
 
