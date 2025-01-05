@@ -28,7 +28,7 @@ export const TopMenuBtn = () => {
       onOpen={handlePress}
       items={items}
       renderItem={renderItem}
-      trigger={<Icon name="menu" size={30} color="black" />}
+      trigger={<Icon name="menu" size={30} color="white" />}
     />
   );
 };

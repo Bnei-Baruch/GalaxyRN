@@ -5,6 +5,7 @@ import { MuteBtn } from './MuteBtn';
 import useRoomStore from '../zustand/fetchRooms';
 import { ChatBtn } from './ChatBtn';
 import { useInRoomStore } from '../zustand/inRoom';
+import { baseStyles } from '../constants';
 
 export const TopBar = () => {
   const { room }                  = useRoomStore();
@@ -21,7 +22,7 @@ export const TopBar = () => {
           <TopMenuBtn />
         </View>
         <View>
-          <Text>{room?.description}</Text>
+          <Text style={baseStyles.text}>{room?.description}</Text>
         </View>
         <ChatBtn />
       </View>
@@ -36,10 +37,10 @@ const styles = StyleSheet.create({
     left           : 0,
     right          : 0,
     flexDirection  : 'row',
-    alignItems     : 'flex-start',
+    alignItems     : 'center',
     justifyContent : 'space-between',
     padding        : 10,
-    backgroundColor: 'orange',
+    backgroundColor: 'black',
     zIndex         : 1000
   },
   left     : {

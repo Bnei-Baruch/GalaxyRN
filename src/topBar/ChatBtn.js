@@ -16,7 +16,7 @@ export const ChatBtn = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
-      <Icon name="forum" size={30} color="black" />
+      <Icon name="forum" size={30} color="white" />
     </TouchableOpacity>
   );
 };
