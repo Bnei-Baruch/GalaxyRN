@@ -12,9 +12,9 @@ export const useSettingsStore = create((set, get) => ({
   setReadyForJoin  : (readyForJoin = true) => set({ readyForJoin }),
   question         : false,
   toggleQuestion   : () => {
-    const { question } = get();
+    const question = !get().question;
     useUserStore.getState().sendUserState({ question });
-    set((state) => ({ question: !state.question }));
+    set({ question });
   },
   isBroadcast      : true,
   toggleIsBroadcast: () => set((state) => ({ isBroadcast: !state.isBroadcast })),

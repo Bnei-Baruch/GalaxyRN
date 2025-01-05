@@ -7,8 +7,8 @@ import { useSettingsStore } from '../zustand/settings';
 import { feedWidth } from '../InRoom/helper';
 
 const MyRoomMedia = () => {
-  const { cammute }       = useMyStreamStore();
-  const { numFeedsInCol } = useSettingsStore();
+  const { cammute }                 = useMyStreamStore();
+  const { numFeedsInCol, question } = useSettingsStore();
 
   const width = feedWidth(numFeedsInCol);
 
@@ -22,6 +22,19 @@ const MyRoomMedia = () => {
             </View>
           ) : <MyRTCView />
         }
+
+        {
+          question && (
+            <View style={styles.questionContainer}>
+              <Icon
+                name="question-mark"
+                size={40}
+                color="white"
+                style={styles.question}
+              />
+            </View>
+          )
+        }
       </View>
     </View>
   );
@@ -29,14 +42,27 @@ const MyRoomMedia = () => {
 export default MyRoomMedia;
 
 const styles = StyleSheet.create({
-  contant: {
+  contant          : {
     aspectRatio    : 16 / 9,
     alignItems     : 'center',
     justifyContent : 'center',
     backgroundColor: 'grey'
   },
-  overlay: {
+  overlay          : {
     alignItems    : 'center',
     justifyContent: 'center'
+  },
+  questionContainer: {
+    flex          : 1,
+    position      : 'absolute',
+    alignItems    : 'center',
+    justifyContent: 'center'
+  },
+  question         : {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding        : 10,
+    borderRadius   : 10,
+    borderColor    : 'white',
+    borderWidth    : 2
   }
 });

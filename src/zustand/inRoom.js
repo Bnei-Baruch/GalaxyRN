@@ -20,7 +20,7 @@ let videoroom  = null;
 let janus      = null;
 
 let showBarTimeout         = null;
-const HIDE_BARS_TIMEOUT_MS = 2000;
+const HIDE_BARS_TIMEOUT_MS = 5000;
 let attempts               = 0;
 
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h264_profile !== '42e01f')*/);
