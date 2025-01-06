@@ -1,14 +1,13 @@
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../zustand/inRoom';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../zustand/settings';
 import { feedWidth } from './helper';
 import { useUiActions } from '../zustand/uiActions';
 
-const SCROLL_STEP              = 20;
-const { height: screenHeight } = Dimensions.get('window');
+const SCROLL_STEP = 20;
 
 const Member = ({ id }) => {
   const { memberByFeed }           = useInRoomStore();
@@ -19,29 +18,34 @@ const Member = ({ id }) => {
   const { display, url } = feed;
   const ref              = useRef({ prevScrollY: 0, isOn: !!url });
 
-  const scrollPos = Math.round((feedsScrollY - feedsPos) / SCROLL_STEP) * SCROLL_STEP;
-
-  useEffect(() => {
+  const scrollPos     = Math.round((feedsScrollY - feedsPos) / SCROLL_STEP) * SCROLL_STEP;
+  const hideShowVideo = useCallback(() => {
     if (!ref.current)
       return;
 
     const { height, y, prevScrollY, isOn } = ref.current;
+
+    if (!height)
+      return;
 
     //when scroll up dir > 0, when scroll down dir < 0
     const dir = scrollPos - prevScrollY;
     if (dir === 0)
       return;
 
-    if (y + height - 3 * SCROLL_STEP < scrollPos && y + height - SCROLL_STEP > scrollPos) {
+    const screenHeight = Dimensions.get('window').height;
+    if (y + height - SCROLL_STEP < scrollPos && y + height + 2 * SCROLL_STEP > scrollPos) {
       //when feed is near top screen border
       if (dir > 0) {
+        console.log('show hide on rotation: deactivateFeedsVideos top');
         isOn && deactivateFeedsVideos([feed]);
         ref.current.isOn = false;
       } else {
+        console.log('show hide on rotation: activateFeedsVideos top');
         !isOn && activateFeedsVideos([feed]);
         ref.current.isOn = true;
       }
-    } else if (scrollPos + screenHeight < y + 4 * SCROLL_STEP && scrollPos + screenHeight > y + 2 * SCROLL_STEP) {
+    } else if (scrollPos + screenHeight > y - 2 * SCROLL_STEP && scrollPos + screenHeight < y + SCROLL_STEP) {
       //when feed is near bottom screen border
       if (dir > 0) {
         !isOn && activateFeedsVideos([feed]);
@@ -52,16 +56,40 @@ const Member = ({ id }) => {
       }
     }
     ref.current.prevScrollY = scrollPos;
-
   }, [scrollPos, feed]);
+
+  useEffect(() => {
+    hideShowVideo();
+  }, [hideShowVideo]);
 
   if (!feed)
     return null;
 
+  //on block position change or phone rotation
   const handleLayout = (event) => {
     const { y, height } = event.nativeEvent.layout;
-    ref.current.y       = y;
-    ref.current.height  = height;
+    let isOn            = !!feed.url;
+
+    const screenHeight = Dimensions.get('window').height;
+
+    if (feed.display.display === 'davgur') {
+      console.group('show hide on rotation: handleLayout');
+      console.log('isOn', isOn);
+      console.log('y', y);
+      console.log('height', height);
+      console.log('scrollPos', scrollPos);
+      console.log('y + height', y + height);
+      console.log('scrollPos + screenHeight', scrollPos + screenHeight);
+      console.groupEnd();
+    }
+    if (y + height - SCROLL_STEP > scrollPos && y < scrollPos + screenHeight - SCROLL_STEP) {
+      !isOn && activateFeedsVideos([feed]);
+      isOn = true;
+    } else {
+      isOn && deactivateFeedsVideos([feed]);
+      isOn = false;
+    }
+    ref.current = { y, height, prevScrollY: scrollPos, isOn };
   };
 
   const width = feedWidth(numFeedsInCol);

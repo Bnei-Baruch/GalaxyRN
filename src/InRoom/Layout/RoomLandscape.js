@@ -6,11 +6,13 @@ import { useInRoomStore } from '../../zustand/inRoom';
 import { useShidurStore } from '../../zustand/shidur';
 import { memberItemWidth } from '../helper';
 import { useSettingsStore } from '../../zustand/settings';
+import { useUiActions } from '../../zustand/uiActions';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
-  const { toggleShowBars } = useInRoomStore();
-  const { janusReady }     = useShidurStore();
+  const { toggleShowBars }   = useInRoomStore();
+  const { janusReady }       = useShidurStore();
   const { setNumFeedsInCol } = useSettingsStore();
+  const { setFeedsScrollY }  = useUiActions();
 
   const isShidur = !!shidur;
 
@@ -23,7 +25,7 @@ const RoomLandscape = ({ shidur, quads, members }) => {
   }, [isShidur]);
 
   const handleAnyPress = () => toggleShowBars(true);
-
+  const handleScroll   = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
   return (
     <View style={styles.container}>
       {isShidur && (
@@ -40,6 +42,7 @@ const RoomLandscape = ({ shidur, quads, members }) => {
         <ScrollView
           showsHorizontalScrollIndicator={false}
           style={baseStyles.full}
+          onScroll={handleScroll}
         >
           <TouchableWithoutFeedback onPress={handleAnyPress}>
             <View style={styles.scrollContent}>
