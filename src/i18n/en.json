@@ -23,6 +23,23 @@
     "communicationTitle": "Communication",
     "materialsTitle": "Study Materials"
   },
+  "shidur": {
+    "streamForWorkshop": "STREAM FOR WORKSHOP",
+    "streamForWorkshopDescription": "(focus group is muted)",
+    "sourceStream": "SOURCE STREAM",
+    "sourceStreamDescription": "(focus group is on)",
+    "dualLnaguagesStream": "DUAL LANGUAGES STREAM",
+    "dualLnaguagesStreamDescription": "(focus group is muted)",
+    "lowQuality": "Low quality",
+    "mediumQuality": "Medium quality",
+    "highQuality": "High quality",
+    "HDQuality": "HD quality",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "noVideo": "No Video",
+    "audioOnly": "Audio only"
+  },
   "chat": {
     "send": "Send",
     "newMsg": "Enter new message...",

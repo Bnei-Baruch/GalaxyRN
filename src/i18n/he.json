@@ -2,5 +2,21 @@
   "login": "Login he",
   "settings": {
     "page": "Settings he"
+  },
+  "shidur": {
+    "streamForWorkshop": "ערוץ לסדנה",
+    "streamForWorkshopDescription": "(קבוצת המיקוד מושתקת)",
+    "sourceStream": "ערוץ מקור",
+    "sourceStreamDescription": "(קבוצת המיקוד פועלת)",
+    "dualLnaguagesStream": "ערוץ שפה כפולה",
+    "dualLnaguagesStreamDescription": "(קבוצת המיקוד מושתקת)",
+    "lowQuality": "איכות נמוכה",
+    "mediumQuality": "איכות בינונית",
+    "highQuality": "איכות גבוה",
+    "low": "נמוכה",
+    "medium": "בינונית",
+    "high": "גבוה",
+    "noVideo": "ללא וידיאו",
+    "audioOnly": "שמע בלבד"
   }
 }

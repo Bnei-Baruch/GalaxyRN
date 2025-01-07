@@ -7,16 +7,16 @@ import AudioSelect from './AudioSelect';
 import VideoSelect from './VideoSelect';
 import { baseStyles } from '../constants';
 
+const items = [
+  { value: 'audio', text: 'Audio' },
+  { value: 'video', text: 'Video' },
+];
+
 export const OptionsBtn = () => {
   const { toggleShidurBar } = useShidurStore();
 
-  const items = [
-    { value: 'audio', text: 'Audio' },
-    { value: 'video', text: 'Video' },
-  ];
-
   const handleOpen = () => {
-    toggleShidurBar(false);
+    toggleShidurBar(false, true);
   };
 
   const renderItem = (item) => {

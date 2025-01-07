@@ -2,5 +2,21 @@
   "login": "Login",
   "settings": {
     "page": "Settings es"
+  },
+  "shidur": {
+    "streamForWorkshop": "Retransmisión para taller",
+    "streamForWorkshopDescription": "(grupo de enfoque silenciado)",
+    "sourceStream": "Retransmisión original",
+    "sourceStreamDescription": "(Grupo de enfoque activado)",
+    "dualLnaguagesStream": "Retransmisión dual de idiomas",
+    "dualLnaguagesStreamDescription": "(Grupo de enfoque silenciado)",
+    "lowQuality": "Baja calidad",
+    "mediumQuality": "Calidad media",
+    "highQuality": "Alta calidad",
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta",
+    "noVideo": "Sin vídeo",
+    "audioOnly": "Solo audio"
   }
 }

@@ -2,5 +2,21 @@
   "login": "Login",
   "settings": {
     "page": "Settings ru"
+  },
+  "shidur": {
+    "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",
+    "streamForWorkshopDescription": "(фокус-группа отключена)",
+    "sourceStream": "ПОТОК ОРИГИНАЛА",
+    "sourceStreamDescription": "(фокус-группа включена)",
+    "dualLnaguagesStream": "ДВУЯЗЫЧНЫЙ ПОТОК",
+    "dualLnaguagesStreamDescription": "(фокус-группа отключена)",
+    "lowQuality": "Низкое качество",
+    "mediumQuality": "Среднее качество",
+    "highQuality": "Высокое качество",
+    "low": "Низкое",
+    "medium": "Среднее",
+    "high": "Высокое",
+    "noVideo": "Без видео",
+    "audioOnly": "Только аудио"
   }
 }
