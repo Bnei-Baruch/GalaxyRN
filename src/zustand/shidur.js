@@ -52,7 +52,7 @@ const cleanStream = stream => stream?.getTracks().forEach(track => track.stop())
 export const useShidurStore = create((set, get) => ({
   video      : VIDEO_240P_OPTION_VALUE,
   audio      : 64,
-  videoUrl   : null,
+  videoStream: null,
   quadUrl    : null,
   trlUrl     : null,
   audioUrl   : null,
@@ -77,7 +77,7 @@ export const useShidurStore = create((set, get) => ({
       }
     }
     if (updateState) {
-      set({ videoUrl: videoStream.toURL(), readyShidur: true, video });
+      set({ videoStream, readyShidur: true, video });
       await setToStorage('vrt_video', video);
     }
   },
@@ -96,7 +96,7 @@ export const useShidurStore = create((set, get) => ({
     if (audio !== NOTRL_STREAM_ID)
       setToStorage('trl_lang', audio);
     setToStorage('vrt_langtext', text);
-    set({ videoUrl: videoStream.toURL(), readyShidur: true, audio });
+    set({ videoStream, readyShidur: true, audio });
   },
   initJanus      : async (srv) => {
     const { user } = useUserStore.getState();
@@ -183,9 +183,9 @@ export const useShidurStore = create((set, get) => ({
     console.log('[shidur] wait for ready all streams', promises.length);
     try {
       await Promise.all(promises);
-      console.log('[shidur] streams are ready', videoStream.toURL());
+      console.log('[shidur] streams are ready', videoStream);
       set(() => ({
-        videoUrl   : videoStream.toURL(),
+        videoStream,
         audioUrl   : audioStream.toURL(),
         trlUrl     : trlAudioStream.toURL(),
         readyShidur: true
@@ -210,7 +210,7 @@ export const useShidurStore = create((set, get) => ({
     trlAudioJanus?.detach();
     trlAudioJanus = null;
 
-    set({ readyShidur: false, videoUrl: null, talking: null });
+    set({ readyShidur: false, videoStream: null, talking: null });
   },
   streamGalaxy   : async (isOn) => {
     log.debug('[shidur] got talk event: ', isOn);

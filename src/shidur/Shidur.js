@@ -4,13 +4,10 @@ import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { OptionsBtn } from './OptionsBtn';
-import { useInitsStore } from '../zustand/inits';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 
 export const Shidur = () => {
-  const { videoUrl, isPlay, cleanShidur, shidurBar, toggleShidurBar } = useShidurStore();
-  const { isPortrait }                                                = useInitsStore();
-
+  const { videoStream, isPlay, cleanShidur, shidurBar, toggleShidurBar } = useShidurStore();
   useEffect(() => {
     return cleanShidur;
   }, []);
@@ -23,12 +20,12 @@ export const Shidur = () => {
   return (
     <View style={styles.container}>
       {
-        isPlay ? (
+        isPlay && videoStream ? (
           <View>
             <TouchableWithoutFeedback onPress={toggleBar}>
               <RTCView
-                streamURL={videoUrl}
-                style={[styles.viewer, isPortrait ? styles.portrait : styles.landscape]}
+                streamURL={videoStream.toURL()}
+                style={styles.viewer}
               />
             </TouchableWithoutFeedback>
             {

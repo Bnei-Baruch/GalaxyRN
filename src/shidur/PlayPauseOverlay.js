@@ -21,6 +21,6 @@ const styles = StyleSheet.create({
     alignItems     : 'center',
     justifyContent : 'center',
     aspectRatio    : 16 / 9,
-    backgroundColor: 'grey'
+    backgroundColor: 'black'
   }
 });

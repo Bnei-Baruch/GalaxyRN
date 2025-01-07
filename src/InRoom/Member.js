@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   overlay    : {
-    backgroundColor: 'grey',
+    backgroundColor: 'black',
     aspectRatio    : 16 / 9,
     alignItems     : 'center',
     justifyContent : 'center'
