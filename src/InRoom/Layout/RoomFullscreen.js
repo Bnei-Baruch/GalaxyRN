@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { useInitsStore } from '../../zustand/inits';
 import { baseStyles } from '../../constants';
-import Members from '../Members';
+import Feeds from '../Feeds';
 import { Shidurs } from '../../shidur/Shidurs';
 
 const RoomFullscreen = ({ shidur, quads, members }) => {
@@ -17,7 +17,7 @@ const RoomFullscreen = ({ shidur, quads, members }) => {
         <TouchableWithoutFeedback onPress={handleAnyPress}>
           <View style={styles.scrollContent}>
             <Shidurs key="shidurs" />
-            <Members key="members" />
+            <Feeds key="members" />
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>

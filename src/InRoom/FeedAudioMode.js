@@ -6,11 +6,11 @@ import { feedWidth } from './helper';
 import { useSettingsStore } from '../zustand/settings';
 import { baseStyles } from '../constants';
 
-const MemberNoVideo = ({ id }) => {
-  const { memberByFeed }  = useInRoomStore();
+const FeedAudioMode = ({ id }) => {
+  const { feedById }      = useInRoomStore();
   const { numFeedsInCol } = useSettingsStore();
 
-  const { display, talk } = memberByFeed[id];
+  const { display, talk } = feedById[id];
   const width             = feedWidth(numFeedsInCol);
 
   return (
@@ -32,7 +32,7 @@ const MemberNoVideo = ({ id }) => {
     </View>
   );
 };
-export default MemberNoVideo;
+export default FeedAudioMode;
 
 const styles = StyleSheet.create({
   container: {

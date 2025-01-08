@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, View, TouchableWithoutFeedback } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
@@ -6,16 +6,10 @@ import { PlayPauseBtn } from './PlayPauseBtn';
 import { OptionsBtn } from './OptionsBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 
-export const Shidur = () => {
-  const { videoStream, isPlay, cleanShidur, shidurBar, toggleShidurBar } = useShidurStore();
-  useEffect(() => {
-    return cleanShidur;
-  }, []);
+const Shidur = () => {
+  const { videoStream, isPlay, shidurBar, toggleShidurBar } = useShidurStore();
 
-  const toggleBar = () => {
-    console.log('Shidur toggleBar');
-    toggleShidurBar();
-  };
+  const toggleBar = () => toggleShidurBar();
 
   return (
     <View style={styles.container}>
@@ -66,3 +60,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   }
 });
+
+export default Shidur;

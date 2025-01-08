@@ -11,7 +11,7 @@ export const MuteBtn = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name={mute ? 'mic' : 'mic-off'} size={40} color={mute ? 'red' : 'white'} />
+      <Icon name={mute ? 'mic-off' : 'mic'} size={40} color={mute ? 'red' : 'white'} />
     </TouchableOpacity>
   );
 };

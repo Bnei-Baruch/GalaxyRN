@@ -20,6 +20,7 @@ export const TopBar = () => {
       <View style={styles.container}>
         <View style={styles.left}>
           <TopMenuBtn />
+          <MuteBtn />
         </View>
         <View>
           <Text style={baseStyles.text}>{room?.description}</Text>

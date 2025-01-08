@@ -50,17 +50,21 @@ const initStream = async (_janus, media) => {
 const cleanStream = stream => stream?.getTracks().forEach(track => track.stop());
 
 export const useShidurStore = create((set, get) => ({
-  video      : VIDEO_240P_OPTION_VALUE,
-  audio      : 64,
-  videoStream: null,
-  quadUrl    : null,
-  trlUrl     : null,
-  audioUrl   : null,
-  readyShidur: false,
-  talking    : null,
-  isPlay     : false,
-  janusReady : false,
-
+  video          : VIDEO_240P_OPTION_VALUE,
+  audio          : 64,
+  videoStream    : null,
+  quadUrl        : null,
+  trlUrl         : null,
+  audioUrl       : null,
+  readyShidur    : false,
+  talking        : null,
+  isPlay         : false,
+  janusReady     : false,
+  isMuted        : false,
+  setIsMuted     : (isMuted = !get().isMuted) => {
+    audioStream?.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    set({ isMuted });
+  },
   setVideo       : async (video, updateState = true) => {
     if (!janus) return;
 
@@ -77,7 +81,7 @@ export const useShidurStore = create((set, get) => ({
       }
     }
     if (updateState) {
-      set({ videoStream, readyShidur: true, video });
+      set({ videoStream, video });
       await setToStorage('vrt_video', video);
     }
   },
@@ -96,7 +100,7 @@ export const useShidurStore = create((set, get) => ({
     if (audio !== NOTRL_STREAM_ID)
       setToStorage('trl_lang', audio);
     setToStorage('vrt_langtext', text);
-    set({ videoStream, readyShidur: true, audio });
+    set({ videoStream, audio });
   },
   initJanus      : async (srv) => {
     const { user } = useUserStore.getState();
@@ -138,18 +142,14 @@ export const useShidurStore = create((set, get) => ({
     await janus?.destroy();
     janus = null;
   },
-  initShidur     : async (srv) => {
-    const { isShidur } = useSettingsStore.getState();
+  initShidur     : async (isPlay = get().isPlay) => {
+    if (!useSettingsStore.getState().isShidur || !isPlay)
+      return;
 
-    console.log('[shidur] init');
     const video = await getFromStorage('vrt_video', 1).then(x => Number(x));
     const audio = await getFromStorage('vrt_lang', 2).then(x => Number(x));
 
-    console.log('[shidur] init', audio, video);
     set({ video, audio });
-
-    if (!isShidur)
-      return;
 
     const promises = [];
     if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
@@ -251,17 +251,19 @@ export const useShidurStore = create((set, get) => ({
     set({ talking: isOn });
   },
   toggleIsPlay   : async () => {
-    const { initShidur, readyShidur } = get();
+    const { initShidur, readyShidur, isMuted } = get();
+    const isPlay                               = !get().isPlay;
     if (!readyShidur) {
-      await initShidur();
+      await initShidur(isPlay);
     }
 
-    const isPlay = !get().isPlay;
     videoStream.getVideoTracks().forEach(t => t.enabled = isPlay);
-    audioStream.getAudioTracks().forEach(t => t.enabled = isPlay);
+    audioStream.getAudioTracks().forEach(t => t.enabled = isPlay && !isMuted);
     set(() => ({ isPlay }));
   },
   initQuad       : async () => {
+    if (!useSettingsStore.getState().isQuad)
+      return;
     const [stream, janusStream] = await initStream(janus, 102);
     set({ quadUrl: stream.toURL(), isQuad: true });
     quadStream = stream;
@@ -290,9 +292,7 @@ export const useShidurStore = create((set, get) => ({
       trlAudioJanus.detach();
       trlAudioJanus = null;
     }
-  },
-  exitAudioMode  : () => {
-    get().initShidur();
+    set({ videoStream: null, trlUrl: null });
   },
   shidurBar      : true,
   toggleShidurBar: (hideOnTimeout = true, shidurBar = !get().shidurBar) => {

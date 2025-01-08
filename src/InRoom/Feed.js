@@ -2,21 +2,22 @@ import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../zustand/inRoom';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../zustand/settings';
 import { feedWidth } from './helper';
 import { useUiActions } from '../zustand/uiActions';
+import CammutedFeed from './CammutedFeed';
 
 const SCROLL_STEP = 20;
 
-const Member = ({ id }) => {
-  const { memberByFeed }           = useInRoomStore();
+const Feed = ({ id }) => {
+  const { feedById }               = useInRoomStore();
   const { numFeedsInCol }          = useSettingsStore();
   const { feedsScrollY, feedsPos } = useUiActions();
 
-  const feed             = memberByFeed[id];
-  const { display, url } = feed;
-  const ref              = useRef({ prevScrollY: 0, isOn: !!url });
+  const feed                                              = feedById[id];
+  const { display: { display } = {}, url, talking, vMid } = feed || {};
+
+  const ref = useRef({ prevScrollY: 0, isOn: !!url });
 
   const scrollPos     = Math.round((feedsScrollY - feedsPos) / SCROLL_STEP) * SCROLL_STEP;
   const hideShowVideo = useCallback(() => {
@@ -92,36 +93,40 @@ const Member = ({ id }) => {
     ref.current = { y, height, prevScrollY: scrollPos, isOn };
   };
 
-  const width = feedWidth(numFeedsInCol);
-  return (
-    <View
-      onLayout={handleLayout}
-      style={[styles.container, { width }]}
-    >
-      <View style={styles.display}>
-        <Text style={styles.displayMark}>.</Text>
-        <Text style={styles.displayText}>{display?.display}</Text>
-      </View>
-      {
-        url ? (
+  const width         = feedWidth(numFeedsInCol);
+  const renderContent = () => {
+    if (vMid) {
+      return (
+        <>
+          <View style={styles.display}>
+            <Text style={styles.displayMark}>.</Text>
+            <Text style={styles.displayText}>{display}</Text>
+          </View>
           <RTCView
             streamURL={url}
             style={styles.viewer}
           />
-        ) : (
-          <View style={styles.overlay}>
-            <Icon name="account-circle" size={80} color="white" />
-          </View>
-        )
-      }
+        </>
+      );
+    }
+    return <CammutedFeed display={display} />;
+  };
+
+  return (
+    <View
+      onLayout={handleLayout}
+      style={[talking && styles.talking, { width }]}
+    >
+      {renderContent()}
     </View>
   );
 };
-export default Member;
+export default Feed;
 
 const styles = StyleSheet.create({
-  container  : {
-    backgroundColor: '#eaeaea',
+  talking    : {
+    borderWidth: 2,
+    borderColor: 'yellow'
   },
   display    : {
     position       : 'absolute',

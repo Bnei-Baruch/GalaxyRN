@@ -5,9 +5,9 @@ import RoomFullscreen from './RoomFullscreen';
 import RoomLandscape from './RoomLandscape';
 import RoomPortrait from './RoomPortrait';
 import { useShidurStore } from '../../zustand/shidur';
-import Members from '../Members';
+import Feeds from '../Feeds';
 import { Quads } from '../../shidur/Quads';
-import { Shidur } from '../../shidur/Shidur';
+import Shidur from '../../shidur/Shidur';
 
 const RoomLayout = () => {
   const { isPortrait }                         = useInitsStore();
@@ -23,8 +23,7 @@ const RoomLayout = () => {
 
   const shidur  = isShidur && <Shidur />;
   const quads   = showGroups && <Quads />;
-  const members = <Members key="members" />;
-
+  const members = <Feeds key="members" />;
 
   if (isFullscreen)
     return <RoomFullscreen shidur={shidur} quads={quads} members={members} />;

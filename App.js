@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import log from 'loglevel';
 import { useSettingsStore } from './src/zustand/settings';
 import PrepareRoom from './src/InRoom/PrepareRoom';
@@ -19,10 +19,9 @@ if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {
-  const [isListenerActive, setIsListenerActive] = useState(false);
-  const { setIsPortrait }                       = useInitsStore();
-  const { readyForJoin }                        = useSettingsStore();
-  const { myInit, myAbort }                     = useMyStreamStore();
+  const { setIsPortrait }   = useInitsStore();
+  const { readyForJoin }    = useSettingsStore();
+  const { myInit, myAbort } = useMyStreamStore();
 
   useEffect(() => {
     myInit();
@@ -30,18 +29,16 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const onChange = () => {
+    const onChange   = () => {
       const dim         = Dimensions.get('screen');
       const _isPortrait = dim.height >= dim.width;
       memberItemWidth.set(_isPortrait);
       setIsPortrait(_isPortrait);
     };
-    //TODO: change after upgrade RN > 0.66
-    if (!isListenerActive) {
-      Dimensions.addEventListener('change', onChange);
-      setIsListenerActive(true);
-    }
+    let subscription = Dimensions.addEventListener('change', onChange);
     onChange();
+
+    return () => subscription && subscription.remove();
   }, []);
 
   return (

@@ -1,22 +1,22 @@
 import { useInRoomStore } from '../zustand/inRoom';
 import { StyleSheet, View } from 'react-native';
-import Member from './Member';
+import Feed from './Feed';
 import { useSettingsStore } from '../zustand/settings';
 import MyRoomMedia from '../components/MyRoomVideo';
-import MemberNoVideo from './MemberNoVideo';
+import FeedAudioMode from './FeedAudioMode';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useRef } from 'react';
 import { useUiActions } from '../zustand/uiActions';
 
-const Members = () => {
+const Feeds = () => {
   const { hideSelf, audioMode } = useSettingsStore();
   const { cammute, timestamp }  = useMyStreamStore();
   const { setFeedsPos }         = useUiActions();
 
   const ref = useRef({});
 
-  const memberIds    = useInRoomStore((state) => {
-    const _ms = Object.values(state.memberByFeed);
+  const feedIds      = useInRoomStore((state) => {
+    const _ms = Object.values(state.feedById);
     _ms.sort((a, b) => {
       if (!!a.display?.is_group && !b.display?.is_group) {
         return -1;
@@ -53,8 +53,8 @@ const Members = () => {
   return (
     <View style={styles.container} onLayout={handleLayout} ref={ref}>
       {
-        memberIds.length > 0 ? (
-          memberIds
+        feedIds.length > 0 ? (
+          feedIds
             .map(id => {
               if (!id)
                 return null;
@@ -63,16 +63,16 @@ const Members = () => {
                 return <MyRoomMedia key={id} />;
 
               if (audioMode)
-                return <MemberNoVideo key={id} id={id} />;
+                return <FeedAudioMode key={id} id={id} />;
 
-              return <Member key={id} id={id} />;
+              return <Feed key={id} id={id} />;
             })
         ) : <MyRoomMedia />
       }
     </View>
   );
 };
-export default Members;
+export default Feeds;
 
 const styles = StyleSheet.create({
   container: {
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
     flexDirection : 'row',
     flexWrap      : 'wrap',
     justifyContent: 'space-around',
-    minHeight     : '100%',
+    minHeight     : '100%'
   }
 });

@@ -5,56 +5,53 @@ import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './in
 import { useUserStore } from './user';
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang           : 'en',
-  autoEnterRoom    : true,
-  changeUiLang   : (lang) => set({ uiLang: lang }),
-  readyForJoin   : false,
-  setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
-  question       : false,
-  toggleQuestion : () => {
+  uiLang          : 'en',
+  autoEnterRoom   : false,
+  changeUiLang    : (lang) => set({ uiLang: lang }),
+  readyForJoin    : false,
+  setReadyForJoin : (readyForJoin = true) => set({ readyForJoin }),
+  question        : false,
+  toggleQuestion  : () => {
     const question = !get().question;
     useUserStore.getState().sendUserState({ question });
     set({ question });
   },
-  isShidur       : true,
-  toggleIsShidur : () => set((state) => ({ isShidur: !state.isShidur })),
-  audioMode      : false,
-  toggleAudioMode: async (audioMode = !get().audioMode) => {
+  isShidur        : true,
+  toggleIsShidur  : () => {
+    const isShidur = !get().isShidur;
+    !isShidur && useShidurStore.getState().cleanShidur();
+    set({ isShidur });
+  },
+  audioMode       : false,
+  toggleAudioMode : async (audioMode = !get().audioMode) => {
     audioMode ? get().enterAudioMode() : get().exitAudioMode();
     set({ audioMode });
   },
-  enterAudioMode : async () => {
-    const { toggleCammute } = useMyStreamStore.getState();
-    toggleCammute(true);
+  enterAudioMode  : async () => {
+    useMyStreamStore.getState().toggleCammute(true);
 
-    const feeds = Object.values(useInRoomStore.getState().memberByFeed);
+    const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
 
-    const { enterAudioMode, cleanQuads, isQuad, } = useShidurStore.getState();
+    const { enterAudioMode, cleanQuads } = useShidurStore.getState();
     enterAudioMode();
-    if (isQuad) {
-      cleanQuads(false);
-    }
+    cleanQuads(false);
   },
-  exitAudioMode    : async () => {
+  exitAudioMode   : async () => {
     const { toggleCammute } = useMyStreamStore.getState();
     toggleCammute(false);
 
-    const feeds = Object.values(useInRoomStore.getState().memberByFeed);
+    const feeds = Object.values(useInRoomStore.getState().feedById);
     activateFeedsVideos(feeds);
 
-    const { exitAudioMode, initQuad, isQuad, isShidur } = useShidurStore.getState();
-    if (isShidur) {
-      exitAudioMode();
-    }
-    if (isQuad) {
-      initQuad();
-    }
+    const { initShidur, initQuad } = useShidurStore.getState();
+    initShidur();
+    initQuad();
   },
-  showGroups       : false,
-  toggleShowGroups : () => set((state) => ({ showGroups: !state.showGroups })),
-  hideSelf         : false,
-  toggleHideSelf   : () => set((state) => ({ hideSelf: !state.hideSelf })),
-  numFeedsInCol    : 2,
-  setNumFeedsInCol : (numFeedsInCol = 2) => set({ numFeedsInCol }),
+  showGroups      : false,
+  toggleShowGroups: () => set((state) => ({ showGroups: !state.showGroups })),
+  hideSelf        : false,
+  toggleHideSelf  : () => set((state) => ({ hideSelf: !state.hideSelf })),
+  numFeedsInCol   : 2,
+  setNumFeedsInCol: (numFeedsInCol = 2) => set({ numFeedsInCol }),
 }));

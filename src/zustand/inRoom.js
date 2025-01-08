@@ -15,18 +15,19 @@ import InCallManager from 'react-native-incall-manager';
 import i18n from '../i18n/i18n';
 import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
+import { useShidurStore } from './shidur';
 
 let subscriber = null;
 let videoroom  = null;
 let janus      = null;
 
-let showBarTimeout         = null;
-let attempts               = 0;
+let showBarTimeout = null;
+let attempts       = 0;
 
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h264_profile !== '42e01f')*/);
 
 export const useInRoomStore = create((set, get) => ({
-  memberByFeed   : {},
+  feedById       : {},
   showBars       : true,
   toggleShowBars : (hideOnTimeout, showBars = !get().showBars) => {
     clearTimeout(showBarTimeout);
@@ -50,6 +51,7 @@ export const useInRoomStore = create((set, get) => ({
     let _subscriberJoined = false;
 
     const makeSubscription = (pubs) => {
+
       const subs = getSubscriptionFromPublishers(pubs);
       if (subs.length === 0)
         return Promise.resolve();
@@ -60,7 +62,7 @@ export const useInRoomStore = create((set, get) => ({
             .filter(p => subs.some(s => s.feed === p.id))
             .forEach(({ display, id, streams }) => {
               const vStream          = streams.find(isVideoStream);
-              state.memberByFeed[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
+              state.feedById[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
             });
         }));
         subscriber.sub(subs);
@@ -76,7 +78,7 @@ export const useInRoomStore = create((set, get) => ({
               .filter(p => stream.feed_id === p.id)
               .forEach(({ display, id, streams }) => {
                 const vStream          = streams.find(isVideoStream);
-                state.memberByFeed[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
+                state.feedById[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
               });
           }
         }));
@@ -127,7 +129,7 @@ export const useInRoomStore = create((set, get) => ({
     videoroom.unsubFrom = async (ids) => {
       const params = [];
       ids.forEach(id => {
-        const feed = get().memberByFeed[id];
+        const feed = get().feedById[id];
         if (!feed) return;
 
         params.push({ feed: parseInt(feed.id) });
@@ -141,14 +143,14 @@ export const useInRoomStore = create((set, get) => ({
 
       set(produce(state => {
         ids.forEach(id => {
-          state.memberByFeed[id] && delete state.memberByFeed[id];
+          state.feedById[id] && delete state.feedById[id];
         });
       }));
     };
     videoroom.talkEvent = (id, talking) => {
       set(produce(state => {
-        if (state.memberByFeed[id])
-          state.memberByFeed[id].talking = talking;
+        if (state.feedById[id])
+          state.feedById[id].talking = talking;
       }));
     };
 
@@ -163,7 +165,7 @@ export const useInRoomStore = create((set, get) => ({
 
         if (track.kind === 'video') {
           set(produce(state => {
-            state.memberByFeed[id].url = stream.toURL();
+            state.feedById[id].url = stream.toURL();
           }));
         }
       }
@@ -180,8 +182,8 @@ export const useInRoomStore = create((set, get) => ({
       }
       log.debug('[client] Updated _videosByFeed', _videosByFeed);
       set(produce(state => {
-        for (const k in state.memberByFeed) {
-          const f = state.memberByFeed[k];
+        for (const k in state.feedById) {
+          const f = state.feedById[k];
           if (!_videosByFeed[f.id]) {
             f.url = undefined;
           }
@@ -252,7 +254,8 @@ export const useInRoomStore = create((set, get) => ({
   },
   exitRoom       : async () => {
     const { room } = useRoomStore.getState();
-    set({ memberByFeed: {} });
+    set({ feedById: {} });
+    useShidurStore.getState().cleanShidur();
     await janus?.destroy();
     janus      = null;
     videoroom  = null;

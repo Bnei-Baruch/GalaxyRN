@@ -4,15 +4,18 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useShidurStore } from '../zustand/shidur';
 
 export const MuteBtn = () => {
-  const { mute, setMute } = useShidurStore();
+  const { isMuted, setIsMuted } = useShidurStore();
 
-  const toggleMute = () => {
-
-  };
+  const toggleMute = () => setIsMuted();
 
   return (
     <TouchableOpacity onPress={toggleMute}>
-      <Icon name={mute ? 'volume-mute' : 'volume-up'} size={30} color="black" />
+      <Icon
+        name={isMuted ? 'volume-mute' : 'volume-up'}
+        size={30}
+        color="white"
+        style={{ marginHorizontal: 5 }}
+      />
     </TouchableOpacity>
   );
 };
