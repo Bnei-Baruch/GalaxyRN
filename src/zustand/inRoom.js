@@ -82,14 +82,10 @@ export const useInRoomStore = create((set, get) => ({
         });
         const vStream = avStreams.filter(isVideoStream).find(s => !s.disabled);
 
-        console.log('makeSubscription vStream', vStream);
         feedById[id] = { id, display: JSON.parse(display) };
         vStream && (feedById[id].vMid = vStream.mid);
-
-        console.log('makeSubscription', feedById, pubs, subs, unsubs);
       }
 
-      console.log('makeSubscription', feedById, pubs, subs, unsubs);
       if (_subscriberJoined) {
         set({ feedById });
 
