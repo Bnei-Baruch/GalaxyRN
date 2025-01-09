@@ -11,17 +11,12 @@ export default CammutedFeed;
 
 const styles = StyleSheet.create({
   container : {
-    flex           : 1,
-    justifyContent : 'center',
-    alignItems     : 'center',
-    backgroundColor: 'black',
-    height         : '100%',
-    aspectRatio    : 16 / 9,
+    flex          : 1,
+    justifyContent: 'center',
+    alignItems    : 'center',
   },
   displayTxt: {
-    color    : 'white',
-    fontSize : 20,
-    width    : '100%',
-    textAlign: 'center'
+    color   : 'white',
+    fontSize: 20,
   }
 });

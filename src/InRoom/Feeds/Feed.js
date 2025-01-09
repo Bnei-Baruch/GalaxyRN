@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import React, { useRef, useEffect, useCallback } from 'react';
-import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../zustand/inRoom';
-import { useSettingsStore } from '../zustand/settings';
-import { feedWidth } from './helper';
-import { useUiActions } from '../zustand/uiActions';
+import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../../zustand/inRoom';
+import { useSettingsStore } from '../../zustand/settings';
+import { feedWidth } from '../helper';
+import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
+import FeedDisplay from './FeedDisplay';
 
 const SCROLL_STEP = 20;
 
@@ -98,10 +99,7 @@ const Feed = ({ id }) => {
     if (vMid) {
       return (
         <>
-          <View style={styles.display}>
-            <Text style={styles.displayMark}>.</Text>
-            <Text style={styles.displayText}>{display}</Text>
-          </View>
+          <FeedDisplay display={display} />
           <RTCView
             streamURL={url}
             style={styles.viewer}
@@ -115,7 +113,7 @@ const Feed = ({ id }) => {
   return (
     <View
       onLayout={handleLayout}
-      style={[talking && styles.talking, { width }]}
+      style={[styles.container, talking && styles.talking, { width }]}
     >
       {renderContent()}
     </View>
@@ -124,31 +122,15 @@ const Feed = ({ id }) => {
 export default Feed;
 
 const styles = StyleSheet.create({
+  container  : {
+    aspectRatio: 16 / 9,
+  },
   talking    : {
     borderWidth: 2,
     borderColor: 'yellow'
   },
-  display    : {
-    position       : 'absolute',
-    left           : 0,
-    top            : 0,
-    backgroundColor: 'rgba(34, 34, 34, .7)',
-    flexDirection  : 'row',
-    flexWrap       : 'wrap',
-    padding        : 4,
-    zIndex         : 1
-  },
-  displayMark: {
-    color       : 'red',
-    fontSize    : 30,
-    lineHeight  : 18,
-    paddingRight: 5
-  },
-  displayText: {
-    color: 'white',
-  },
   viewer     : {
-    aspectRatio    : 16 / 9,
+    flex           : 1,
     backgroundColor: 'black',
     justifyContent : 'space-between',
   },

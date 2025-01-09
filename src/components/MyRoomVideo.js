@@ -5,16 +5,20 @@ import { useMyStreamStore } from '../zustand/myStream';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../zustand/settings';
 import { feedWidth } from '../InRoom/helper';
+import FeedDisplay from '../InRoom/Feeds/FeedDisplay';
+import { useUserStore } from '../zustand/user';
 
 const MyRoomMedia = () => {
   const { cammute }                 = useMyStreamStore();
   const { numFeedsInCol, question } = useSettingsStore();
+  const { user }                    = useUserStore();
 
   const width = feedWidth(numFeedsInCol);
 
   return (
     <View style={{ width }}>
-      <View style={styles.contant}>
+      <FeedDisplay display={user.username} />
+      <View style={styles.content}>
         {
           cammute ? (
             <View style={styles.overlay}>
@@ -42,7 +46,7 @@ const MyRoomMedia = () => {
 export default MyRoomMedia;
 
 const styles = StyleSheet.create({
-  contant          : {
+  content          : {
     aspectRatio    : 16 / 9,
     alignItems     : 'center',
     justifyContent : 'center',

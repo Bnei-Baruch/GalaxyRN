@@ -216,3 +216,7 @@ export const setToStorage   = async (key, val) => {
     return err;
   }
 };
+
+export const deepClone = (obj) => {
+  return JSON.parse(JSON.stringify(obj));
+};

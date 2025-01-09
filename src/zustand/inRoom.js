@@ -16,6 +16,7 @@ import i18n from '../i18n/i18n';
 import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useShidurStore } from './shidur';
+import { deepClone } from '../shared/tools';
 
 let subscriber = null;
 let videoroom  = null;
@@ -24,7 +25,7 @@ let janus      = null;
 let showBarTimeout = null;
 let attempts       = 0;
 
-const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264'/* && (s.h264_profile !== '42e01f')*/);
+const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264');
 
 export const useInRoomStore = create((set, get) => ({
   feedById       : {},
@@ -50,57 +51,63 @@ export const useInRoomStore = create((set, get) => ({
     InCallManager.setKeepScreenOn(true);
     let _subscriberJoined = false;
 
-    const makeSubscription = (pubs) => {
-
-      const subs = getSubscriptionFromPublishers(pubs);
-      if (subs.length === 0)
-        return Promise.resolve();
-
-      if (_subscriberJoined) {
-        set(produce(state => {
-          pubs
-            .filter(p => subs.some(s => s.feed === p.id))
-            .forEach(({ display, id, streams }) => {
-              const vStream          = streams.find(isVideoStream);
-              state.feedById[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
-            });
-        }));
-        subscriber.sub(subs);
-        return Promise.resolve();
-      }
-
-      return subscriber.join(subs, room.room).then((data) => {
-        _subscriberJoined = true;
-
-        set(produce(state => {
-          for (const stream of data.streams) {
-            pubs
-              .filter(p => stream.feed_id === p.id)
-              .forEach(({ display, id, streams }) => {
-                const vStream          = streams.find(isVideoStream);
-                state.feedById[id] = { id, display: JSON.parse(display), vMid: vStream?.mid };
-              });
-          }
-        }));
-        return subs.map(s => s.feed);
-      });
-    };
-
-    const getSubscriptionFromPublishers = (pubs) => {
+    const makeSubscription = async (pubs) => {
       const { audioMode } = useSettingsStore.getState();
 
-      const result = [];
-      for (const pub of pubs) {
-        if (get().memberByFeed[pub.id]?.url || !pub.streams)
-          continue;
+      const feedById = deepClone(get().feedById);
+      const subs     = [];
+      const unsubs   = [];
 
-        pub.streams
-          .filter(s => (!audioMode && isVideoStream(s)) || (s.type === 'audio' && s.codec === 'opus'))
-          .forEach(s => {
-            result.push({ feed: pub.id, mid: s.mid });
-          });
+      for (const pub of pubs) {
+        const { id, display } = pub;
+
+        if (!pub.streams) {
+          unsubs.push({ feed: id });
+          feedById[id] && delete feedById[id];
+          continue;
+        }
+
+        const avStreams = pub.streams
+          .filter(s => (!audioMode && isVideoStream(s)) || (s.type === 'audio' && s.codec === 'opus'));
+
+        avStreams.forEach(s => {
+          const _data = { feed: id, mid: s.mid };
+          if (isVideoStream(s)) {
+            s.disabled ? unsubs.push(_data) : subs.push(_data);
+            return;
+          }
+
+          if (!feedById[id])
+            subs.push(_data);
+        });
+        const vStream = avStreams.filter(isVideoStream).find(s => !s.disabled);
+
+        console.log('makeSubscription vStream', vStream);
+        feedById[id] = { id, display: JSON.parse(display) };
+        vStream && (feedById[id].vMid = vStream.mid);
+
+        console.log('makeSubscription', feedById, pubs, subs, unsubs);
       }
-      return result;
+
+      console.log('makeSubscription', feedById, pubs, subs, unsubs);
+      if (_subscriberJoined) {
+        set({ feedById });
+
+        if (subs.length > 0)
+          await subscriber.sub(subs);
+
+        if (unsubs.length > 0)
+          await subscriber.unsub(subs);
+
+        return;
+      }
+
+      if (subs.length === 0) return;
+
+      await subscriber.join(subs, room.room);
+      set({ feedById });
+      _subscriberJoined = true;
+      return subs.map(s => s.feed);
     };
 
     const config = GxyConfig.instanceConfig(room.janus);

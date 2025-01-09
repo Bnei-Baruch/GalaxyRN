@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { useInitsStore } from '../../zustand/inits';
 import { baseStyles } from '../../constants';
-import Feeds from '../Feeds';
+import Feeds from '../Feeds/Feeds';
 import { Shidurs } from '../../shidur/Shidurs';
 
 const RoomFullscreen = ({ shidur, quads, members }) => {

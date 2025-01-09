@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useInRoomStore } from '../zustand/inRoom';
-import { feedWidth } from './helper';
-import { useSettingsStore } from '../zustand/settings';
-import { baseStyles } from '../constants';
+import { useInRoomStore } from '../../zustand/inRoom';
+import { feedWidth } from '../helper';
+import { useSettingsStore } from '../../zustand/settings';
+import { baseStyles } from '../../constants';
 
 const FeedAudioMode = ({ id }) => {
   const { feedById }      = useInRoomStore();

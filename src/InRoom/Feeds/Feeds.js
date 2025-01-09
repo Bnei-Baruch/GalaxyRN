@@ -1,12 +1,12 @@
-import { useInRoomStore } from '../zustand/inRoom';
+import { useInRoomStore } from '../../zustand/inRoom';
 import { StyleSheet, View } from 'react-native';
 import Feed from './Feed';
-import { useSettingsStore } from '../zustand/settings';
-import MyRoomMedia from '../components/MyRoomVideo';
+import { useSettingsStore } from '../../zustand/settings';
+import MyRoomMedia from '../../components/MyRoomVideo';
 import FeedAudioMode from './FeedAudioMode';
-import { useMyStreamStore } from '../zustand/myStream';
+import { useMyStreamStore } from '../../zustand/myStream';
 import { useRef } from 'react';
-import { useUiActions } from '../zustand/uiActions';
+import { useUiActions } from '../../zustand/uiActions';
 
 const Feeds = () => {
   const { hideSelf, audioMode } = useSettingsStore();
@@ -58,7 +58,6 @@ const Feeds = () => {
             .map(id => {
               if (!id)
                 return null;
-
               if (id === 'my')
                 return <MyRoomMedia key={id} />;
 

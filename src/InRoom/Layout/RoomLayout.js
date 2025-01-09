@@ -5,7 +5,7 @@ import RoomFullscreen from './RoomFullscreen';
 import RoomLandscape from './RoomLandscape';
 import RoomPortrait from './RoomPortrait';
 import { useShidurStore } from '../../zustand/shidur';
-import Feeds from '../Feeds';
+import Feeds from '../Feeds/Feeds';
 import { Quads } from '../../shidur/Quads';
 import Shidur from '../../shidur/Shidur';
 
