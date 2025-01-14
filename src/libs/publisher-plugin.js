@@ -124,7 +124,6 @@ export class PublisherPlugin extends EventEmitter {
   };
 
   mute(video, stream) {
-
     let videoTransceiver = null;
     let tr               = this.pc.getTransceivers();
     if (tr && tr.length > 0) {

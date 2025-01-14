@@ -5,25 +5,36 @@ import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { OptionsBtn } from './OptionsBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
+import { useSettingsStore } from '../zustand/settings';
 
 const Shidur = () => {
-  const { videoStream, isPlay, shidurBar, toggleShidurBar } = useShidurStore();
+  const { videoStream, isPlay, shidurBar, toggleShidurBar, video } = useShidurStore();
+  const { audioMode } = useSettingsStore();
 
   const toggleBar = () => toggleShidurBar();
-
   return (
     <View style={styles.container}>
       {
-        isPlay && videoStream ? (
+        isPlay ? (
           <View>
             <TouchableWithoutFeedback onPress={toggleBar}>
-              <RTCView
-                streamURL={videoStream.toURL()}
-                style={styles.viewer}
-              />
+              {
+                (video !== NO_VIDEO_OPTION_VALUE && !audioMode) ? (
+                  <RTCView
+                    streamURL={videoStream?.toURL()}
+                    style={styles.viewer}
+                  />
+                ) : (
+                  <View style={styles.noVideo}>
+                    <Icon name="videocam-off" color="white" size={70} />
+                  </View>
+                )
+              }
             </TouchableWithoutFeedback>
             {
-              shidurBar && (
+              (shidurBar || !videoStream) && (
                 <View style={styles.toolbar}>
                   <PlayPauseBtn />
                   <OptionsBtn />
@@ -58,6 +69,13 @@ const styles = StyleSheet.create({
     position       : 'absolute',
     bottom         : 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  noVideo  : {
+    aspectRatio   : 16 / 9,
+    width         : '100%',
+    justifyContent: 'center',
+    alignItems    : 'center',
+
   }
 });
 

@@ -68,22 +68,23 @@ export const useShidurStore = create((set, get) => ({
   setVideo       : async (video, updateState = true) => {
     if (!janus) return;
 
+    await setToStorage('vrt_video', video);
     if (video === NO_VIDEO_OPTION_VALUE) {
       if (videoJanus !== null) {
-        janus.detach(videoJanus);
+        cleanStream(videoStream);
+        videoStream = null;
+        videoJanus.detach();
         videoJanus = null;
       }
     } else {
       if (videoJanus) {
         await videoJanus.switch(video);
       } else {
-        await initStream(janus, video);
+        await get().initShidur();
       }
     }
-    if (updateState) {
-      set({ videoStream, video });
-      await setToStorage('vrt_video', video);
-    }
+
+    set({ videoStream, video });
   },
   setAudio       : async (audio, text) => {
     if (get().talking) {
@@ -257,12 +258,12 @@ export const useShidurStore = create((set, get) => ({
       await initShidur(isPlay);
     }
 
-    videoStream.getVideoTracks().forEach(t => t.enabled = isPlay);
-    audioStream.getAudioTracks().forEach(t => t.enabled = isPlay && !isMuted);
-    set(() => ({ isPlay }));
+    videoStream?.getVideoTracks().forEach(t => t.enabled = isPlay);
+    audioStream?.getAudioTracks().forEach(t => t.enabled = isPlay && !isMuted);
+    set({ isPlay });
   },
   initQuad       : async () => {
-    if (!useSettingsStore.getState().isQuad)
+    if (quadStream)
       return;
     const [stream, janusStream] = await initStream(janus, 102);
     set({ quadUrl: stream.toURL(), isQuad: true });

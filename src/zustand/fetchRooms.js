@@ -3,6 +3,7 @@ import api from '../shared/Api';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import log from 'loglevel';
 import { useSettingsStore } from './settings';
+import { getFromStorage } from '../shared/tools';
 
 const useRoomStore = create((set) => ({
   room      : null,
@@ -22,7 +23,7 @@ const useRoomStore = create((set) => ({
       const data = await api.fetchAvailableRooms();
       set({ isLoading: false });
       try {
-        const id = await RNSecureStorage.getItem('room');
+        const id = await getFromStorage('room');
 
         const room = data.rooms.find(x => x.room === Number.parseInt(id));
         console.log('room from RNSecureStorage', id, room);

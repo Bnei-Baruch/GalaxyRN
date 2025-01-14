@@ -278,9 +278,6 @@ export const useInRoomStore = create((set, get) => ({
       get().joinRoom();
     }
   },
-  toggleMute     : (stream) => {
-    videoroom.mute(null, stream);
-  },
   enterBackground: async () => {
     useSettingsStore.getState().enterAudioMode();
   },
