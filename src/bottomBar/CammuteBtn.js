@@ -7,13 +7,11 @@ import { bottomBar } from './helper';
 export const CammuteBtn = () => {
   const { cammute, toggleCammute } = useMyStreamStore();
 
-  const handlePress = () => {
-    toggleCammute();
-  };
+  const handlePress = () => toggleCammute();
 
   return (
     <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name={cammute ? 'videocam' : 'videocam-off'} size={40} color={cammute ? 'white' : 'red'} />
+      <Icon name={cammute ? 'videocam-off' : 'videocam'} size={40} color={cammute ? 'red' : 'white'} />
     </TouchableOpacity>
   );
 };

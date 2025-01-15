@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { mediaDevices } from 'react-native-webrtc';
 import { useUserStore } from './user';
-import { getFromStorage } from '../shared/tools';
+import { getFromStorage, setToStorage } from '../shared/tools';
 
 let stream             = null;
 export const getStream = () => stream;
@@ -13,7 +13,7 @@ export const useMyStreamStore = create((set, get) => ({
   timestamp    : Date.now(),
   setTimestmap : () => set({ timestamp: Date.now() }),
   myInit       : async () => {
-    const cammute = await getFromStorage('cammute');
+    const cammute = await getFromStorage('cammute').then(x => x === 'true');
     get().myAbort();
 
     try {
@@ -35,9 +35,10 @@ export const useMyStreamStore = create((set, get) => ({
     stream.getAudioTracks().forEach(track => track.enabled = !mute);
     set(() => ({ mute: mute }));
   },
-  toggleCammute: (cammute = !get().cammute) => {
+  toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {
     useUserStore.getState().sendUserState({ camera: !cammute });
     stream.getVideoTracks().forEach(track => track.enabled = !cammute);
     set(() => ({ cammute }));
+    updateStorage && await setToStorage('cammute', cammute);
   },
 }));

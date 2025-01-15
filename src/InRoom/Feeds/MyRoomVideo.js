@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import MyRTCView from './MyRTCView';
-import { useMyStreamStore } from '../zustand/myStream';
+import MyRTCView from '../../components/MyRTCView';
+import { useMyStreamStore } from '../../zustand/myStream';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useSettingsStore } from '../zustand/settings';
-import { feedWidth } from '../InRoom/helper';
-import FeedDisplay from '../InRoom/Feeds/FeedDisplay';
-import { useUserStore } from '../zustand/user';
+import { useSettingsStore } from '../../zustand/settings';
+import { feedWidth } from '../helper';
+import FeedDisplay from './FeedDisplay';
+import { useUserStore } from '../../zustand/user';
 
 const MyRoomMedia = () => {
   const { cammute }                 = useMyStreamStore();
@@ -14,7 +14,6 @@ const MyRoomMedia = () => {
   const { user }                    = useUserStore();
 
   const width = feedWidth(numFeedsInCol);
-
   return (
     <View style={{ width }}>
       <FeedDisplay display={user.username} />

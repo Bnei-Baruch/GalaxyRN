@@ -3,7 +3,6 @@ import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
 import { useUserStore } from './user';
-import RNSecureStorage from 'rn-secure-storage';
 import { getFromStorage } from '../shared/tools';
 
 export const useSettingsStore = create((set, get) => ({
@@ -30,7 +29,7 @@ export const useSettingsStore = create((set, get) => ({
     set({ audioMode });
   },
   enterAudioMode  : async () => {
-    useMyStreamStore.getState().toggleCammute(true);
+    useMyStreamStore.getState().toggleCammute(true, false);
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
@@ -40,7 +39,7 @@ export const useSettingsStore = create((set, get) => ({
     cleanQuads(false);
   },
   exitAudioMode   : async () => {
-    const cammute = await getFromStorage('cammute', false);
+    const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
     useMyStreamStore.getState().toggleCammute(cammute);
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
