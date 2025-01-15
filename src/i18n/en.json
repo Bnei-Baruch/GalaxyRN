@@ -1,21 +1,21 @@
 {
   "pageTitle": "Arvut-virtual ten",
-  "login": "Login",
+  "login": "LOGIN",
   "settings": {
-    "page": "Settings en",
+    "page": "Settings",
     "uiLanguage": "Interface language",
     "cammute": "Stop video",
     "audioMode": "Audio Mode",
     "isShidur": "Mute Broadcast",
     "search": "Search...",
-    "join": "join room",
-    "user": {
-      "title": "user settings",
-      "name": "Screen Name"
-    }
+    "join": "Join Room"
+  },
+  "user": {
+    "title": "User settings",
+    "name": "Screen name"
   },
   "topBar": {
-    "materials": "topBar.materials",
+    "materials": "Study Materials",
     "donate": "Donate",
     "support": "Support",
     "settings": "Settings",

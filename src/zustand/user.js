@@ -12,9 +12,10 @@ export const useUserStore = create((set, get) => ({
   sendUserState: (opts = {}) => {
     const { room }     = useRoomStore.getState();
     const { question } = useSettingsStore.getState();
-    const { cammmute } = useMyStreamStore.getState();
+    const { cammute } = useMyStreamStore.getState();
+    console.log('on init send video bug: sendUserState',  cammute);
     const defaultOpts  = {
-      camera: !cammmute,
+      camera: !cammute,
       question,
       rfid  : get().rfid,
       room  : room.room,

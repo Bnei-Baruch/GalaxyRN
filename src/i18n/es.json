@@ -1,7 +1,26 @@
 {
-  "login": "Login",
+  "login": "INGRESAR",
   "settings": {
-    "page": "Settings es"
+    "page": "Configuración",
+    "uiLanguage": "Idioma de la interface",
+    "cammute": "Detener video",
+    "audioMode": "Modo de audio",
+    "isShidur": "Silenciar el audio de la transmisión",
+    "search": "Search...",
+    "join": "Unirse a la sala"
+  },
+  "user": {
+    "title": "Material de estudio",
+    "name": "Nombre en pantalla"
+  },
+  "topBar": {
+    "materials": "Material de estudio",
+    "donate": "DONAR",
+    "support": "Enviar una pregunta",
+    "settings": "Configuración",
+    "logout": "Desconectar",
+    "communicationTitle": "Communication",
+    "materialsTitle": "Material de estudio"
   },
   "shidur": {
     "streamForWorkshop": "Retransmisión para taller",

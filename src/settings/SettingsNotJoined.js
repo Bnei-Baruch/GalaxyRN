@@ -32,24 +32,24 @@ export const SettingsNotJoined = () => {
     <View style={styles.container}>
       <PageHeader page={t('settings.page')} />
       {/*user settings*/}
-      <IconWithText iconName="account-circle" text={t('settings.user.title')} />
-      <LabeledInput label={t('settings.user.name')} value={user.display} disabled={true} />
+      <IconWithText iconName="account-circle" text={t('user.title')} />
+      <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
       <SelectUiLanguage />
       <MyVideo />
       <LabeledSwitch
         label={t('settings.cammute')}
-        initialValue={cammute}
+        value={cammute}
         onValueChange={handleCammute}
       />
       <LabeledSwitch
         label={t('settings.audioMode')}
-        initialValue={audioMode}
+        value={audioMode}
         onValueChange={handleToggleAudioMode}
       />
 
       <LabeledSwitch
         label={t('settings.isShidur')}
-        initialValue={isShidur}
+        value={isShidur}
         onValueChange={handleToggleIsShidur}
       />
       <RoomSelect />

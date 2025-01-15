@@ -9,7 +9,7 @@ export const getStream = () => stream;
 export const useMyStreamStore = create((set, get) => ({
   stream       : null,
   mute         : true,
-  cammmute     : false,
+  cammute     : false,
   timestamp    : Date.now(),
   setTimestmap : () => set({ timestamp: Date.now() }),
   myInit       : async () => {

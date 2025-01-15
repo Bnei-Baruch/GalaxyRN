@@ -1,7 +1,26 @@
 {
-  "login": "Login",
+  "login": "ВОЙТИ",
   "settings": {
-    "page": "Settings ru"
+    "page": "Настройки",
+    "uiLanguage": "Язык интерфейса",
+    "cammute": "Выкл видео",
+    "audioMode": "Аудио режим",
+    "isShidur": "Отключить звук трансляции",
+    "search": "Search...",
+    "join": "Войти в комнату"
+  },
+  "user": {
+    "title": "Пользовательские настройки",
+    "name": "Отображаемое имя пользователя"
+  },
+  "topBar": {
+    "materials": "Учебный материал",
+    "donate": "ВНЕСТИ ВКЛАД",
+    "support": "Поддержка",
+    "settings": "Настройки",
+    "logout": "Выход",
+    "communicationTitle": "Communication",
+    "materialsTitle": "Учебный материал"
   },
   "shidur": {
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",

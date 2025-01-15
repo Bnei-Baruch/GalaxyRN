@@ -6,8 +6,9 @@ import { memberItemWidth } from '../InRoom/helper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { baseStyles } from '../constants';
 
-const MyVideo = ({ isPortrait }) => {
+const MyVideo = () => {
   const { cammute } = useMyStreamStore();
+
   return (
     <View style={[styles.container, { aspectRatio: memberItemWidth.getAspectRatio() }]}>
       {

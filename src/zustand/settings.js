@@ -37,7 +37,8 @@ export const useSettingsStore = create((set, get) => ({
   },
   enterAudioMode    : async () => {
     useMyStreamStore.getState().toggleCammute(true, false);
-
+    if(!get().readyForJoin)
+      return
     const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
 
@@ -48,6 +49,9 @@ export const useSettingsStore = create((set, get) => ({
   exitAudioMode     : async () => {
     const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
     useMyStreamStore.getState().toggleCammute(cammute);
+
+    if(!get().readyForJoin)
+      return
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
     activateFeedsVideos(feeds);

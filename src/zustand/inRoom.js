@@ -42,9 +42,9 @@ export const useInRoomStore = create((set, get) => ({
       janus.destroy();
       janus = null;
     }
-    const { user }                   = useUserStore.getState();
-    const { room }                   = useRoomStore.getState();
-    const { cammmute, setTimestmap } = useMyStreamStore.getState();
+    const { user }                  = useUserStore.getState();
+    const { room }                  = useRoomStore.getState();
+    const { cammute, setTimestmap } = useMyStreamStore.getState();
 
     setTimestmap();
     InCallManager.start({ media: 'video' });
@@ -198,7 +198,7 @@ export const useInRoomStore = create((set, get) => ({
       log.info('[client] Janus init', data);
       janus.attach(videoroom).then((data) => {
         console.info('[client] Publisher Handle: ', data);
-        user.camera    = cammmute;
+        user.camera    = !cammute;
         user.question  = false;
         user.timestamp = Date.now();
         user.session   = janus.sessionId;
@@ -233,7 +233,6 @@ export const useInRoomStore = create((set, get) => ({
 
             mqtt.join('galaxy/room/' + room.room);
             mqtt.join('galaxy/room/' + room.room + '/chat', true);
-            //if (isGroup) videoroom.setBitrate(600000)
           }).catch((err) => {
             log.error('[client] Publish error :', err);
             get().restartRoom();

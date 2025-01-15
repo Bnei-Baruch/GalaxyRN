@@ -1,7 +1,26 @@
 {
-  "login": "Login he",
+  "login": "כניסה",
   "settings": {
-    "page": "Settings he"
+    "page": "הגדרות",
+    "uiLanguage": "שפת הממשק",
+    "cammute": "להפסיק וידאו",
+    "audioMode": "מצב שמע",
+    "isShidur": "השתק שידור",
+    "search": "Search...",
+    "join": "כנס לחדר"
+  },
+  "user": {
+    "title": "הגדרות משתמש",
+    "name": "כינוי להצגה"
+  },
+  "topBar": {
+    "materials": "חומר לימוד",
+    "donate": "לתרום",
+    "support": "תמיכה",
+    "settings": "הגדרות",
+    "logout": "יציאה",
+    "communicationTitle": "Communication",
+    "materialsTitle": "חומר לימוד"
   },
   "shidur": {
     "streamForWorkshop": "ערוץ לסדנה",

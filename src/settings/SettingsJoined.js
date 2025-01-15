@@ -32,17 +32,17 @@ export const SettingsJoined = ({ toggleVisible }) => {
       <SelectUiLanguage />
       <LabeledSwitch
         label={'Stop video'}
-        initialValue={cammute}
+        value={cammute}
         onValueChange={handleCammute}
       />
       <LabeledSwitch
         label={'Audio Mode'}
-        initialValue={audioMode}
+        value={audioMode}
         onValueChange={handleToggleAudioMode}
       />
       <LabeledSwitch
         label={'Mute Broadcast'}
-        initialValue={isShidur}
+        value={isShidur}
         onValueChange={handleToggleIsShidur}
       />
       <View style={baseStyles.full} />

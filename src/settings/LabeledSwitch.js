@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import { baseStyles } from '../constants';
 
-const LabeledSwitch = ({ label, initialValue = false, onValueChange }) => {
-  const [isEnabled, setIsEnabled] = useState(initialValue);
-
-  const toggleSwitch = () => {
-    setIsEnabled(previousState => !previousState);
-    onValueChange && onValueChange(!isEnabled);
-  };
+const LabeledSwitch = ({ label, value, onValueChange }) => {
+  const toggleSwitch = () => onValueChange(!value);
 
   return (
     <View style={styles.container}>
       <Text style={[styles.label, baseStyles.text]}>{label}</Text>
       <Switch
         trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+        thumbColor={value ? '#f5dd4b' : '#f4f3f4'}
         ios_backgroundColor="#3e3e3e"
         onValueChange={toggleSwitch}
-        value={isEnabled}
+        value={value}
       />
     </View>
   );
