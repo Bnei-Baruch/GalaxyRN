@@ -11,7 +11,7 @@ import { useSettingsStore } from '../zustand/settings';
 
 const Shidur = () => {
   const { videoStream, isPlay, shidurBar, toggleShidurBar, video } = useShidurStore();
-  const { audioMode } = useSettingsStore();
+  const { audioMode }                                              = useSettingsStore();
 
   const toggleBar = () => toggleShidurBar();
   return (
@@ -38,6 +38,7 @@ const Shidur = () => {
                 <View style={styles.toolbar}>
                   <PlayPauseBtn />
                   <OptionsBtn />
+                  {/*<FullscreenBtn />*/}
                 </View>
               )
             }

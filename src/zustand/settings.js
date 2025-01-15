@@ -6,29 +6,36 @@ import { useUserStore } from './user';
 import { getFromStorage } from '../shared/tools';
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang          : 'en',
-  autoEnterRoom   : false,
-  changeUiLang    : (lang) => set({ uiLang: lang }),
-  readyForJoin    : false,
-  setReadyForJoin : (readyForJoin = true) => set({ readyForJoin }),
-  question        : false,
-  toggleQuestion  : () => {
+  uiLang            : 'en',
+  autoEnterRoom     : false,
+  changeUiLang      : (lang) => set({ uiLang: lang }),
+  readyForJoin      : false,
+  setReadyForJoin   : (readyForJoin = true) => set({ readyForJoin }),
+  question          : false,
+  isFullscreen      : false,
+  toggleIsFullscreen: () => {
+    const isFullscreen = !get().isFullscreen;
+    useInRoomStore.getState().toggleShowBars(isFullscreen);
+    useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
+    set({ isFullscreen });
+  },
+  toggleQuestion    : () => {
     const question = !get().question;
     useUserStore.getState().sendUserState({ question });
     set({ question });
   },
-  isShidur        : true,
-  toggleIsShidur  : () => {
+  isShidur          : true,
+  toggleIsShidur    : () => {
     const isShidur = !get().isShidur;
     !isShidur && useShidurStore.getState().cleanShidur();
     set({ isShidur });
   },
-  audioMode       : false,
-  toggleAudioMode : async (audioMode = !get().audioMode) => {
+  audioMode         : false,
+  toggleAudioMode   : async (audioMode = !get().audioMode) => {
     audioMode ? get().enterAudioMode() : get().exitAudioMode();
     set({ audioMode });
   },
-  enterAudioMode  : async () => {
+  enterAudioMode    : async () => {
     useMyStreamStore.getState().toggleCammute(true, false);
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
@@ -38,7 +45,7 @@ export const useSettingsStore = create((set, get) => ({
     enterAudioMode();
     cleanQuads(false);
   },
-  exitAudioMode   : async () => {
+  exitAudioMode     : async () => {
     const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
     useMyStreamStore.getState().toggleCammute(cammute);
 
@@ -49,10 +56,10 @@ export const useSettingsStore = create((set, get) => ({
     initShidur();
     initQuad();
   },
-  showGroups      : false,
-  toggleShowGroups: () => set((state) => ({ showGroups: !state.showGroups })),
-  hideSelf        : false,
-  toggleHideSelf  : () => set((state) => ({ hideSelf: !state.hideSelf })),
-  numFeedsInCol   : 2,
-  setNumFeedsInCol: (numFeedsInCol = 2) => set({ numFeedsInCol }),
+  showGroups        : false,
+  toggleShowGroups  : () => set((state) => ({ showGroups: !state.showGroups })),
+  hideSelf          : false,
+  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf })),
+  numFeedsInCol     : 2,
+  setNumFeedsInCol  : (numFeedsInCol = 2) => set({ numFeedsInCol }),
 }));

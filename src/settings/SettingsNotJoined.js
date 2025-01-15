@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import IconWithText from './IconWithText';
 import LabeledInput from './LabeledInput';
 import SelectUiLanguage from './SelectUiLanguage';
@@ -11,6 +12,7 @@ import { View, StyleSheet } from 'react-native';
 import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
+import Orientation from 'react-native-orientation-locker';
 
 export const SettingsNotJoined = () => {
   const { t }                                                    = useTranslation();
@@ -18,6 +20,10 @@ export const SettingsNotJoined = () => {
   const { isShidur, toggleIsShidur, audioMode, toggleAudioMode } = useSettingsStore();
   const { user }                                                 = useUserStore();
 
+  useEffect(() => {
+    Orientation.lockToPortrait();
+    return Orientation.unlockAllOrientations;
+  }, []);
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleToggleIsShidur  = () => toggleIsShidur();
   const handleCammute         = () => toggleCammute();
