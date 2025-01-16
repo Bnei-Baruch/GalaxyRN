@@ -81,8 +81,8 @@ export default Feed;
 
 const styles = StyleSheet.create({
   container: {
-    aspectRatio: 16 / 9,
-    //marginVertical: 100
+    aspectRatio    : 16 / 9,
+    backgroundColor: 'rgba(255,255,255,.1)',
   },
   talking  : {
     borderWidth: 2,

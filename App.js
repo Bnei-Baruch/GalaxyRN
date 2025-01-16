@@ -19,13 +19,18 @@ if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {
-  const { setIsPortrait }   = useInitsStore();
-  const { readyForJoin }    = useSettingsStore();
-  const { myInit, myAbort } = useMyStreamStore();
+  const { setIsPortrait, initApp, terminateApp } = useInitsStore();
+  const { readyForJoin }                         = useSettingsStore();
+  const { myInit, myAbort }                      = useMyStreamStore();
 
   useEffect(() => {
     myInit();
-    return myAbort;
+    initApp();
+
+    return () => {
+      myAbort();
+      terminateApp();
+    };
   }, []);
 
   useEffect(() => {

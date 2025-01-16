@@ -1,12 +1,14 @@
 package com.galaxyrn
 
 import android.os.Bundle
+import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.bridge.ReactContext
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.oney.WebRTCModule.WebRTCModuleOptions
-
 
 
 class MainActivity : ReactActivity() {
@@ -28,5 +30,16 @@ class MainActivity : ReactActivity() {
         super.onCreate(savedInstanceState)
         val options = WebRTCModuleOptions.getInstance()
         options.enableMediaProjectionService = true
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val reactInstanceManager = reactInstanceManager
+        val reactContext: ReactContext? = reactInstanceManager?.currentReactContext
+
+        reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+            ?.emit("AppTerminated", null)
     }
 }

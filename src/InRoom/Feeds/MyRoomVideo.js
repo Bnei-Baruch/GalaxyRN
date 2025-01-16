@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     aspectRatio    : 16 / 9,
     alignItems     : 'center',
     justifyContent : 'center',
-    backgroundColor: 'black'
+    backgroundColor: 'rgba(255,255,255,.1)'
   },
   overlay          : {
     alignItems    : 'center',

@@ -3159,7 +3159,6 @@ __metadata:
     react-native-background-timer: "npm:^2.4.1"
     react-native-dotenv: "npm:^3.4.11"
     react-native-incall-manager: "npm:^4.2.0"
-    react-native-orientation-locker: "npm:^1.7.0"
     react-native-render-html: "npm:^6.3.4"
     react-native-safe-area-context: "npm:^4.10.9"
     react-native-swipe-gestures: "npm:^1.0.5"
@@ -8499,20 +8498,6 @@ __metadata:
   peerDependencies:
     react-native: ">=0.40.0"
   checksum: 10c0/8abe792ba6e7377caf63bb1d927ad0676294b502ecfd67ccb911355446469e8af7e8afd4e0a33183dcd1e25bf2e772b7b396cb23221e5ab80e7bd5f2db43f527
-  languageName: node
-  linkType: hard
-
-"react-native-orientation-locker@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "react-native-orientation-locker@npm:1.7.0"
-  peerDependencies:
-    react: ">=16.13.1"
-    react-native: ">=0.63.2"
-    react-native-windows: ">=0.63.3"
-  peerDependenciesMeta:
-    react-native-windows:
-      optional: true
-  checksum: 10c0/68ac54460a0722c203cda17d8a26cf8409115e6ed1ecc4324c25b60f94476f6200ae6646fa71495288d553f3a77a20c5548d0d33b434066ef8d7284dbbd094ff
   languageName: node
   linkType: hard
 

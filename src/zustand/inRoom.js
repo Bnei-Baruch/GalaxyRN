@@ -11,7 +11,6 @@ import useRoomStore from './fetchRooms';
 import { useSettingsStore } from './settings';
 import mqtt from '../shared/mqtt';
 import { useMyStreamStore, getStream } from './myStream';
-import InCallManager from 'react-native-incall-manager';
 import i18n from '../i18n/i18n';
 import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
@@ -47,8 +46,6 @@ export const useInRoomStore = create((set, get) => ({
     const { cammute, setTimestmap } = useMyStreamStore.getState();
 
     setTimestmap();
-    InCallManager.start({ media: 'video' });
-    InCallManager.setKeepScreenOn(true);
     let _subscriberJoined = false;
 
     const makeSubscription = async (pubs) => {
@@ -267,9 +264,6 @@ export const useInRoomStore = create((set, get) => ({
     await mqtt.exit('galaxy/room/' + room.room);
     await mqtt.exit('galaxy/room/' + room.room + '/chat');
     await useInitsStore.getState().endMqtt();
-
-    InCallManager.setKeepScreenOn(false);
-    InCallManager.stop();
   },
   restartRoom    : async () => {
     await get().exitRoom();

@@ -13,7 +13,6 @@ export const useUserStore = create((set, get) => ({
     const { room }     = useRoomStore.getState();
     const { question } = useSettingsStore.getState();
     const { cammute } = useMyStreamStore.getState();
-    console.log('on init send video bug: sendUserState',  cammute);
     const defaultOpts  = {
       camera: !cammute,
       question,

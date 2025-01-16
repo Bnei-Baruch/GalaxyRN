@@ -211,7 +211,7 @@ export const useShidurStore = create((set, get) => ({
     trlAudioJanus?.detach();
     trlAudioJanus = null;
 
-    set({ readyShidur: false, videoStream: null, talking: null });
+    set({ readyShidur: false, isPlay: false, videoStream: null, talking: null });
   },
   streamGalaxy   : async (isOn) => {
     log.debug('[shidur] got talk event: ', isOn);

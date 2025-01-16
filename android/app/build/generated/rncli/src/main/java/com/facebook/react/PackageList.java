@@ -17,8 +17,6 @@ import com.rnappauth.RNAppAuthPackage;
 import com.ocetnik.timer.BackgroundTimerPackage;
 // react-native-incall-manager
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
-// react-native-orientation-locker
-import org.wonday.orientation.OrientationPackage;
 // react-native-safe-area-context
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-vector-icons
@@ -77,7 +75,6 @@ public class PackageList {
       new RNAppAuthPackage(),
       new BackgroundTimerPackage(),
       new InCallManagerPackage(),
-      new OrientationPackage(),
       new SafeAreaContextPackage(),
       new VectorIconsPackage(),
       new WebRTCModulePackage(),

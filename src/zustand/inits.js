@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PermissionsAndroid } from 'react-native';
+import { PermissionsAndroid, NativeModules, NativeEventEmitter } from 'react-native';
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
@@ -8,6 +8,11 @@ import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
+import InCallManager from 'react-native-incall-manager';
+import { useInRoomStore } from './inRoom';
+
+const { AppModule } = NativeModules;
+const eventEmitter  = new NativeEventEmitter(AppModule);
 
 async function checkPermission(permission) {
   try {
@@ -44,7 +49,7 @@ async function requestPermission(permission) {
   }
 }
 
-export const useInitsStore = create((set) => ({
+export const useInitsStore = create((set, get) => ({
   mqttReady      : false,
   configReady    : false,
   isPortrait     : true,
@@ -110,4 +115,17 @@ export const useInitsStore = create((set) => ({
       });
     });
   },
+  initApp        : () => {
+    InCallManager.start({ media: 'video' });
+    InCallManager.setKeepScreenOn(true);
+
+    eventEmitter.addListener('AppTerminated', async () => {
+      await useInRoomStore.getState().exitRoom();
+      get().terminateApp();
+    });
+  },
+  terminateApp   : () => {
+    InCallManager.setKeepScreenOn(false);
+    InCallManager.stop();
+  }
 }));
