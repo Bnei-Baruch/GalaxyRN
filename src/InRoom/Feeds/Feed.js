@@ -50,7 +50,7 @@ const Feed = ({ id }) => {
     activateDeactivate(borders.top, borders.bottom, feed);
   };
 
-  const width         = feedWidth(numFeedsInCol);
+  const width         = feedWidth.get();//feedWidth(numFeedsInCol);
   const renderContent = () => {
     if (vMid) {
       return (

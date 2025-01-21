@@ -13,7 +13,7 @@ const MyRoomMedia = () => {
   const { numFeedsInCol, question } = useSettingsStore();
   const { user }                    = useUserStore();
 
-  const width = feedWidth(numFeedsInCol);
+  const width = feedWidth.get();//numFeedsInCol;
   return (
     <View style={{ width }}>
       <FeedDisplay display={user.username} />

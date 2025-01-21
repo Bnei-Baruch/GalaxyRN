@@ -1,6 +1,6 @@
 import { Dimensions } from 'react-native';
 
-class MemberItemWidth {
+class FeedWidth {
   w              = Dimensions.get('window').width / 2 - 1;
   isPortrait     = true;
   set            = (isPortrait) => {
@@ -11,9 +11,4 @@ class MemberItemWidth {
   getAspectRatio = (_isPortrait) => (_isPortrait ?? !this.isPortrait) ? 16 / 9 : 9 / 16;
 }
 
-export const memberItemWidth = new MemberItemWidth();
-
-export const feedWidth = coef => {
-  const w = (100 - 100 % coef) / coef;
-  return w + '%';
-};
+export const feedWidth = new FeedWidth();

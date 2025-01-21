@@ -4,7 +4,7 @@ import { baseStyles } from '../../constants';
 import WIP from '../../components/WIP';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useShidurStore } from '../../zustand/shidur';
-import { memberItemWidth } from '../helper';
+import { feedWidth } from '../helper';
 import { useSettingsStore } from '../../zustand/settings';
 import { useUiActions } from '../../zustand/uiActions';
 
@@ -76,6 +76,6 @@ const styles = StyleSheet.create({
   },
   shidur       : {
     width      : '100%',
-    aspectRatio: memberItemWidth.getAspectRatio(true)
+    aspectRatio: feedWidth.getAspectRatio(true)
   }
 });
