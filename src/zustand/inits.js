@@ -83,6 +83,7 @@ export const useInitsStore = create((set, get) => ({
         mqtt.join('galaxy/users/notification');
         mqtt.join('galaxy/users/broadcast');
         mqtt.watch((message) => {
+          //useInRoomStore.getState().updateDisplayById(message.user);
           log.debug('on watch MQTT', message);
         });
       }

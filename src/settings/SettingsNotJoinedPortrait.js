@@ -12,7 +12,6 @@ import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
 import { useShidurStore } from '../zustand/shidur';
-import { useInitsStore } from '../zustand/inits';
 
 export const SettingsNotJoinedPortrait = () => {
   const { t }                                    = useTranslation();
@@ -20,7 +19,6 @@ export const SettingsNotJoinedPortrait = () => {
   const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
   const { user }                                 = useUserStore();
   const { setIsMuted }                           = useShidurStore();
-  const { isPortrait }                           = useInitsStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleIsMuted         = () => setIsMuted();

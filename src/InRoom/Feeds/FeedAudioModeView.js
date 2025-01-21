@@ -1,13 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { feedWidth } from '../helper';
-import { useSettingsStore } from '../../zustand/settings';
 import { baseStyles } from '../../constants';
+import { feedWidth } from '../helper';
 
-const FeedAudioModeView = ({ display, talk = false }) => {
-  const { numFeedsInCol } = useSettingsStore();
-  const width             = feedWidth(numFeedsInCol);
+const FeedAudioModeView = ({ display, talk = false, question = false }) => {
+  const width = feedWidth.get();
 
   return (
     <View style={[styles.container, talk && styles.talking, { width }]}>
@@ -17,6 +15,16 @@ const FeedAudioModeView = ({ display, talk = false }) => {
         size={7}
         style={styles.icon}
       />
+      {
+        question && (
+          <Icon
+            name="question-mark"
+            color={'red'}
+            size={7}
+            style={styles.icon}
+          />
+        )
+      }
       <Text
         style={baseStyles.text}
         ellipsizeMode="tail"

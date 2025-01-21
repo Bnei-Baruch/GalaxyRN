@@ -27,16 +27,16 @@ let attempts       = 0;
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264');
 
 export const useInRoomStore = create((set, get) => ({
-  feedById       : {},
-  showBars       : true,
-  toggleShowBars : (hideOnTimeout, showBars = !get().showBars) => {
+  feedById         : {},
+  showBars         : true,
+  toggleShowBars   : (hideOnTimeout, showBars = !get().showBars) => {
     clearTimeout(showBarTimeout);
     if (hideOnTimeout && showBars) {
       showBarTimeout = setTimeout(() => set({ showBars: false }), HIDE_BARS_TIMEOUT_MS);
     }
     set({ showBars });
   },
-  joinRoom       : () => {
+  joinRoom         : () => {
     if (janus) {
       janus.destroy();
       janus = null;
@@ -251,7 +251,7 @@ export const useInRoomStore = create((set, get) => ({
     mqtt.join('galaxy/room/' + room.room);
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
-  exitRoom       : async () => {
+  exitRoom         : async () => {
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
     useShidurStore.getState().cleanShidur();
@@ -265,18 +265,26 @@ export const useInRoomStore = create((set, get) => ({
     await mqtt.exit('galaxy/room/' + room.room + '/chat');
     await useInitsStore.getState().endMqtt();
   },
-  restartRoom    : async () => {
+  restartRoom      : async () => {
     await get().exitRoom();
     if (attempts < 5) {
       get().joinRoom();
     }
   },
-  enterBackground: async () => {
+  enterBackground  : async () => {
     useSettingsStore.getState().enterAudioMode();
   },
-  enterForeground: async () => {
+  enterForeground  : async () => {
     useSettingsStore.getState().exitAudioMode();
   },
+  updateDisplayById: (data) => {
+    set(produce(state => {
+      if (state.feedById[data.rfid])
+        state.feedById[data.rfid].display = { display: data.username,  };
+      else
+        state.feedById[data.rfid] = { display: data };
+    }));
+  }
 }));
 
 export const activateFeedsVideos = (feeds) => {

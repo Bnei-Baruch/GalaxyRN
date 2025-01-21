@@ -9,11 +9,11 @@ import FeedDisplay from './FeedDisplay';
 import { useUserStore } from '../../zustand/user';
 
 const MyRoomMedia = () => {
-  const { cammute }                 = useMyStreamStore();
-  const { numFeedsInCol, question } = useSettingsStore();
-  const { user }                    = useUserStore();
+  const { cammute }  = useMyStreamStore();
+  const { question } = useSettingsStore();
+  const { user }     = useUserStore();
 
-  const width = feedWidth.get();//numFeedsInCol;
+  const width = feedWidth.get();
   return (
     <View style={{ width }}>
       <FeedDisplay display={user.username} />

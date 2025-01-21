@@ -37,8 +37,8 @@ export const useSettingsStore = create((set, get) => ({
   },
   enterAudioMode    : async () => {
     useMyStreamStore.getState().toggleCammute(true, false);
-    if(!get().readyForJoin)
-      return
+    if (!get().readyForJoin)
+      return;
     const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
 
@@ -50,8 +50,8 @@ export const useSettingsStore = create((set, get) => ({
     const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
     useMyStreamStore.getState().toggleCammute(cammute);
 
-    if(!get().readyForJoin)
-      return
+    if (!get().readyForJoin)
+      return;
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
     activateFeedsVideos(feeds);
@@ -63,7 +63,5 @@ export const useSettingsStore = create((set, get) => ({
   showGroups        : false,
   toggleShowGroups  : () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf          : false,
-  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf })),
-  numFeedsInCol     : 2,
-  setNumFeedsInCol  : (numFeedsInCol = 2) => set({ numFeedsInCol }),
+  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf }))
 }));

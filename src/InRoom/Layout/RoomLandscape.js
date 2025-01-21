@@ -11,18 +11,10 @@ import { useUiActions } from '../../zustand/uiActions';
 const RoomLandscape = ({ shidur, quads, members }) => {
   const { toggleShowBars }   = useInRoomStore();
   const { janusReady }       = useShidurStore();
-  const { setNumFeedsInCol } = useSettingsStore();
   const { setFeedsScrollY }  = useUiActions();
 
   const isShidur = !!shidur;
 
-  useEffect(() => {
-    setNumFeedsInCol(isShidur ? 2 : 3);
-    return () => {
-      setNumFeedsInCol();
-    };
-
-  }, [isShidur]);
 
   const handleAnyPress = () => toggleShowBars(true);
   const handleScroll   = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);

@@ -11,7 +11,6 @@ import WIP from '../../components/WIP';
 
 const Feed = ({ id }) => {
   const { feedById }      = useInRoomStore();
-  const { numFeedsInCol } = useSettingsStore();
   const { borders }       = useUiActions();
 
   const feed                                              = feedById[id];
@@ -50,7 +49,7 @@ const Feed = ({ id }) => {
     activateDeactivate(borders.top, borders.bottom, feed);
   };
 
-  const width         = feedWidth.get();//feedWidth(numFeedsInCol);
+  const width         = feedWidth.get();
   const renderContent = () => {
     if (vMid) {
       return (
