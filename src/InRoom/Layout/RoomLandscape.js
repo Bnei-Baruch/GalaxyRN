@@ -1,20 +1,18 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { baseStyles } from '../../constants';
 import WIP from '../../components/WIP';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useShidurStore } from '../../zustand/shidur';
-import { feedWidth } from '../helper';
-import { useSettingsStore } from '../../zustand/settings';
 import { useUiActions } from '../../zustand/uiActions';
+import { feedSize } from '../helper';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
-  const { toggleShowBars }   = useInRoomStore();
-  const { janusReady }       = useShidurStore();
-  const { setFeedsScrollY }  = useUiActions();
+  const { toggleShowBars }  = useInRoomStore();
+  const { janusReady }      = useShidurStore();
+  const { setFeedsScrollY } = useUiActions();
 
   const isShidur = !!shidur;
-
 
   const handleAnyPress = () => toggleShowBars(true);
   const handleScroll   = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
@@ -68,6 +66,6 @@ const styles = StyleSheet.create({
   },
   shidur       : {
     width      : '100%',
-    aspectRatio: feedWidth.getAspectRatio(true)
+    aspectRatio: feedSize.getAspectRatio(true)
   }
 });

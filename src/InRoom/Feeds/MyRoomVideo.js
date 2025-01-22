@@ -4,7 +4,7 @@ import MyRTCView from '../../components/MyRTCView';
 import { useMyStreamStore } from '../../zustand/myStream';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../../zustand/settings';
-import { feedWidth } from '../helper';
+import { feedSize } from '../helper';
 import FeedDisplay from './FeedDisplay';
 import { useUserStore } from '../../zustand/user';
 
@@ -13,7 +13,7 @@ const MyRoomMedia = () => {
   const { question } = useSettingsStore();
   const { user }     = useUserStore();
 
-  const width = feedWidth.get();
+  const { width } = feedSize.get();
   return (
     <View style={{ width }}>
       <FeedDisplay display={user.username} />

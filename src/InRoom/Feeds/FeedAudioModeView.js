@@ -2,10 +2,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { baseStyles } from '../../constants';
-import { feedWidth } from '../helper';
+import { feedSize } from '../helper';
 
 const FeedAudioModeView = ({ display, talk = false, question = false }) => {
-  const width = feedWidth.get();
+  const width = feedSize.get();
 
   return (
     <View style={[styles.container, talk && styles.talking, { width }]}>

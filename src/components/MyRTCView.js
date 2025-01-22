@@ -2,7 +2,7 @@ import React from 'react';
 import { RTCView } from 'react-native-webrtc';
 import { useMyStreamStore } from '../zustand/myStream';
 import { baseStyles } from '../constants';
-import { feedWidth } from '../InRoom/helper';
+import { feedSize } from '../InRoom/helper';
 
 const MyRTCView = () => {
   const { stream } = useMyStreamStore();
@@ -12,7 +12,7 @@ const MyRTCView = () => {
   return (
     <RTCView
       streamURL={stream.toURL()}
-      style={[baseStyles.full, { aspectRatio: feedWidth.getAspectRatio() }]}
+      style={[baseStyles.full, { aspectRatio: feedSize.getAspectRatio() }]}
       objectFit="cover"
       mirror={true}
     />

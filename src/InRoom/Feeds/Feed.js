@@ -1,17 +1,16 @@
 import { StyleSheet, View } from 'react-native';
-import { RTCView } from 'react-native-webrtc';
 import React, { useRef, useEffect } from 'react';
 import { useInRoomStore, activateFeedsVideos, deactivateFeedsVideos } from '../../zustand/inRoom';
-import { useSettingsStore } from '../../zustand/settings';
-import { feedWidth } from '../helper';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
 import FeedDisplay from './FeedDisplay';
 import WIP from '../../components/WIP';
+import { RTCView } from 'react-native-webrtc';
+import { feedSize } from '../helper';
 
 const Feed = ({ id }) => {
-  const { feedById }      = useInRoomStore();
-  const { borders }       = useUiActions();
+  const { feedById } = useInRoomStore();
+  const { borders }  = useUiActions();
 
   const feed                                              = feedById[id];
   const { display: { display } = {}, url, talking, vMid } = feed || {};
@@ -49,7 +48,7 @@ const Feed = ({ id }) => {
     activateDeactivate(borders.top, borders.bottom, feed);
   };
 
-  const width         = feedWidth.get();
+  const { width }     = feedSize.get();
   const renderContent = () => {
     if (vMid) {
       return (
@@ -89,18 +88,12 @@ const styles = StyleSheet.create({
   },
   viewer   : {
     flex           : 1,
-    backgroundColor: 'black',
-    justifyContent : 'space-between'
+    backgroundColor: 'rgba(255,255,255,.1)',
+    justifyContent : 'space-between',
   },
   select   : {
     padding       : 24,
     flexDirection : 'row',
     justifyContent: 'space-between',
-  },
-  overlay  : {
-    backgroundColor: 'black',
-    aspectRatio    : 16 / 9,
-    alignItems     : 'center',
-    justifyContent : 'center'
   }
 });
