@@ -8,7 +8,7 @@ import { useMyStreamStore } from './src/zustand/myStream';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
 import 'react-native-url-polyfill';
-import { feedWidth } from './src/InRoom/helper';
+import { feedSize } from './src/InRoom/helper';
 import { useInitsStore } from './src/zustand/inits';
 import { baseStyles } from './src/constants';
 import 'intl-pluralrules';
@@ -37,7 +37,7 @@ const App = () => {
     const onChange   = () => {
       const dim         = Dimensions.get('screen');
       const _isPortrait = dim.height >= dim.width;
-      feedWidth.set(_isPortrait);
+      feedSize.update(_isPortrait);
       setIsPortrait(_isPortrait);
     };
     let subscription = Dimensions.addEventListener('change', onChange);

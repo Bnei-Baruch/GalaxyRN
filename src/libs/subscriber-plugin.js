@@ -4,6 +4,7 @@ import log from 'loglevel';
 import mqtt from '../shared/mqtt';
 import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import BackgroundTimer from 'react-native-background-timer';
 
 export class SubscriberPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -20,6 +21,7 @@ export class SubscriberPlugin extends EventEmitter {
     this.pc            = new RTCPeerConnection({
       iceServers: list
     });
+    this.configure     = this.configure.bind(this);
   }
 
   getPluginName() {
@@ -116,14 +118,17 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   configure() {
+    console.log('Ice restart bug: Subscriber plugin configure');
     const body = { request: 'configure', restart: true };
     return this.transaction('message', { body }, 'event').then((param) => {
-      log.info('[subscriber] iceRestart: ', param);
+      log.info('Ice restart bug: [subscriber] iceRestart: ', param);
       const { json } = param || {};
       if (json?.jsep) {
         log.debug('[subscriber] Got jsep: ', json.jsep);
         this.handleJsep(json.jsep);
       }
+    }).catch((err) => {
+      console.error('Ice restart bug: Subscriber plugin configure', err);
     });
   }
 
@@ -158,7 +163,7 @@ export class SubscriberPlugin extends EventEmitter {
   initPcEvents() {
     if (this.pc) {
       this.pc.addEventListener('connectionstatechange', (e) => {
-        log.debug('[subscriber] ICE State: ', e.target.connectionState);
+        log.debug('Ice restart bug: [subscriber] ICE State: ', e.target.connectionState);
         this.iceState = e.target.connectionState;
         if (this.iceState === 'disconnected') {
           this.iceRestart();
@@ -206,25 +211,33 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   iceRestart() {
-    setTimeout(() => {
-      let count = 0;
-      let chk   = setInterval(() => {
-        count++;
-        if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
-          clearInterval(chk);
-        } else if (mqtt.mq.connected) {
-          log.debug('[subscriber] - Trigger ICE Restart - ');
-          this.configure();
-          clearInterval(chk);
-        } else if (count >= 10) {
-          clearInterval(chk);
-          log.error('[subscriber] - ICE Restart failed - ');
-          this.iceFailed('subscriber');
-        } else {
-          log.debug('[subscriber] ICE Restart try: ' + count);
-        }
+    console.log('Ice restart bug: Subscriber plugin iceRestart start');
+    try {
+      BackgroundTimer.setTimeout(() => {
+        console.log('Ice restart bug: Subscriber plugin iceRestart in timeout');
+        let count = 0;
+        let chk   = BackgroundTimer.setInterval(() => {
+          console.log('Ice restart bug: Subscriber plugin iceRestart in interval', this.janus?.isConnected, mqtt.mq.connected);
+          count++;
+          if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
+            BackgroundTimer.clearInterval(chk);
+          } else if (mqtt.mq.connected) {
+            log.debug('Ice restart bug: [subscriber] - Trigger ICE Restart - ');
+            this.configure();
+            BackgroundTimer.clearInterval(chk);
+          } else if (count >= 10) {
+            BackgroundTimer.clearInterval(chk);
+            log.error('Ice restart bug: [subscriber] - ICE Restart failed - ');
+            this.iceFailed && this.iceFailed('subscriber');
+          } else {
+            log.debug('Ice restart bug: [subscriber] ICE Restart try: ' + count);
+          }
+        }, 1000);
       }, 1000);
-    }, 1000);
+    } catch (e) {
+      console.error('Ice restart bug: Subscriber plugin iceRestart', e);
+    }
+    console.log('Ice restart bug: Subscriber plugin iceRestart end');
   }
 
   success(janus, janusHandleId) {

@@ -57,6 +57,12 @@ export const useInitsStore = create((set, get) => ({
   initPermissions: async () => {
     if (!await checkPermission('android.permission.CAMERA'))
       return false;
+    if (!await checkPermission('android.permission.WAKE_LOCK'))
+      return false;
+    if (!await checkPermission('android.permission.FOREGROUND_SERVICE'))
+      return false;
+    if (!await checkPermission('android.permission.POST_NOTIFICATIONS'))
+      return false;
 
     return (
       await checkPermission('android.permission.BLUETOOTH_CONNECT')
@@ -119,6 +125,7 @@ export const useInitsStore = create((set, get) => ({
   initApp        : () => {
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(true);
+    InCallManager.chooseAudioRoute("BLUETOOTH")
 
     eventEmitter.addListener('AppTerminated', async () => {
       await useInRoomStore.getState().exitRoom();

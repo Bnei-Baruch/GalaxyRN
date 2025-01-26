@@ -52,7 +52,10 @@ class MqttMsg {
         requestProblemInformation : true,
       },
       timerVariant   : {
-        set  : (func, time) => BackgroundTimer.setInterval(func, time),
+        set  : (func, time) => {
+          console.log('Ice restart bug: mqtt timerVariant set');
+          return BackgroundTimer.setInterval(func, time);
+        },
         clear: (timerId) => BackgroundTimer.clearInterval(timerId),
       }
     };
@@ -152,6 +155,9 @@ class MqttMsg {
 
   watch = (callback) => {
     this.mq.on('message', (topic, data, packet) => {
+      if (!this.mq) {
+        console.log('Ice restart bug: mqtt watch');
+      }
       log.trace('[mqtt] <-- receive packet: ', packet);
       let cd = packet?.properties?.correlationData ? ' | transaction: ' +
         packet?.properties?.correlationData?.toString() : '';

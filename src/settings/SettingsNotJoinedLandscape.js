@@ -32,7 +32,7 @@ export const SettingsNotJoinedLandscape = () => {
         <View style={styles.row}>
           <IconWithText iconName="account-circle" text={t('user.title')} />
           <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
-          <MyVideo />
+          <MyVideo aspectRatio={16 / 9} />
         </View>
         <View style={styles.row}>
           <SelectUiLanguage />

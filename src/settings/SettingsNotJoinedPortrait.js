@@ -31,7 +31,7 @@ export const SettingsNotJoinedPortrait = () => {
       <IconWithText iconName="account-circle" text={t('user.title')} />
       <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
       <SelectUiLanguage />
-      <MyVideo />
+      <MyVideo aspectRatio={9 / 16} />
       <LabeledSwitch
         label={t('settings.cammute')}
         value={cammute}

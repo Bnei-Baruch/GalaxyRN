@@ -4,6 +4,7 @@ import log from 'loglevel';
 import mqtt from '../shared/mqtt';
 import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection } from 'react-native-webrtc';
+import BackgroundTimer from 'react-native-background-timer';
 
 export class PublisherPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -241,26 +242,30 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   iceRestart() {
-    setTimeout(() => {
-      let count = 0;
-      let chk   = setInterval(() => {
-        count++;
-        if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
-          clearInterval(chk);
-        } else if (mqtt.mq.connected) {
-          log.debug('[publisher] - Trigger ICE Restart - ');
-          this.pc.restartIce();
-          this.configure(true);
-          clearInterval(chk);
-        } else if (count >= 10) {
-          clearInterval(chk);
-          log.error('[publisher] - ICE Restart failed - ');
-          this.iceFailed('publisher');
-        } else {
-          log.debug('[publisher] ICE Restart try: ' + count);
-        }
-      }, 1000);
-    }, 3000);
+    try {
+      BackgroundTimer.setTimeout(() => {
+        let count = 0;
+        let chk   = BackgroundTimer.setInterval(() => {
+          count++;
+          if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
+            BackgroundTimer.clearInterval(chk);
+          } else if (mqtt.mq.connected) {
+            log.debug('[publisher] - Trigger ICE Restart - ');
+            this.pc.restartIce();
+            this.configure(true);
+            BackgroundTimer.clearInterval(chk);
+          } else if (count >= 10) {
+            BackgroundTimer.clearInterval(chk);
+            log.error('[publisher] - ICE Restart failed - ');
+            this.iceFailed('publisher');
+          } else {
+            log.debug('[publisher] ICE Restart try: ' + count);
+          }
+        }, 1000);
+      }, 3000);
+    } catch (e) {
+      console.error('Ice restart bug: Publisher plugin iceRestart', e);
+    }
   }
 
   success(janus, janusHandleId) {

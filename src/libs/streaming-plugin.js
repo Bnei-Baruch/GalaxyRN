@@ -4,6 +4,7 @@ import log from 'loglevel';
 import mqtt from '../shared/mqtt';
 import { MediaStream, RTCPeerConnection } from 'react-native-webrtc';
 import { STUN_SRV_GXY } from '@env';
+import BackgroundTimer from 'react-native-background-timer';
 
 export class StreamingPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -150,25 +151,30 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   iceRestart() {
-    setTimeout(() => {
-      let count = 0;
-      let chk   = setInterval(() => {
-        count++;
-        if (count < 10 && this.iceState !== 'disconnected' ||
-          !this.janus?.isConnected) {
-          clearInterval(chk);
-        } else if (mqtt.mq.connected) {
-          log.debug('[streaming] - Trigger ICE Restart - ');
-          this.watch(this.streamId, true);
-          clearInterval(chk);
-        } else if (count >= 10) {
-          clearInterval(chk);
-          log.error('[streaming] - ICE Restart failed - ');
-        } else {
-          log.debug('[streaming] ICE Restart try: ' + count);
-        }
+    try {
+
+      BackgroundTimer.setTimeout(() => {
+        let count = 0;
+        let chk   = BackgroundTimer.setInterval(() => {
+          count++;
+          if (count < 10 && this.iceState !== 'disconnected' ||
+            !this.janus?.isConnected) {
+            BackgroundTimer.clearInterval(chk);
+          } else if (mqtt.mq.connected) {
+            log.debug('[streaming] - Trigger ICE Restart - ');
+            this.watch(this.streamId, true);
+            BackgroundTimer.clearInterval(chk);
+          } else if (count >= 10) {
+            BackgroundTimer.clearInterval(chk);
+            log.error('[streaming] - ICE Restart failed - ');
+          } else {
+            log.debug('[streaming] ICE Restart try: ' + count);
+          }
+        }, 1000);
       }, 1000);
-    }, 1000);
+    } catch (e) {
+      console.error('Ice restart bug: Streaming plugin iceRestart', e);
+    }
   }
 
   success(janus, janusHandleId) {
