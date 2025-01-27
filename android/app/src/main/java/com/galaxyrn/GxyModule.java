@@ -23,20 +23,18 @@ public class GxyModule extends ReactContextBaseJavaModule {
         return "GxyModule";
     }
 
-    @Override
-    public void initialize() {
-        super.initialize();
-
-        Log.d(TAG, "Start background service");
-        Context context = getReactApplicationContext();
-        foregroundService.start(context);
-
-    }
-
     @ReactMethod
     public void startBackgroundService() {
         Log.d(TAG, "Start background service");
-        // foregroundService.start(getReactApplicationContext());
+        Context context = getReactApplicationContext();
+        foregroundService.start(context);
+    }
+
+    @ReactMethod
+    public void stopBackgroundService() {
+        Log.d(TAG, "Stop background service");
+        Context context = getReactApplicationContext();
+        foregroundService.abort(context);
     }
 
     @Override

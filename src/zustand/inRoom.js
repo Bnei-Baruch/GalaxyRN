@@ -16,6 +16,9 @@ import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useShidurStore } from './shidur';
 import { deepClone } from '../shared/tools';
+import { NativeModules } from 'react-native';
+
+const { GxyModule } = NativeModules;
 
 let subscriber = null;
 let videoroom  = null;
@@ -269,15 +272,17 @@ export const useInRoomStore = create((set, get) => ({
     }
   },
   enterBackground  : async () => {
+    GxyModule.startBackgroundService();
     useSettingsStore.getState().enterAudioMode();
   },
   enterForeground  : async () => {
+    GxyModule.stopBackgroundService();
     useSettingsStore.getState().exitAudioMode();
   },
   updateDisplayById: (data) => {
     set(produce(state => {
       if (state.feedById[data.rfid])
-        state.feedById[data.rfid].display = { display: data.username,  };
+        state.feedById[data.rfid].display = { display: data.username, };
       else
         state.feedById[data.rfid] = { display: data };
     }));
