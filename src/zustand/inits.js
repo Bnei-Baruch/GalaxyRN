@@ -50,16 +50,16 @@ async function requestPermission(permission) {
 }
 
 export const useInitsStore = create((set, get) => ({
+  isBridgeReady  : false,
   mqttReady      : false,
   configReady    : false,
   isPortrait     : true,
+  initBridge     : () => set({ isBridgeReady: true }),
   setIsPortrait  : (isPortrait) => (set({ isPortrait })),
   initPermissions: async () => {
     if (!await checkPermission('android.permission.CAMERA'))
       return false;
-    if (!await checkPermission('android.permission.WAKE_LOCK'))
-      return false;
-    if (!await checkPermission('android.permission.FOREGROUND_SERVICE'))
+    if (!await checkPermission('android.permission.RECORD_AUDIO'))
       return false;
     if (!await checkPermission('android.permission.POST_NOTIFICATIONS'))
       return false;
@@ -125,7 +125,7 @@ export const useInitsStore = create((set, get) => ({
   initApp        : () => {
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(true);
-    InCallManager.chooseAudioRoute("BLUETOOTH")
+    InCallManager.chooseAudioRoute('BLUETOOTH');
 
     eventEmitter.addListener('AppTerminated', async () => {
       await useInRoomStore.getState().exitRoom();

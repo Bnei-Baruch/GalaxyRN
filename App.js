@@ -14,19 +14,26 @@ import { baseStyles } from './src/constants';
 import 'intl-pluralrules';
 import { register } from '@formatjs/intl-pluralrules';
 import './src/i18n/i18n';
+import useForegroundListener from './src/InRoom/useForegroundListener';
 
 if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {
-  const { setIsPortrait, initApp, terminateApp } = useInitsStore();
-  const { readyForJoin }                         = useSettingsStore();
-  const { myInit, myAbort }                      = useMyStreamStore();
+  const { setIsPortrait, initApp, terminateApp, initPermissions } = useInitsStore();
+  const { readyForJoin }                                          = useSettingsStore();
+  const { myInit, myAbort }                                       = useMyStreamStore();
+
+  useForegroundListener();
 
   useEffect(() => {
-    myInit();
-    initApp();
-
+    const init = async () => {
+      if (!await initPermissions())
+        return;
+      await myInit();
+      initApp();
+    };
+    init();
     return () => {
       myAbort();
       terminateApp();

@@ -6,6 +6,7 @@ import { View, Modal, Text, StyleSheet, Button } from 'react-native';
 import { RoomChat } from './RoomChat';
 import ScreenTitle from '../components/ScreenTitle';
 import { useTranslation } from 'react-i18next';
+import { Questions } from './Questions';
 
 export const ChatModal = () => {
   const { mode, setChatMode, cleanChat } = useChatStore();
@@ -40,7 +41,7 @@ export const ChatModal = () => {
       <View>
         {mode === modalModes.chat && <RoomChat />}
         {mode === modalModes.support && <Text></Text>}
-        {mode === modalModes.question && <Text></Text>}
+        {mode === modalModes.question && <Questions />}
       </View>
     </Modal>
   );

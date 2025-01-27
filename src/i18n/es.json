@@ -5,7 +5,7 @@
     "uiLanguage": "Idioma de la interface",
     "cammute": "Detener video",
     "audioMode": "Modo de audio",
-    "isShidur": "Silenciar el audio de la transmisión",
+    "isMuted": "Silenciar el audio de la transmisión",
     "search": "Search...",
     "join": "Unirse a la sala"
   },

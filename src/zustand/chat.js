@@ -2,28 +2,19 @@ import { create } from 'zustand';
 import produce from 'immer';
 import { getDateString } from '../shared/tools';
 import { modalModes } from './helper';
+import Api from '../shared/Api';
+import { isRTLString } from '../chat/helper';
 
 const buildMsg = (msg) => ({ ...msg, time: getDateString() });
 
-export const useChatStore = create((set) => ({
+export const useChatStore = create((set, get) => ({
   mode         : modalModes.close,
   setChatMode  : (mode) => set(() => ({ mode })),
   supportCount : 0,
   roomCount    : 0,
   supportMsgs  : [],
-  roomMsgs     : [
-    {
-      'text': '55',
-      'time': '09:42:19',
-      'type': 'client-chat',
-      'user': { 'display': 'davgur davgur', 'id': '4d902c81-dac2-46eb-89bd-94ce926e4c85', 'role': 'user' }
-    }, {
-      'text': '66',
-      'time': '09:42:32',
-      'type': 'client-chat',
-      'user': { 'display': 'davgur davgur', 'id': '4d902c81-dac2-46eb-89bd-94ce926e4c85', 'role': 'user' }
-    }
-  ],
+  roomMsgs     : [],
+  questions    : [],
   resetRoom    : set(() => ({ roomCount: 0 })),
   resetSupport : set(() => ({ supportCount: 0 })),
   addRoomMsg   : (data) => {
@@ -51,5 +42,26 @@ export const useChatStore = create((set) => ({
       state.roomCount    = 0;
       state.roomMsgs     = [];
     }));
+  },
+  sendQuestion : (data) => {
+    Api.sendQuestion(data);
+    get().getQuestions({ serialUserId: data.serialUserId });
+  },
+  getQuestions : async (data) => {
+    const questions = await Api.getQuestions(data);
+    questions.map(q => {
+      const { question: { content, askForMe }, user: { galaxyRoom: room, name }, timestamp } = q;
+      return {
+        room,
+        name,
+        content,
+        askForMe,
+        time     : getDateString(new Date(timestamp)),
+        direction: isRTLString(content) ? 'rtl' : 'ltr',
+        textAlign: isRTLString(content) ? 'right' : 'left',
+      };
+    });
+
+    set({ questions });
   }
 }));

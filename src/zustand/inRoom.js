@@ -247,9 +247,6 @@ export const useInRoomStore = create((set, get) => ({
       log.error('[client] Janus init error', err);
       get().restartRoom();
     });
-
-    mqtt.join('galaxy/room/' + room.room);
-    mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom         : async () => {
     const { room } = useRoomStore.getState();

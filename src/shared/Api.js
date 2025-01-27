@@ -1,4 +1,4 @@
-import { API_BACKEND, STUDY_MATERIALS } from '@env';
+import { API_BACKEND, STUDY_MATERIALS, QST_BACKEND } from '@env';
 import mqtt from '../shared/mqtt';
 
 class Api {
@@ -77,6 +77,27 @@ class Api {
       return null;
     }
   };
+
+  makeOptions  = (payload) => {
+    const options = {
+      ...this.defaultOptions(),
+      method: 'POST',
+    };
+    if (payload) {
+      options.body                    = JSON.stringify(payload);
+      options.headers['Content-Type'] = 'application/json';
+    }
+    return options;
+  };
+  sendQuestion = (data) => {
+    const options = this.makeOptions(data);
+    return this.logAndParse(`send question`, fetch(`${QST_BACKEND}/ask`, options));
+  };
+  getQuestions = (data) => {
+    const options = this.makeOptions(data);
+    return this.logAndParse(`get questions`, fetch(`${QST_BACKEND}/feed`, options));
+  };
+
 }
 
 const defaultApi = new Api();

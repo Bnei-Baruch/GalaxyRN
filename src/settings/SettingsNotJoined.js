@@ -4,6 +4,8 @@ import { SettingsNotJoinedPortrait } from './SettingsNotJoinedPortrait';
 import { SettingsNotJoinedLandscape } from './SettingsNotJoinedLandscape';
 
 export const SettingsNotJoined = () => {
-  const { isPortrait } = useInitsStore();
+  const { isPortrait, isBridgeReady } = useInitsStore();
+  if (!isBridgeReady)
+    return null;
   return isPortrait ? <SettingsNotJoinedPortrait /> : <SettingsNotJoinedLandscape />;
 };

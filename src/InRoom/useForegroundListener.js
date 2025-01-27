@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useInRoomStore } from '../zustand/inRoom';
+import { useInitsStore } from '../zustand/inits';
 
 const useForegroundListener = () => {
   const { enterBackground, enterForeground } = useInRoomStore();
+  const { initBridge }                       = useInitsStore();
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
@@ -11,6 +13,7 @@ const useForegroundListener = () => {
         enterBackground();
       } else if (nextAppState === 'active') {
         enterForeground();
+        initBridge();
       }
     };
 

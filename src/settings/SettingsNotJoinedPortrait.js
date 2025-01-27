@@ -16,9 +16,9 @@ import { useShidurStore } from '../zustand/shidur';
 export const SettingsNotJoinedPortrait = () => {
   const { t }                                    = useTranslation();
   const { cammute, toggleCammute }               = useMyStreamStore();
-  const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
+  const { audioMode, toggleAudioMode } = useSettingsStore();
   const { user }                                 = useUserStore();
-  const { setIsMuted }                           = useShidurStore();
+  const { setIsMuted, isMuted }                           = useShidurStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleIsMuted         = () => setIsMuted();
@@ -44,8 +44,8 @@ export const SettingsNotJoinedPortrait = () => {
       />
 
       <LabeledSwitch
-        label={t('settings.isShidur')}
-        value={isShidur}
+        label={t('settings.isMuted')}
+        value={isMuted}
         onValueChange={handleIsMuted}
       />
       <RoomSelect />

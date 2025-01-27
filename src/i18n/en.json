@@ -6,7 +6,7 @@
     "uiLanguage": "Interface language",
     "cammute": "Stop video",
     "audioMode": "Audio Mode",
-    "isShidur": "Mute Broadcast",
+    "isMuted": "Mute Broadcast",
     "search": "Search...",
     "join": "Join Room"
   },

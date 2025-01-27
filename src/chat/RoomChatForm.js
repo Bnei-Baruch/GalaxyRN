@@ -12,13 +12,16 @@ export const RoomChatForm = () => {
   const { room } = useRoomStore();
   const { user } = useUserStore();
 
+  if (!room?.room)
+    return null;
+
   const newChatMessage = () => {
     const { id, display, role } = user;
 
-    const msg   = { user: { id, role, display }, type: 'client-chat', text: value };
-    const topic = id ? `galaxy/users/${id}` : `galaxy/room/${room}/chat`;
+    const msg = { user: { id, role, display }, type: 'client-chat', text: value };
 
-    mqtt.send(JSON.stringify(msg), false, topic);
+    mqtt.send(JSON.stringify(msg), false, `galaxy/room/${room?.room}/chat`);
+    setValue('');
   };
 
   return (
