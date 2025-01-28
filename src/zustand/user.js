@@ -12,12 +12,17 @@ export const useUserStore = create((set, get) => ({
   sendUserState: (opts = {}) => {
     const { room }     = useRoomStore.getState();
     const { question } = useSettingsStore.getState();
-    const { cammute } = useMyStreamStore.getState();
-    const defaultOpts  = {
+    const { cammute }  = useMyStreamStore.getState();
+
+    if (!room) {
+      console.log('sendUserState no room', room);
+      return;
+    }
+    const defaultOpts = {
       camera: !cammute,
       question,
       rfid  : get().rfid,
-      room  : room.room,
+      room  : room?.room,
       ...opts
     };
 

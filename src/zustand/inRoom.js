@@ -40,6 +40,14 @@ export const useInRoomStore = create((set, get) => ({
     set({ showBars });
   },
   joinRoom         : () => {
+    console.log('useInRoomStore joinRoom', janus);
+
+    attempts++;
+    if (attempts > 5) {
+      get().exitRoom();
+      alert('Could not connect to the server, please try again later');
+      return;
+    }
     if (janus) {
       janus.destroy();
       janus = null;
@@ -107,7 +115,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     const config = GxyConfig.instanceConfig(room.janus);
-
+    console.log('useInRoomStore joinRoom config', config);
     janus          = new JanusMqtt(user, config.name);
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
@@ -195,7 +203,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     janus.init(config.token).then((data) => {
-      log.info('[client] Janus init', data);
+      console.log('useInRoomStore joinRoom on janus.init', data);
       janus.attach(videoroom).then((data) => {
         console.info('[client] Publisher Handle: ', data);
         user.camera    = !cammute;
@@ -267,24 +275,26 @@ export const useInRoomStore = create((set, get) => ({
   },
   restartRoom      : async () => {
     await get().exitRoom();
-    if (attempts < 5) {
-      get().joinRoom();
-    }
+    get().joinRoom();
   },
   enterBackground  : async () => {
-    GxyModule.startBackgroundService();
+    //GxyModule.startBackgroundService();
     useSettingsStore.getState().enterAudioMode();
   },
   enterForeground  : async () => {
-    GxyModule.stopBackgroundService();
+    if (!useInitsStore.getState().isBridgeReady)
+      return;
+    //GxyModule.stopBackgroundService();
     useSettingsStore.getState().exitAudioMode();
   },
   updateDisplayById: (data) => {
+    const { camera, question, rfid } = data || {};
+
     set(produce(state => {
-      if (state.feedById[data.rfid])
-        state.feedById[data.rfid].display = { display: data.username, };
-      else
-        state.feedById[data.rfid] = { display: data };
+      if (state.feedById?.[rfid]) {
+        state.feedById[rfid].camera   = camera;
+        state.feedById[rfid].question = question;
+      }
     }));
   }
 }));

@@ -4,12 +4,14 @@ import { useSettingsStore } from '../zustand/settings';
 import { useUserStore } from '../zustand/user';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useShidurStore } from '../zustand/shidur';
+import { useInRoomStore } from '../zustand/inRoom';
 
 const useOnCmdData = () => {
   const { user, setUser }             = useUserStore();
   const { toggleCammute, toggleMute } = useMyStreamStore();
   const { streamGalaxy }              = useShidurStore();
   const { mqttReady, toggleQuestion } = useSettingsStore();
+  const { updateDisplayById }         = useInRoomStore();
 
   useEffect(() => {
     if (mqttReady) return;
@@ -38,7 +40,7 @@ const useOnCmdData = () => {
       } else if (type === 'client-reload-all') {
         window.location.reload();
       } else if (type === 'client-state') {
-        //this.userState(data.user);
+        updateDisplayById(data.user);
       }
 
     });

@@ -22,15 +22,19 @@ public class ForegroundService extends Service {
     static final int NOTIFICATION_ID = new Random().nextInt(99999) + 10000;
     private final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
     private final String TAG = ForegroundService.class.getSimpleName();
-    private Intent intent = null;
 
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
     public void start(Context context) {
-        Log.w(TAG, "start");
-        createChannel(context);
-        intent = new Intent(context, ForegroundService.class);
+        Intent intent = new Intent(context, ForegroundService.class);
         ComponentName componentName;
-
+        createChannel(context);
+        Log.d(TAG, "startForegroundService context is null " + (context == null));
+        Log.d(TAG, "startForegroundService intent is null " + (intent == null));
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 componentName = context.startForegroundService(intent);
@@ -51,15 +55,10 @@ public class ForegroundService extends Service {
         }
     }
 
-    public void abort(Context context) {
-        if (intent != null) {
-            context.stopService(intent);
-        }
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public void stop(Context context) {
+        Log.i(TAG, "service stop");
+        Intent intent = new Intent(context, ForegroundService.class);
+        context.stopService(intent);
     }
 
     @Override
@@ -74,7 +73,7 @@ public class ForegroundService extends Service {
             startForeground(NOTIFICATION_ID, notification);
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -88,23 +87,26 @@ public class ForegroundService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        Log.i(TAG, "foreground service onDestroy");
         stopForeground(true);
     }
 
     private void createChannel(Context context) {
-        Log.d("Background bug", "createNotificationChannel");
+        Log.d(TAG, "createNotificationChannel");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
 
-        if (context == null) {
-            Log.d(TAG, " Cannot create notification channel: no current context");
+        NotificationManager manager = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
+
+
+        if (manager == null) {
+            Log.d(TAG, " Cannot create notification channel: no current NotificationManager");
             return;
         }
 
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
-
-        NotificationChannel channel = notificationManager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+        NotificationChannel channel = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
         if (channel != null) {
             // The channel was already created
             return;
@@ -113,7 +115,7 @@ public class ForegroundService extends Service {
         channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Arvut system notification", NotificationManager.IMPORTANCE_HIGH);
         channel.setShowBadge(false);
 
-        notificationManager.createNotificationChannel(channel);
+        manager.createNotificationChannel(channel);
     }
 
     private Notification buildNotification(Context context) {

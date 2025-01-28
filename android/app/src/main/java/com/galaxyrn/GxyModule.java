@@ -1,7 +1,12 @@
 package com.galaxyrn;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
-import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -14,33 +19,34 @@ public class GxyModule extends ReactContextBaseJavaModule {
     private static final String TAG = "BackgroundServiceModule";
     private final ForegroundService foregroundService = new ForegroundService();
 
-    public GxyModule(ReactApplicationContext reactContext) {
-        super(reactContext);
-    }
-
     @Override
     public String getName() {
         return "GxyModule";
     }
 
-    @ReactMethod
-    public void startBackgroundService() {
-        Log.d(TAG, "Start background service");
-        Context context = getReactApplicationContext();
-        foregroundService.start(context);
+    public GxyModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+
+        // Ensure the observer is added on the main thread
+        new Handler(Looper.getMainLooper()).post(() -> {
+            ProcessLifecycleOwner.get().getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
+                if (event == Lifecycle.Event.ON_STOP) {
+                    // App entered the background
+                    Log.d(TAG, "App is in the background");
+                    foregroundService.start(reactContext);
+                } else if (event == Lifecycle.Event.ON_START) {
+                    // App entered the foreground
+                    Log.d(TAG, "App is in the foreground");
+                    foregroundService.stop(reactContext);
+                }
+            });
+        });
     }
 
-    @ReactMethod
-    public void stopBackgroundService() {
-        Log.d(TAG, "Stop background service");
-        Context context = getReactApplicationContext();
-        foregroundService.abort(context);
-    }
 
     @Override
     public void invalidate() {
         super.invalidate();
-        Context context = getReactApplicationContext();
-        foregroundService.abort(context);
+        foregroundService.stop(getReactApplicationContext());
     }
 }

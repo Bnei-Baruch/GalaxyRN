@@ -32,12 +32,12 @@ export const useMyStreamStore = create((set, get) => ({
     stream = null;
   },
   toggleMute   : (mute = !get().mute) => {
-    stream.getAudioTracks().forEach(track => track.enabled = !mute);
+    stream?.getAudioTracks().forEach(track => track.enabled = !mute);
     set(() => ({ mute: mute }));
   },
   toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {
     useUserStore.getState().sendUserState({ camera: !cammute });
-    stream.getVideoTracks().forEach(track => track.enabled = !cammute);
+    stream?.getVideoTracks().forEach(track => track.enabled = !cammute);
     set(() => ({ cammute }));
     updateStorage && await setToStorage('cammute', cammute);
   },

@@ -55,23 +55,18 @@ export const useInitsStore = create((set, get) => ({
   configReady    : false,
   isPortrait     : true,
   initBridge     : () => set({ isBridgeReady: true }),
-  setIsPortrait  : (isPortrait) => (set({ isPortrait })),
+  setIsPortrait  : isPortrait => set({ isPortrait }),
   initPermissions: async () => {
     if (!await checkPermission('android.permission.CAMERA'))
       return false;
     if (!await checkPermission('android.permission.RECORD_AUDIO'))
       return false;
-    if (!await checkPermission('android.permission.POST_NOTIFICATIONS'))
-      return false;
-
-    return (
-      await checkPermission('android.permission.BLUETOOTH_CONNECT')
-      || (
-        await checkPermission('android.permission.BLUETOOTH')
-        && await checkPermission('android.permission.BLUETOOTH_ADMIN')
-      )
-    );
-
+    await checkPermission('android.permission.POST_NOTIFICATIONS');
+    await checkPermission('android.permission.BLUETOOTH');
+    await checkPermission('android.permission.BLUETOOTH_ADMIN');
+    await checkPermission('android.permission.BLUETOOTH_CONNECT');
+    console.log('useInitsStore initPermissions all checked');
+    return true;
   },
   initMQTT       : () => {
     const { user } = useUserStore.getState();
