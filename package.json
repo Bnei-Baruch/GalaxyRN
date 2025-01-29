@@ -25,7 +25,7 @@
     "react-native-swipe-gestures": "^1.0.5",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.1.0",
-    "react-native-webrtc": "^124.0.5",
+    "react-native-webrtc": "^124.0.3",
     "react-native-webview": "^13.12.3",
     "rn-secure-storage": "^3.0.1",
     "url": "^0.11.4",

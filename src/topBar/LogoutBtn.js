@@ -7,13 +7,10 @@ import { topMenuBtns } from './helper';
 import { useTranslation } from 'react-i18next';
 
 const LogoutBtn = () => {
-  const { setUser } = useUserStore();
   const { t }       = useTranslation();
 
   const handleLogout = () => {
-    kc.Logout(() => {
-      setUser(null);
-    });
+    kc.logout();
   };
   return (
     <TouchableOpacity onPress={handleLogout} style={topMenuBtns.btn}>

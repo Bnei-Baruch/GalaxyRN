@@ -2,19 +2,14 @@ import React, { useEffect } from 'react';
 import { Button, StyleSheet, View, } from 'react-native';
 import kc from './keycloak';
 import { useUserStore } from '../zustand/user';
-import { getUserRole } from '../shared/enums';
 import { useTranslation } from 'react-i18next';
 
 const LoginPage = ({ children }) => {
-  const { user, setUser } = useUserStore();
-  const { t }             = useTranslation();
+  const { user } = useUserStore();
+  const { t }    = useTranslation();
 
   useEffect(() => {
-    kc.getUser(u => {
-      if (!u) return;
-      const role = getUserRole(u.roles);
-      setUser({ ...u, role });
-    });
+    kc.fetchUser();
   }, []);
 
   if (user)
@@ -24,15 +19,7 @@ const LoginPage = ({ children }) => {
       </View>
     );
 
-  const handleLogin = () => {
-    kc.Login(() => {
-      kc.getUser(u => {
-        if (!u) return;
-        const role = getUserRole(u.roles);
-        setUser({ ...u, role });
-      });
-    });
-  };
+  const handleLogin = () => kc.login();
 
   return (
     <View style={[styles.container, styles.login]}>

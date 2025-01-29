@@ -16,9 +16,6 @@ import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useShidurStore } from './shidur';
 import { deepClone } from '../shared/tools';
-import { NativeModules } from 'react-native';
-
-const { GxyModule } = NativeModules;
 
 let subscriber = null;
 let videoroom  = null;
@@ -202,62 +199,64 @@ export const useInRoomStore = create((set, get) => ({
       }));
     };
 
-    janus.init(config.token).then((data) => {
-      console.log('useInRoomStore joinRoom on janus.init', data);
-      janus.attach(videoroom).then((data) => {
-        console.info('[client] Publisher Handle: ', data);
-        user.camera    = !cammute;
-        user.question  = false;
-        user.timestamp = Date.now();
-        user.session   = janus.sessionId;
-        user.handle    = videoroom.janusHandleId;
+    janus.init(config.token)
+      .then((data) => {
+        console.log('[client] joinRoom on janus.init', data);
+        janus.attach(videoroom).then((data) => {
+          console.info('[client] Publisher Handle: ', data);
+          user.camera    = !cammute;
+          user.question  = false;
+          user.timestamp = Date.now();
+          user.session   = janus.sessionId;
+          user.handle    = videoroom.janusHandleId;
 
-        const { id, timestamp, role, username } = user;
-        const d                                 = {
-          id, timestamp, role,
-          display   : username,
-          is_group  : false,
-          is_desktop: false,
-        };
-        log.info(`[client] Videoroom init: d - ${d} room - ${room.room}`);
-        videoroom.join(room.room, d).then(async (data) => {
-          log.info('[client] Joined respond:', data);
-          useUserStore.getState().setRfid(data.id);
+          const { id, timestamp, role, username } = user;
+          const d                                 = {
+            id, timestamp, role,
+            display   : username,
+            is_group  : false,
+            is_desktop: false,
+          };
+          log.info(`[client] Videoroom init: d - ${d} room - ${room.room}`);
+          videoroom.join(room.room, d).then(async (data) => {
+            log.info('[client] Joined respond:', data);
+            useUserStore.getState().setRfid(data.id);
 
-          // Feeds count with user role
-          let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
-          if (feeds_count > 25) {
-            alert(i18n.t('messages.maxUsersInRoom'));
-            get().restartRoom();
-            return;
-          }
+            // Feeds count with user role
+            let feeds_count = data.publishers.filter((feed) => feed.display.role === userRolesEnum.user).length;
+            if (feeds_count > 25) {
+              alert(i18n.t('messages.maxUsersInRoom'));
+              get().restartRoom();
+              return;
+            }
 
-          await makeSubscription(data.publishers);
-          useUserStore.getState().sendUserState();
-          useMyStreamStore.getState().toggleMute(true);
+            await makeSubscription(data.publishers);
+            useUserStore.getState().sendUserState({}, d);
+            useMyStreamStore.getState().toggleMute(true);
 
-          return videoroom.publish(getStream()).then((json) => {
-            log.debug('[client] videoroom published', json);
-
-            mqtt.join('galaxy/room/' + room.room);
-            mqtt.join('galaxy/room/' + room.room + '/chat', true);
+            return videoroom.publish(getStream()).then((json) => {
+              log.debug('[client] videoroom published', json);
+            }).catch((err) => {
+              log.error('[client] Publish error :', err);
+              get().restartRoom();
+            });
           }).catch((err) => {
-            log.error('[client] Publish error :', err);
+            log.error('[client] Join error:', err);
             get().restartRoom();
           });
-        }).catch((err) => {
-          log.error('[client] Join error:', err);
-          get().restartRoom();
         });
+
+        janus.attach(subscriber).then((data) => {
+          console.info('[client] Subscriber Handle: ', data);
+        });
+      })
+      .catch((err) => {
+        log.error('[client] Janus init error', err);
+        get().restartRoom();
       });
 
-      janus.attach(subscriber).then((data) => {
-        console.info('[client] Subscriber Handle: ', data);
-      });
-    }).catch((err) => {
-      log.error('[client] Janus init error', err);
-      get().restartRoom();
-    });
+    mqtt.join('galaxy/room/' + room.room);
+    mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom         : async () => {
     const { room } = useRoomStore.getState();
@@ -278,13 +277,11 @@ export const useInRoomStore = create((set, get) => ({
     get().joinRoom();
   },
   enterBackground  : async () => {
-    //GxyModule.startBackgroundService();
     useSettingsStore.getState().enterAudioMode();
   },
   enterForeground  : async () => {
     if (!useInitsStore.getState().isBridgeReady)
       return;
-    //GxyModule.stopBackgroundService();
     useSettingsStore.getState().exitAudioMode();
   },
   updateDisplayById: (data) => {

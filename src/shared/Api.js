@@ -97,6 +97,7 @@ class Api {
     const options = this.makeOptions(data);
     return this.logAndParse(`get questions`, fetch(`${QST_BACKEND}/feed`, options));
   };
+  fetchVHInfo = () => this.logAndParse(`fetch vh info`, fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions()));
 
 }
 

@@ -1,9 +1,12 @@
 import mqtt from '../shared/mqtt';
 import { authorize, logout, refresh } from 'react-native-app-auth';
-import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
+import RNSecureStorage from 'rn-secure-storage';
 import { decode } from 'base-64';
 import log from 'loglevel';
 import api from '../shared/Api';
+import { getUserRole, userRolesEnum } from '../shared/enums';
+import { useUserStore } from '../zustand/user';
+import { getFromStorage, setToStorage } from '../shared/tools';
 
 const authConfig = {
   issuer     : 'https://accounts.kab.info/auth/realms/main',
@@ -26,14 +29,30 @@ class Keycloak {
     this.ival    = null;
   }
 
-  Login = (callback) => {
+  login = () => {
     authorize(authConfig).then(data => {
       log.debug('kcLogin: ', data);
       this.setSession(data);
-      callback(true);
+      return this.fetchUser();
     }).catch(err => {
       log.error(err);
-      callback(null);
+      this.logout();
+    });
+  };
+
+  logout = () => {
+    if (this.ival) clearInterval(this.ival);
+    logout(authConfig, {
+      idToken              : this.session.idToken,
+      postLogoutRedirectUrl: 'com.galaxy://callback',
+    }).then(res => {
+      log.debug('kcLogout: ', res);
+      this.session = null;
+      RNSecureStorage
+        .removeItem('user_session')
+        .then(() => useUserStore.getState().setUser(null));
+    }).catch(err => {
+      log.error(err);
     });
   };
 
@@ -46,109 +65,77 @@ class Keycloak {
       payload     : decodeJWTPayload(accessToken),
       header      : decodeJWTHeader(accessToken),
     };
-    this.session                                 = session;
+
+    this.session = session;
     mqtt.setToken(session.accessToken);
     api.setAccessToken(session.accessToken);
-    RNSecureStorage.setItem('user_session', JSON.stringify(session),
-      { accessible: ACCESSIBLE.WHEN_UNLOCKED });
+    setToStorage('user_session', JSON.stringify(session));
   };
 
-  Logout = (callback) => {
-    if (this.ival) clearInterval(this.ival);
-    logout(authConfig, {
-      idToken              : this.session.idToken,
-      postLogoutRedirectUrl: 'com.galaxy://callback',
-    }).then(res => {
-      log.debug('kcLogout: ', res);
-      this.session = null;
-      RNSecureStorage.removeItem('user_session').then(() => {
-        callback(true);
-      });
-    }).catch(err => {
-      log.error(err);
-    });
-  };
-
-  getSession = () => {
-    RNSecureStorage.getItem('user_session').then(s => {
-      this.session = s ? JSON.parse(s) : null;
-    }).catch(err => log.error('getSession: ', err));
-  };
-
-  refreshToken = (session, callback) => {
-    refresh(authConfig, { refreshToken: session.refreshToken }).then(data => {
-      log.debug('Refresh Token: ', data);
-      this.setSession(data);
-      const user = this.setUser(this.session.payload);
-      if (typeof callback === 'function') callback(user);
-    }).catch(err => {
+  refreshToken = session => {
+    refresh(authConfig, { refreshToken: session.refreshToken })
+      .then(data => {
+        log.debug('Refresh Token: ', data);
+        this.setSession(data);
+        this.saveUser(this.session.payload);
+      }).catch(err => {
       log.error('Refresh Token: ', err);
-      if (typeof callback === 'function') callback(null);
+      this.logout();
     });
   };
 
-  tokenMonitor = () => {
-    if (this.ival) return;
-    this.ival = setInterval(() => {
-      const { payload } = this.session;
-      if (payload) {
-        log.debug('_tokenMonitor: time: ',
-          new Date(payload.exp * 1000) - new Date);
-        const token_expired = new Date(payload.exp * 1000) - new Date < 0;
-        if (token_expired) {
-          log.debug('_tokenMonitor: token expired: ', token_expired);
-          this.refreshToken(this.session);
-        }
-      }
-    }, 10000);
+  fetchUser = async () => {
+    const data = await getFromStorage('user_session', null);
+    if (!data)
+      return useUserStore.getState().setUser(null);
+
+    this.session        = JSON.parse(data);
+    const token_expired = new Date(this.session.payload.exp * 1000) - new Date < 0;
+
+    if (token_expired) {
+      log.debug('GetUser: token expired: ', token_expired);
+      this.refreshToken(session);
+      return;
+    }
+
+    mqtt.setToken(this.session.accessToken);
+    api.setAccessToken(this.session.accessToken);
+    this.saveUser(this.session.payload);
   };
 
-  getUser = (callback) => {
-    RNSecureStorage.getItem('user_session').then(data => {
-      if (data) {
-        const session       = JSON.parse(data);
-        this.session        = session;
-        const user          = this.setUser(session.payload);
-        const token_expired = new Date(session.payload.exp * 1000) - new Date <
-          0;
-        if (token_expired) {
-          log.debug('GetUser: token expired: ', token_expired);
-          this.refreshToken(session, callback);
-        } else {
-          //this.tokenMonitor();
-          mqtt.setToken(session.accessToken);
-          api.setAccessToken(session.accessToken);
-          callback(user);
-        }
-      } else {
-        callback(null);
-      }
-    }).catch(err => {
-      log.error('getSession: ', err);
-      callback(null);
-    });
-  };
+  saveUser = async (token) => {
+    const { realm_access: { roles }, sub, given_name, name, email, family_name, } = token;
 
-  setUser = (token) => {
-    const {
-            realm_access: { roles },
-            sub,
-            given_name,
-            name,
-            email,
-            family_name,
-          }    = token;
+    const role    = getUserRole(roles);
+    const allowed = await this.checkPermission(role);
+
     const user = {
-      display   : name,
-      email,
-      roles,
       id        : sub,
+      display   : name,
       username  : given_name,
       familyname: family_name,
+      isClient  : true,
+      role,
+      email,
+      roles,
+      allowed,
     };
-    return user;
+    useUserStore.getState().setUser(user);
   };
 
+  checkPermission = async (role) => {
+    if (!role)
+      return this.logout();
+    let vhinfo;
+    try {
+      vhinfo = await api.fetchVHInfo();
+    } catch (err) {
+      console.error('Error fetching VH info data: ', err?.message);
+      vhinfo = { active: false, error: err?.message };
+    }
+    useUserStore.getState().setVhinfo(vhinfo);
+    return !!vhinfo.active && role === userRolesEnum.user;
+  };
 }
 
 const defaultKeycloak = new Keycloak();

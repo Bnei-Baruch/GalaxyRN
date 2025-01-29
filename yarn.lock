@@ -3101,7 +3101,7 @@ __metadata:
     react-native-swipe-gestures: "npm:^1.0.5"
     react-native-url-polyfill: "npm:^2.0.0"
     react-native-vector-icons: "npm:^10.1.0"
-    react-native-webrtc: "npm:^124.0.5"
+    react-native-webrtc: "npm:^124.0.3"
     react-native-webview: "npm:^13.12.3"
     rn-secure-storage: "npm:^3.0.1"
     typescript: "npm:5.0.4"
@@ -8561,7 +8561,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-webrtc@npm:^124.0.5":
+"react-native-webrtc@npm:^124.0.3":
   version: 124.0.5
   resolution: "react-native-webrtc@npm:124.0.5"
   dependencies:

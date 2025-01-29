@@ -26,6 +26,7 @@ export class JanusMqtt {
 
   init(token) {
     this.token = token;
+    log.debug('janus-mqtt init this.user', this.user);
     mqtt.sub(this.rxTopic + '/' + this.user.id, 0);
     mqtt.sub(this.rxTopic, 0);
     mqtt.sub(this.stTopic, 1);
@@ -75,9 +76,7 @@ export class JanusMqtt {
         reject(json);
         this._cleanupTransactions();
       };
-
     });
-
   }
 
   attach(plugin) {
