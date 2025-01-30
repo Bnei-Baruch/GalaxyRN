@@ -10,6 +10,10 @@ import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
 import InCallManager from 'react-native-incall-manager';
 import { useInRoomStore } from './inRoom';
+import { useSettingsStore } from './settings';
+import { useMyStreamStore } from './myStream';
+import { useShidurStore } from './shidur';
+import kc from '../auth/keycloak';
 
 const { AppModule } = NativeModules;
 const eventEmitter  = new NativeEventEmitter(AppModule);
@@ -83,9 +87,41 @@ export const useInitsStore = create((set, get) => ({
 
         mqtt.join('galaxy/users/notification');
         mqtt.join('galaxy/users/broadcast');
-        mqtt.watch((message) => {
-          //useInRoomStore.getState().updateDisplayById(message.user);
-          log.debug('on watch MQTT', message);
+
+        const { user, setUser }             = useUserStore.getState();
+        const { toggleCammute, toggleMute } = useMyStreamStore.getState();
+        const { streamGalaxy }              = useShidurStore.getState();
+        const { toggleQuestion }            = useSettingsStore.getState();
+        const { updateDisplayById }         = useInRoomStore.getState();
+        const { exitRoom }                  = useInRoomStore.getState();
+
+        mqtt.watch(data => {
+          const { type, id, bitrate } = data;
+
+          if (user.id === id && ['client-reconnect', 'client-reload', 'client-disconnect'].includes(type)) {
+            exitRoom()
+          } else if (type === 'client-kicked' && user.id === id) {
+            kc.logout();
+          } else if (type === 'client-question' && user.id === id) {
+            toggleQuestion();
+          } else if (type === 'client-mute' && user.id === id) {
+            toggleMute();
+          } else if (type === 'video-mute' && user.id === id) {
+            toggleCammute();
+          } else if (type === 'audio-out') {
+            streamGalaxy(data.status);
+            if (data.status) {
+              // remove question mark when sndman unmute our room
+              toggleQuestion(false);
+            }
+          } else if (type === 'reload-config') {
+            //this.reloadConfig();
+          } else if (type === 'client-reload-all') {
+            exitRoom()
+          } else if (type === 'client-state') {
+            updateDisplayById(data.user);
+          }
+
         });
       }
     });

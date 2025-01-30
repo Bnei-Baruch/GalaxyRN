@@ -35,6 +35,6 @@ export const useUserStore = create((set, get) => ({
 
     const adminMsg = { ...user, ...msg.user, group, vhinfo, janus, ...adminOpts };
     console.log('sendUserState gxydb message', adminMsg);
-    adminOpts?.timestamp && mqtt.send(JSON.stringify(adminMsg), false, 'gxydb/users');
+    mqtt.send(JSON.stringify(adminMsg), false, 'gxydb/users');
   }
 }));

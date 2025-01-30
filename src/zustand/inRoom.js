@@ -206,7 +206,7 @@ export const useInRoomStore = create((set, get) => ({
           console.info('[client] Publisher Handle: ', data);
           user.camera    = !cammute;
           user.question  = false;
-          user.timestamp = Date.now();
+          user.timestamp = (new Date()).getTime();
           user.session   = janus.sessionId;
           user.handle    = videoroom.janusHandleId;
 
