@@ -62,7 +62,10 @@ export const useShidurStore = create((set, get) => ({
   janusReady     : false,
   isMuted        : false,
   setIsMuted     : (isMuted = !get().isMuted) => {
-    audioStream?.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    audioStream?.getAudioTracks().forEach(t => {
+      t.enabled = !isMuted;
+      (!isMuted) && t._setVolume(0.8);
+    });
     set({ isMuted });
   },
   setVideo       : async (video, updateState = true) => {
@@ -246,7 +249,7 @@ export const useShidurStore = create((set, get) => ({
       log.debug('[shidur] get stream back id: ', id);
       await audioJanus.switch(id);
       log.debug('[shidur] Switch audio stream back');
-      audioStream.getAudioTracks().forEach(track => track._setVolume(1));
+      audioStream.getAudioTracks().forEach(track => track._setVolume(0.8));
     }
     trlAudioStream.getAudioTracks().forEach(track => track.enabled = isOn);
     set({ talking: isOn });

@@ -2,7 +2,6 @@ package com.galaxyrn;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import android.os.Handler;
@@ -11,10 +10,9 @@ import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
 
 
-public class GxyModule extends ReactContextBaseJavaModule {
+public class ForegroundModule extends ReactContextBaseJavaModule {
 
     private static final String TAG = "BackgroundServiceModule";
     private final ForegroundService foregroundService = new ForegroundService();
@@ -24,7 +22,7 @@ public class GxyModule extends ReactContextBaseJavaModule {
         return "GxyModule";
     }
 
-    public GxyModule(ReactApplicationContext reactContext) {
+    public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
         // Ensure the observer is added on the main thread

@@ -24,7 +24,8 @@ public class GxyPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
         Log.i(TAG, "createNativeModules");
-        modules.add(new GxyModule(reactContext));
+        modules.add(new ForegroundModule(reactContext));
+        modules.add(new AudioDeviceModule(reactContext));
 
         return modules;
     }
