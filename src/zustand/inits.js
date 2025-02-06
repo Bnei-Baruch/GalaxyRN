@@ -157,7 +157,6 @@ export const useInitsStore = create((set, get) => ({
   initApp        : () => {
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(true);
-    InCallManager.chooseAudioRoute('BLUETOOTH');
 
     subscription = eventEmitter.addListener('AppTerminated', async () => {
       await useInRoomStore.getState().exitRoom();
