@@ -37,7 +37,7 @@ const Shidur = () => {
             {
               (shidurBar || !videoStream) && (
                 <View style={styles.toolbar}>
-                  <View>
+                  <View style={styles.toolbarLeft}>
                     <PlayPauseBtn />
                     <MuteBtn />
                   </View>
@@ -54,18 +54,18 @@ const Shidur = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container  : {
     alignItems    : 'center',
     width         : '100%',
     justifyContent: 'center'
   },
-  viewer   : {
+  viewer     : {
     aspectRatio   : 16 / 9,
     width         : '100%',
     justifyContent: 'center',
     alignItems    : 'center',
   },
-  toolbar  : {
+  toolbar    : {
     padding        : 4,
     flexDirection  : 'row',
     justifyContent : 'space-between',
@@ -75,7 +75,12 @@ const styles = StyleSheet.create({
     bottom         : 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
-  noVideo  : {
+  toolbarLeft: {
+    flexDirection: 'row',
+    flexWrap     : 'nowrap',
+    alignItems   : 'center'
+  },
+  noVideo    : {
     aspectRatio   : 16 / 9,
     width         : '100%',
     justifyContent: 'center',

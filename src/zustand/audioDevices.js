@@ -6,35 +6,41 @@ const { AppModule } = NativeModules;
 const eventEmitter  = new NativeEventEmitter(AppModule);
 let subscription;
 
-const SPEAKER_PHONE = 1, WIRED_HEADSET = 2, EARPIECE = 3, BLUETOOTH = 4;
-const audioDevices  = {
+const AUDIO_DEVICES = {
   WIRED_HEADSET: {
     icon    : 'headset',
     priority: 1,
+    key     : 'WIRED_HEADSET'
   },
   BLUETOOTH    : {
     icon    : 'bluetooth-audio',
     priority: 2,
+    key     : 'BLUETOOTH'
   },
   EARPIECE     : {
-    icon    : 'volume-up',
+    icon    : 'volume-off',
     priority: 3,
+    key     : 'EARPIECE'
 
   },
   SPEAKER_PHONE: {
-    icon    : 'volume-off',
+    icon    : 'volume-up',
     priority: 4,
+    key     : 'SPEAKER_PHONE'
   },
 };
 
 const useAudioDevicesStore = create((set, get) => ({
   selected  : null,
   select    : async (next) => {
+    console.log('manage audio devices: useAudioDevicesStore select', next);
 
     const { availableAudioDeviceList, selectedAudioDevice } = await InCallManager.chooseAudioRoute(next);
+    console.log('manage audio devices: useAudioDevicesStore select request', availableAudioDeviceList, selectedAudioDevice);
+    const devices  = JSON.parse(availableAudioDeviceList).map(d => AUDIO_DEVICES[d]);
+    const selected = AUDIO_DEVICES[selectedAudioDevice];
 
-    const devices  = availableAudioDeviceList.map(d => audioDevices[d]);
-    const selected = audioDevices[selectedAudioDevice];
+    console.log('manage audio devices: useAudioDevicesStore select mapped', devices, selected);
     set({ devices, selected });
   },
   devices   : [],
@@ -42,11 +48,13 @@ const useAudioDevicesStore = create((set, get) => ({
   init      : () => {
     subscription = eventEmitter.addListener('onAudioDeviceChanged', async (d) => {
       const { availableAudioDeviceList, selectedAudioDevice } = d;
-
-      const devices  = availableAudioDeviceList.map(d => audioDevices[d]);
-      const selected = audioDevices[selectedAudioDevice];
+      console.log('manage audio devices: onAudioDeviceChanged', availableAudioDeviceList, selectedAudioDevice);
+      const devices  = availableAudioDeviceList.map(d => AUDIO_DEVICES[d]);
+      const selected = AUDIO_DEVICES[selectedAudioDevice];
+      console.log('manage audio devices: onAudioDeviceChanged mapped', devices, selected);
       set({ devices, selected });
     });
+    get().select('BLUETOOTH');
   },
   abort     : () => {
     subscription?.remove();
