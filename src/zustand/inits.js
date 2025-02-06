@@ -17,6 +17,7 @@ import kc from '../auth/keycloak';
 
 const { AppModule } = NativeModules;
 const eventEmitter  = new NativeEventEmitter(AppModule);
+let subscription;
 
 async function checkPermission(permission) {
   try {
@@ -158,7 +159,7 @@ export const useInitsStore = create((set, get) => ({
     InCallManager.setKeepScreenOn(true);
     InCallManager.chooseAudioRoute('BLUETOOTH');
 
-    eventEmitter.addListener('AppTerminated', async () => {
+    subscription = eventEmitter.addListener('AppTerminated', async () => {
       await useInRoomStore.getState().exitRoom();
       get().terminateApp();
     });
@@ -166,5 +167,7 @@ export const useInitsStore = create((set, get) => ({
   terminateApp   : () => {
     InCallManager.setKeepScreenOn(false);
     InCallManager.stop();
+    subscription?.remove();
+
   }
 }));
