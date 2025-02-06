@@ -34,20 +34,21 @@ const Shidur = () => {
                 )
               }
             </TouchableWithoutFeedback>
-            {
-              (shidurBar || !videoStream) && (
-                <View style={styles.toolbar}>
-                  <View style={styles.toolbarLeft}>
-                    <PlayPauseBtn />
-                    <MuteBtn />
-                  </View>
-                  <OptionsBtn />
-                  {/*<FullscreenBtn />*/}
-                </View>
-              )
-            }
           </View>
         ) : <PlayPauseOverlay />
+      }
+
+      {
+        (shidurBar || !isPlay) && (
+          <View style={styles.toolbar}>
+            <View style={styles.toolbarLeft}>
+              <PlayPauseBtn />
+              <MuteBtn />
+            </View>
+            <OptionsBtn />
+            {/*<FullscreenBtn />*/}
+          </View>
+        )
       }
     </View>
   );
