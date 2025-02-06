@@ -8,6 +8,7 @@ import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { useSettingsStore } from '../zustand/settings';
+import { MuteBtn } from './MuteBtn';
 
 const Shidur = () => {
   const { videoStream, isPlay, shidurBar, toggleShidurBar, video } = useShidurStore();
@@ -36,7 +37,10 @@ const Shidur = () => {
             {
               (shidurBar || !videoStream) && (
                 <View style={styles.toolbar}>
-                  <PlayPauseBtn />
+                  <View>
+                    <PlayPauseBtn />
+                    <MuteBtn />
+                  </View>
                   <OptionsBtn />
                   {/*<FullscreenBtn />*/}
                 </View>
