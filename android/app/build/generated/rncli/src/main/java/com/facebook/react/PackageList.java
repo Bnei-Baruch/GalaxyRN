@@ -11,6 +11,8 @@ import com.facebook.react.shell.MainReactPackage;
 import java.util.Arrays;
 import java.util.ArrayList;
 
+// @sentry/react-native
+import io.sentry.react.RNSentryPackage;
 // react-native-app-auth
 import com.rnappauth.RNAppAuthPackage;
 // react-native-background-timer
@@ -72,6 +74,7 @@ public class PackageList {
   public ArrayList<ReactPackage> getPackages() {
     return new ArrayList<>(Arrays.<ReactPackage>asList(
       new MainReactPackage(mConfig),
+      new RNSentryPackage(),
       new RNAppAuthPackage(),
       new BackgroundTimerPackage(),
       new InCallManagerPackage(),

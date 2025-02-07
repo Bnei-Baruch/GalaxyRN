@@ -15,7 +15,7 @@ export const GroupsBtn = () => {
       onPress={handlePress}
       style={[baseStyles.listItem, showGroups && bottomBar.moreSelBtn]}
     >
-      <IconWithText iconName="public" text="Groups" />
+      <IconWithText iconName="public" text={t('bottomBar.quads')} />
     </TouchableOpacity>
   );
 };

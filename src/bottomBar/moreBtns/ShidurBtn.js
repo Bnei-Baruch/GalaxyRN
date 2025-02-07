@@ -16,7 +16,7 @@ export const ShidurBtn = () => {
       onPress={toggleIsShidur}
       style={[baseStyles.listItem, isShidur && bottomBar.moreSelBtn]}
     >
-      <IconWithText iconName="public" text={t('bottomBar.toggleShidur')} />
+      <IconWithText iconName="public" text={t('bottomBar.shidur')} />
     </TouchableOpacity>
   );
 };

@@ -14,7 +14,7 @@ export const LeaveBtn = () => {
       onPress={handlePress}
       style={baseStyles.listItem}
     >
-      <IconWithText iconName="arrow-forward" text="Leave Room" />
+      <IconWithText iconName="arrow-forward" text={t('bottomBar.leave')} />
     </TouchableOpacity>
   );
 };

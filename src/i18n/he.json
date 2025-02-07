@@ -22,6 +22,13 @@
     "communicationTitle": "Communication",
     "materialsTitle": "חומר לימוד"
   },
+  "bottomBar": {
+    "vote": "Vote",
+    "shidur": "Translation",
+    "self": "Display my video",
+    "quads": "Kli Olamy tens",
+    "leave": "Leave room"
+  },
   "shidur": {
     "streamForWorkshop": "ערוץ לסדנה",
     "streamForWorkshopDescription": "(קבוצת המיקוד מושתקת)",

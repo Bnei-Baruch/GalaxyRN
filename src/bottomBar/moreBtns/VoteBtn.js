@@ -21,7 +21,7 @@ export const VoteBtn = () => {
         onPress={toggleOpen}
         style={baseStyles.listItem}
       >
-        <IconWithText iconName="thumbs-up-down" text="Vote" />
+        <IconWithText iconName="thumbs-up-down" text={t('bottomBar.vote')} />
       </TouchableOpacity>
       {open && (
         <Modal

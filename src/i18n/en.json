@@ -23,6 +23,13 @@
     "communicationTitle": "Communication",
     "materialsTitle": "Study Materials"
   },
+  "bottomBar": {
+    "vote": "Vote",
+    "shidur": "Translation",
+    "self": "Display my video",
+    "quads": "Kli Olamy tens",
+    "leave": "Leave room"
+  },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",
     "streamForWorkshopDescription": "(focus group is muted)",
