@@ -123,8 +123,8 @@ public class ForegroundService extends Service {
         //Bitmap largeIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.arvut);
         return builder
                 .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setContentTitle("Title")
-                .setContentText("content")
+                .setContentTitle("Arvut system")
+                .setContentText("Arvut system run on background (in audio mode)")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.arvut)
                 .setOngoing(true)

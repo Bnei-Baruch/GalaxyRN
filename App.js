@@ -15,7 +15,16 @@ import 'intl-pluralrules';
 import { register } from '@formatjs/intl-pluralrules';
 import './src/i18n/i18n';
 import useForegroundListener from './src/InRoom/useForegroundListener';
+import * as Sentry from '@sentry/react-native';
+import { SENTRY_DSN } from '@env';
 
+Sentry.init({
+  dsn: SENTRY_DSN,
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+  environment: process.env.NODE_ENV,
+  attachStacktrace: true,
+});
 if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
@@ -64,4 +73,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Sentry.wrap(App);

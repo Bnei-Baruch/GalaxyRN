@@ -23,7 +23,7 @@ const LoginPage = ({ children }) => {
 
   return (
     <View style={[styles.container, styles.login]}>
-      <Button title={t('loginPage.login')} onPress={handleLogin} />
+      <Button title={t('login')} onPress={handleLogin} />
     </View>
   );
 };
