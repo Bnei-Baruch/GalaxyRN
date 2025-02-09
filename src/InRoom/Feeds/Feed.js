@@ -6,11 +6,10 @@ import CammutedFeed from './CammutedFeed';
 import FeedDisplay from './FeedDisplay';
 import WIP from '../../components/WIP';
 import { RTCView } from 'react-native-webrtc';
-import { feedSize } from '../helper';
 
 const Feed = ({ id }) => {
-  const { feedById } = useInRoomStore();
-  const { borders }  = useUiActions();
+  const { feedById }       = useInRoomStore();
+  const { borders, width } = useUiActions();
 
   const feed                                              = feedById[id];
   const { display: { display } = {}, url, talking, vMid } = feed || {};
@@ -48,7 +47,6 @@ const Feed = ({ id }) => {
     activateDeactivate(borders.top, borders.bottom, feed);
   };
 
-  const { width }     = feedSize.get();
   const renderContent = () => {
     if (vMid) {
       return (

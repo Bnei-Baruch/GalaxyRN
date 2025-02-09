@@ -5,13 +5,14 @@ import SelectUiLanguage from './SelectUiLanguage';
 import MyVideo from '../components/MyVideo';
 import LabeledSwitch from './LabeledSwitch';
 import { useSettingsStore } from '../zustand/settings';
-import RoomSelect from './RoomSelect';
 import { useMyStreamStore } from '../zustand/myStream';
 import { View, StyleSheet } from 'react-native';
 import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
 import { useShidurStore } from '../zustand/shidur';
+import RoomSelect from './RoomSelect';
+import { baseStyles } from '../constants';
 
 export const SettingsNotJoinedLandscape = () => {
   const { t }                                    = useTranslation();
@@ -29,12 +30,12 @@ export const SettingsNotJoinedLandscape = () => {
       <PageHeader page={t('settings.page')} />
       {/*user settings*/}
       <View style={styles.forms}>
-        <View style={styles.row}>
+        <View style={{ width: '43%' }}>
           <IconWithText iconName="account-circle" text={t('user.title')} />
           <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
-          <MyVideo aspectRatio={16 / 9} />
+          <MyVideo styles={{ aspectRatio: 16 / 9, width: '100%' }} />
         </View>
-        <View style={styles.row}>
+        <View style={{ width: '50%' }}>
           <SelectUiLanguage />
 
           <LabeledSwitch
@@ -53,7 +54,7 @@ export const SettingsNotJoinedLandscape = () => {
             value={isShidur}
             onValueChange={handleIsMuted}
           />
-
+          <View style={baseStyles.full} />
           <RoomSelect />
         </View>
       </View>
@@ -68,12 +69,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   forms    : {
-    flex         : 1,
-    flexDirection: 'row',
-    flexWrap     : 'wrap',
-  },
-  row      : {
-    flex   : 1,
-    padding: 10
+    flex          : 1,
+    flexDirection : 'row',
+    flexWrap      : 'wrap',
+    justifyContent: 'space-around',
   }
 });

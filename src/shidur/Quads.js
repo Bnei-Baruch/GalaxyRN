@@ -2,9 +2,15 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
+import { useSettingsStore } from '../zustand/settings';
+import { useUiActions } from '../zustand/uiActions';
+import { useInitsStore } from '../zustand/inits';
 
 export const Quads = () => {
   const { quadUrl, initQuad, cleanQuads } = useShidurStore();
+  const { isShidur }                      = useSettingsStore();
+  const { isPortrait }                    = useInitsStore();
+  const { width }                         = useUiActions();
 
   useEffect(() => {
     initQuad();
@@ -14,7 +20,7 @@ export const Quads = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, (!isShidur && !isPortrait) && { width, alignSelf: 'center' }]}>
       {quadUrl && (
         <RTCView
           streamURL={quadUrl}

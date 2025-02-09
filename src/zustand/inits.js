@@ -14,6 +14,7 @@ import { useSettingsStore } from './settings';
 import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import kc from '../auth/keycloak';
+import { useUiActions } from './uiActions';
 
 const { AppModule } = NativeModules;
 const eventEmitter  = new NativeEventEmitter(AppModule);
@@ -60,7 +61,10 @@ export const useInitsStore = create((set, get) => ({
   configReady    : false,
   isPortrait     : true,
   initBridge     : () => set({ isBridgeReady: true }),
-  setIsPortrait  : isPortrait => set({ isPortrait }),
+  setIsPortrait  : isPortrait => {
+    useUiActions.getState().updateWidth();
+    set({ isPortrait });
+  },
   initPermissions: async () => {
     if (!await checkPermission('android.permission.CAMERA'))
       return false;
@@ -100,7 +104,7 @@ export const useInitsStore = create((set, get) => ({
           const { type, id, bitrate } = data;
 
           if (user.id === id && ['client-reconnect', 'client-reload', 'client-disconnect'].includes(type)) {
-            exitRoom()
+            exitRoom();
           } else if (type === 'client-kicked' && user.id === id) {
             kc.logout();
           } else if (type === 'client-question' && user.id === id) {
@@ -118,7 +122,7 @@ export const useInitsStore = create((set, get) => ({
           } else if (type === 'reload-config') {
             //this.reloadConfig();
           } else if (type === 'client-reload-all') {
-            exitRoom()
+            exitRoom();
           } else if (type === 'client-state') {
             updateDisplayById(data.user);
           }

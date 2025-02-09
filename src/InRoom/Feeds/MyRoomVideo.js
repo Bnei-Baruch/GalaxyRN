@@ -4,16 +4,16 @@ import MyRTCView from '../../components/MyRTCView';
 import { useMyStreamStore } from '../../zustand/myStream';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSettingsStore } from '../../zustand/settings';
-import { feedSize } from '../helper';
 import FeedDisplay from './FeedDisplay';
 import { useUserStore } from '../../zustand/user';
+import { useUiActions } from '../../zustand/uiActions';
 
 const MyRoomMedia = () => {
   const { cammute }  = useMyStreamStore();
   const { question } = useSettingsStore();
   const { user }     = useUserStore();
+  const { width }    = useUiActions();
 
-  const { width } = feedSize.get();
   return (
     <View style={{ width }}>
       <FeedDisplay display={user.username} />
