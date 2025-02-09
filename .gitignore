@@ -35,6 +35,7 @@ keystore.properties
 .cxx/
 *.keystore
 !debug.keystore
+/android/app/keystore.jks
 
 # node.js
 #
