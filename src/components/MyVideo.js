@@ -1,16 +1,15 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import MyRTCView from './MyRTCView';
 import { useMyStreamStore } from '../zustand/myStream';
-import { feedSize } from '../InRoom/helper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { baseStyles } from '../constants';
 
-const MyVideo = () => {
+const MyVideo = ({ styles }) => {
   const { cammute } = useMyStreamStore();
 
   return (
-    <View style={[styles.container, { aspectRatio: feedSize.getAspectRatio() }]}>
+    <View style={styles}>
       {
         cammute ? (
           <View style={baseStyles.videoOverlay}>
@@ -23,9 +22,3 @@ const MyVideo = () => {
 };
 export default MyVideo;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%'
-  }
-});

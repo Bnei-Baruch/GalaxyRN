@@ -8,8 +8,7 @@ import { baseStyles } from '../../constants';
 
 export const ShidurBtn = () => {
   const { isShidur, toggleIsShidur } = useSettingsStore();
-
-  const { t } = useTranslation();
+  const { t }                        = useTranslation();
 
   return (
     <TouchableOpacity

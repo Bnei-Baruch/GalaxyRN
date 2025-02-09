@@ -8,7 +8,8 @@
     "audioMode": "Audio Mode",
     "isMuted": "Mute Broadcast",
     "search": "Search...",
-    "join": "Join Room"
+    "join": "Join Room",
+    "selectRoom": "Select Ten"
   },
   "user": {
     "title": "User settings",

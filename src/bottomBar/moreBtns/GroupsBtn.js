@@ -4,9 +4,11 @@ import { useSettingsStore } from '../../zustand/settings';
 import IconWithText from '../../settings/IconWithText';
 import { baseStyles } from '../../constants';
 import { bottomBar } from '../helper';
+import { useTranslation } from 'react-i18next';
 
 export const GroupsBtn = () => {
   const { showGroups, toggleShowGroups } = useSettingsStore();
+  const { t }                                = useTranslation();
 
   const handlePress = () => toggleShowGroups();
 

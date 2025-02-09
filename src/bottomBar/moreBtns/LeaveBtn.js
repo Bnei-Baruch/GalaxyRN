@@ -3,9 +3,11 @@ import { TouchableOpacity } from 'react-native';
 import { useSettingsStore } from '../../zustand/settings';
 import IconWithText from '../../settings/IconWithText';
 import { baseStyles } from '../../constants';
+import { useTranslation } from 'react-i18next';
 
 export const LeaveBtn = () => {
   const { setReadyForJoin } = useSettingsStore();
+  const { t }               = useTranslation();
 
   const handlePress = () => setReadyForJoin(false);
 

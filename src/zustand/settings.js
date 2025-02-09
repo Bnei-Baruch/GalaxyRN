@@ -4,6 +4,7 @@ import { useShidurStore } from './shidur';
 import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
 import { useUserStore } from './user';
 import { getFromStorage } from '../shared/tools';
+import { useUiActions } from './uiActions';
 
 export const useSettingsStore = create((set, get) => ({
   uiLang            : 'en',
@@ -28,6 +29,7 @@ export const useSettingsStore = create((set, get) => ({
   toggleIsShidur    : () => {
     const isShidur = !get().isShidur;
     !isShidur && useShidurStore.getState().cleanShidur();
+    useUiActions.getState().updateWidth(isShidur);
     set({ isShidur });
   },
   audioMode         : false,

@@ -1,16 +1,14 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { baseStyles } from '../../constants';
-import WIP from '../../components/WIP';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useShidurStore } from '../../zustand/shidur';
 import { useUiActions } from '../../zustand/uiActions';
-import { feedSize } from '../helper';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
-  const { toggleShowBars }  = useInRoomStore();
-  const { janusReady }      = useShidurStore();
-  const { setFeedsScrollY } = useUiActions();
+  const { toggleShowBars }         = useInRoomStore();
+  const { janusReady }             = useShidurStore();
+  const { setFeedsScrollY, width } = useUiActions();
 
   const isShidur = !!shidur;
 
@@ -18,17 +16,16 @@ const RoomLandscape = ({ shidur, quads, members }) => {
   const handleScroll   = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
   return (
     <View style={styles.container}>
-      {isShidur && (
-        <WIP isReady={janusReady}>
+      {
+        isShidur && (
           <View style={styles.shidurWrapper}>
             <View style={styles.shidur}>
               {shidur}
             </View>
           </View>
-        </WIP>
-      )
+        )
       }
-      <View style={baseStyles.full}>
+      <View style={isShidur ? { width: width * 2 } : baseStyles.full}>
         <ScrollView
           showsHorizontalScrollIndicator={false}
           style={baseStyles.full}
@@ -51,21 +48,19 @@ const styles = StyleSheet.create({
   container    : {
     flex           : 1,
     backgroundColor: 'black',
-    flexDirection  : 'row'
+    flexDirection  : 'row',
   },
   scrollContent: {
     flex     : 1,
     minHeight: '100%'
   },
   shidurWrapper: {
-    flex          : 1,
-    height        : '100%',
-    alignItems    : 'center',
-    justifyContent: 'center',
+    flex       : 1,
+    width      : '100%',
 
   },
   shidur       : {
     width      : '100%',
-    aspectRatio: feedSize.getAspectRatio(true)
+    aspectRatio: 9 / 16
   }
 });

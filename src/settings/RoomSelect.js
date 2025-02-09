@@ -33,8 +33,8 @@ const RoomSelect = () => {
   const toggleOpen     = (_open = !open) => setOpen(_open);
 
   return (
-    <View>
-      <Text style={styles.label}>{'select ten'}</Text>
+    <View style={styles.container}>
+      <Text style={[styles.label, baseStyles.text]}>{t('settings.selectRoom')}</Text>
       <View style={styles.searchContainer}>
         <TextInput
           style={[styles.searchInput, baseStyles.text]}
@@ -70,14 +70,13 @@ const RoomSelect = () => {
 const styles = StyleSheet.create({
   label          : {
     fontSize    : 16,
-    marginBottom: 5,
+    marginBottom: 4,
   },
   searchContainer: {
-    marginBottom  : 10,
-    flexDirection : 'row',
-    alignItems    : 'center',
-    justifyContent: 'space-between',
-    padding       : 10,
+    flexDirection    : 'row',
+    alignItems       : 'center',
+    justifyContent   : 'space-between',
+    paddingHorizontal: 10,
   },
   searchInput    : {
     flex             : 1,

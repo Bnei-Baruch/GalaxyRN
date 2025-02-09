@@ -16,6 +16,7 @@ import { useInitsStore } from './inits';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useShidurStore } from './shidur';
 import { deepClone } from '../shared/tools';
+import { useUiActions } from './uiActions';
 
 let subscriber = null;
 let videoroom  = null;
@@ -131,8 +132,10 @@ export const useInRoomStore = create((set, get) => ({
      * publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo = (pubs) => makeSubscription(pubs)
-      .then(() => useUserStore.getState().sendUserState());
+    videoroom.subTo = (pubs) => makeSubscription(pubs).then(() => {
+      useUserStore.getState().sendUserState();
+      useUiActions.getState().updateWidth();
+    });
 
     videoroom.unsubFrom = async (ids) => {
       const params = [];
@@ -154,6 +157,8 @@ export const useInRoomStore = create((set, get) => ({
           state.feedById[id] && delete state.feedById[id];
         });
       }));
+
+      useUiActions.getState().updateWidth();
     };
     videoroom.talkEvent = (id, talking) => {
       set(produce(state => {

@@ -12,13 +12,14 @@ import PageHeader from '../components/PageHeader';
 import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
 import { useShidurStore } from '../zustand/shidur';
+import { baseStyles } from '../constants';
 
 export const SettingsNotJoinedPortrait = () => {
-  const { t }                                    = useTranslation();
-  const { cammute, toggleCammute }               = useMyStreamStore();
+  const { t }                          = useTranslation();
+  const { cammute, toggleCammute }     = useMyStreamStore();
   const { audioMode, toggleAudioMode } = useSettingsStore();
-  const { user }                                 = useUserStore();
-  const { setIsMuted, isMuted }                           = useShidurStore();
+  const { user }                       = useUserStore();
+  const { setIsMuted, isMuted }        = useShidurStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleIsMuted         = () => setIsMuted();
@@ -27,11 +28,12 @@ export const SettingsNotJoinedPortrait = () => {
   return (
     <View style={styles.container}>
       <PageHeader page={t('settings.page')} />
-      {/*user settings*/}
       <IconWithText iconName="account-circle" text={t('user.title')} />
       <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
       <SelectUiLanguage />
-      <MyVideo aspectRatio={9 / 16} />
+      <View style={baseStyles.full}>
+        <MyVideo styles={{ aspectRatio: 9 / 16, height: '100%' }} />
+      </View>
       <LabeledSwitch
         label={t('settings.cammute')}
         value={cammute}
