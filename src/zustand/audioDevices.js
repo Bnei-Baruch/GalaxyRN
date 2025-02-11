@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { NativeModules, NativeEventEmitter } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
-const { AppModule } = NativeModules;
-const eventEmitter  = new NativeEventEmitter(AppModule);
+const { InCallManagerModule } = NativeModules;
+const eventEmitter            = new NativeEventEmitter(InCallManagerModule);
 let subscription;
 
 const AUDIO_DEVICES = {

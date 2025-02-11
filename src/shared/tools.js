@@ -1,6 +1,6 @@
 import { WKLI_ENTER, WKLI_LEAVE } from '@env';
 import mqtt from './mqtt';
-import RNSecureStorage from 'rn-secure-storage';
+import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 
 export const notifyMe = (title, message, tout) => {
   if (!!window.Notification) {
@@ -210,7 +210,7 @@ export const getFromStorage = async (key, def) => {
 export const setToStorage   = async (key, val) => {
   try {
     console.log('setToStorage', key, val);
-    return await RNSecureStorage.setItem(key, val.toString());
+    return await RNSecureStorage.setItem(key, val.toString(), { accessible: ACCESSIBLE.ALWAYS });
   } catch (err) {
     console.error('RNSecureStorage setToStorage error', err);
     return err;

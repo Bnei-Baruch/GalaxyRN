@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PermissionsAndroid, NativeModules, NativeEventEmitter } from 'react-native';
+import { PermissionsAndroid, Platform, NativeModules, NativeEventEmitter } from 'react-native';
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
@@ -14,10 +14,11 @@ import { useSettingsStore } from './settings';
 import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import kc from '../auth/keycloak';
+import BackgroundTimer from 'react-native-background-timer';
 import { useUiActions } from './uiActions';
 
-const { AppModule } = NativeModules;
-const eventEmitter  = new NativeEventEmitter(AppModule);
+const { GxyModule } = NativeModules;
+const eventEmitter  = new NativeEventEmitter(GxyModule);
 let subscription;
 
 async function checkPermission(permission) {
@@ -66,6 +67,9 @@ export const useInitsStore = create((set, get) => ({
     set({ isPortrait });
   },
   initPermissions: async () => {
+    if (Platform.OS !== 'android')
+      return true;
+
     if (!await checkPermission('android.permission.CAMERA'))
       return false;
     if (!await checkPermission('android.permission.RECORD_AUDIO'))
@@ -159,6 +163,7 @@ export const useInitsStore = create((set, get) => ({
     });
   },
   initApp        : () => {
+    BackgroundTimer.start();
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(true);
 
@@ -171,6 +176,6 @@ export const useInitsStore = create((set, get) => ({
     InCallManager.setKeepScreenOn(false);
     InCallManager.stop();
     subscription?.remove();
-
+    BackgroundTimer.stop();
   }
 }));

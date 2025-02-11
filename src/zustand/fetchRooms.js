@@ -3,13 +3,13 @@ import api from '../shared/Api';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import log from 'loglevel';
 import { useSettingsStore } from './settings';
-import { getFromStorage } from '../shared/tools';
+import { getFromStorage, setToStorage } from '../shared/tools';
 
 const useRoomStore = create((set) => ({
   room      : null,
   setRoom   : (room) => {
     try {
-      RNSecureStorage.setItem('room', room.room.toString(), { accessible: ACCESSIBLE.AFTER_FIRST_UNLOCK });
+      setToStorage('room', room.room.toString());
     } catch (err) {
       log.error('saved room: ', err);
     }
