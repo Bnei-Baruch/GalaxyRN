@@ -18,8 +18,15 @@ export const useMyStreamStore = create((set, get) => ({
 
     try {
       stream = await mediaDevices.getUserMedia({
+        video: {
+          /*
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30, max: 60 },
+          */
+          facingMode: 'user',
+        },
         audio: true,
-        video: { facingMode: 'user' }
       });
     } catch (e) {
       console.error('Error accessing media devices:', e);

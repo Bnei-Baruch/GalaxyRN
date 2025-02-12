@@ -76,7 +76,9 @@ export class PublisherPlugin extends EventEmitter {
 
   publish(stream) {
     return new Promise((resolve, reject) => {
-      this.pc.addTrack(stream.getVideoTracks()[0], stream);
+      const videoTrack = stream.getVideoTracks()[0];
+      videoTrack.enabled = true;
+      this.pc.addTrack(videoTrack, stream);
       this.pc.addTrack(stream.getAudioTracks()[0], stream);
 
       let videoTransceiver = null;
@@ -110,7 +112,8 @@ export class PublisherPlugin extends EventEmitter {
 
       this.pc.createOffer().then((offer) => {
         this.pc.setLocalDescription(offer);
-        const sdp  = offer.sdp.replaceAll('profile-level-id=640c34', 'profile-level-id=42e01f');
+        const sdp  = offer.sdp.replace(/profile-level-id=[a-f0-9]{6}/g, 'profile-level-id=42e01f');
+
         const jsep = { type: offer.type, sdp };
         const body = { request: 'configure', video: true, audio: true };
         return this.transaction('message', { body, jsep }, 'event').then((param) => {
