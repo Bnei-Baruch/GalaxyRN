@@ -25,23 +25,22 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>CFBundleURLTypes</key>
-        <array>
-          <dict>
-            <key>CFBundleURLName</key>
-            <string>com.galaxy.app.identifier</string>
-            <key>CFBundleURLSchemes</key>
-            <array>
-              <string>io.identityserver.demo</string>
-            </array>
-          </dict>
-        </array>
-        <key>NSMicrophoneUsageDescription</key>
-        <string>Need microphone access for uploading audio</string>
-        <key>NSCameraUsageDescription</key>
-        <string>Need camera access for uploading images</string>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.galaxy.app.identifier</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>io.identityserver.demo</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Need microphone access for uploading audio</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Need camera access for uploading images</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
@@ -60,6 +59,14 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>MaterialIcons.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
