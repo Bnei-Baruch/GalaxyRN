@@ -22,7 +22,7 @@ const RoomSelect = () => {
     room && setSearchText(room.description);
   }, [room]);
 
-  const filteredOptions = rooms?.filter(o => o.description.toLowerCase().includes(searchText.toLowerCase()));
+  const filteredOptions = rooms?.filter(o => o.description.toLowerCase().includes(searchText?.toLowerCase()));
 
   const handleSearch   = (text) => {
     setSearchText(text);

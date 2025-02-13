@@ -17,8 +17,10 @@ import kc from '../auth/keycloak';
 import BackgroundTimer from 'react-native-background-timer';
 import { useUiActions } from './uiActions';
 
+console.log('broken module ios NativeModules', NativeModules);
 const { GxyModule } = NativeModules;
-const eventEmitter  = new NativeEventEmitter(GxyModule);
+console.log('broken module ios GxyModule', GxyModule);
+//const eventEmitter = new NativeEventEmitter(GxyModule);
 let subscription;
 
 async function checkPermission(permission) {
@@ -167,10 +169,10 @@ export const useInitsStore = create((set, get) => ({
     InCallManager.start({ media: 'video' });
     InCallManager.setKeepScreenOn(true);
 
-    subscription = eventEmitter.addListener('AppTerminated', async () => {
+   /* subscription = eventEmitter.addListener('AppTerminated', async () => {
       await useInRoomStore.getState().exitRoom();
       get().terminateApp();
-    });
+    });*/
   },
   terminateApp   : () => {
     InCallManager.setKeepScreenOn(false);

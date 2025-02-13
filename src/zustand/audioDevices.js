@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { NativeModules, NativeEventEmitter } from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 
-const { InCallManagerModule } = NativeModules;
-const eventEmitter            = new NativeEventEmitter(InCallManagerModule);
+
+const { InCallManager: InCallManagerModule } = NativeModules;
+const eventEmitter                           = new NativeEventEmitter(InCallManagerModule);
 let subscription;
 
 const AUDIO_DEVICES = {
@@ -46,14 +47,16 @@ const useAudioDevicesStore = create((set, get) => ({
   devices   : [],
   setDevices: devices => set({ devices }),
   init      : () => {
-    subscription = eventEmitter.addListener('onAudioDeviceChanged', async (d) => {
-      const { availableAudioDeviceList, selectedAudioDevice } = d;
-      console.log('manage audio devices: onAudioDeviceChanged', availableAudioDeviceList, selectedAudioDevice);
-      const devices  = availableAudioDeviceList.map(d => AUDIO_DEVICES[d]);
-      const selected = AUDIO_DEVICES[selectedAudioDevice];
-      console.log('manage audio devices: onAudioDeviceChanged mapped', devices, selected);
-      set({ devices, selected });
-    });
+    if (Platform.OS === 'android') {
+      subscription = eventEmitter.addListener('onAudioDeviceChanged', async (d) => {
+        const { availableAudioDeviceList, selectedAudioDevice } = d;
+        console.log('manage audio devices: onAudioDeviceChanged', availableAudioDeviceList, selectedAudioDevice);
+        const devices  = availableAudioDeviceList.map(d => AUDIO_DEVICES[d]);
+        const selected = AUDIO_DEVICES[selectedAudioDevice];
+        console.log('manage audio devices: onAudioDeviceChanged mapped', devices, selected);
+        set({ devices, selected });
+      });
+    }
     get().select('BLUETOOTH');
   },
   abort     : () => {
