@@ -238,7 +238,7 @@ export const useInRoomStore = create((set, get) => ({
             await makeSubscription(data.publishers);
             useUserStore.getState().sendUserState({}, d);
             useMyStreamStore.getState().toggleMute(true);
-            attempts = 0;
+            attempts      = 0;
 
             return videoroom.publish(getStream()).then((json) => {
               log.debug('[client] videoroom published', json);
