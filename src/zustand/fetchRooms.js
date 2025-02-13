@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import api from '../shared/Api';
-import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import log from 'loglevel';
 import { useSettingsStore } from './settings';
 import { getFromStorage, setToStorage } from '../shared/tools';
@@ -8,11 +7,7 @@ import { getFromStorage, setToStorage } from '../shared/tools';
 const useRoomStore = create((set) => ({
   room      : null,
   setRoom   : (room) => {
-    try {
-      setToStorage('room', room.room.toString());
-    } catch (err) {
-      log.error('saved room: ', err);
-    }
+    room && setToStorage('room', room.room.toString());
     set({ room });
   },
   isLoading : false,
