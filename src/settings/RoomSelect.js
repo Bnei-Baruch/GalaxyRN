@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, } from 'react-native';
+import { Button, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, Keyboard, } from 'react-native';
 import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';
 import { baseStyles } from '../constants';
@@ -22,11 +22,16 @@ const RoomSelect = () => {
     room && setSearchText(room.description);
   }, [room]);
 
-  const filteredOptions = rooms?.filter(o => o.description.includes(searchText));
+  const filteredOptions = rooms?.filter(o => o.description.toLowerCase().includes(searchText.toLowerCase()));
 
-  const handleSearch   = (text) => setSearchText(text);
+  const handleSearch   = (text) => {
+    setSearchText(text);
+    const _room = filteredOptions.find(o => o.description.toLowerCase() === text.toLowerCase());
+    _room ? setRoom(room) : setRoom(null);
+  };
   const handleSelect   = (value) => {
     setRoom(value);
+    Keyboard.dismiss();
     toggleOpen(false);
   };
   const handleJoinRoom = () => setReadyForJoin();
@@ -51,7 +56,9 @@ const RoomSelect = () => {
       </View>
       {
         open && filteredOptions.length > 0 && (filteredOptions.length > 1 || !room) && (
+
           <FlatList
+            keyboardShouldPersistTaps={'handled'}
             style={styles.list}
             data={filteredOptions}
             keyExtractor={(item) => item.room}
