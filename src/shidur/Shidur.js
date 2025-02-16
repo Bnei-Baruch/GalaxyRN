@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, TouchableWithoutFeedback, Text } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
@@ -9,10 +9,14 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { useSettingsStore } from '../zustand/settings';
 import { MuteBtn } from './MuteBtn';
+import { useTranslation } from 'react-i18next';
+import { baseStyles } from '../constants';
 
 const Shidur = () => {
-  const { videoStream, isPlay, shidurBar, toggleShidurBar, video } = useShidurStore();
-  const { audioMode }                                              = useSettingsStore();
+  const { videoStream, isPlay, shidurBar, toggleShidurBar, video, isOnAir } = useShidurStore();
+  const { audioMode }                                                       = useSettingsStore();
+
+  const { t } = useTranslation();
 
   const toggleBar = () => toggleShidurBar();
   return (
@@ -20,6 +24,13 @@ const Shidur = () => {
       {
         isPlay ? (
           <View>
+            {
+              isOnAir && (
+                <Text style={[baseStyles.text, styles.onAir]}>
+                  {t('shidur.onAir')}
+                </Text>
+              )
+            }
             <TouchableWithoutFeedback onPress={toggleBar}>
               {
                 (video !== NO_VIDEO_OPTION_VALUE && !audioMode) ? (
@@ -87,6 +98,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems    : 'center',
 
+  },
+  onAir      : {
+    position       : 'absolute',
+    top            : 10,
+    right          : 10,
+    backgroundColor: 'red',
+    zIndex         : 10,
+    fontSize       : 20,
+    padding        : 10,
+    borderRadius   : 20
   }
 });
 

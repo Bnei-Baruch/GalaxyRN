@@ -20,8 +20,7 @@ export const useSettingsStore = create((set, get) => ({
     useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
     set({ isFullscreen });
   },
-  toggleQuestion    : () => {
-    const question = !get().question;
+  toggleQuestion    : (question = !get().question) => {
     useUserStore.getState().sendUserState({ question });
     set({ question });
   },

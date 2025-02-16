@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.galaxyrn.audio.AudioDeviceModule;
+
 public class GxyPackage implements ReactPackage {
 
-    final private String TAG = GxyPackage.class.getSimpleName();;
+    final private String TAG = GxyPackage.class.getSimpleName();
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {

@@ -57,15 +57,16 @@ export const useShidurStore = create((set, get) => ({
   trlUrl         : null,
   audioUrl       : null,
   readyShidur    : false,
-  talking        : null,
+  isOnAir        : true,
   isPlay         : false,
   janusReady     : false,
   isMuted        : false,
   setIsMuted     : (isMuted = !get().isMuted) => {
-    audioStream?.getAudioTracks().forEach(t => {
-      t.enabled = !isMuted;
-      (!isMuted) && t._setVolume(0.8);
-    });
+    [...audioStream?.getAudioTracks(), ...trlAudioStream.getAudioTracks()]
+      .forEach(t => {
+        t.enabled = !isMuted;
+        (!isMuted) && t._setVolume(0.8);
+      });
     set({ isMuted });
   },
   setVideo       : async (video, updateState = true) => {
@@ -90,7 +91,7 @@ export const useShidurStore = create((set, get) => ({
     set({ videoStream, video });
   },
   setAudio       : async (audio, text) => {
-    if (get().talking) {
+    if (get().isOnAir) {
       const audio_option = audiog_options2.find((option) => option.value === audio);
       const id           = trllang[audio_option.eng_text];
       if (id) {
@@ -214,19 +215,19 @@ export const useShidurStore = create((set, get) => ({
     trlAudioJanus?.detach();
     trlAudioJanus = null;
 
-    set({ readyShidur: false, isPlay: false, videoStream: null, talking: null });
+    set({ readyShidur: false, isPlay: false, videoStream: null, isOnAir: null });
   },
-  streamGalaxy   : async (isOn) => {
-    log.debug('[shidur] got talk event: ', isOn);
+  streamGalaxy   : async (isOnAir) => {
+    log.debug('[shidur] got talk event: ', isOnAir);
     if (!trlAudioJanus) {
       log.debug('[shidur] look like we got talk event before stream init finished');
       setTimeout(() => {
-        get().streamGalaxy(isOn);
+        get().streamGalaxy(isOnAir);
       }, 1000);
       return;
     }
 
-    if (isOn) {
+    if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
       log.debug('[shidur] Switch audio stream: ', gxycol[col]);
@@ -251,8 +252,8 @@ export const useShidurStore = create((set, get) => ({
       log.debug('[shidur] Switch audio stream back');
       audioStream.getAudioTracks().forEach(track => track._setVolume(0.8));
     }
-    trlAudioStream.getAudioTracks().forEach(track => track.enabled = isOn);
-    set({ talking: isOn });
+    trlAudioStream.getAudioTracks().forEach(track => track.enabled = isOnAir);
+    set({ isOnAir });
   },
   toggleIsPlay   : async () => {
     const { initShidur, readyShidur, isMuted } = get();
@@ -262,7 +263,8 @@ export const useShidurStore = create((set, get) => ({
     }
 
     videoStream?.getVideoTracks().forEach(t => t.enabled = isPlay);
-    audioStream?.getAudioTracks().forEach(t => t.enabled = isPlay && !isMuted);
+    [...audioStream?.getAudioTracks(), ...trlAudioStream.getAudioTracks()]
+      .forEach(t => t.enabled = isPlay && !isMuted);
     set({ isPlay });
   },
   initQuad       : async () => {
