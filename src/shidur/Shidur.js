@@ -33,9 +33,9 @@ const Shidur = () => {
             }
             <TouchableWithoutFeedback onPress={toggleBar}>
               {
-                (video !== NO_VIDEO_OPTION_VALUE && !audioMode) ? (
+                (video !== NO_VIDEO_OPTION_VALUE && !audioMode && videoStream) ? (
                   <RTCView
-                    streamURL={videoStream?.toURL()}
+                    streamURL={videoStream.toURL()}
                     style={styles.viewer}
                   />
                 ) : (

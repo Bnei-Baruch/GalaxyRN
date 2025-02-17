@@ -57,7 +57,7 @@ export const useShidurStore = create((set, get) => ({
   trlUrl         : null,
   audioUrl       : null,
   readyShidur    : false,
-  isOnAir        : true,
+  isOnAir        : false,
   isPlay         : false,
   janusReady     : false,
   isMuted        : false,
@@ -290,15 +290,17 @@ export const useShidurStore = create((set, get) => ({
     if (videoJanus) {
       cleanStream(videoStream);
       videoJanus.detach();
-      videoJanus = null;
+      videoJanus  = null;
+      videoStream = null;
     }
 
     if (trlAudioJanus) {
       cleanStream(trlAudioStream);
       trlAudioJanus.detach();
       trlAudioJanus = null;
+      trlAudioStream = null;
     }
-    set({ videoStream: null, trlUrl: null });
+    set({ videoStream, trlUrl: null });
   },
   shidurBar      : true,
   toggleShidurBar: (hideOnTimeout = true, shidurBar = !get().shidurBar) => {
