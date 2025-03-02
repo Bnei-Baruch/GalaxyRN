@@ -13,7 +13,6 @@ import mqtt from '../shared/mqtt';
 import { useMyStreamStore, getStream } from './myStream';
 import i18n from '../i18n/i18n';
 import { useInitsStore } from './inits';
-import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useShidurStore } from './shidur';
 import { deepClone } from '../shared/tools';
 import { useUiActions } from './uiActions';
@@ -22,21 +21,12 @@ let subscriber = null;
 let videoroom  = null;
 let janus      = null;
 
-let showBarTimeout = null;
-let attempts       = 0;
+let attempts = 0;
 
 const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264');
 
 export const useInRoomStore = create((set, get) => ({
   feedById         : {},
-  showBars         : true,
-  toggleShowBars   : (hideOnTimeout, showBars = !get().showBars) => {
-    clearTimeout(showBarTimeout);
-    if (hideOnTimeout && showBars) {
-      showBarTimeout = setTimeout(() => set({ showBars: false }), HIDE_BARS_TIMEOUT_MS);
-    }
-    set({ showBars });
-  },
   joinRoom         : () => {
     console.log('useInRoomStore joinRoom', janus);
 
@@ -238,9 +228,12 @@ export const useInRoomStore = create((set, get) => ({
             await makeSubscription(data.publishers);
             useUserStore.getState().sendUserState({}, d);
             useMyStreamStore.getState().toggleMute(true);
-            attempts      = 0;
-
-            return videoroom.publish(getStream()).then((json) => {
+            attempts     = 0;
+            const stream = getStream();
+            stream.getVideoTracks().forEach(track => {
+              track.enabled = !cammute;
+            });
+            return videoroom.publish(stream).then((json) => {
               log.debug('[client] videoroom published', json);
             }).catch((err) => {
               log.error('[client] Publish error :', err);
@@ -272,7 +265,7 @@ export const useInRoomStore = create((set, get) => ({
     janus      = null;
     videoroom  = null;
     subscriber = null;
-    useSettingsStore.getState().setReadyForJoin(false);
+    useInitsStore.getState().setReadyForJoin(false);
 
     await mqtt.exit('galaxy/room/' + room.room);
     await mqtt.exit('galaxy/room/' + room.room + '/chat');

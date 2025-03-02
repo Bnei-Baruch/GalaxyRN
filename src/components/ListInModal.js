@@ -9,6 +9,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const ListInModal = (
   {
@@ -24,18 +25,18 @@ const ListInModal = (
   const [visible, setVisible] = useState(open);
   const tooltipRef            = useRef(null);
 
-  const toggleTooltip = () => {
+  const toggleModal = () => {
     setVisible(!visible);
     onOpen && onOpen(!visible);
   };
 
   const handleSelect = (item) => {
     onSelect && onSelect(item);
-    toggleTooltip();
+    toggleModal();
   };
 
   const _renderItem = (item) => {
-    const key = item.key ?? item.value ?? item.text;
+    const key = item.key ?? item.value ?? item.text ?? item.id;
     if (!key) return;
 
     return (
@@ -52,21 +53,29 @@ const ListInModal = (
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity ref={tooltipRef} onPress={toggleTooltip}>
+      <TouchableOpacity ref={tooltipRef} onPress={toggleModal}>
         {trigger ? trigger : <Text styles={styles.itemText}>{selected}</Text>}
       </TouchableOpacity>
       <Modal
         animationType="fade"
         transparent={true}
         visible={visible}
-        onRequestClose={toggleTooltip}
+        onRequestClose={toggleModal}
       >
-        <TouchableWithoutFeedback onPress={toggleTooltip}>
+        <TouchableWithoutFeedback onPress={toggleModal}>
           <View style={styles.modalContainer}>
             <View
               style={styles.tooltip}
               pointerEvents="auto"
             >
+
+              <TouchableOpacity onPress={toggleModal} style={styles.close}>
+                <Icon
+                  name="close"
+                  size={30}
+                  color="white"
+                />
+              </TouchableOpacity>
               <ScrollView>
                 {items.map(_renderItem)}
               </ScrollView>
@@ -80,12 +89,13 @@ const ListInModal = (
 
 export const styles = StyleSheet.create({
   container     : {
-    position: 'relative',
+    position: 'relative'
   },
   modalContainer: {
-    flex          : 1,
-    justifyContent: 'center',
-    alignItems    : 'center',
+    flex           : 1,
+    justifyContent : 'center',
+    alignItems     : 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   tooltip       : {
     width          : '70%',
@@ -99,10 +109,17 @@ export const styles = StyleSheet.create({
     shadowRadius   : 2,
     alignSelf      : 'center',
     backgroundColor: '#1c1c1c',
-    color          : 'white'
+    color          : 'white',
+    paddingTop     : 15
   },
   selected      : {
     backgroundColor: '#222222'
+  },
+  close         : {
+    position: 'absolute',
+    top     : 0,
+    right   : 0,
+    zIndex  : 1
   }
 });
 

@@ -4,6 +4,7 @@ import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';
 import { baseStyles } from '../constants';
 import { useTranslation } from 'react-i18next';
+import { useInitsStore } from '../zustand/inits';
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();
@@ -11,7 +12,7 @@ const RoomSelect = () => {
   const [open, setOpen]             = useState(false);
 
   const { fetchRooms, setRoom, room } = useRoomStore();
-  const { setReadyForJoin }           = useSettingsStore();
+  const { setReadyForJoin }           = useInitsStore();
   const { t }                         = useTranslation();
 
   useEffect(() => {

@@ -30,6 +30,7 @@ class Keycloak {
   }
 
   login = () => {
+    useUserStore.getState().setWIP(true);
     authorize(authConfig).then(data => {
       log.debug('kcLogin: ', data);
       this.setSession(data);
@@ -85,6 +86,7 @@ class Keycloak {
   };
 
   fetchUser = async () => {
+    useUserStore.getState().setWIP(true);
     const data = await getFromStorage('user_session', null);
     if (!data)
       return useUserStore.getState().setUser(null);

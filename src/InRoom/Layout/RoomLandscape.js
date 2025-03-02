@@ -1,14 +1,10 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
 import { baseStyles } from '../../constants';
-import { useInRoomStore } from '../../zustand/inRoom';
-import { useShidurStore } from '../../zustand/shidur';
 import { useUiActions } from '../../zustand/uiActions';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
-  const { toggleShowBars }         = useInRoomStore();
-  const { janusReady }             = useShidurStore();
-  const { setFeedsScrollY, width } = useUiActions();
+  const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
 
   const isShidur = !!shidur;
 
@@ -55,8 +51,8 @@ const styles = StyleSheet.create({
     minHeight: '100%'
   },
   shidurWrapper: {
-    flex       : 1,
-    width      : '100%',
+    flex : 1,
+    width: '100%',
 
   },
   shidur       : {

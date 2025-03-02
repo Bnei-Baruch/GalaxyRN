@@ -1,65 +1,67 @@
 import { create } from 'zustand';
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
-
-const { InCallManager: InCallManagerModule } = NativeModules;
-const eventEmitter                           = new NativeEventEmitter(InCallManagerModule);
+const { AudioDeviceModule } = NativeModules;
+const eventEmitter          = new NativeEventEmitter(AudioDeviceModule);
 let subscription;
 
-const AUDIO_DEVICES = {
-  WIRED_HEADSET: {
-    icon    : 'headset',
-    priority: 1,
-    key     : 'WIRED_HEADSET'
-  },
-  BLUETOOTH    : {
-    icon    : 'bluetooth-audio',
-    priority: 2,
-    key     : 'BLUETOOTH'
-  },
-  EARPIECE     : {
-    icon    : 'volume-off',
-    priority: 3,
-    key     : 'EARPIECE'
+const TYPE_WIRED_HEADSET    = 3,
+      TYPE_WIRED_HEADPHONES = 4,
+      TYPE_USB_DEVICE       = 11,
+      TYPE_BLUETOOTH_SCO    = 7,
+      TYPE_BLUETOOTH_A2DP   = 8,
+      TYPE_BUILTIN_SPEAKER  = 2,
+      TYPE_BLE_HEADSET      = 26,
+      TYPE_BUILTIN_EARPIECE = 1;
 
-  },
-  SPEAKER_PHONE: {
-    icon    : 'volume-up',
-    priority: 4,
-    key     : 'SPEAKER_PHONE'
-  },
+
+const deviceInfoToOption = d => {
+  if (!d)
+    return null;
+
+  switch (d.type) {
+    case TYPE_WIRED_HEADSET  :
+      return { ...d, icon: 'headset-mic', priority: 1 };
+    case TYPE_WIRED_HEADPHONES  :
+      return { ...d, icon: 'headset', priority: 2 };
+    case TYPE_USB_DEVICE  :
+      return { ...d, icon: 'usb', priority: 3 };
+    case TYPE_BLUETOOTH_SCO  :
+      return { ...d, icon: 'bluetooth-audio', priority: 4 };
+    case TYPE_BLUETOOTH_A2DP  :
+      return { ...d, icon: 'media-bluetooth-on', priority: 5 };
+    case TYPE_BUILTIN_EARPIECE  :
+      return { ...d, icon: 'volume-off', priority: 6 };
+    case TYPE_BLE_HEADSET  :
+      return { ...d, icon: 'headset', priority: 7 };
+    case TYPE_BUILTIN_SPEAKER  :
+      return { ...d, icon: 'volume-up', priority: 8 };
+    default:
+      return { ...d, icon: 'hearing', priority: 9 };
+  }
 };
 
 const useAudioDevicesStore = create((set, get) => ({
-  selected  : null,
-  select    : async (next) => {
-    console.log('manage audio devices: useAudioDevicesStore select', next);
-
-    const { availableAudioDeviceList, selectedAudioDevice } = await InCallManager.chooseAudioRoute(next);
-    console.log('manage audio devices: useAudioDevicesStore select request', availableAudioDeviceList, selectedAudioDevice);
-    const devices  = JSON.parse(availableAudioDeviceList).map(d => AUDIO_DEVICES[d]);
-    const selected = AUDIO_DEVICES[selectedAudioDevice];
-
-    console.log('manage audio devices: useAudioDevicesStore select mapped', devices, selected);
-    set({ devices, selected });
+  selected: null,
+  select  : async (id) => {
+    console.log('manage audio devices: useAudioDevices select', id);
+    await AudioDeviceModule.updateAudioDevices(id);
   },
-  devices   : [],
-  setDevices: devices => set({ devices }),
-  init      : () => {
+  devices : [],
+  initAudioDevices    : () => {
+    console.log('manage audio devices: useAudioDevicesStore init');
     if (Platform.OS === 'android') {
-      subscription = eventEmitter.addListener('onAudioDeviceChanged', async (d) => {
-        const { availableAudioDeviceList, selectedAudioDevice } = d;
-        console.log('manage audio devices: onAudioDeviceChanged', availableAudioDeviceList, selectedAudioDevice);
-        const devices  = availableAudioDeviceList.map(d => AUDIO_DEVICES[d]);
-        const selected = AUDIO_DEVICES[selectedAudioDevice];
-        console.log('manage audio devices: onAudioDeviceChanged mapped', devices, selected);
+      subscription = eventEmitter.addListener('updateAudioDevice', async (data) => {
+        const devices  = Object.values(data)
+          .map(deviceInfoToOption)
+          .sort((a, b) => a.priority - b.priority);
+        const selected = deviceInfoToOption(Object.values(data).find(d => d.active));
         set({ devices, selected });
       });
+      AudioDeviceModule.initAudioDevices();
     }
-    get().select('BLUETOOTH');
   },
-  abort     : () => {
+  abortAudioDevices   : () => {
     subscription?.remove();
   }
 }));

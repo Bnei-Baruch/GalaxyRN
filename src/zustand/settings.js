@@ -5,18 +5,17 @@ import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './in
 import { useUserStore } from './user';
 import { getFromStorage } from '../shared/tools';
 import { useUiActions } from './uiActions';
+import { useInitsStore } from './inits';
 
 export const useSettingsStore = create((set, get) => ({
   uiLang            : 'en',
   autoEnterRoom     : false,
   changeUiLang      : (lang) => set({ uiLang: lang }),
-  readyForJoin      : false,
-  setReadyForJoin   : (readyForJoin = true) => set({ readyForJoin }),
   question          : false,
   isFullscreen      : false,
   toggleIsFullscreen: () => {
     const isFullscreen = !get().isFullscreen;
-    useInRoomStore.getState().toggleShowBars(isFullscreen);
+    useUiActions.getState().toggleShowBars(isFullscreen);
     useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
     set({ isFullscreen });
   },
@@ -38,7 +37,7 @@ export const useSettingsStore = create((set, get) => ({
   },
   enterAudioMode    : async () => {
     useMyStreamStore.getState().toggleCammute(true, false);
-    if (!get().readyForJoin)
+    if (!useInitsStore.getState().readyForJoin)
       return;
     const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
@@ -51,7 +50,7 @@ export const useSettingsStore = create((set, get) => ({
     const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
     useMyStreamStore.getState().toggleCammute(cammute);
 
-    if (!get().readyForJoin)
+    if (!useInitsStore.getState().readyForJoin)
       return;
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
@@ -64,5 +63,5 @@ export const useSettingsStore = create((set, get) => ({
   showGroups        : false,
   toggleShowGroups  : () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf          : false,
-  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf }))
+  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf })),
 }));

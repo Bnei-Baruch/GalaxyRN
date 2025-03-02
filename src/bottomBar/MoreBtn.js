@@ -9,9 +9,10 @@ import { useInRoomStore } from '../zustand/inRoom';
 import { ShidurBtn } from './moreBtns/ShidurBtn';
 import { HideSelfBtn } from './moreBtns/HideSelfBtn';
 import { VoteBtn } from './moreBtns/VoteBtn';
+import { useUiActions } from '../zustand/uiActions';
 
 export const MoreBtn = () => {
-  const { toggleShowBars } = useInRoomStore();
+  const { toggleShowBars } = useUiActions();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },

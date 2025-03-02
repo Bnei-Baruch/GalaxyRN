@@ -5,10 +5,10 @@ import { CammuteBtn } from './CammuteBtn';
 import { QuestionBtn } from './QuestionBtn';
 import { AudioModeBtn } from './AudioModeBtn';
 import { MoreBtn } from './MoreBtn';
-import { useInRoomStore } from '../zustand/inRoom';
+import { useUiActions } from '../zustand/uiActions';
 
 export const BottomBar = () => {
-  const { showBars } = useInRoomStore();
+  const { showBars } = useUiActions();
 
   if (!showBars) return null;
 

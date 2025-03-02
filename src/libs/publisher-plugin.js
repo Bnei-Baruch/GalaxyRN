@@ -77,7 +77,6 @@ export class PublisherPlugin extends EventEmitter {
   publish(stream) {
     return new Promise((resolve, reject) => {
       const videoTrack = stream.getVideoTracks()[0];
-      videoTrack.enabled = true;
       this.pc.addTrack(videoTrack, stream);
       this.pc.addTrack(stream.getAudioTracks()[0], stream);
 

@@ -5,8 +5,10 @@ import { useMyStreamStore } from './myStream';
 import mqtt from '../shared/mqtt';
 
 export const useUserStore = create((set, get) => ({
+  wip          : false,
+  setWIP       : (wip) => set({ wip }),
   user         : null,
-  setUser      : (user) => set({ user }),
+  setUser      : (user) => set({ user, wip: false }),
   vhinfo       : {},
   setVhinfo    : (vhinfo) => set({ vhinfo }),
   rfid         : null,

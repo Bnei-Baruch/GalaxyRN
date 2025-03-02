@@ -6,10 +6,10 @@ import { SupportBtn } from './SupportBtn';
 import { SettingsBtn } from './SettingsBtn';
 import LogoutBtn from './LogoutBtn';
 import ListInModal from '../components/ListInModal';
-import { useInRoomStore } from '../zustand/inRoom';
+import { useUiActions } from '../zustand/uiActions';
 
 export const TopMenuBtn = () => {
-  const { toggleShowBars } = useInRoomStore();
+  const { toggleShowBars } = useUiActions();
 
   const items = [
     { component: <StudyMaterialsBtn />, key: 1 },

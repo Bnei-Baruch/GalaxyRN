@@ -1,15 +1,15 @@
 import * as React from 'react';
 import { StyleSheet, View, Text, TouchableWithoutFeedback } from 'react-native';
 import { TopMenuBtn } from './TopMenuBtn';
-import { MuteBtn } from './MuteBtn';
+import { AudioDevicesBtn } from './AudioDevicesBtn';
 import useRoomStore from '../zustand/fetchRooms';
 import { ChatBtn } from './ChatBtn';
-import { useInRoomStore } from '../zustand/inRoom';
 import { baseStyles } from '../constants';
+import { useUiActions } from '../zustand/uiActions';
 
 export const TopBar = () => {
   const { room }                     = useRoomStore();
-  const { showBars, toggleShowBars } = useInRoomStore();
+  const { toggleShowBars, showBars } = useUiActions();
 
   if (!showBars) return null;
 
@@ -20,7 +20,7 @@ export const TopBar = () => {
       <View style={styles.container}>
         <View style={styles.left}>
           <TopMenuBtn />
-          <MuteBtn />
+          <AudioDevicesBtn />
         </View>
         <View>
           <Text style={baseStyles.text}>{room?.description}</Text>

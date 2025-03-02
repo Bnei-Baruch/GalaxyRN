@@ -23,10 +23,16 @@ export const useMyStreamStore = create((set, get) => ({
           width: { ideal: 1280 },
           height: { ideal: 720 },
           frameRate: { ideal: 30, max: 60 },
+          profileLevelId: "42e01f"
           */
           facingMode: 'user',
         },
-        audio: true,
+        audio: {
+          /*echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1*/
+        },
       });
     } catch (e) {
       console.error('Error accessing media devices:', e);

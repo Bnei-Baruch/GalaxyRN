@@ -57,7 +57,7 @@ export const SettingsNotJoinedPortrait = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding        : 3,
+    padding        : 5,
     flex           : 1,
     backgroundColor: 'black',
   }

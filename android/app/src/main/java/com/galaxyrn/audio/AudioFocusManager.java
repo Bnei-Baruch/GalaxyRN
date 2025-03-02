@@ -12,6 +12,7 @@ import android.util.Log;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
+import com.galaxyrn.SendEventToClient;
 
 public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = AudioFocusManager.class.getSimpleName();
@@ -22,6 +23,7 @@ public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListene
     public AudioFocusManager(ReactContext context) {
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
         audioManager.setMode(AudioManager.MODE_NORMAL);
+        //on seminar replace to MODE_IN_CALL or MODE_IN_COMMUNICATION
     }
 
     public void requestAudioFocus() {
@@ -38,8 +40,14 @@ public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListene
 
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
+                //.setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                //.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                //.setContentType(AudioAttributes.CONTENT_TYPE_MOVE)
+                //.setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
                 .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+
+                //.setLegacyStreamType(AudioManager.STREAM_VOICE_CALL)
                 .build();
 
 
@@ -48,6 +56,7 @@ public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListene
                 .setAcceptsDelayedFocusGain(false)
                 .setWillPauseWhenDucked(false)
                 .setOnAudioFocusChangeListener(this)
+
                 .build();
 
         int requestAudioFocusRes = audioManager.requestAudioFocus(audioFocusRequest);

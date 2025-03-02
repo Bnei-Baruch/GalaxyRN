@@ -1,5 +1,8 @@
 package com.galaxyrn;
 
+import android.media.AudioManager;
+import android.os.Bundle;
+
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.ReactContext;
@@ -28,9 +31,16 @@ public class MainActivity extends ReactActivity {
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
+        setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
         if (getReactInstanceManager() != null) {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
             if (reactContext != null) {

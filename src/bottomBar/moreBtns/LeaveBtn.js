@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { useSettingsStore } from '../../zustand/settings';
 import IconWithText from '../../settings/IconWithText';
 import { baseStyles } from '../../constants';
 import { useTranslation } from 'react-i18next';
+import { useInitsStore } from '../../zustand/inits';
 
 export const LeaveBtn = () => {
-  const { setReadyForJoin } = useSettingsStore();
+  const { setReadyForJoin } = useInitsStore();
   const { t }               = useTranslation();
 
   const handlePress = () => setReadyForJoin(false);

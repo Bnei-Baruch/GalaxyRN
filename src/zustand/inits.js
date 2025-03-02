@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PermissionsAndroid, Platform, NativeModules, NativeEventEmitter } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
@@ -8,7 +8,7 @@ import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
-import InCallManager from 'react-native-incall-manager';
+
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 import { useMyStreamStore } from './myStream';
@@ -17,11 +17,8 @@ import kc from '../auth/keycloak';
 import BackgroundTimer from 'react-native-background-timer';
 import { useUiActions } from './uiActions';
 
-console.log('broken module ios NativeModules', NativeModules);
-const { GxyModule } = NativeModules;
-console.log('broken module ios GxyModule', GxyModule);
+//const { GxyModule } = NativeModules;
 //const eventEmitter = new NativeEventEmitter(GxyModule);
-let subscription;
 
 async function checkPermission(permission) {
   try {
@@ -62,6 +59,8 @@ export const useInitsStore = create((set, get) => ({
   isBridgeReady  : false,
   mqttReady      : false,
   configReady    : false,
+  readyForJoin   : false,
+  setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
   isPortrait     : true,
   initBridge     : () => set({ isBridgeReady: true }),
   setIsPortrait  : isPortrait => {
@@ -166,18 +165,12 @@ export const useInitsStore = create((set, get) => ({
   },
   initApp        : () => {
     BackgroundTimer.start();
-    InCallManager.start({ media: 'video' });
-    InCallManager.setKeepScreenOn(true);
-
-   /* subscription = eventEmitter.addListener('AppTerminated', async () => {
-      await useInRoomStore.getState().exitRoom();
-      get().terminateApp();
-    });*/
+    /* subscription = eventEmitter.addListener('AppTerminated', async () => {
+       await useInRoomStore.getState().exitRoom();
+       get().terminateApp();
+     });*/
   },
   terminateApp   : () => {
-    InCallManager.setKeepScreenOn(false);
-    InCallManager.stop();
-    subscription?.remove();
     BackgroundTimer.stop();
   }
 }));

@@ -2,8 +2,11 @@ import { create } from 'zustand';
 import { Dimensions } from 'react-native';
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
+import { HIDE_BARS_TIMEOUT_MS } from './helper';
 
 let lastTimestemp = 0;
+
+let showBarTimeout = null;
 
 const getBorders = async (scrollPos, feedsPos) => {
   lastTimestemp          = Date.now();
@@ -64,5 +67,14 @@ export const useUiActions = create((set, get) => ({
       return;
     }
     set({ width: parseInt(width / 4, 10) });
-  }
+  },
+
+  showBars      : true,
+  toggleShowBars: (hideOnTimeout, showBars = !get().showBars) => {
+    clearTimeout(showBarTimeout);
+    if (hideOnTimeout && showBars) {
+      showBarTimeout = setTimeout(() => set({ showBars: false }), HIDE_BARS_TIMEOUT_MS);
+    }
+    set({ showBars });
+  },
 }));
