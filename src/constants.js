@@ -1,14 +1,8 @@
 import { Dimensions, StyleSheet } from 'react-native';
 
-export const win        = Dimensions.get('window');
-export const w          = win.width;
-export const h          = win.height;
-export const responsive = {
-  mobile5    : w > 315 && w < 341,
-  mobile8    : w > 342 && w < 375,
-  mobile8plus: w > 375 && w < 415,
-  tablet     : w < 990 && w > 415
-};
+export const win = Dimensions.get('window');
+export const w   = win.width;
+export const h   = win.height;
 
 export const baseStyles = StyleSheet.create({
   text        : {
@@ -28,7 +22,25 @@ export const baseStyles = StyleSheet.create({
   }
 });
 
-export const ORIENTATIONS = {
-  'landscape': 1,
-  'portrait' : 2
+export const AUDIO_DEVICE_TYPES = {
+  TYPE_WIRED_HEADSET   : 3,
+  TYPE_WIRED_HEADPHONES: 4,
+  TYPE_USB_DEVICE      : 11,
+  TYPE_USB_HEADSET     : 3,
+  TYPE_USB_ACCESSORY   : 12,
+  TYPE_BLUETOOTH_SCO   : 7,
+  TYPE_BLUETOOTH_A2DP  : 8,
+  TYPE_BUILTIN_SPEAKER : 2,
+  TYPE_BLE_HEADSET     : 26,
+  TYPE_BUILTIN_EARPIECE: 1,
+  TYPE_HEARING_AID     : 23,
+  TYPE_LINE_ANALOG     : 5,
+  TYPE_LINE_DIGITAL    : 6,
+  TYPE_TELEPHONY       : 18
 };
+
+export const AUDIO_DEVICE_TYPES_BY_KEY = Object.keys(AUDIO_DEVICE_TYPES)
+  .reduce((acc, name) => {
+    acc[name] = { name, id: AUDIO_DEVICE_TYPES[name] };
+    return acc;
+  }, {});

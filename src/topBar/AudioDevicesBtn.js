@@ -5,10 +5,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import useAudioDevicesStore from '../zustand/audioDevices';
 import { baseStyles } from '../constants';
 import ListInModal from '../components/ListInModal';
+import { useTranslation } from 'react-i18next';
 
 export const AudioDevicesBtn = () => {
   const [open, setOpen]               = useState();
   const { selected, select, devices } = useAudioDevicesStore();
+  const { t }                         = useTranslation();
 
   if (!selected) return null;
 
@@ -34,7 +36,7 @@ export const AudioDevicesBtn = () => {
           size={30}
           color="white"
         />
-        <Text style={baseStyles.text}>{item.typeStr}</Text>
+        <Text style={baseStyles.text}>{t(`audioDeviceName.${item.name}`)}</Text>
         <Text style={baseStyles.text}>{item.type}</Text>
       </TouchableOpacity>
     );

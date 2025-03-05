@@ -1,16 +1,15 @@
 
 
-package com.galaxyrn.audio;
+package com.galaxyrn.audioManager;
 
-import android.app.Activity;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.util.Log;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -24,6 +23,7 @@ import com.galaxyrn.SendEventToClient;
 import java.util.Arrays;
 import java.util.Comparator;
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class AudioDeviceModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String REACT_NATIVE_MODULE_NAME = "AudioDeviceModule";
     private static final String TAG = REACT_NATIVE_MODULE_NAME;
@@ -54,10 +54,8 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         UpdateAudioDeviceCallback callback = () -> updateAudioDevices(null);
         UiThreadUtil.runOnUiThread(() -> {
             audioDeviceManager = new AudioDeviceManager(this.context, callback);
-            keepScreenOn();
         });
         audioFocusManager = new AudioFocusManager(this.context);
-        audioFocusManager.requestAudioFocus();
     }
 
     @Override
@@ -74,36 +72,27 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         audioFocusManager.abandonAudioFocus();
         UiThreadUtil.runOnUiThread(() -> {
             audioDeviceManager.stop();
-            keepScreenOff();
         });
     }
 
 
-    private void keepScreenOn() {
-        Activity activity = getCurrentActivity();
-
-        if (activity == null) {
-            Log.d(TAG, "ReactContext doesn't have any Activity attached.");
-            return;
-        }
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    @ReactMethod
+    public void requestAudioFocus() {
+        Log.d(TAG, "onEnterRoom()");
+        audioFocusManager.requestAudioFocus();
     }
 
-    private void keepScreenOff() {
-        Activity activity = getCurrentActivity();
-
-        if (activity == null) {
-            Log.d(TAG, "ReactContext doesn't have any Activity attached.");
-            return;
-        }
-
-        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    @ReactMethod
+    public void abandonAudioFocus() {
+        Log.d(TAG, "onLeaveRoom()");
+        audioFocusManager.abandonAudioFocus();
     }
 
     @ReactMethod
     public void initAudioDevices() {
         updateAudioDevices(null);
     }
+
 
     @ReactMethod
     public void updateAudioDevices(Integer deviceId) {
@@ -112,7 +101,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             AudioDeviceInfo[] devices;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 devices = audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
-
             } else {
                 devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
             }
@@ -127,12 +115,12 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                     selected = d;
                 }
 
-                Log.d(TAG, "updateAudioDeviceState() devices: " + AudioHelper.getDeviceTypeName(d.getType()));
+                Log.d(TAG, "updateAudioDeviceState() devices: " + d.getType());
             }
             if (selected == null) {
                 selected = selectDefaultDevice(devices);
             }
-            this.setAudioDevice(selected);
+            setAudioDevice(selected);
 
             WritableMap selectedResponse = deviceInfoToResponse(selected);
             selectedResponse.putBoolean("active", true);

@@ -16,6 +16,9 @@ import { useInitsStore } from './inits';
 import { useShidurStore } from './shidur';
 import { deepClone } from '../shared/tools';
 import { useUiActions } from './uiActions';
+import { NativeModules } from 'react-native';
+
+const { AudioDeviceModule } = NativeModules;
 
 let subscriber = null;
 let videoroom  = null;
@@ -27,8 +30,8 @@ const isVideoStream = s => (s?.type === 'video' && s.codec === 'h264');
 
 export const useInRoomStore = create((set, get) => ({
   feedById         : {},
-  joinRoom         : () => {
-    console.log('useInRoomStore joinRoom', janus);
+  joinRoom         : async () => {
+    AudioDeviceModule.requestAudioFocus();
 
     attempts++;
     if (attempts > 5) {
@@ -37,7 +40,7 @@ export const useInRoomStore = create((set, get) => ({
       return;
     }
     if (janus) {
-      janus.destroy();
+      await janus.destroy();
       janus = null;
     }
     const { user }                  = useUserStore.getState();
@@ -269,7 +272,7 @@ export const useInRoomStore = create((set, get) => ({
 
     await mqtt.exit('galaxy/room/' + room.room);
     await mqtt.exit('galaxy/room/' + room.room + '/chat');
-    await useInitsStore.getState().endMqtt();
+    AudioDeviceModule.abandonAudioFocus()
   },
   restartRoom      : async () => {
     await get().exitRoom();
@@ -292,7 +295,7 @@ export const useInRoomStore = create((set, get) => ({
         state.feedById[rfid].question = question;
       }
     }));
-  }
+  },
 }));
 
 export const activateFeedsVideos = (feeds) => {

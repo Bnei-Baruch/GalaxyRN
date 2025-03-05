@@ -7,12 +7,9 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-package com.galaxyrn.audio;
+package com.galaxyrn.audioManager;
 
 import android.media.AudioDeviceInfo;
-import android.os.Looper;
-
-import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +17,7 @@ import java.util.List;
 
 public class AudioHelper {
     public static String getDeviceTypeName(int type) {
+
         switch (type) {
             case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
                 return "Встроенный динамик (ухо)";

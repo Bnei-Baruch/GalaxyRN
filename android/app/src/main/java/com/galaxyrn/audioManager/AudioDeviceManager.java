@@ -1,6 +1,6 @@
 
 
-package com.galaxyrn.audio;
+package com.galaxyrn.audioManager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
@@ -16,16 +16,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.annotation.RequiresApi;
-
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.UiThreadUtil;
-import com.facebook.react.bridge.WritableMap;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class AudioDeviceManager {
     private static final String TAG = AudioDeviceManager.class.getSimpleName();

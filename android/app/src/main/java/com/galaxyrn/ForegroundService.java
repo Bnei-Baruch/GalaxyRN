@@ -13,11 +13,13 @@ import android.os.IBinder;
 import android.util.Log;
 
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import java.util.Random;
 
 
+@RequiresApi(api = Build.VERSION_CODES.ECLAIR)
 public class ForegroundService extends Service {
     static final int NOTIFICATION_ID = new Random().nextInt(99999) + 10000;
     private final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";

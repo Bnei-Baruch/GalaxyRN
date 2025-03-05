@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, NativeEventEmitter, NativeModules } from 'react-native';
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
@@ -17,8 +17,10 @@ import kc from '../auth/keycloak';
 import BackgroundTimer from 'react-native-background-timer';
 import { useUiActions } from './uiActions';
 
-//const { GxyModule } = NativeModules;
-//const eventEmitter = new NativeEventEmitter(GxyModule);
+const { AudioDeviceModule } = NativeModules;
+const eventEmitter          = new NativeEventEmitter(AudioDeviceModule);
+
+let subscription;
 
 async function checkPermission(permission) {
   try {
@@ -75,6 +77,7 @@ export const useInitsStore = create((set, get) => ({
       return false;
     if (!await checkPermission('android.permission.RECORD_AUDIO'))
       return false;
+    await checkPermission('android.permission.READ_PHONE_STATE');
     await checkPermission('android.permission.POST_NOTIFICATIONS');
     await checkPermission('android.permission.BLUETOOTH');
     await checkPermission('android.permission.BLUETOOTH_ADMIN');
@@ -98,7 +101,7 @@ export const useInitsStore = create((set, get) => ({
         mqtt.join('galaxy/users/notification');
         mqtt.join('galaxy/users/broadcast');
 
-        const { user, setUser }             = useUserStore.getState();
+        const { user }                      = useUserStore.getState();
         const { toggleCammute, toggleMute } = useMyStreamStore.getState();
         const { streamGalaxy }              = useShidurStore.getState();
         const { toggleQuestion }            = useSettingsStore.getState();
@@ -146,31 +149,30 @@ export const useInitsStore = create((set, get) => ({
       userInfo.ip      = data && data.ip ? data.ip : '127.0.0.1';
       userInfo.country = data && data.country ? data.country : 'XX';
 
-      //setUserInfo(userInfo)
-
       return api.fetchConfig().then((data) => {
         log.debug('[client] got config: ', data);
         ConfigStore.setGlobalConfig(data);
-        /*
-        const premodStatus = ConfigStore.dynamicConfig(ConfigStore.PRE_MODERATION_KEY) === "true";
-        this.setState({premodStatus});
-        */
         GxyConfig.setGlobalConfig(data);
         set(() => ({ configReady: true }));
       }).catch((err) => {
         log.error('[client] error initializing app', err);
-        //this.setState({appInitError: err});
       });
     });
   },
   initApp        : () => {
     BackgroundTimer.start();
-    /* subscription = eventEmitter.addListener('AppTerminated', async () => {
-       await useInRoomStore.getState().exitRoom();
-       get().terminateApp();
-     });*/
+    subscription = eventEmitter.addListener('onCallStateChanged', async (data) => {
+      const { exitRoom } = useInRoomStore.getState();
+      if (data.state === 'ON_START_CALL') {
+        await exitRoom();
+      } else if (data.state === 'ON_END_CALL') {
+        useInitsStore.getState().setReadyForJoin(true);
+      }
+    });
   },
   terminateApp   : () => {
     BackgroundTimer.stop();
+    if (subscription)
+      subscription.remove();
   }
 }));

@@ -1,13 +1,19 @@
 package com.galaxyrn;
 
+import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.oney.WebRTCModule.WebRTCModuleOptions;
+
+import org.webrtc.audio.JavaAudioDeviceModule;
 
 public class MainActivity extends ReactActivity {
 
@@ -34,6 +40,29 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
+        //options.enableMediaProjectionService = true;
+        ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
+
+        Log.d("MainActivity", "onCreate" + reactContext);
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            int legacyStreamType = AudioManager.STREAM_MUSIC;
+            //int contentType = AudioAttributes.CONTENT_TYPE_MOVIE;
+            int contentType = AudioAttributes.CONTENT_TYPE_MUSIC;
+            int usage = AudioAttributes.USAGE_MEDIA;
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(usage)
+                    .setContentType(contentType)
+                    .setLegacyStreamType(legacyStreamType)
+                    .build();
+            options.audioDeviceModule = JavaAudioDeviceModule.builder(reactContext)
+                    .setEnableVolumeLogger(false)
+                    .setAudioAttributes(audioAttributes)
+                    .createAudioDeviceModule();
+        }*/
+
+
     }
 
     @Override
