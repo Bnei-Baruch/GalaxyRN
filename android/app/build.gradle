@@ -94,8 +94,8 @@ android {
         applicationId "com.galaxyrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
-        versionName "1.11"
+        versionCode 13
+        versionName "1.13"
     }
     signingConfigs {
         debug {
@@ -114,6 +114,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            buildConfigField "boolean", "FLIPPER_ENABLED", "true"
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -121,14 +122,21 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            buildConfigField "boolean", "FLIPPER_ENABLED", "true"
         }
     }
 }
-
 dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
+
+    //implementation 'com.facebook.flipper:flipper:0.273.0'
+    //implementation 'com.facebook.soloader:soloader:0.10.5'
+
+    //debugImplementation 'com.facebook.flipper:flipper:0.273.0'
+    //debugImplementation 'com.facebook.soloader:soloader:0.10.5'
+    //releaseImplementation 'com.facebook.flipper:flipper-noop:0.273.0'
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

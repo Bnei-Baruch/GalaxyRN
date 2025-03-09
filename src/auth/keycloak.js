@@ -7,6 +7,8 @@ import api from '../shared/Api';
 import { getUserRole, userRolesEnum } from '../shared/enums';
 import { useUserStore } from '../zustand/user';
 import { getFromStorage, setToStorage } from '../shared/tools';
+import BackgroundTimer from 'react-native-background-timer';
+import * as Sentry from '@sentry/react-native';
 
 const authConfig = {
   issuer     : 'https://accounts.kab.info/auth/realms/main',
@@ -27,6 +29,7 @@ class Keycloak {
     this.session = null;
     this.token   = null;
     this.ival    = null;
+    this.timeout = 0;
   }
 
   login = () => {
@@ -71,23 +74,40 @@ class Keycloak {
     mqtt.setToken(session.accessToken);
     api.setAccessToken(session.accessToken);
     setToStorage('user_session', JSON.stringify(session));
+    this.saveUser(this.session.payload);
   };
 
-  refreshToken = session => {
-    refresh(authConfig, { refreshToken: session.refreshToken })
-      .then(data => {
-        log.debug('Refresh Token: ', data);
-        this.setSession(data);
-        this.saveUser(this.session.payload);
-      }).catch(err => {
+  refreshToken = async () => {
+    Sentry.captureMessage(`start refreshToken: ${this.session}`, { level: 'info' });
+    if (!this.session) return;
+
+    const timeToRefresh = (new Date(this.session.payload.exp * 1000) - new Date) / 2;
+    Sentry.captureMessage(`start refreshToken timeToRefresh: ${timeToRefresh}`, { level: 'info' });
+    this.clearTimout();
+    if (timeToRefresh + 1000 > 0) {
+      this.timeout = BackgroundTimer.setTimeout(() => {
+        Sentry.captureMessage('check keycloak: refresh token time', { level: 'info' });
+        this.refreshToken();
+      }, timeToRefresh);
+      return;
+    }
+
+    try {
+      const data = await refresh(authConfig, { refreshToken: this.session.refreshToken });
+      log.debug('Refresh Token: ', data);
+      this.setSession(data);
+      return this.refreshToken();
+    } catch (err) {
       log.error('Refresh Token: ', err);
       this.logout();
-    });
+    }
   };
 
   fetchUser = async () => {
     useUserStore.getState().setWIP(true);
     const data = await getFromStorage('user_session', null);
+    Sentry.captureMessage(`fetchUser getFromStorage data: ${data}`, { level: 'info' });
+    console.log('fetchUser getFromStorage: ', data);
     if (!data)
       return useUserStore.getState().setUser(null);
 
@@ -95,14 +115,12 @@ class Keycloak {
     const token_expired = new Date(this.session.payload.exp * 1000) - new Date < 0;
 
     if (token_expired) {
-      log.debug('GetUser: token expired: ', token_expired);
-      this.refreshToken(session);
+      Sentry.captureMessage(`fetchUser token_expired: ${token_expired}`, { level: 'info' });
+      await this.refreshToken();
       return;
     }
 
-    mqtt.setToken(this.session.accessToken);
-    api.setAccessToken(this.session.accessToken);
-    this.saveUser(this.session.payload);
+    this.setSession(this.session);
   };
 
   saveUser = async (token) => {
@@ -138,6 +156,8 @@ class Keycloak {
     useUserStore.getState().setVhinfo(vhinfo);
     return !!vhinfo.active && role === userRolesEnum.user;
   };
+
+  clearTimout = () => this.timeout && BackgroundTimer.clearTimeout(this.timeout);
 }
 
 const defaultKeycloak = new Keycloak();

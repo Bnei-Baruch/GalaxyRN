@@ -21,7 +21,6 @@ if (!Intl.PluralRules) register();
 log.setLevel('debug');
 
 const App = () => {
-  Sentry.captureException(new Error('Test error'));
   return (
     <View style={{ flex: 1 }}>
       <InitApp />

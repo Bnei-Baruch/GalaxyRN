@@ -15,6 +15,7 @@ const CheckAuthentication = () => {
 
   useEffect(() => {
     kc.fetchUser();
+    return () => kc.clearTimout();
   }, []);
 
   const handleLogin = () => kc.login();
