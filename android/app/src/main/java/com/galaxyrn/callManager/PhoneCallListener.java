@@ -32,6 +32,9 @@ public class PhoneCallListener extends PhoneStateListener {
     }
 
     public void cleanCallListener() {
+        if (telephonyManager == null) {
+            return;
+        }
         telephonyManager.listen(null, PhoneStateListener.LISTEN_CALL_STATE);
         telephonyManager = null;
     }

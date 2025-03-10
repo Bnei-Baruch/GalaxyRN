@@ -8,7 +8,7 @@ import { getUserRole, userRolesEnum } from '../shared/enums';
 import { useUserStore } from '../zustand/user';
 import { getFromStorage, setToStorage } from '../shared/tools';
 import BackgroundTimer from 'react-native-background-timer';
-import * as Sentry from '@sentry/react-native';
+import { sendSentry } from '../sentryHelper';
 
 const authConfig = {
   issuer     : 'https://accounts.kab.info/auth/realms/main',
@@ -78,15 +78,15 @@ class Keycloak {
   };
 
   refreshToken = async () => {
-    Sentry.captureMessage(`start refreshToken: ${this.session}`, { level: 'info' });
+    sendSentry(`start refreshToken is this.session: ${!!this.session}`);
     if (!this.session) return;
 
     const timeToRefresh = (new Date(this.session.payload.exp * 1000) - new Date) / 2;
-    Sentry.captureMessage(`start refreshToken timeToRefresh: ${timeToRefresh}`, { level: 'info' });
+    sendSentry(`start refreshToken timeToRefresh: ${timeToRefresh}`);
     this.clearTimout();
     if (timeToRefresh + 1000 > 0) {
       this.timeout = BackgroundTimer.setTimeout(() => {
-        Sentry.captureMessage('check keycloak: refresh token time', { level: 'info' });
+        sendSentry('check keycloak: refresh token time');
         this.refreshToken();
       }, timeToRefresh);
       return;
@@ -106,7 +106,7 @@ class Keycloak {
   fetchUser = async () => {
     useUserStore.getState().setWIP(true);
     const data = await getFromStorage('user_session', null);
-    Sentry.captureMessage(`fetchUser getFromStorage data: ${data}`, { level: 'info' });
+    sendSentry(`fetchUser getFromStorage is data: ${!!data}`);
     console.log('fetchUser getFromStorage: ', data);
     if (!data)
       return useUserStore.getState().setUser(null);
@@ -115,7 +115,7 @@ class Keycloak {
     const token_expired = new Date(this.session.payload.exp * 1000) - new Date < 0;
 
     if (token_expired) {
-      Sentry.captureMessage(`fetchUser token_expired: ${token_expired}`, { level: 'info' });
+      sendSentry(`fetchUser token_expired: ${token_expired}`);
       await this.refreshToken();
       return;
     }
