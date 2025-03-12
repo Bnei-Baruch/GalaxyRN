@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 
@@ -15,8 +15,9 @@ export const ChatBtn = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
+    <View></View>
+    /*<TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
       <Icon name="forum" size={30} color="white" />
-    </TouchableOpacity>
+    </TouchableOpacity>*/
   );
 };

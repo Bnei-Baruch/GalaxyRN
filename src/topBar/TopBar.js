@@ -25,7 +25,7 @@ export const TopBar = () => {
         <View>
           <Text style={baseStyles.text}>{room?.description}</Text>
         </View>
-        {/*<ChatBtn />*/}
+        <ChatBtn />
       </View>
     </TouchableWithoutFeedback>
   );
