@@ -19,6 +19,7 @@ const Shidur = () => {
   const { t } = useTranslation();
 
   const toggleBar = () => toggleShidurBar();
+
   return (
     <View style={styles.container}>
       {

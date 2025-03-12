@@ -17,15 +17,13 @@ import com.galaxyrn.callManager.CallStateType;
 import com.galaxyrn.callManager.PhoneCallListener;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
-public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListener {
+public class AudioFocusManager {
     private static final String TAG = "AudioFocusManager";
     private final AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
-    private ReactContext context;
 
 
     public AudioFocusManager(ReactContext context) {
-        this.context = context;
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
     }
 
@@ -35,7 +33,6 @@ public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListene
                 //.setAudioAttributes(audioAttributes)
                 .setAcceptsDelayedFocusGain(false)
                 .setWillPauseWhenDucked(false)
-                .setOnAudioFocusChangeListener(this)
                 .build();
 
         int requestAudioFocusRes = audioManager.requestAudioFocus(audioFocusRequest);
@@ -69,20 +66,6 @@ public class AudioFocusManager implements AudioManager.OnAudioFocusChangeListene
 
         audioManager.setMode(AudioManager.MODE_NORMAL);
         Log.d(TAG, "abandonAudioFocus(): res = " + abandonAudioFocusResStr);
-    }
-
-
-    @Override
-    public void onAudioFocusChange(int focusChange) {
-        Log.d(TAG, "onAudioFocusChange(): " + focusChange);
-        WritableMap data = Arguments.createMap();
-        data.putInt("eventCode", focusChange);
-        if ((focusChange == AudioManager.AUDIOFOCUS_LOSS)
-                || (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT)
-                || (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK)
-        ) {
-            PhoneCallListener.sendEvent(CallStateType.ON_END_CALL);
-        }
     }
 }
 

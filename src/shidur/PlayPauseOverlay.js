@@ -1,13 +1,22 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useShidurStore } from '../zustand/shidur';
 
 export const PlayPauseOverlay = () => {
-  const { toggleIsPlay } = useShidurStore();
+  const { toggleIsPlay, isAutoPlay, setAutoPlay } = useShidurStore();
+  const handleToggleIsPlay                        = () => toggleIsPlay();
+
+  useEffect(() => {
+    if (isAutoPlay) {
+      toggleIsPlay();
+      setAutoPlay(false);
+    }
+  }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={toggleIsPlay}>
+    <TouchableWithoutFeedback onPress={handleToggleIsPlay}>
       <View style={styles.container}>
         <Icon name="play-circle-outline" size={70} color="white" />
       </View>

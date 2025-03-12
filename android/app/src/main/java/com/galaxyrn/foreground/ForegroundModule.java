@@ -1,4 +1,4 @@
-package com.galaxyrn;
+package com.galaxyrn.foreground;
 
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
@@ -50,8 +50,11 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @Override
     public void invalidate() {
         super.invalidate();
-        keepScreenOff();
-        foregroundService.stop(getReactApplicationContext());
+
+        new Handler(Looper.getMainLooper()).post(() -> {
+            keepScreenOff();
+            foregroundService.stop(getReactApplicationContext());
+        });
     }
 
     private void keepScreenOn() {

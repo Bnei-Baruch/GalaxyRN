@@ -8,7 +8,6 @@ import RoomLayout from './Layout/RoomLayout';
 
 const Room = () => {
   const { joinRoom, exitRoom } = useInRoomStore();
-
   useEffect(() => {
     joinRoom();
     return () => {

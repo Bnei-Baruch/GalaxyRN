@@ -161,11 +161,15 @@ export const useInitsStore = create((set, get) => ({
   },
   initApp        : () => {
     BackgroundTimer.start();
+    let _isPlay  = false;
     subscription = eventEmitter.addListener('onCallStateChanged', async (data) => {
       const { exitRoom } = useInRoomStore.getState();
+
       if (data.state === 'ON_START_CALL') {
+        _isPlay = useShidurStore.getState().isPlay;
         await exitRoom();
       } else if (data.state === 'ON_END_CALL') {
+        _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
         useInitsStore.getState().setReadyForJoin(true);
       }
     });

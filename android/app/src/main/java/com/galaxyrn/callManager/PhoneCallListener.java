@@ -9,13 +9,17 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.galaxyrn.SendEventToClient;
+import com.galaxyrn.foreground.ForegroundService;
 
 public class PhoneCallListener extends PhoneStateListener {
     TelephonyManager telephonyManager;
+    ReactApplicationContext context;
 
     public PhoneCallListener(ReactApplicationContext context) {
         telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
+
+        this.context = context;
     }
 
     @Override
@@ -27,6 +31,7 @@ public class PhoneCallListener extends PhoneStateListener {
 
             case TelephonyManager.CALL_STATE_IDLE:
                 sendEvent(CallStateType.ON_END_CALL);
+                ForegroundService.moveAppToForeground(this.context);
                 break;
         }
     }

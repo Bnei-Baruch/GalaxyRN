@@ -5,12 +5,16 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.galaxyrn.permissions.PermissionHelper;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
 
 import org.webrtc.audio.JavaAudioDeviceModule;
@@ -25,6 +29,8 @@ public class MainActivity extends ReactActivity {
     protected String getMainComponentName() {
         return "GalaxyRN";
     }
+
+    private PermissionHelper permissionHelper;
 
     /**
      * Returns the instance of the ReactActivityDelegate.
@@ -45,6 +51,20 @@ public class MainActivity extends ReactActivity {
         ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
 
         Log.d("MainActivity", "onCreate" + reactContext);
+
+
+        permissionHelper = new PermissionHelper(this);
+        permissionHelper.checkPermissions(new PermissionHelper.PermissionCallback() {
+            @Override
+            public void onAllPermissionsGranted() {
+                Toast.makeText(MainActivity.this, "Разрешение на камеру предоставлено", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPermissionsDenied() {
+                Toast.makeText(MainActivity.this, "Разрешение на камеру отклонено", Toast.LENGTH_SHORT).show();
+            }
+        });
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             int legacyStreamType = AudioManager.STREAM_MUSIC;
@@ -76,5 +96,12 @@ public class MainActivity extends ReactActivity {
                 reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated", null);
             }
         }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        permissionHelper.handlePermissionsResult(requestCode, grantResults);
     }
 }

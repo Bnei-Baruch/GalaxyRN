@@ -51,7 +51,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".ForegroundService"
+            android:name=".foreground.ForegroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />

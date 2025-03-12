@@ -16,6 +16,7 @@ import java.util.List;
 
 import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
+import com.galaxyrn.foreground.ForegroundModule;
 
 public class GxyPackage implements ReactPackage {
 

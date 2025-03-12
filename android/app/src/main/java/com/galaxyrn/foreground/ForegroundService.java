@@ -1,8 +1,9 @@
-package com.galaxyrn;
+package com.galaxyrn.foreground;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -16,6 +17,8 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import com.galaxyrn.R;
+
 import java.util.Random;
 
 
@@ -24,6 +27,7 @@ public class ForegroundService extends Service {
     static final int NOTIFICATION_ID = new Random().nextInt(99999) + 10000;
     private final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
     private final String TAG = ForegroundService.class.getSimpleName();
+    public final static String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
 
 
     @Override
@@ -33,6 +37,7 @@ public class ForegroundService extends Service {
 
     public void start(Context context) {
         Intent intent = new Intent(context, ForegroundService.class);
+        intent.setAction(APP_TO_FOREGROUND_ACTION);
         ComponentName componentName;
         createChannel(context);
         Log.d(TAG, "startForegroundService context is null " + (context == null));
@@ -123,6 +128,10 @@ public class ForegroundService extends Service {
     private Notification buildNotification(Context context) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         //Bitmap largeIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.arvut);
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
         return builder
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setContentTitle("Arvut system")
@@ -131,8 +140,17 @@ public class ForegroundService extends Service {
                 .setSmallIcon(R.mipmap.arvut)
                 .setOngoing(true)
                 .setSilent(true)
+                .setContentIntent(pendingIntent)
                 //.setLargeIcon(largeIconBitmap)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build();
+    }
+
+    public static void moveAppToForeground(Context context) {
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            context.startActivity(launchIntent);
+        }
     }
 }

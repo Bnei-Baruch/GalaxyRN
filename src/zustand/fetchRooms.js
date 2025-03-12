@@ -1,9 +1,7 @@
 import { create } from 'zustand';
 import api from '../shared/Api';
 import log from 'loglevel';
-import { useSettingsStore } from './settings';
 import { getFromStorage, setToStorage } from '../shared/tools';
-import { useInitsStore } from './inits';
 
 const useRoomStore = create((set) => ({
   room      : null,
@@ -25,9 +23,9 @@ const useRoomStore = create((set) => ({
         console.log('room from RNSecureStorage', id, room);
 
         set({ room });
-        const { autoEnterRoom }   = useSettingsStore.getState();
-        const { setReadyForJoin } = useInitsStore.getState();
-        autoEnterRoom && setReadyForJoin(!!room);
+        //const { autoEnterRoom }   = useSettingsStore.getState();
+        //const { setReadyForJoin } = useInitsStore.getState();
+        //autoEnterRoom && setReadyForJoin(!!room);
       } catch (err) {
         log.error('saved room: ', err);
       }

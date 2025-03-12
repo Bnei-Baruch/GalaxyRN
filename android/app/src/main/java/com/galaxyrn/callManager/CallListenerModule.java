@@ -38,12 +38,12 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         super.initialize();
 
         Log.d(TAG, "initialize called" + context.getPackageName());
+        phoneCallListener = new PhoneCallListener(context);
     }
 
     @Override
     public void onHostResume() {
         Log.d(TAG, "onHostResume()");
-        phoneCallListener = new PhoneCallListener(context);
     }
 
     @Override
