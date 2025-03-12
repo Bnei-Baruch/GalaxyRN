@@ -107,9 +107,6 @@ public class AudioDeviceManager {
     }
 
 
-    /**
-     * Helper method for receiver registration.
-     */
     private void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         if (reactContext == null) {
             Log.d(TAG, "registerReceiver() reactContext is null");
@@ -123,9 +120,6 @@ public class AudioDeviceManager {
 
     }
 
-    /**
-     * Helper method for unregistration of an existing receiver.
-     */
     private void unregisterReceiver(final BroadcastReceiver receiver) {
         if (reactContext == null) {
             Log.d(TAG, "unregisterReceiver() reactContext is null");

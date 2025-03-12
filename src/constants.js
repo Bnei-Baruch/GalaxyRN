@@ -41,6 +41,7 @@ export const AUDIO_DEVICE_TYPES = {
 
 export const AUDIO_DEVICE_TYPES_BY_KEY = Object.keys(AUDIO_DEVICE_TYPES)
   .reduce((acc, name) => {
-    acc[name] = { name, id: AUDIO_DEVICE_TYPES[name] };
+    const id = AUDIO_DEVICE_TYPES[name];
+    acc[id]  = { name, id };
     return acc;
   }, {});

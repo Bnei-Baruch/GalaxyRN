@@ -133,10 +133,8 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     private WritableMap deviceInfoToResponse(AudioDeviceInfo deviceInfo) {
         WritableMap map = Arguments.createMap();
-        map.putString("name", (String) deviceInfo.getProductName());
         int type = deviceInfo.getType();
         map.putInt("type", type);
-        map.putString("typeStr", AudioHelper.getDeviceTypeName(type));
         map.putInt("id", deviceInfo.getId());
         return map;
     }

@@ -1,12 +1,4 @@
-/*
- *  Copyright 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- */
+
 package com.galaxyrn.audioManager;
 
 import android.media.AudioDeviceInfo;
@@ -16,48 +8,6 @@ import java.util.List;
 
 
 public class AudioHelper {
-    public static String getDeviceTypeName(int type) {
-
-        switch (type) {
-            case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
-                return "Встроенный динамик (ухо)";
-            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER:
-                return "Встроенный динамик";
-            case AudioDeviceInfo.TYPE_WIRED_HEADSET:
-                return "Проводная гарнитура";
-            case AudioDeviceInfo.TYPE_WIRED_HEADPHONES:
-                return "Проводные наушники";
-            case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
-                return "Bluetooth (SCO) – гарнитура";
-            case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
-                return "Bluetooth (A2DP) – стереонаушники";
-            case AudioDeviceInfo.TYPE_USB_DEVICE:
-                return "USB-аудио";
-            case AudioDeviceInfo.TYPE_USB_HEADSET:
-                return "USB-гарнитура";
-            case AudioDeviceInfo.TYPE_HDMI:
-                return "HDMI-аудио";
-            case AudioDeviceInfo.TYPE_HDMI_ARC:
-                return "HDMI ARC";
-            case AudioDeviceInfo.TYPE_USB_ACCESSORY:
-                return "USB-аксессуар";
-            case AudioDeviceInfo.TYPE_DOCK:
-                return "Док-станция";
-            case AudioDeviceInfo.TYPE_TELEPHONY:
-                return "Телефонная связь";
-            case AudioDeviceInfo.TYPE_LINE_ANALOG:
-                return "Аналоговый вход/выход";
-            case AudioDeviceInfo.TYPE_LINE_DIGITAL:
-                return "Цифровой вход/выход";
-            case AudioDeviceInfo.TYPE_FM:
-                return "FM-радио";
-            case AudioDeviceInfo.TYPE_HEARING_AID:
-                return "Слуховой аппарат";
-            default:
-                return "Неизвестное устройство";
-        }
-    }
-
     public static final List<Integer> devicePriorityOrder = Arrays.asList(
 // Wired headset, typically a 3.5mm headset with a microphone and/or speakers
             AudioDeviceInfo.TYPE_WIRED_HEADSET,

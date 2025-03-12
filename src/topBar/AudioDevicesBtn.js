@@ -37,7 +37,6 @@ export const AudioDevicesBtn = () => {
           color="white"
         />
         <Text style={baseStyles.text}>{t(`audioDeviceName.${item.name}`)}</Text>
-        <Text style={baseStyles.text}>{item.type}</Text>
       </TouchableOpacity>
     );
   };
