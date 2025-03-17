@@ -3,14 +3,17 @@ import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
 import { useUserStore } from './user';
-import { getFromStorage } from '../shared/tools';
+import { getFromStorage, setToStorage } from '../shared/tools';
 import { useUiActions } from './uiActions';
 import { useInitsStore } from './inits';
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang            : 'en',
+  uiLang            : getFromStorage('uiLang', 'en'),
   autoEnterRoom     : false,
-  changeUiLang      : (lang) => set({ uiLang: lang }),
+  changeUiLang      : (uiLang) => {
+    set({ uiLang });
+    setToStorage('uiLang', uiLang);
+  },
   question          : false,
   isFullscreen      : false,
   toggleIsFullscreen: () => {

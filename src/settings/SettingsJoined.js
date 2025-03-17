@@ -11,6 +11,7 @@ import LabeledSwitch from './LabeledSwitch';
 import * as React from 'react';
 import { baseStyles } from '../constants';
 import { useShidurStore } from '../zustand/shidur';
+import { useInitsStore } from '../zustand/inits';
 
 export const SettingsJoined = ({ toggleVisible }) => {
   const { t }                                    = useTranslation();
@@ -18,6 +19,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
   const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
   const { user }                                 = useUserStore();
   const { setIsMuted }                           = useShidurStore();
+  const { isPortrait }                           = useInitsStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleIsMuted         = () => setIsMuted();

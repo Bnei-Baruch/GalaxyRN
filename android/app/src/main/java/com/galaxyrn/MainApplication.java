@@ -14,6 +14,8 @@ import com.facebook.soloader.SoLoader;
 
 import java.util.List;
 
+import io.sentry.android.core.SentryAndroid;
+
 public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost reactNativeHost = new DefaultReactNativeHost(this) {
@@ -58,6 +60,12 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        SentryAndroid.init(this, sentryOpts -> {
+            sentryOpts.setDsn(BuildConfig.SENTRY_DSN);
+            sentryOpts.setDebug(true);
+            sentryOpts.setTracesSampleRate(1.0);
+        });
         SoLoader.init(this, false);
 
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

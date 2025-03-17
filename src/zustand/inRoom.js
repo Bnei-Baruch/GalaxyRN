@@ -211,7 +211,7 @@ export const useInRoomStore = create((set, get) => ({
           const { id, timestamp, role, username } = user;
           const d                                 = {
             id, timestamp, role,
-            display   : username,
+            display   : `${username} 📱`,
             is_group  : false,
             is_desktop: false,
           };
@@ -263,7 +263,7 @@ export const useInRoomStore = create((set, get) => ({
   exitRoom         : async () => {
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
-    useShidurStore.getState().cleanShidur();
+    await useShidurStore.getState().cleanJanus();
     await janus?.destroy();
     janus      = null;
     videoroom  = null;
@@ -272,7 +272,7 @@ export const useInRoomStore = create((set, get) => ({
 
     await mqtt.exit('galaxy/room/' + room.room);
     await mqtt.exit('galaxy/room/' + room.room + '/chat');
-    AudioDeviceModule.abandonAudioFocus()
+    AudioDeviceModule.abandonAudioFocus();
   },
   restartRoom      : async () => {
     await get().exitRoom();

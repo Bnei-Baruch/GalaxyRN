@@ -2763,8 +2763,8 @@ __metadata:
   linkType: hard
 
 "@sentry/react-native@npm:^6.9.0":
-  version: 6.9.0
-  resolution: "@sentry/react-native@npm:6.9.0"
+  version: 6.9.1
+  resolution: "@sentry/react-native@npm:6.9.1"
   dependencies:
     "@sentry/babel-plugin-component-annotate": "npm:3.2.0"
     "@sentry/browser": "npm:8.54.0"
@@ -2782,7 +2782,7 @@ __metadata:
       optional: true
   bin:
     sentry-expo-upload-sourcemaps: scripts/expo-upload-sourcemaps.js
-  checksum: 10c0/bf2819edc573caadae56ffb85bc42fc427841da9656d3cd6f8f157226a619a21f509c80fb968712193869e06c6a97afc44a85611ddc335871ea72ac3600583ad
+  checksum: 10c0/ae1f678e9838a4ccc4344e2b7d3c1f3e10111430dddb7e73592a5e4dc2f9e994a3962a5615cc11217769219a5ed16207f9ba9d3aaa53b61d03a7e837ad0480c8
   languageName: node
   linkType: hard
 

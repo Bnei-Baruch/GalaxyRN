@@ -63,7 +63,7 @@ export const useShidurStore = create((set, get) => ({
   isMuted        : false,
   isAutoPlay     : false,
   setIsMuted     : (isMuted = !get().isMuted) => {
-    [...audioStream?.getAudioTracks(), ...trlAudioStream.getAudioTracks()]
+    [...audioStream?.getAudioTracks() || [], ...trlAudioStream?.getAudioTracks() || []]
       .forEach(t => {
         t.enabled = !isMuted;
         (!isMuted) && t._setVolume(0.8);
@@ -145,6 +145,7 @@ export const useShidurStore = create((set, get) => ({
 
     get().cleanShidur();
     get().cleanQuads();
+    set({ janusReady: false });
     await janus?.destroy();
     janus = null;
   },
@@ -216,7 +217,7 @@ export const useShidurStore = create((set, get) => ({
     trlAudioJanus?.detach();
     trlAudioJanus = null;
 
-    set({ readyShidur: false, janusReady: false, isPlay: false, videoStream: null, isOnAir: null });
+    set({ readyShidur: false, isPlay: false, videoStream: null, isOnAir: null });
   },
   streamGalaxy   : async (isOnAir) => {
     log.debug('[shidur] got talk event: ', isOnAir);
