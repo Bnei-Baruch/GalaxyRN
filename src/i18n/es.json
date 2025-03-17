@@ -1,4 +1,5 @@
 {
+  "pageTitle": "Arvut-virtual ten",
   "login": "INGRESAR",
   "settings": {
     "page": "Configuración",
@@ -7,7 +8,9 @@
     "audioMode": "Modo de audio",
     "isMuted": "Silenciar el audio de la transmisión",
     "search": "Search...",
-    "join": "Unirse a la sala"
+    "join": "Unirse a la sala",
+    "selectRoom": "Seleccionar Ten",
+    "backToTen": "Volver a Ten"
   },
   "user": {
     "title": "Material de estudio",
@@ -39,10 +42,39 @@
     "lowQuality": "Baja calidad",
     "mediumQuality": "Calidad media",
     "highQuality": "Alta calidad",
+    "HDQuality": "Calidad HD",
     "low": "Baja",
     "medium": "Media",
     "high": "Alta",
     "noVideo": "Sin vídeo",
     "audioOnly": "Solo audio"
+  },
+  "chat": {
+    "send": "Enviar",
+    "newMsg": "Escribe un nuevo mensaje...",
+    "tab": {
+      "chat": "Chat",
+      "support": "Soporte",
+      "question": "Pregunta"
+    }
+  },
+  "audioDeviceName": {
+    "TYPE_BUILTIN_EARPIECE": "Altavoz incorporado (oído)",
+    "TYPE_BUILTIN_SPEAKER": "Altavoz incorporado",
+    "TYPE_WIRED_HEADSET": "Auriculares con cable",
+    "TYPE_WIRED_HEADPHONES": "Auriculares con cable",
+    "TYPE_BLUETOOTH_SCO": "Bluetooth (SCO) – auricular",
+    "TYPE_BLUETOOTH_A2DP": "Bluetooth (A2DP) – auriculares estéreo",
+    "TYPE_USB_DEVICE": "Audio USB",
+    "TYPE_USB_HEADSET": "Auriculares USB",
+    "TYPE_HDMI": "Audio HDMI",
+    "TYPE_HDMI_ARC": "HDMI ARC",
+    "TYPE_USB_ACCESSORY": "Accesorio USB",
+    "TYPE_DOCK": "Base de acoplamiento",
+    "TYPE_TELEPHONY": "Telefonía",
+    "TYPE_LINE_ANALOG": "Entrada/salida analógica",
+    "TYPE_LINE_DIGITAL": "Entrada/salida digital",
+    "TYPE_FM": "Radio FM",
+    "TYPE_HEARING_AID": "Audífono"
   }
 }

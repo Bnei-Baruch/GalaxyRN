@@ -1,4 +1,5 @@
 {
+  "pageTitle": "Arvut-virtual ten",
   "login": "כניסה",
   "settings": {
     "page": "הגדרות",
@@ -7,7 +8,9 @@
     "audioMode": "מצב שמע",
     "isMuted": "השתק שידור",
     "search": "Search...",
-    "join": "כנס לחדר"
+    "join": "כנס לחדר",
+    "selectRoom": "בחר Ten",
+    "backToTen": "חזור ל-Ten"
   },
   "user": {
     "title": "הגדרות משתמש",
@@ -19,15 +22,15 @@
     "support": "תמיכה",
     "settings": "הגדרות",
     "logout": "יציאה",
-    "communicationTitle": "Communication",
+    "communicationTitle": "תקשורת",
     "materialsTitle": "חומר לימוד"
   },
   "bottomBar": {
-    "vote": "Vote",
-    "shidur": "Translation",
-    "self": "Display my video",
+    "vote": "הצב",
+    "shidur": "שידור",
+    "self": "הצג את הווידאו שלי",
     "quads": "Kli Olamy tens",
-    "leave": "Leave room"
+    "leave": "עזוב את החדר"
   },
   "shidur": {
     "streamForWorkshop": "ערוץ לסדנה",
@@ -39,10 +42,39 @@
     "lowQuality": "איכות נמוכה",
     "mediumQuality": "איכות בינונית",
     "highQuality": "איכות גבוה",
+    "HDQuality": "איכות HD",
     "low": "נמוכה",
     "medium": "בינונית",
     "high": "גבוה",
     "noVideo": "ללא וידיאו",
     "audioOnly": "שמע בלבד"
+  },
+  "chat": {
+    "send": "שלח",
+    "newMsg": "הכנס הודעה חדשה...",
+    "tab": {
+      "chat": "צ'אט",
+      "support": "תמיכה",
+      "question": "שאלה"
+    }
+  },
+  "audioDeviceName": {
+    "TYPE_BUILTIN_EARPIECE": "רמקול מובנה (אוזן)",
+    "TYPE_BUILTIN_SPEAKER": "רמקול מובנה",
+    "TYPE_WIRED_HEADSET": "אוזניות חוטיות",
+    "TYPE_WIRED_HEADPHONES": "אוזניות חוטיות",
+    "TYPE_BLUETOOTH_SCO": "Bluetooth (SCO) – אוזניות",
+    "TYPE_BLUETOOTH_A2DP": "Bluetooth (A2DP) – אוזניות סטריאו",
+    "TYPE_USB_DEVICE": "שמע USB",
+    "TYPE_USB_HEADSET": "אוזניות USB",
+    "TYPE_HDMI": "שמע HDMI",
+    "TYPE_HDMI_ARC": "HDMI ARC",
+    "TYPE_USB_ACCESSORY": "אביזר USB",
+    "TYPE_DOCK": "תחנת עגינה",
+    "TYPE_TELEPHONY": "טלפוניה",
+    "TYPE_LINE_ANALOG": "כניסת/יציאת אנלוגי",
+    "TYPE_LINE_DIGITAL": "כניסת/יציאת דיגיטלי",
+    "TYPE_FM": "רדיו FM",
+    "TYPE_HEARING_AID": "מכשיר שמיעה"
   }
 }

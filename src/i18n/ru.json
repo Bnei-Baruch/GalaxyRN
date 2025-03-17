@@ -1,4 +1,5 @@
 {
+  "pageTitle": "Arvut-virtual ten",
   "login": "ВОЙТИ",
   "settings": {
     "page": "Настройки",
@@ -7,7 +8,9 @@
     "audioMode": "Аудио режим",
     "isMuted": "Отключить звук трансляции",
     "search": "Search...",
-    "join": "Войти в комнату"
+    "join": "Войти в комнату",
+    "selectRoom": "Выбрать Ten",
+    "backToTen": "Назад к Ten"
   },
   "user": {
     "title": "Пользовательские настройки",
@@ -23,11 +26,11 @@
     "materialsTitle": "Учебный материал"
   },
   "bottomBar": {
-    "vote": "Vote",
-    "shidur": "Translation",
-    "self": "Display my video",
+    "vote": "Голосовать",
+    "shidur": "Трансляция",
+    "self": "Показать мое видео",
     "quads": "Kli Olamy tens",
-    "leave": "Leave room"
+    "leave": "Покинуть комнату"
   },
   "shidur": {
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",
@@ -39,10 +42,39 @@
     "lowQuality": "Низкое качество",
     "mediumQuality": "Среднее качество",
     "highQuality": "Высокое качество",
+    "HDQuality": "HD качество",
     "low": "Низкое",
     "medium": "Среднее",
     "high": "Высокое",
     "noVideo": "Без видео",
     "audioOnly": "Только аудио"
+  },
+  "chat": {
+    "send": "Отправить",
+    "newMsg": "Введите новое сообщение...",
+    "tab": {
+      "chat": "Чат",
+      "support": "Поддержка",
+      "question": "Вопрос"
+    }
+  },
+  "audioDeviceName": {
+    "TYPE_BUILTIN_EARPIECE": "Встроенный динамик (ухо)",
+    "TYPE_BUILTIN_SPEAKER": "Встроенный динамик",
+    "TYPE_WIRED_HEADSET": "Проводная гарнитура",
+    "TYPE_WIRED_HEADPHONES": "Проводные наушники",
+    "TYPE_BLUETOOTH_SCO": "Bluetooth (SCO) – гарнитура",
+    "TYPE_BLUETOOTH_A2DP": "Bluetooth (A2DP) – стереонаушники",
+    "TYPE_USB_DEVICE": "USB-аудио",
+    "TYPE_USB_HEADSET": "USB-гарнитура",
+    "TYPE_HDMI": "HDMI-аудио",
+    "TYPE_HDMI_ARC": "HDMI ARC",
+    "TYPE_USB_ACCESSORY": "USB-аксессуар",
+    "TYPE_DOCK": "Док-станция",
+    "TYPE_TELEPHONY": "Телефонная связь",
+    "TYPE_LINE_ANALOG": "Аналоговый вход/выход",
+    "TYPE_LINE_DIGITAL": "Цифровой вход/выход",
+    "TYPE_FM": "FM-радио",
+    "TYPE_HEARING_AID": "Слуховой аппарат"
   }
 }

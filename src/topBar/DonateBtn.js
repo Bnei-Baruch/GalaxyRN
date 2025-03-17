@@ -20,8 +20,8 @@ export const DonateBtn = () => {
 
   const isHe        = uiLang === 'he';
   const handlePress = () => {
-    params.set('utm_term', iso2ByIso1[uiLang]);
-    Linking.openURL(`https://www.kab1.com${isHe ? '' : '/' + uiLang}?${PARAMS}`);
+    const url = `https://www.kab1.com${isHe ? '' : '/' + uiLang}?${PARAMS}&"utm_term"=${iso2ByIso1[uiLang]}`;
+    Linking.openURL(url);
   };
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
