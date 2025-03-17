@@ -18,7 +18,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
   const { cammute, toggleCammute }               = useMyStreamStore();
   const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
   const { user }                                 = useUserStore();
-  const { setIsMuted }                           = useShidurStore();
+  const { setIsMuted, isMuted }                  = useShidurStore();
   const { isPortrait }                           = useInitsStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
@@ -48,7 +48,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
           />
           <LabeledSwitch
             label={'Mute Broadcast'}
-            value={isShidur}
+            value={isMuted}
             onValueChange={handleIsMuted}
           />
           <View style={baseStyles.full} />

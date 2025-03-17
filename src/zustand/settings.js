@@ -6,13 +6,16 @@ import { useUserStore } from './user';
 import { getFromStorage, setToStorage } from '../shared/tools';
 import { useUiActions } from './uiActions';
 import { useInitsStore } from './inits';
+import { setLanguage } from '../i18n/i18n';
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang            : getFromStorage('uiLang', 'en'),
+  uiLang            : 'en',
   autoEnterRoom     : false,
-  changeUiLang      : (uiLang) => {
+  setUiLang         : (uiLang) => {
     set({ uiLang });
-    setToStorage('uiLang', uiLang);
+    setLanguage(uiLang);
+    console.log('bug fixes: useSettingsStore setUiLang', uiLang);
+    setToStorage('ui_lang', uiLang);
   },
   question          : false,
   isFullscreen      : false,

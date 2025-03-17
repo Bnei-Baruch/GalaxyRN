@@ -3,7 +3,7 @@ import { PermissionsAndroid, Platform, NativeEventEmitter, NativeModules } from 
 import mqtt from '../shared/mqtt';
 import log from 'loglevel';
 import { useUserStore } from './user';
-import { geoInfo } from '../shared/tools';
+import { geoInfo, getFromStorage } from '../shared/tools';
 import { GEO_IP_INFO } from '@env';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
@@ -159,9 +159,12 @@ export const useInitsStore = create((set, get) => ({
       });
     });
   },
-  initApp        : () => {
+  initApp        : async () => {
     BackgroundTimer.start();
     let _isPlay  = false;
+    const uiLang = await getFromStorage('ui_lang', 'en');
+    console.log('bug fixes: initApp uiLang', uiLang);
+    useSettingsStore.getState().setUiLang(uiLang);
     subscription = eventEmitter.addListener('onCallStateChanged', async (data) => {
       const { exitRoom } = useInRoomStore.getState();
 

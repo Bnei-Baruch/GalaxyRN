@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { baseStyles } from '../constants';
 import ListInModal from '../components/ListInModal';
-import { setLanguage } from '../i18n/i18n';
 import { useTranslation } from 'react-i18next';
+import { useSettingsStore } from '../zustand/settings';
 
 const languagesOptions = [
   { key: 'en', value: 'en', text: 'English' },
@@ -12,14 +12,12 @@ const languagesOptions = [
   { key: 'ru', value: 'ru', text: 'Русский' },
 ];
 const SelectUiLanguage = () => {
-  const [lang, setLang] = useState(languagesOptions[0].value);
-  const { t }           = useTranslation();
+  const { t }                 = useTranslation();
+  const { setUiLang, uiLang } = useSettingsStore();
 
-  const handleLangChange = lang => {
-    setLanguage(lang.value);
-    setLang(lang.value);
-  };
-  const selected         = languagesOptions.find(option => option.value === lang);
+  const selected = languagesOptions.find(option => option.value === uiLang);
+
+  const handleLangChange = lang => setUiLang(lang.value);
   const renderItem       = (item) => <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>;
 
   return (

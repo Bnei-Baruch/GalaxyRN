@@ -20,7 +20,7 @@ const InitApp = () => {
       if (!await initPermissions())
         return;
       await myInit();
-      initApp();
+      await initApp();
       initAudioDevices();
     };
     init();

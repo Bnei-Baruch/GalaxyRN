@@ -5,14 +5,7 @@ import { topMenuBtns } from './helper';
 import { useSettingsStore } from '../zustand/settings';
 import { useTranslation } from 'react-i18next';
 
-const params = new URLSearchParams({
-  utm_source  : 'arvut_system',
-  utm_medium  : 'button',
-  utm_campaign: 'donations',
-  utm_id      : 'donations',
-  utm_content : 'header_button_donate',
-  utm_term    : 'heb',
-});
+const PARAMS = '"utm_source"=arvut_system&"&"utm_medium"="button"&"utm_campaign"="donations"&"utm_id"="donations"&"utm_content"="header_button_donate"&"utm_term"="heb"';
 
 const iso2ByIso1 = {
   he: 'heb',
@@ -28,7 +21,7 @@ export const DonateBtn = () => {
   const isHe        = uiLang === 'he';
   const handlePress = () => {
     params.set('utm_term', iso2ByIso1[uiLang]);
-    Linking.openURL(`https://www.kab1.com${isHe ? '' : '/' + uiLang}?${params.toString()}`);
+    Linking.openURL(`https://www.kab1.com${isHe ? '' : '/' + uiLang}?${PARAMS}`);
   };
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
