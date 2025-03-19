@@ -47,7 +47,7 @@ public class MainActivity extends ReactActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
         ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
 
         Log.d("MainActivity", "onCreate" + reactContext);

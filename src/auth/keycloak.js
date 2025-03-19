@@ -81,12 +81,12 @@ class Keycloak {
     sendSentry(`start refreshToken is this.session: ${!!this.session}`);
     if (!this.session) return;
 
-    const timeToRefresh = (new Date(this.session.payload.exp * 1000) - new Date) / 2;
+    const timeToRefresh = Math.max((new Date(this.session.payload.exp * 1000) - new Date) / 2, 1000);
     sendSentry(`start refreshToken timeToRefresh: ${timeToRefresh}`);
     this.clearTimout();
-    if (timeToRefresh + 1000 > 0) {
+    if (timeToRefresh > 0) {
       this.timeout = BackgroundTimer.setTimeout(() => {
-        sendSentry('check keycloak: refresh token time');
+        sendSentry('check keycloak: refresh token');
         this.refreshToken();
       }, timeToRefresh);
       return;
@@ -106,8 +106,6 @@ class Keycloak {
   fetchUser = async () => {
     useUserStore.getState().setWIP(true);
     const data = await getFromStorage('user_session', null);
-    sendSentry(`fetchUser getFromStorage is data: ${!!data}`);
-    console.log('fetchUser getFromStorage: ', data);
     if (!data)
       return useUserStore.getState().setUser(null);
 

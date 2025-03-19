@@ -243,30 +243,26 @@ export class PublisherPlugin extends EventEmitter {
     });
   }
 
-  iceRestart() {
+  async iceRestart(attempt = 0) {
     try {
       BackgroundTimer.setTimeout(() => {
-        let count = 0;
-        let chk   = BackgroundTimer.setInterval(() => {
-          count++;
-          if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
-            BackgroundTimer.clearInterval(chk);
-          } else if (mqtt.mq.connected) {
-            log.debug('[publisher] - Trigger ICE Restart - ');
+        if (attempt < 10 && this.iceState !== 'disconnected' ||
+          !this.janus?.isConnected) {
+          return;
+        } else if (mqtt.mq.connected) {
+          log.debug('[publisher] - Trigger ICE Restart - ');
             this.pc.restartIce();
             this.configure(true);
-            BackgroundTimer.clearInterval(chk);
-          } else if (count >= 10) {
-            BackgroundTimer.clearInterval(chk);
-            log.error('[publisher] - ICE Restart failed - ');
-            this.iceFailed('publisher');
-          } else {
-            log.debug('[publisher] ICE Restart try: ' + count);
-          }
-        }, 1000);
-      }, 3000);
+        } else if (attempt >= 10) {
+          this.iceFailed('publisher');
+          log.error('[streaming] - ICE Restart failed - ');
+          return;
+        }
+        log.debug('[streaming] ICE Restart try: ' + attempt);
+        return this.iceRestart(attempt + 1);
+      }, 1000);
     } catch (e) {
-      console.error('Ice restart bug: Publisher plugin iceRestart', e);
+      console.error('Streaming plugin iceRestart', e);
     }
   }
 

@@ -15,6 +15,8 @@ import log from 'loglevel';
 import { StreamingPlugin } from '../libs/streaming-plugin';
 import { getFromStorage, setToStorage } from '../shared/tools';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
+import { useInitsStore } from './inits';
+import { useInRoomStore } from './inRoom';
 
 let janus = null;
 
@@ -38,9 +40,17 @@ let config = null;
 let shidurBarTimeout;
 const initStream = async (_janus, media) => {
   const janusStream    = new StreamingPlugin(config?.iceServers);
-  janusStream.onStatus = () => {
-    if (_janus) initStream(_janus, media);
-  };
+  janusStream.onStatus = async (srv, status) => {
+    if (status !== 'online') {
+      log.warn('[shidur] janus status: ', status);
+      if (janus)
+        await useInRoomStore.getState().exitRoom();
+      janus = null;
+      BackgroundTimer.setTimeout(() => {
+        useInRoomStore.getState().joinRoom()
+      }, 7000);
+    }
+  }
   const _data          = await _janus.attach(janusStream);
   log.debug('[shidur] attach media', _data);
   const stream = await janusStream.watch(media);
@@ -124,7 +134,7 @@ export const useShidurStore = create((set, get) => ({
     }
     janus = new JanusMqtt(user, str);
 
-    janus.onStatus = async (srv, status) => {
+    /* janus.onStatus = async (srv, status) => {
       if (status !== 'online') {
         log.warn('[shidur] janus status: ', status);
         if (janus)
@@ -134,7 +144,7 @@ export const useShidurStore = create((set, get) => ({
           get().initJanus(srv);
         }, 7000);
       }
-    };
+    }; */
     await janus.init(config.token);
     log.debug('[shidur] init janus ready');
     set({ janusReady: true });

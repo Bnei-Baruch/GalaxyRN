@@ -129,6 +129,7 @@ export class StreamingPlugin extends EventEmitter {
 
   initPcEvents(resolve) {
     this.pc.addEventListener('connectionstatechange', (e) => {
+      
       log.info('[streaming] ICE State: ', e.target.connectionState);
       this.iceState = e.target.connectionState;
       if (this.iceState === 'disconnected') {
@@ -150,35 +151,30 @@ export class StreamingPlugin extends EventEmitter {
     });
   }
 
-  iceRestart() {
+  async iceRestart(attempt = 0) {
     try {
-
       BackgroundTimer.setTimeout(() => {
-        let count = 0;
-        let chk   = BackgroundTimer.setInterval(() => {
-          count++;
-          if (count < 10 && this.iceState !== 'disconnected' ||
-            !this.janus?.isConnected) {
-            BackgroundTimer.clearInterval(chk);
-          } else if (mqtt.mq.connected) {
-            log.debug('[streaming] - Trigger ICE Restart - ');
-            this.watch(this.streamId, true);
-            BackgroundTimer.clearInterval(chk);
-          } else if (count >= 10) {
-            BackgroundTimer.clearInterval(chk);
-            log.error('[streaming] - ICE Restart failed - ');
-          } else {
-            log.debug('[streaming] ICE Restart try: ' + count);
-          }
-        }, 1000);
+        if (attempt < 10 && this.iceState !== 'disconnected' ||
+          !this.janus?.isConnected) {
+          log.debug('this.iceState',  this.iceState );
+          return;
+        } else if (mqtt.mq.connected) {
+          log.debug('[streaming] - Trigger ICE Restart - ');
+          this.watch(this.streamId, true);
+        } else if (attempt >= 10) {
+          log.error('[streaming] - ICE Restart failed - ');
+          return;
+        }
+        log.debug('[streaming] ICE Restart try: ' + attempt);
+        return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error('Ice restart bug: Streaming plugin iceRestart', e);
+      console.error('Streaming plugin iceRestart', e);
     }
   }
 
   success(janus, janusHandleId) {
-    this.janus         = janus;
+    this.janus = janus;
     this.janusHandleId = janusHandleId;
 
     return this;

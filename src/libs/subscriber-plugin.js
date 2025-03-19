@@ -118,17 +118,17 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   configure() {
-    console.log('Ice restart bug: Subscriber plugin configure');
+    console.log('Subscriber plugin configure');
     const body = { request: 'configure', restart: true };
     return this.transaction('message', { body }, 'event').then((param) => {
-      log.info('Ice restart bug: [subscriber] iceRestart: ', param);
+      log.info('[subscriber] iceRestart: ', param);
       const { json } = param || {};
       if (json?.jsep) {
         log.debug('[subscriber] Got jsep: ', json.jsep);
         this.handleJsep(json.jsep);
       }
     }).catch((err) => {
-      console.error('Ice restart bug: Subscriber plugin configure', err);
+      console.error('Subscriber plugin configure', err);
     });
   }
 
@@ -163,7 +163,7 @@ export class SubscriberPlugin extends EventEmitter {
   initPcEvents() {
     if (this.pc) {
       this.pc.addEventListener('connectionstatechange', (e) => {
-        log.debug('Ice restart bug: [subscriber] ICE State: ', e.target.connectionState);
+        log.debug('[subscriber] ICE State: ', e.target.connectionState);
         this.iceState = e.target.connectionState;
         if (this.iceState === 'disconnected') {
           this.iceRestart();
@@ -210,34 +210,26 @@ export class SubscriberPlugin extends EventEmitter {
     }
   }
 
-  iceRestart() {
-    console.log('Ice restart bug: Subscriber plugin iceRestart start');
+  async iceRestart(attempt = 0) {
     try {
       BackgroundTimer.setTimeout(() => {
-        console.log('Ice restart bug: Subscriber plugin iceRestart in timeout');
-        let count = 0;
-        let chk   = BackgroundTimer.setInterval(() => {
-          console.log('Ice restart bug: Subscriber plugin iceRestart in interval', this.janus?.isConnected, mqtt.mq.connected);
-          count++;
-          if (count < 10 && this.iceState !== 'disconnected' || !this.janus?.isConnected) {
-            BackgroundTimer.clearInterval(chk);
-          } else if (mqtt.mq.connected) {
-            log.debug('Ice restart bug: [subscriber] - Trigger ICE Restart - ');
-            this.configure();
-            BackgroundTimer.clearInterval(chk);
-          } else if (count >= 10) {
-            BackgroundTimer.clearInterval(chk);
-            log.error('Ice restart bug: [subscriber] - ICE Restart failed - ');
-            this.iceFailed && this.iceFailed('subscriber');
-          } else {
-            log.debug('Ice restart bug: [subscriber] ICE Restart try: ' + count);
-          }
-        }, 1000);
+        if (attempt < 10 && this.iceState !== 'disconnected' ||
+          !this.janus?.isConnected) {
+          return;
+        } else if (mqtt.mq.connected) {
+          log.debug('[streaming] - Trigger ICE Restart - ');
+          this.watch(this.streamId, true);
+        } else if (attempt >= 10) {
+          log.error('Ice restart bug: [subscriber] - ICE Restart failed - ');
+          this.iceFailed && this.iceFailed('subscriber');
+          return;
+        }
+        log.debug('[streaming] ICE Restart try: ' + attempt);
+        return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error('Ice restart bug: Subscriber plugin iceRestart', e);
+      console.error('Subscriber plugin iceRestart', e);
     }
-    console.log('Ice restart bug: Subscriber plugin iceRestart end');
   }
 
   success(janus, janusHandleId) {
