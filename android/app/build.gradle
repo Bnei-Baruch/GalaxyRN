@@ -129,14 +129,8 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-
-    //implementation 'com.facebook.flipper:flipper:0.273.0'
-    //implementation 'com.facebook.soloader:soloader:0.10.5'
-
-    //debugImplementation 'com.facebook.flipper:flipper:0.273.0'
-    //debugImplementation 'com.facebook.soloader:soloader:0.10.5'
-    //releaseImplementation 'com.facebook.flipper:flipper-noop:0.273.0'
-
+    implementation 'io.sentry:sentry-android:6.9.0'   
+    implementation 'com.facebook.soloader:soloader:0.10.5'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

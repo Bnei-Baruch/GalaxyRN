@@ -34,11 +34,6 @@ public class MainActivity extends ReactActivity {
 
     private PermissionHelper permissionHelper;
 
-    /**
-     * Returns the instance of the ReactActivityDelegate.
-     * We use DefaultReactActivityDelegate which allows enabling the New Architecture
-     * with a single boolean flag fabricEnabled.
-     */
     @Override
     protected ReactActivityDelegate createReactActivityDelegate() {
         return new DefaultReactActivityDelegate(this, getMainComponentName(), false);
@@ -51,7 +46,6 @@ public class MainActivity extends ReactActivity {
         ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
 
         Log.d("MainActivity", "onCreate" + reactContext);
-
 
         permissionHelper = new PermissionHelper(this);
         permissionHelper.checkPermissions(new PermissionHelper.PermissionCallback() {
@@ -75,14 +69,15 @@ public class MainActivity extends ReactActivity {
         if (getReactInstanceManager() != null) {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
             if (reactContext != null) {
-                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated", null);
+                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated",
+                        null);
             }
         }
     }
 
-
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionHelper.handlePermissionsResult(requestCode, grantResults);
     }

@@ -1,5 +1,4 @@
 
-
 package com.galaxyrn.audioManager;
 
 import android.content.Context;
@@ -35,7 +34,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         this.context = reactContext;
     }
 
-
     private AudioDeviceManager audioDeviceManager = null;
     AudioFocusManager audioFocusManager = null;
 
@@ -45,7 +43,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         return REACT_NATIVE_MODULE_NAME;
     }
 
-
     @Override
     public void initialize() {
         super.initialize();
@@ -54,12 +51,18 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         UpdateAudioDeviceCallback callback = () -> updateAudioDevices(null);
         UiThreadUtil.runOnUiThread(() -> {
             audioDeviceManager = new AudioDeviceManager(this.context, callback);
+            // getCurrentActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
         });
         audioFocusManager = new AudioFocusManager(this.context);
     }
 
     @Override
     public void onHostResume() {
+        /*
+         * UiThreadUtil.runOnUiThread(() -> {
+         * getCurrentActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
+         * });
+         */
     }
 
     @Override
@@ -74,7 +77,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             audioDeviceManager.stop();
         });
     }
-
 
     @ReactMethod
     public void requestAudioFocus() {
@@ -92,7 +94,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void initAudioDevices() {
         updateAudioDevices(null);
     }
-
 
     @ReactMethod
     public void updateAudioDevices(Integer deviceId) {
@@ -139,17 +140,16 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         return map;
     }
 
-
     public AudioDeviceInfo selectDefaultDevice(AudioDeviceInfo[] devices) {
         Arrays.sort(devices, new Comparator<AudioDeviceInfo>() {
             @Override
             public int compare(AudioDeviceInfo d1, AudioDeviceInfo d2) {
-                return Integer.compare(AudioHelper.devicePriorityOrder.indexOf(d1.getType()), AudioHelper.devicePriorityOrder.indexOf(d2.getType()));
+                return Integer.compare(AudioHelper.devicePriorityOrder.indexOf(d1.getType()),
+                        AudioHelper.devicePriorityOrder.indexOf(d2.getType()));
             }
         });
         return devices[0];
     }
-
 
     private void setAudioDevice(AudioDeviceInfo device) {
         AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
@@ -161,10 +161,8 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         }
     }
 
-
     private void setAudioDeviceOld() {
         AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
-
 
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
@@ -174,4 +172,3 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     }
 
 }
-

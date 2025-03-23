@@ -1,6 +1,8 @@
 package com.galaxyrn;
 
 import android.app.Application;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
@@ -11,6 +13,9 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
+import com.facebook.react.bridge.ReactContext;
+import com.oney.WebRTCModule.WebRTCModuleOptions;
+import org.webrtc.audio.JavaAudioDeviceModule;
 
 import java.util.List;
 
@@ -61,6 +66,20 @@ public class MainApplication extends Application implements ReactApplication {
     public void onCreate() {
         super.onCreate();
 
+        ReactContext reactContext = new ReactContext(this);
+        /*
+         * WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
+         * AudioAttributes audioAttributes = new AudioAttributes.Builder()
+         * .setUsage(AudioAttributes.USAGE_MEDIA)
+         * .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+         * .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+         * .build();
+         * 
+         * options.audioDeviceModule = JavaAudioDeviceModule.builder(reactContext)
+         * .setEnableVolumeLogger(false)
+         * .setAudioAttributes(audioAttributes)
+         * .createAudioDeviceModule();
+         */
         SentryAndroid.init(this, sentryOpts -> {
             sentryOpts.setDsn(BuildConfig.SENTRY_DSN);
             sentryOpts.setDebug(true);
@@ -69,7 +88,6 @@ public class MainApplication extends Application implements ReactApplication {
         SoLoader.init(this, false);
 
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-            // If you opted-in for the New Architecture, we load the native entry point for this app.
             DefaultNewArchitectureEntryPoint.load();
         }
     }

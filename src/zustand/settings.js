@@ -1,50 +1,52 @@
-import { create } from 'zustand';
-import { useMyStreamStore } from './myStream';
-import { useShidurStore } from './shidur';
-import { deactivateFeedsVideos, useInRoomStore, activateFeedsVideos } from './inRoom';
-import { useUserStore } from './user';
-import { getFromStorage, setToStorage } from '../shared/tools';
-import { useUiActions } from './uiActions';
-import { useInitsStore } from './inits';
-import { setLanguage } from '../i18n/i18n';
+import { create } from "zustand";
+import { useMyStreamStore } from "./myStream";
+import { useShidurStore } from "./shidur";
+import {
+  deactivateFeedsVideos,
+  useInRoomStore,
+  activateFeedsVideos,
+} from "./inRoom";
+import { useUserStore } from "./user";
+import { getFromStorage, setToStorage } from "../shared/tools";
+import { useUiActions } from "./uiActions";
+import { useInitsStore } from "./inits";
+import { setLanguage } from "../i18n/i18n";
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang            : 'en',
-  autoEnterRoom     : false,
-  setUiLang         : (uiLang) => {
+  uiLang: "en",
+  autoEnterRoom: false,
+  setUiLang: (uiLang) => {
     set({ uiLang });
     setLanguage(uiLang);
-    console.log('bug fixes: useSettingsStore setUiLang', uiLang);
-    setToStorage('ui_lang', uiLang);
+    setToStorage("ui_lang", uiLang);
   },
-  question          : false,
-  isFullscreen      : false,
+  question: false,
+  isFullscreen: false,
   toggleIsFullscreen: () => {
     const isFullscreen = !get().isFullscreen;
     useUiActions.getState().toggleShowBars(isFullscreen);
     useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
     set({ isFullscreen });
   },
-  toggleQuestion    : (question = !get().question) => {
+  toggleQuestion: (question = !get().question) => {
     useUserStore.getState().sendUserState({ question });
     set({ question });
   },
-  isShidur          : true,
-  toggleIsShidur    : () => {
+  isShidur: true,
+  toggleIsShidur: () => {
     const isShidur = !get().isShidur;
     !isShidur && useShidurStore.getState().cleanShidur();
     useUiActions.getState().updateWidth(isShidur);
     set({ isShidur });
   },
-  audioMode         : false,
-  toggleAudioMode   : async (audioMode = !get().audioMode) => {
+  audioMode: false,
+  toggleAudioMode: async (audioMode = !get().audioMode) => {
     audioMode ? get().enterAudioMode() : get().exitAudioMode();
     set({ audioMode });
   },
-  enterAudioMode    : async () => {
+  enterAudioMode: async () => {
     useMyStreamStore.getState().toggleCammute(true, false);
-    if (!useInitsStore.getState().readyForJoin)
-      return;
+    if (!useInitsStore.getState().readyForJoin) return;
     const feeds = Object.values(useInRoomStore.getState().feedById);
     deactivateFeedsVideos(feeds);
 
@@ -52,12 +54,13 @@ export const useSettingsStore = create((set, get) => ({
     enterAudioMode();
     cleanQuads(false);
   },
-  exitAudioMode     : async () => {
-    const cammute = await getFromStorage('cammute', false).then(x => x === 'true');
+  exitAudioMode: async () => {
+    const cammute = await getFromStorage("cammute", false).then(
+      (x) => x === "true"
+    );
     useMyStreamStore.getState().toggleCammute(cammute);
 
-    if (!useInitsStore.getState().readyForJoin)
-      return;
+    if (!useInitsStore.getState().readyForJoin) return;
 
     const feeds = Object.values(useInRoomStore.getState().feedById);
     activateFeedsVideos(feeds);
@@ -66,8 +69,8 @@ export const useSettingsStore = create((set, get) => ({
     initShidur();
     initQuad();
   },
-  showGroups        : false,
-  toggleShowGroups  : () => set((state) => ({ showGroups: !state.showGroups })),
-  hideSelf          : false,
-  toggleHideSelf    : () => set((state) => ({ hideSelf: !state.hideSelf })),
+  showGroups: false,
+  toggleShowGroups: () => set((state) => ({ showGroups: !state.showGroups })),
+  hideSelf: false,
+  toggleHideSelf: () => set((state) => ({ hideSelf: !state.hideSelf })),
 }));
