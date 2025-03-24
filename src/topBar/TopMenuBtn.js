@@ -1,12 +1,13 @@
-import * as React from 'react';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { StudyMaterialsBtn } from './StudyMaterialsBtn';
-import { DonateBtn } from './DonateBtn';
-import { SupportBtn } from './SupportBtn';
-import { SettingsBtn } from './SettingsBtn';
-import LogoutBtn from './LogoutBtn';
-import ListInModal from '../components/ListInModal';
-import { useUiActions } from '../zustand/uiActions';
+import * as React from "react";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { StudyMaterialsBtn } from "./StudyMaterialsBtn";
+import { DonateBtn } from "./DonateBtn";
+import { SupportBtn } from "./SupportBtn";
+import { SettingsBtn } from "./SettingsBtn";
+import LogoutBtn from "./LogoutBtn";
+import ListInModal from "../components/ListInModal";
+import { useUiActions } from "../zustand/uiActions";
+import VersionInfo from "../components/VersionInfo";
 
 export const TopMenuBtn = () => {
   const { toggleShowBars } = useUiActions();
@@ -17,6 +18,7 @@ export const TopMenuBtn = () => {
     { component: <SupportBtn />, key: 3 },
     { component: <SettingsBtn />, key: 4 },
     { component: <LogoutBtn />, key: 5 },
+    { component: <VersionInfo />, key: 6 },
   ];
 
   const renderItem = (item) => item.component;

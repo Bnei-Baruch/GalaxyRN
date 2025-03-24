@@ -35,6 +35,7 @@ public class GxyPackage implements ReactPackage {
         modules.add(new ForegroundModule(reactContext));
         modules.add(new AudioDeviceModule(reactContext));
         modules.add(new CallListenerModule(reactContext));
+        modules.add(new VersionModule(reactContext));
 
         return modules;
     }

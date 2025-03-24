@@ -22,7 +22,7 @@ import kc from "../auth/keycloak";
 import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
 
-const { AudioDeviceModule } = NativeModules;
+const { AudioDeviceModule, VersionModule } = NativeModules;
 const eventEmitter = new NativeEventEmitter(AudioDeviceModule);
 
 let subscription;
@@ -48,6 +48,7 @@ export const useInitsStore = create((set, get) => ({
   mqttReady: false,
   configReady: false,
   readyForJoin: false,
+  versionInfo: null,
   setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
   isPortrait: true,
   initBridge: () => set({ isBridgeReady: true }),
@@ -142,6 +143,7 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
+    get().fetchVersion();
     subscription = eventEmitter.addListener(
       "onCallStateChanged",
       async (data) => {
@@ -160,5 +162,13 @@ export const useInitsStore = create((set, get) => ({
   terminateApp: () => {
     BackgroundTimer.stop();
     if (subscription) subscription.remove();
+  },
+  fetchVersion: async () => {
+    try {
+      const versionInfo = await VersionModule.getVersion();
+      set({ versionInfo });
+    } catch (error) {
+      console.error("Error getting version:", error);
+    }
   },
 }));
