@@ -51,12 +51,14 @@ public class MainActivity extends ReactActivity {
         permissionHelper.checkPermissions(new PermissionHelper.PermissionCallback() {
             @Override
             public void onAllPermissionsGranted() {
-                Toast.makeText(MainActivity.this, "Разрешение на камеру предоставлено", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(MainActivity.this, "Разрешение на камеру предоставлено",
+                // Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onPermissionsDenied() {
-                Toast.makeText(MainActivity.this, "Разрешение на камеру отклонено", Toast.LENGTH_SHORT).show();
+                // Toast.makeText(MainActivity.this, "Разрешение на камеру отклонено",
+                // Toast.LENGTH_SHORT).show();
             }
         });
     }
