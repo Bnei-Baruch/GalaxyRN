@@ -41,7 +41,6 @@ const InitApp = () => {
     return () => subscription && subscription.remove();
   }, []);
 
-  console.log("manage audio devices: InitApp render");
   return null;
 };
 

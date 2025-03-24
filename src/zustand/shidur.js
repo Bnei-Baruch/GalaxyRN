@@ -233,10 +233,10 @@ export const useShidurStore = create((set, get) => ({
     });
   },
   streamGalaxy: async (isOnAir) => {
-    log.debug("[shidur] got talk event: ", isOnAir);
+    log.debug("call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
     if (!trlAudioJanus) {
       log.debug(
-        "[shidur] look like we got talk event before stream init finished"
+        "call streamGalaxy bug:[shidur] look like we got talk event before stream init finished"
       );
       setTimeout(() => {
         get().streamGalaxy(isOnAir);
@@ -247,7 +247,10 @@ export const useShidurStore = create((set, get) => ({
     if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
-      log.debug("[shidur] Switch audio stream: ", gxycol[col]);
+      log.debug(
+        "call streamGalaxy bug:[shidur] Switch audio stream: ",
+        gxycol[col]
+      );
       audioJanus.switch(gxycol[col]);
       const _langtext = await getFromStorage("vrt_langtext");
       const id = trllang[_langtext];

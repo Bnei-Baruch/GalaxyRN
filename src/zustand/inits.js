@@ -97,6 +97,7 @@ export const useInitsStore = create((set, get) => ({
           } else if (type === "video-mute" && user.id === id) {
             toggleCammute();
           } else if (type === "audio-out") {
+            log.debug("call streamGalaxy bug: [mqtt] audio-out: ", data);
             streamGalaxy(data.status);
             if (data.status) {
               // remove question mark when sndman unmute our room

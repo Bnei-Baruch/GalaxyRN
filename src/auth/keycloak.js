@@ -7,10 +7,11 @@ import log from "loglevel";
 import api from "../shared/Api";
 import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
-import { setToStorage } from "../shared/tools";
 import BackgroundTimer from "react-native-background-timer";
 import { sendSentry } from "../sentryHelper";
 import { AUTH_CONFIG_ISSUER, MEMBERSHIP_URL } from "@env";
+import { setToStorage, getFromStorage } from "../shared/tools";
+
 // Configuration
 const AUTH_CONFIG = {
   issuer: AUTH_CONFIG_ISSUER,
@@ -29,10 +30,9 @@ const decodeJWTHeader = (token) =>
 
 const openMembershipPage = () => {
   try {
-    console.log("openMembershipPage: MEMBERSHIP_URL", MEMBERSHIP_URL);
     Linking.openURL(MEMBERSHIP_URL);
   } catch (error) {
-    console.error("openMembershipPage: Error opening membership page", error);
+    console.error("Error opening membership page", error);
   }
 };
 
@@ -50,7 +50,6 @@ class Keycloak {
 
     authorize(AUTH_CONFIG)
       .then((authData) => {
-        log.debug("Login successful", authData);
         const session = this.setSession(authData);
 
         if (!session) {
@@ -60,7 +59,7 @@ class Keycloak {
         return this.fetchUser(session);
       })
       .catch((error) => {
-        log.error("Login failed", error);
+        console.error("Login failed", error);
         this.logout();
       });
   };
@@ -78,7 +77,7 @@ class Keycloak {
           postLogoutRedirectUrl: AUTH_CONFIG.postLogoutRedirectUrl,
         });
       } catch (error) {
-        log.error("Logout error", error);
+        console.error("Logout error", error);
       }
     }
 
@@ -104,6 +103,7 @@ class Keycloak {
     this.session = session;
     mqtt.setToken(accessToken);
     api.setAccessToken(accessToken);
+
     setToStorage("user_session", JSON.stringify(session));
 
     return session;
@@ -144,11 +144,21 @@ class Keycloak {
       this.saveUser(session.payload);
       return this.refreshToken();
     } catch (error) {
-      log.error("Refresh Token failed", error);
+      console.error("Refresh Token failed", error);
       this.logout();
     }
   };
 
+  startFromStorage = async () => {
+    const session = await getFromStorage("user_session").then((s) =>
+      JSON.parse(s)
+    );
+
+    if (!session) return this.logout();
+
+    this.setSession(session);
+    this.fetchUser(session);
+  };
   /**
    * Fetches and validates user information
    */
@@ -213,22 +223,14 @@ class Keycloak {
     let vhinfo;
     try {
       vhinfo = await api.fetchVHInfo();
-      log.debug("Membership validation: vhinfo", vhinfo);
     } catch (error) {
-      log.error(
-        "Membership validation: Error fetching VH info data",
-        error?.message
-      );
+      console.error("Error fetching VH info data", error?.message);
       vhinfo = { active: false, error: error?.message };
     }
 
     useUserStore.getState().setVhinfo(vhinfo);
 
     const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
-    log.debug("Membership validation state:", {
-      active: vhinfo.active,
-      roleIsUser: role === userRolesEnum.user,
-    });
 
     return isAuthorized;
   };
@@ -244,6 +246,6 @@ class Keycloak {
   };
 }
 
-const keycloak = new Keycloak();
+const keycloakDefault = new Keycloak();
 
-export default keycloak;
+export default keycloakDefault;
