@@ -38,7 +38,8 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         super.initialize();
 
         Log.d(TAG, "initialize called" + context.getPackageName());
-        phoneCallListener = new PhoneCallListener(context);
+        phoneCallListener = new PhoneCallListener();
+        phoneCallListener.init(context);
     }
 
     @Override
@@ -48,14 +49,17 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
 
     @Override
     public void onHostPause() {
-
         Log.d(TAG, "onHostPause()");
     }
 
     @Override
     public void onHostDestroy() {
         Log.d(TAG, "onHostDestroy()");
-        phoneCallListener.cleanCallListener();
+        try {
+            phoneCallListener.cleanCallListener();
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
+        }
     }
 }
 

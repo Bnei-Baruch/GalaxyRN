@@ -1,5 +1,4 @@
 
-
 package com.galaxyrn.audioManager;
 
 import android.content.Context;
@@ -22,7 +21,6 @@ public class AudioFocusManager {
     private final AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
 
-
     public AudioFocusManager(ReactContext context) {
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
     }
@@ -30,7 +28,7 @@ public class AudioFocusManager {
     public void requestAudioFocus() {
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
         audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                //.setAudioAttributes(audioAttributes)
+                // .setAudioAttributes(audioAttributes)
                 .setAcceptsDelayedFocusGain(false)
                 .setWillPauseWhenDucked(false)
                 .build();
@@ -68,4 +66,3 @@ public class AudioFocusManager {
         Log.d(TAG, "abandonAudioFocus(): res = " + abandonAudioFocusResStr);
     }
 }
-

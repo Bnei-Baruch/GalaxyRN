@@ -17,7 +17,6 @@ import java.util.List;
 import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
 import com.galaxyrn.foreground.ForegroundModule;
-import com.galaxyrn.WakeLockModule;
 
 public class GxyPackage implements ReactPackage {
 
@@ -28,7 +27,7 @@ public class GxyPackage implements ReactPackage {
         return Collections.emptyList();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();

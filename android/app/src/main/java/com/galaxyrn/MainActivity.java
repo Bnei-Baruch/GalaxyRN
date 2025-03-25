@@ -15,11 +15,6 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.galaxyrn.permissions.PermissionHelper;
-import com.oney.WebRTCModule.WebRTCModuleOptions;
-
-import org.webrtc.audio.JavaAudioDeviceModule;
-
-import io.sentry.android.core.SentryAndroid;
 
 public class MainActivity extends ReactActivity {
 

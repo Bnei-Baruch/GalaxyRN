@@ -14,8 +14,6 @@ import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 import com.facebook.react.bridge.ReactContext;
-import com.oney.WebRTCModule.WebRTCModuleOptions;
-import org.webrtc.audio.JavaAudioDeviceModule;
 
 import java.util.List;
 

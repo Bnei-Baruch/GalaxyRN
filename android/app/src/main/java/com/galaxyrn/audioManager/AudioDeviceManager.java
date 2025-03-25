@@ -1,5 +1,3 @@
-
-
 package com.galaxyrn.audioManager;
 
 import android.bluetooth.BluetoothAdapter;
@@ -34,90 +32,152 @@ public class AudioDeviceManager {
         start();
     }
 
-
     private void start() {
         if (receiver != null) {
             return;
         }
 
-        audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
-
-        audioCallback = new AudioDeviceCallback() {
-            @Override
-            public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                callback.onUpdateAudioDeviceState();
+        try {
+            audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager == null) {
+                Log.e(TAG, "Failed to get AudioManager service");
+                return;
             }
 
-            @Override
-            public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                callback.onUpdateAudioDeviceState();
-            }
-        };
-
-        audioManager.registerAudioDeviceCallback(audioCallback, new Handler(Looper.getMainLooper()));
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        filter.addAction(AudioManager.ACTION_HEADSET_PLUG);
-        filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
-        filter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                    if (state == BluetoothAdapter.STATE_ON) {
-                        audioManager.startBluetoothSco();
-                        audioManager.setBluetoothScoOn(true);
-                    } else if (state == BluetoothAdapter.STATE_OFF) {
-                        audioManager.stopBluetoothSco();
-                        audioManager.setBluetoothScoOn(false);
+            audioCallback = new AudioDeviceCallback() {
+                @Override
+                public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+                    Log.d(TAG, "onAudioDevicesAdded() addedDevices: " + addedDevices);
+                    try {
+                        callback.onUpdateAudioDeviceState();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception in onAudioDevicesAdded callback", e);
                     }
                 }
-                if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
-                    int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                    if (state == BluetoothAdapter.STATE_CONNECTED) {
-                        audioManager.startBluetoothSco();
-                        audioManager.setBluetoothScoOn(true);
-                    } else if (state == BluetoothAdapter.STATE_DISCONNECTED) {
-                        audioManager.stopBluetoothSco();
-                        audioManager.setBluetoothScoOn(false);
+
+                @Override
+                public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
+                    Log.d(TAG, "onAudioDevicesRemoved() removedDevices: " + removedDevices);
+                    try {
+                        callback.onUpdateAudioDeviceState();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception in onAudioDevicesRemoved callback", e);
                     }
                 }
-                callback.onUpdateAudioDeviceState();
+            };
+
+            try {
+                audioManager.registerAudioDeviceCallback(audioCallback, new Handler(Looper.getMainLooper()));
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to register audio device callback", e);
             }
-        };
-        registerReceiver(receiver, filter);
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+            filter.addAction(AudioManager.ACTION_HEADSET_PLUG);
+            filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+            filter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
+            receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    try {
+                        String action = intent.getAction();
+                        Log.d(TAG, "onReceive() action: " + action);
+                        if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                            if (state == BluetoothAdapter.STATE_ON) {
+                                try {
+                                    audioManager.startBluetoothSco();
+                                    audioManager.setBluetoothScoOn(true);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to start Bluetooth SCO", e);
+                                }
+                            } else if (state == BluetoothAdapter.STATE_OFF) {
+                                try {
+                                    audioManager.stopBluetoothSco();
+                                    audioManager.setBluetoothScoOn(false);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to stop Bluetooth SCO", e);
+                                }
+                            }
+                        }
+                        if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
+                            int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                            if (state == BluetoothAdapter.STATE_CONNECTED) {
+                                try {
+                                    audioManager.startBluetoothSco();
+                                    audioManager.setBluetoothScoOn(true);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to start Bluetooth SCO on connection", e);
+                                }
+                            } else if (state == BluetoothAdapter.STATE_DISCONNECTED) {
+                                try {
+                                    audioManager.stopBluetoothSco();
+                                    audioManager.setBluetoothScoOn(false);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to stop Bluetooth SCO on disconnection", e);
+                                }
+                            }
+                        }
+                        try {
+                            callback.onUpdateAudioDeviceState();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Exception in onReceive callback", e);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Exception in onReceive", e);
+                    }
+                }
+            };
+            registerReceiver(receiver, filter);
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in start", e);
+        }
     }
 
     public void stop() {
-        if (receiver != null) {
-            this.unregisterReceiver(receiver);
-            receiver = null;
-        }
+        try {
+            if (receiver != null) {
+                this.unregisterReceiver(receiver);
+                receiver = null;
+            }
 
-        if (audioCallback != null) {
-            audioManager.unregisterAudioDeviceCallback(audioCallback);
-            audioCallback = null;
-        }
+            if (audioCallback != null && audioManager != null) {
+                try {
+                    audioManager.unregisterAudioDeviceCallback(audioCallback);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to unregister audio device callback", e);
+                }
+                audioCallback = null;
+            }
 
-        audioManager.stopBluetoothSco();
-        audioManager.setBluetoothScoOn(false);
+            if (audioManager != null) {
+                try {
+                    audioManager.stopBluetoothSco();
+                    audioManager.setBluetoothScoOn(false);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to stop Bluetooth SCO in stop method", e);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Exception in stop", e);
+        }
     }
-
 
     private void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         if (reactContext == null) {
             Log.d(TAG, "registerReceiver() reactContext is null");
             return;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            reactContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            reactContext.registerReceiver(receiver, filter);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                reactContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                reactContext.registerReceiver(receiver, filter);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to register receiver", e);
         }
-
     }
 
     private void unregisterReceiver(final BroadcastReceiver receiver) {
@@ -129,8 +189,7 @@ public class AudioDeviceManager {
         try {
             reactContext.unregisterReceiver(receiver);
         } catch (final Exception e) {
-            Log.d(TAG, "unregisterReceiver() failed");
+            Log.d(TAG, "unregisterReceiver() failed", e);
         }
     }
 }
-

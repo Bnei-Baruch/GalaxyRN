@@ -1,22 +1,23 @@
 package com.galaxyrn.callManager;
 
-
 import android.content.Context;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.galaxyrn.SendEventToClient;
 import com.galaxyrn.foreground.ForegroundService;
+import io.sentry.Sentry;
 
 public class PhoneCallListener extends PhoneStateListener {
-    TelephonyManager telephonyManager;
+    private static final String TAG = "PhoneCallListener";
     ReactApplicationContext context;
 
-    public PhoneCallListener(ReactApplicationContext context) {
-        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+    public void init(ReactApplicationContext context) {
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
 
         this.context = context;
@@ -37,11 +38,20 @@ public class PhoneCallListener extends PhoneStateListener {
     }
 
     public void cleanCallListener() {
-        if (telephonyManager == null) {
+        if (context == null) {
             return;
         }
-        telephonyManager.listen(null, PhoneStateListener.LISTEN_CALL_STATE);
-        telephonyManager = null;
+
+        try {
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager == null) {
+                return;
+            }
+            telephonyManager.listen(null, PhoneStateListener.LISTEN_CALL_STATE);
+        } catch (Exception e) {
+            Log.e(TAG, "Error while cleaning call listener: " + e.getMessage());
+            Sentry.captureException(e);
+        }
     }
 
     public static void sendEvent(CallStateType state) {

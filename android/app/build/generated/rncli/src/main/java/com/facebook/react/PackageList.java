@@ -17,8 +17,6 @@ import io.sentry.react.RNSentryPackage;
 import com.rnappauth.RNAppAuthPackage;
 // react-native-background-timer
 import com.ocetnik.timer.BackgroundTimerPackage;
-// react-native-incall-manager
-import com.zxcpoiu.incallmanager.InCallManagerPackage;
 // react-native-safe-area-context
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-vector-icons
@@ -77,7 +75,6 @@ public class PackageList {
       new RNSentryPackage(),
       new RNAppAuthPackage(),
       new BackgroundTimerPackage(),
-      new InCallManagerPackage(),
       new SafeAreaContextPackage(),
       new VectorIconsPackage(),
       new WebRTCModulePackage(),
