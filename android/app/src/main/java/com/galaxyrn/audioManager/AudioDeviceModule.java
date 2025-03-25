@@ -166,7 +166,11 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 data.putMap(String.valueOf(selected.getId()), selectedResponse);
 
                 Log.d(TAG, "updateAudioDeviceState() result " + data);
-                SendEventToClient.sendEvent("updateAudioDevice", data);
+                try {
+                    SendEventToClient.sendEvent("updateAudioDevice", data);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error sending event to client: " + e.getMessage(), e);
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Error updating audio devices: " + e.getMessage(), e);
             }
