@@ -18,7 +18,7 @@ import { deepClone } from "../shared/tools";
 import { useUiActions } from "./uiActions";
 import { NativeModules } from "react-native";
 
-const { AudioDeviceModule } = NativeModules;
+const { AudioDeviceModule, WakeLockModule } = NativeModules;
 
 let subscriber = null;
 let videoroom = null;
@@ -33,6 +33,7 @@ export const useInRoomStore = create((set, get) => ({
   feedById: {},
   joinRoom: async () => {
     AudioDeviceModule.requestAudioFocus();
+    WakeLockModule.acquireWakeLock();
 
     attempts++;
     if (attempts > 5) {
@@ -312,6 +313,7 @@ export const useInRoomStore = create((set, get) => ({
     await mqtt.exit("galaxy/room/" + room.room);
     await mqtt.exit("galaxy/room/" + room.room + "/chat");
     AudioDeviceModule.abandonAudioFocus();
+    WakeLockModule.releaseScreenOn();
   },
   restartRoom: async () => {
     console.log("bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);

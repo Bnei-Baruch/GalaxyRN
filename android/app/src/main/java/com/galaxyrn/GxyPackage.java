@@ -17,6 +17,7 @@ import java.util.List;
 import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
 import com.galaxyrn.foreground.ForegroundModule;
+import com.galaxyrn.WakeLockModule;
 
 public class GxyPackage implements ReactPackage {
 
@@ -36,6 +37,7 @@ public class GxyPackage implements ReactPackage {
         modules.add(new AudioDeviceModule(reactContext));
         modules.add(new CallListenerModule(reactContext));
         modules.add(new VersionModule(reactContext));
+        modules.add(new WakeLockModule(reactContext));
 
         return modules;
     }

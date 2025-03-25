@@ -58,11 +58,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @Override
     public void onHostResume() {
-        /*
-         * UiThreadUtil.runOnUiThread(() -> {
-         * getCurrentActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
-         * });
-         */
     }
 
     @Override
