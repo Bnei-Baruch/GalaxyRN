@@ -35,6 +35,7 @@ export const useInRoomStore = create((set, get) => ({
     try {
       await AudioDeviceModule.requestAudioFocus();
       await WakeLockModule.keepScreenOn();
+      useMyStreamStore.getState().toggleMute(true);
     } catch (error) {
       console.error("Error requesting audio focus or keeping screen on", error);
       return get().exitRoom();
@@ -271,7 +272,6 @@ export const useInRoomStore = create((set, get) => ({
 
               await makeSubscription(data.publishers);
               useUserStore.getState().sendUserState({}, d);
-              useMyStreamStore.getState().toggleMute(true);
               attempts = 0;
               const stream = getStream();
               stream.getVideoTracks().forEach((track) => {
