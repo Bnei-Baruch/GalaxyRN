@@ -6,6 +6,8 @@ import { useUserStore } from "../../zustand/user";
 import { useTranslation } from "react-i18next";
 import { WebView } from "react-native-webview";
 import { baseStyles } from "../../constants";
+import { useInitsStore } from "../../zustand/inits";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
@@ -27,17 +29,24 @@ export const VoteBtn = () => {
           visible={open}
           onRequestClose={toggleOpen}
         >
-          <View style={styles.modalContent}>
-            <WebView
-              source={{
-                uri: `https://vote.kli.one/button.html?answerId=1&userId=${user?.id}`,
-              }}
-            />
-            <WebView
-              source={{
-                uri: `https://vote.kli.one/button.html?answerId=2&userId=${user?.id}`,
-              }}
-            />
+          <View style={styles.modal}>
+            <View style={styles.conteiner}>
+              <TouchableOpacity style={styles.close} onPress={toggleOpen}>
+                <Icon name="close" size={20} color="white" />
+              </TouchableOpacity>
+              <WebView
+                style={styles.item}
+                source={{
+                  uri: `https://vote.kli.one/button.html?answerId=1&userId=${user?.id}`,
+                }}
+              />
+              <WebView
+                style={styles.item}
+                source={{
+                  uri: `https://vote.kli.one/button.html?answerId=2&userId=${user?.id}`,
+                }}
+              />
+            </View>
           </View>
         </Modal>
       )}
@@ -45,10 +54,25 @@ export const VoteBtn = () => {
   );
 };
 const styles = StyleSheet.create({
-  modalContent: {
+  modal: {
     flex: 1,
-    aspectRatio: 3 / 5,
-    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
+  conteiner: {
+    width: 200,
     height: 100,
+    flexDirection: "row",
+  },
+  item: {
+    width: 100,
+    height: 100,
+  },
+  close: {
+    position: "absolute",
+    top: -25,
+    right: -25,
+    zIndex: 1,
   },
 });
