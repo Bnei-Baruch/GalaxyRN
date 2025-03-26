@@ -1,5 +1,3 @@
-
-
 package com.galaxyrn.callManager;
 
 import android.os.Build;
@@ -11,20 +9,20 @@ import androidx.annotation.RequiresApi;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import io.sentry.Sentry;
 
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class CallListenerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
-    private final String TAG = "CallListenerModule";
+    private static final String TAG = "CallListenerModule";
     private final ReactApplicationContext context;
     private PhoneCallListener phoneCallListener;
+    private boolean isInitialized = false;
 
     public CallListenerModule(ReactApplicationContext reactContext) {
         super(reactContext);
-
         context = reactContext;
         reactContext.addLifecycleEventListener(this);
     }
-
 
     @NonNull
     @Override
@@ -32,19 +30,32 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         return TAG;
     }
 
-
     @Override
     public void initialize() {
         super.initialize();
 
-        Log.d(TAG, "initialize called" + context.getPackageName());
-        phoneCallListener = new PhoneCallListener();
-        phoneCallListener.init(context);
+        try {
+            Log.d(TAG, "initialize called for package: " + context.getPackageName());
+            if (!isInitialized) {
+                phoneCallListener = new PhoneCallListener();
+                phoneCallListener.init(context);
+                isInitialized = true;
+                Log.d(TAG, "CallListenerModule initialized successfully");
+            } else {
+                Log.d(TAG, "CallListenerModule already initialized");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
+            Sentry.captureException(e);
+        }
     }
 
     @Override
     public void onHostResume() {
         Log.d(TAG, "onHostResume()");
+        if (!isInitialized) {
+            initialize();
+        }
     }
 
     @Override
@@ -56,10 +67,15 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     public void onHostDestroy() {
         Log.d(TAG, "onHostDestroy()");
         try {
-            phoneCallListener.cleanCallListener();
+            if (phoneCallListener != null) {
+                phoneCallListener.cleanCallListener();
+                phoneCallListener = null;
+            }
+            isInitialized = false;
+            Log.d(TAG, "CallListenerModule cleaned up successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
+            Sentry.captureException(e);
         }
     }
 }
-

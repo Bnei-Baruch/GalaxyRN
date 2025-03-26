@@ -16,6 +16,8 @@ import android.util.Log;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 
+import java.util.Arrays;
+
 public class AudioDeviceManager {
     private static final String TAG = AudioDeviceManager.class.getSimpleName();
 
@@ -47,7 +49,7 @@ public class AudioDeviceManager {
             audioCallback = new AudioDeviceCallback() {
                 @Override
                 public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                    Log.d(TAG, "onAudioDevicesAdded() addedDevices: " + addedDevices);
+                    Log.d(TAG, "onAudioDevicesAdded() addedDevices: " + Arrays.toString(addedDevices));
                     try {
                         callback.onUpdateAudioDeviceState();
                     } catch (Exception e) {
@@ -57,7 +59,7 @@ public class AudioDeviceManager {
 
                 @Override
                 public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                    Log.d(TAG, "onAudioDevicesRemoved() removedDevices: " + removedDevices);
+                    Log.d(TAG, "onAudioDevicesRemoved() removedDevices: " + Arrays.toString(removedDevices));
                     try {
                         callback.onUpdateAudioDeviceState();
                     } catch (Exception e) {

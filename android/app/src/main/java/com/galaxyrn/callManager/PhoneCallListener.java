@@ -14,40 +14,79 @@ import io.sentry.Sentry;
 
 public class PhoneCallListener extends PhoneStateListener {
     private static final String TAG = "PhoneCallListener";
-    ReactApplicationContext context;
+    private ReactApplicationContext context;
+    private boolean isInitialized = false;
 
-    public void init(ReactApplicationContext context) {
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
+    public synchronized void init(ReactApplicationContext context) {
+        if (isInitialized) {
+            Log.d(TAG, "PhoneCallListener already initialized");
+            return;
+        }
 
-        this.context = context;
+        try {
+            if (context == null) {
+                Log.e(TAG, "Context is null during initialization");
+                return;
+            }
+
+            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager == null) {
+                Log.e(TAG, "TelephonyManager is null");
+                return;
+            }
+
+            this.context = context;
+            telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
+            isInitialized = true;
+            Log.d(TAG, "PhoneCallListener initialized successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing PhoneCallListener: " + e.getMessage());
+            Sentry.captureException(e);
+        }
     }
 
     @Override
     public void onCallStateChanged(int state, String phoneNumber) {
-        switch (state) {
-            case TelephonyManager.CALL_STATE_RINGING, TelephonyManager.CALL_STATE_OFFHOOK:
-                sendEvent(CallStateType.ON_START_CALL);
-                break;
+        if (!isInitialized) {
+            Log.w(TAG, "PhoneCallListener not initialized, ignoring call state change");
+            return;
+        }
 
-            case TelephonyManager.CALL_STATE_IDLE:
-                sendEvent(CallStateType.ON_END_CALL);
-                ForegroundService.moveAppToForeground(this.context);
-                break;
+        try {
+            switch (state) {
+                case TelephonyManager.CALL_STATE_RINGING, TelephonyManager.CALL_STATE_OFFHOOK:
+                    sendEvent(CallStateType.ON_START_CALL);
+                    break;
+
+                case TelephonyManager.CALL_STATE_IDLE:
+                    sendEvent(CallStateType.ON_END_CALL);
+                    if (context != null) {
+                        ForegroundService.moveAppToForeground(this.context);
+                    }
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in onCallStateChanged: " + e.getMessage());
+            Sentry.captureException(e);
         }
     }
 
-    public void cleanCallListener() {
-        if (context == null) {
+    public synchronized void cleanCallListener() {
+        if (!isInitialized || context == null) {
+            Log.d(TAG, "PhoneCallListener not initialized or context is null, skipping cleanup");
             return;
         }
 
         try {
             TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager == null) {
+                Log.e(TAG, "TelephonyManager is null during cleanup");
                 return;
             }
             telephonyManager.listen(null, PhoneStateListener.LISTEN_CALL_STATE);
+            isInitialized = false;
+            context = null;
+            Log.d(TAG, "PhoneCallListener cleaned up successfully");
         } catch (Exception e) {
             Log.e(TAG, "Error while cleaning call listener: " + e.getMessage());
             Sentry.captureException(e);
@@ -55,8 +94,13 @@ public class PhoneCallListener extends PhoneStateListener {
     }
 
     public static void sendEvent(CallStateType state) {
-        WritableMap data = Arguments.createMap();
-        data.putString("state", state.name());
-        SendEventToClient.sendEvent("onCallStateChanged", data);
+        try {
+            WritableMap data = Arguments.createMap();
+            data.putString("state", state.name());
+            SendEventToClient.sendEvent("onCallStateChanged", data);
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending event: " + e.getMessage());
+            Sentry.captureException(e);
+        }
     }
 }
