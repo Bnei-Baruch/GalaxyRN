@@ -219,6 +219,15 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 Log.e(TAG, "Could not get AudioManager service");
                 return;
             }
+
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
+            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+            if (currentVolume < maxVolume * 0.8) {
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int) (maxVolume * 0.8), 0);
+            }
+
             Log.d(TAG, "Build.VERSION.SDK_INT, Build.VERSION_CODES.S " + Build.VERSION.SDK_INT + " "
                     + Build.VERSION_CODES.S);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -239,8 +248,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 Log.e(TAG, "Could not get AudioManager service");
                 return;
             }
-
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
             audioManager.startBluetoothSco();
             audioManager.setBluetoothScoOn(true);
