@@ -337,8 +337,12 @@ export const useInRoomStore = create((set, get) => ({
     useSettingsStore.getState().enterAudioMode();
   },
   enterForeground: async () => {
-    if (!useInitsStore.getState().isBridgeReady) return;
-    useSettingsStore.getState().exitAudioMode();
+    if (
+      useInitsStore.getState().isBridgeReady &&
+      !useSettingsStore.getState().audioMode
+    ) {
+      useSettingsStore.getState().exitAudioMode();
+    }
   },
   updateDisplayById: (data) => {
     const { camera, question, rfid } = data || {};
