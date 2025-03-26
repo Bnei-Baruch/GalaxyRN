@@ -190,6 +190,9 @@ export const useShidurStore = create((set, get) => ({
       promises.push(
         initStream(janus, id).then((res) => {
           trlAudioStream = res[0];
+          trlAudioStream
+            .getAudioTracks()
+            .forEach((track) => (track.enabled = false));
           trlAudioJanus = res[1];
           return true;
         })
