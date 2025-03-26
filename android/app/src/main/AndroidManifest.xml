@@ -31,6 +31,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature android:name="android.hardware.audio.output" />
     <uses-feature android:name="android.hardware.microphone" />
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
 
     <application
         android:name=".MainApplication"

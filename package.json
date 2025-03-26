@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "clean": "react-native clean",
-    "test": "jest"
+    "test": "jest",
+    "sentry:sourcemaps": "SENTRY_AUTH_TOKEN=85556fb4e47611efbcb40242ac120035 sentry-cli sourcemaps inject --org kbb --project arvut-mobile ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map && SENTRY_AUTH_TOKEN=85556fb4e47611efbcb40242ac120035 sentry-cli sourcemaps upload --org kbb --project arvut-mobile ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map"
   },
   "dependencies": {
     "@sentry/react-native": "^6.9.0",
@@ -43,6 +44,7 @@
     "@react-native/eslint-config": "0.74.87",
     "@react-native/metro-config": "0.74.87",
     "@react-native/typescript-config": "0.74.87",
+    "@sentry/cli": "^2.24.0",
     "@types/react": "^18.2.6",
     "@types/react-native-background-timer": "^2",
     "@types/react-test-renderer": "^18.0.0",

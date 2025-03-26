@@ -81,7 +81,7 @@ public class MainApplication extends Application implements ReactApplication {
         SentryAndroid.init(this, sentryOpts -> {
             sentryOpts.setDsn(BuildConfig.SENTRY_DSN);
             sentryOpts.setDebug(true);
-            sentryOpts.setTracesSampleRate(1.0);
+            sentryOpts.setTracesSampleRate(0.0);
         });
         SoLoader.init(this, false);
 

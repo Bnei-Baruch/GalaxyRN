@@ -32,8 +32,13 @@ const isVideoStream = (s) => s?.type === "video" && s.codec === "h264";
 export const useInRoomStore = create((set, get) => ({
   feedById: {},
   joinRoom: async () => {
-    AudioDeviceModule.requestAudioFocus();
-    WakeLockModule.acquireWakeLock();
+    try {
+      await AudioDeviceModule.requestAudioFocus();
+      await WakeLockModule.keepScreenOn();
+    } catch (error) {
+      console.error("Error requesting audio focus or keeping screen on", error);
+      return get().exitRoom();
+    }
 
     attempts++;
     if (attempts > 5) {
