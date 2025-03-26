@@ -191,8 +191,8 @@ export const useShidurStore = create((set, get) => ({
         initStream(janus, id).then((res) => {
           trlAudioStream = res[0];
           trlAudioStream
-            .getAudioTracks()
-            .forEach((track) => (track.enabled = false));
+            ?.getAudioTracks()
+            ?.forEach((track) => (track.enabled = false));
           trlAudioJanus = res[1];
           return true;
         })
@@ -204,8 +204,8 @@ export const useShidurStore = create((set, get) => ({
       console.log("[shidur] streams are ready", videoStream);
       set(() => ({
         videoStream,
-        audioUrl: audioStream.toURL(),
-        trlUrl: trlAudioStream.toURL(),
+        audioUrl: audioStream?.toURL(),
+        trlUrl: trlAudioStream?.toURL(),
         readyShidur: true,
       }));
     } catch (err) {
@@ -266,7 +266,7 @@ export const useShidurStore = create((set, get) => ({
         );
         await trlAudioJanus.switch(id);
       }
-      audioStream.getAudioTracks().forEach((track) => track._setVolume(0.2));
+      audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.2));
       log.debug("[shidur] You now talking");
     } else {
       log.debug("[shidur] Stop talking");
@@ -275,11 +275,11 @@ export const useShidurStore = create((set, get) => ({
       log.debug("[shidur] get stream back id: ", id);
       await audioJanus.switch(id);
       log.debug("[shidur] Switch audio stream back");
-      audioStream.getAudioTracks().forEach((track) => track._setVolume(0.8));
+      audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.8));
     }
     trlAudioStream
-      .getAudioTracks()
-      .forEach((track) => (track.enabled = isOnAir));
+      ?.getAudioTracks()
+      ?.forEach((track) => (track.enabled = isOnAir));
     set({ isOnAir });
   },
   toggleIsPlay: async (isPlay = !get().isPlay) => {
@@ -291,7 +291,7 @@ export const useShidurStore = create((set, get) => ({
     videoStream?.getVideoTracks().forEach((t) => (t.enabled = isPlay));
     [
       ...audioStream?.getAudioTracks(),
-      ...trlAudioStream.getAudioTracks(),
+      ...trlAudioStream?.getAudioTracks(),
     ].forEach((t) => (t.enabled = isPlay && !isMuted));
     set({ isPlay });
   },
