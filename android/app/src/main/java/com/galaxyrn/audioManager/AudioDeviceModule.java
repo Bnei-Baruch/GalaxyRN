@@ -31,6 +31,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         super(reactContext);
 
         this.context = reactContext;
+        reactContext.addLifecycleEventListener(this);
     }
 
     private AudioDeviceManager audioDeviceManager = null;
@@ -52,7 +53,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     audioDeviceManager = new AudioDeviceManager(this.context, callback);
-                    // getCurrentActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
                 } catch (Exception e) {
                     Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
                 }
