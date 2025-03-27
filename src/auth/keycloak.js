@@ -131,7 +131,12 @@ class Keycloak {
     if (timeToRefresh > 0) {
       this.timeout = BackgroundTimer.setTimeout(() => {
         sendSentry("check keycloak: refresh token");
-        this.refreshToken();
+        try { 
+          this.refreshToken();
+        } catch (error) {
+          console.error("Refresh Token failed", error);
+          this.logout();
+        }
       }, Math.max(timeToRefresh, 1000));
       return;
     }
@@ -153,9 +158,8 @@ class Keycloak {
   };
 
   startFromStorage = async () => {
-    const session = await getFromStorage("user_session").then((s) =>
-      JSON.parse(s)
-    );
+    const session = await getFromStorage("user_session")
+    .then((s) => !s ? null : JSON.parse(s));
 
     if (!session) return this.logout();
 
@@ -182,7 +186,7 @@ class Keycloak {
       return this.logout();
     }
 
-    this.refreshToken();
+    //this.refreshToken();
     
     this.saveUser(session.payload);
   };
