@@ -224,7 +224,6 @@ export const getFromStorage = async (key, def) => {
 };
 export const setToStorage = async (key, val) => {
   try {
-    console.log("setToStorage", key, val);
     return await RNSecureStorage.setItem(key, val.toString(), {
       accessible: ACCESSIBLE.ALWAYS,
     });

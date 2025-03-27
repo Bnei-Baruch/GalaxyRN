@@ -113,10 +113,10 @@ class Keycloak {
    * Refreshes the access token when needed
    */
   refreshToken = async () => {
-    sendSentry(`start refreshToken is this.session: ${!!this.session}`);
-
+    
     if (!this.session) return;
-
+    
+    console.log("[keycloak] refreshToken", this.session.payload.exp);
     const expiryTime = this.session.payload.exp * 1000;
     const currentTime = new Date().getTime();
     const timeToRefresh = expiryTime - currentTime / 2;
@@ -130,8 +130,6 @@ class Keycloak {
       }, Math.max(timeToRefresh, 1000));
       return;
     }
-
-    sendSentry(`start refreshToken timeToRefresh: ${timeToRefresh}`);
 
     try {
       const refreshData = await refresh(AUTH_CONFIG, {
@@ -167,22 +165,20 @@ class Keycloak {
 
     const roles = session?.payload?.realm_access?.roles;
     const role = getUserRole(roles);
-
-    const allowed = await this.checkPermission(role);
-    if (!allowed) {
-      openMembershipPage();
+    try {
+      const allowed = await this.checkPermission(role);
+      console.log("[keycloak] fetchUser allowed", allowed);
+      if (!allowed) {
+        openMembershipPage();
+        return this.logout();
+      }
+    } catch (error) {
+      console.error("Error fetching VH info data", error?.message);
       return this.logout();
     }
 
-    const isTokenExpired = new Date(session.payload.exp * 1000) < new Date();
-
-    if (isTokenExpired) {
-      sendSentry(`fetchUser token_expired: ${isTokenExpired}`);
-      await this.refreshToken();
-      return;
-    }
-
-    // Save user data on successful validation
+    this.refreshToken();
+    
     this.saveUser(session.payload);
   };
 
@@ -220,13 +216,7 @@ class Keycloak {
   checkPermission = async (role) => {
     if (!role) return false;
 
-    let vhinfo;
-    try {
-      vhinfo = await api.fetchVHInfo();
-    } catch (error) {
-      console.error("Error fetching VH info data", error?.message);
-      vhinfo = { active: false, error: error?.message };
-    }
+    const vhinfo = await api.fetchVHInfo();
 
     useUserStore.getState().setVhinfo(vhinfo);
 
