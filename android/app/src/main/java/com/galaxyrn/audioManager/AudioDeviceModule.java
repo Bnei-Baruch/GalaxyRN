@@ -77,7 +77,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void onHostDestroy() {
         Log.d(TAG, "onHostDestroy()");
         try {
-            audioFocusManager.abandonAudioFocus();
+                audioFocusManager.abandonAudioFocus();
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     if (audioDeviceManager != null) {
@@ -96,7 +96,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void requestAudioFocus() {
         Log.d(TAG, "onEnterRoom()");
         try {
-            audioFocusManager.requestAudioFocus();
+                audioFocusManager.requestAudioFocus();
         } catch (Exception e) {
             Log.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
         }
@@ -106,7 +106,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void abandonAudioFocus() {
         Log.d(TAG, "onLeaveRoom()");
         try {
-            audioFocusManager.abandonAudioFocus();
+                audioFocusManager.abandonAudioFocus();
         } catch (Exception e) {
             Log.e(TAG, "Error abandoning audio focus: " + e.getMessage(), e);
         }
@@ -114,7 +114,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void initAudioDevices() {
-        updateAudioDevices(null);
+            updateAudioDevices(null);
     }
 
     @ReactMethod

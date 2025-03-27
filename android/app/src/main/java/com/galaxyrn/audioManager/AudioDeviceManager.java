@@ -35,7 +35,7 @@ public class AudioDeviceManager {
     }
 
     private void start() {
-        if (receiver != null) {
+        if (receiver != null || reactContext == null) {
             return;
         }
 
@@ -121,10 +121,8 @@ public class AudioDeviceManager {
                                 }
                             }
                         }
-                        try {
+                        if (callback != null && reactContext != null && reactContext.hasActiveCatalystInstance()) {
                             callback.onUpdateAudioDeviceState();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Exception in onReceive callback", e);
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "Exception in onReceive", e);
@@ -139,7 +137,7 @@ public class AudioDeviceManager {
 
     public void stop() {
         try {
-            if (receiver != null) {
+            if (receiver != null && reactContext != null) {
                 this.unregisterReceiver(receiver);
                 receiver = null;
             }

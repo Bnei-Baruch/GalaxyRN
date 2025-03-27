@@ -22,11 +22,16 @@ const AUTH_CONFIG = {
 };
 
 // JWT Helpers
-const decodeJWTPayload = (token) =>
-  token ? JSON.parse(decode(token.split(".")[1])) : {};
+const decodeJWT = (token) =>{
+  if (!token) return {};
 
-const decodeJWTHeader = (token) =>
-  token ? JSON.parse(decode(token.split(".")[0])) : {};
+  try {
+    return JSON.parse(decode(token));
+  } catch (error) {
+    console.error("Error decoding JWT", error);
+    return {};
+  }
+}
 
 const openMembershipPage = () => {
   try {
@@ -91,13 +96,13 @@ class Keycloak {
    */
   setSession = (data) => {
     const { accessToken, refreshToken, idToken } = data;
-
+    const [header, payload] = accessToken.split(".");
     const session = {
       accessToken,
       refreshToken,
       idToken,
-      payload: decodeJWTPayload(accessToken),
-      header: decodeJWTHeader(accessToken),
+      payload: decodeJWT(payload),
+      header: decodeJWT(header),
     };
 
     this.session = session;
