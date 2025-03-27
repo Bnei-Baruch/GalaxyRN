@@ -17,6 +17,7 @@ import { useShidurStore } from "./shidur";
 import { deepClone } from "../shared/tools";
 import { useUiActions } from "./uiActions";
 import { NativeModules } from "react-native";
+import { sleep } from "../shared/tools";
 
 const { AudioDeviceModule, WakeLockModule } = NativeModules;
 

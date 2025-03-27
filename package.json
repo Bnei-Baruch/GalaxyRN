@@ -9,7 +9,10 @@
     "start": "react-native start",
     "clean": "react-native clean",
     "test": "jest",
-    "sentry:sourcemaps": "SENTRY_AUTH_TOKEN=85556fb4e47611efbcb40242ac120035 sentry-cli sourcemaps inject --org kbb --project arvut-mobile ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map && SENTRY_AUTH_TOKEN=85556fb4e47611efbcb40242ac120035 sentry-cli sourcemaps upload --org kbb --project arvut-mobile ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map"
+    "bundle:android": "mkdir -p android/app/src/main/assets && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ --sourcemap-output android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map",
+    "bundle:ios": "mkdir -p ios/main/assets && react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios/main/assets/ --sourcemap-output ios/main.jsbundle.map",
+    "sentry:android": "sentry-cli sourcemaps inject --org galaxy --project galaxy-rn --release $npm_package_version ./android/app/src/main/assets/index.android.bundle ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map",
+    "sentry:ios": "sentry-cli sourcemaps inject --org galaxy --project galaxy-rn --release $npm_package_version ./ios/main.jsbundle ./ios/main.jsbundle.map"
   },
   "dependencies": {
     "@sentry/react-native": "^6.9.0",

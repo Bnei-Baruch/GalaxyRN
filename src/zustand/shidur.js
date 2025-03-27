@@ -39,6 +39,7 @@ let config = null;
 
 let shidurBarTimeout;
 const initStream = async (_janus, media) => {
+  if (!_janus) return [];
   const janusStream = new StreamingPlugin(config?.iceServers);
   janusStream.onStatus = async (srv, status) => {
     if (status !== "online") {

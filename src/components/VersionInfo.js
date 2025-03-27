@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, NativeModules } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 import { baseStyles } from "../constants";
 import { useInitsStore } from "../zustand/inits";
 import { topMenuBtns } from "../topBar/helper";
