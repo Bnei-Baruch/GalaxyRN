@@ -18,7 +18,7 @@ import { deepClone } from "../shared/tools";
 import { useUiActions } from "./uiActions";
 import { NativeModules } from "react-native";
 import { sleep } from "../shared/tools";
-
+import useAudioDevicesStore from "./audioDevices";
 const { AudioDeviceModule, WakeLockModule } = NativeModules;
 
 let subscriber = null;
@@ -36,6 +36,7 @@ export const useInRoomStore = create((set, get) => ({
     try {
       await AudioDeviceModule.requestAudioFocus();
       await WakeLockModule.keepScreenOn();
+      useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
     } catch (error) {
       console.error("Error requesting audio focus or keeping screen on", error);
@@ -320,6 +321,7 @@ export const useInRoomStore = create((set, get) => ({
     await mqtt.exit("galaxy/room/" + room.room + "/chat");
     AudioDeviceModule.abandonAudioFocus();
     WakeLockModule.releaseScreenOn();
+    useAudioDevicesStore.getState().abortAudioDevices();
   },
   restartRoom: async () => {
     console.log("bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);

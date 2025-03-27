@@ -54,20 +54,13 @@ const useAudioDevicesStore = create((set, get) => ({
         subscription = eventEmitter.addListener(
           "updateAudioDevice",
           async (data) => {
-            console.log(
-              "[audioDevices] updateAudioDevice event received",
-              data
-            );
+            console.log("[audioDevices] updateAudioDevice event received",data);
             const devices = Object.values(data)
               .map(deviceInfoToOption)
               .sort((a, b) => a.priority - b.priority);
             const selected = deviceInfoToOption(
               Object.values(data).find((d) => d.active)
             );
-            console.log("[audioDevices] Setting new state", {
-              devices,
-              selected,
-            });
             set({ devices, selected });
           }
         );

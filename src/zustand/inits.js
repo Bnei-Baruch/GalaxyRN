@@ -77,7 +77,7 @@ export const useInitsStore = create((set, get) => ({
         const { streamGalaxy } = useShidurStore.getState();
         const { toggleQuestion } = useSettingsStore.getState();
         const { updateDisplayById } = useInRoomStore.getState();
-        const { exitRoom, restartRoom } = useInRoomStore.getState();
+        const { restartRoom } = useInRoomStore.getState();
 
         mqtt.watch((data) => {
           const { type, id, bitrate } = data;

@@ -9,18 +9,9 @@ import { useTranslation } from "react-i18next";
 
 export const AudioDevicesBtn = () => {
   const [open, setOpen] = useState();
-  const { selected, select, devices, initAudioDevices, abortAudioDevices } =
-    useAudioDevicesStore();
+  const { selected, select, devices } = useAudioDevicesStore();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    console.log("[audioDevices] AudioDevicesBtn mounted");
-    initAudioDevices();
-    return () => {
-      console.log("[audioDevices] AudioDevicesBtn unmounting");
-      abortAudioDevices();
-    };
-  }, []);
 
   useEffect(() => {
     console.log("[audioDevices] AudioDevicesBtn devices updated", {
