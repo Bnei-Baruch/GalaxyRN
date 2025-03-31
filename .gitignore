@@ -79,3 +79,4 @@ yarn-error.log
 
 .vscode
 sentry.properties
+index.android.bundle.map

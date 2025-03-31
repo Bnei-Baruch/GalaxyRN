@@ -316,9 +316,13 @@ export const useInRoomStore = create((set, get) => ({
     videoroom = null;
     subscriber = null;
     useInitsStore.getState().setReadyForJoin(false);
-
-    await mqtt.exit("galaxy/room/" + room.room);
-    await mqtt.exit("galaxy/room/" + room.room + "/chat");
+    
+    try {
+      await mqtt.exit("galaxy/room/" + room.room);
+      await mqtt.exit("galaxy/room/" + room.room + "/chat");
+    } catch (error) {
+      console.error("Error exiting mqtt rooms", error);
+    }
     AudioDeviceModule.abandonAudioFocus();
     WakeLockModule.releaseScreenOn();
     useAudioDevicesStore.getState().abortAudioDevices();
