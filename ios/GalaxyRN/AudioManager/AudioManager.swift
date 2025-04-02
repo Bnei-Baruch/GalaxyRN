@@ -6,29 +6,19 @@ import UIKit
 @objc(AudioManager)
 class AudioManager: NSObject {
     // MARK: - Properties
-    private var monitor: AudioDeviceMonitor?
-    private var controller: AudioDeviceController?
+    internal var bridge: RCTEventEmitter?
     
     // MARK: - Initialization
     override init() {
         super.init()
         setupModules()
+        setupAudioSession()
+        setupMonitoring()
     }
     
     // MARK: - Setup
     private func setupModules() {
-        monitor = AudioDeviceMonitor()
-        controller = AudioDeviceController()
-    }
-    
-    @objc
-    func getAvailableAudioDevices(_ callback: @escaping RCTResponseSenderBlock) {
-        monitor?.getAvailableAudioDevices(callback)
-    }
-    
-    @objc
-    func setAudioOutput(_ deviceType: String, callback: @escaping RCTResponseSenderBlock) {
-        controller?.setAudioOutput(deviceType, callback: callback)
+        // Any additional setup can go here
     }
     
     @objc

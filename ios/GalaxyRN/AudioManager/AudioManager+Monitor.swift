@@ -3,26 +3,11 @@ import React
 import AVFoundation
 import UIKit
 
-@objc(AudioDeviceMonitor)
-class AudioDeviceMonitor: NSObject {
-    private var bridge: RCTEventEmitter?
-    private var audioSession: AVAudioSession?
+extension AudioManager {
+    // MARK: - Audio Monitoring
     
-    override init() {
-        super.init()
-        setupAudioSession()
+    func setupMonitoring() {
         setupNotifications()
-    }
-    
-    
-    private func setupAudioSession() {
-        audioSession = AVAudioSession.sharedInstance()
-        do {
-            try audioSession?.setCategory(.playAndRecord, mode: .videoChat, options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowBluetoothA2DP, .allowAirPlay])
-            try audioSession?.setActive(true)
-        } catch {
-            print("Failed to setup audio session: \(error)")
-        }
     }
     
     private func setupNotifications() {
@@ -42,8 +27,8 @@ class AudioDeviceMonitor: NSObject {
             return
         }
         
-        let currentRoute = audioSession?.currentRoute
-        let output = currentRoute?.outputs.first
+        let currentRoute = audioSession.currentRoute
+        let output = currentRoute.outputs.first
         let deviceType = AudioDeviceType.from(port: output?.portType ?? .unknown)
         
         let eventData: [String: Any] = [
@@ -63,8 +48,8 @@ class AudioDeviceMonitor: NSObject {
             return
         }
         
-        guard let availableInputs = audioSession?.availableInputs,
-              let currentRoute = audioSession?.currentRoute else {
+        guard let availableInputs = audioSession.availableInputs,
+              let currentRoute = audioSession.currentRoute else {
             callback([AudioManagerError.noDeviceAvailable.message, NSNull()])
             return
         }
@@ -93,8 +78,4 @@ class AudioDeviceMonitor: NSObject {
         
         callback([NSNull(), devices])
     }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-    }
-}
+} 

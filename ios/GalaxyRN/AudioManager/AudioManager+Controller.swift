@@ -3,17 +3,19 @@ import React
 import AVFoundation
 import UIKit
 
-@objc(AudioDeviceController)
-class AudioDeviceController: NSObject {
-    private var audioSession: AVAudioSession?
-    
-    override init() {
-        super.init()
-        setupAudioSession()
+extension AudioManager {
+    // MARK: - Audio Session
+    var audioSession: AVAudioSession {
+        return AVAudioSession.sharedInstance()
     }
     
-    private func setupAudioSession() {
-        audioSession = AVAudioSession.sharedInstance()
+    func setupAudioSession() {
+        do {
+            try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowBluetoothA2DP, .allowAirPlay])
+            try audioSession.setActive(true)
+        } catch {
+            print("Failed to setup audio session: \(error)")
+        }
     }
     
     @objc
@@ -30,11 +32,6 @@ class AudioDeviceController: NSObject {
         
         guard Self.isDeviceTypeSupported(deviceTypeEnum) else {
             callback([AudioManagerError.unsupportedIOSVersion.message, NSNull()])
-            return
-        }
-        
-        guard let audioSession = audioSession else {
-            callback([AudioManagerError.noDeviceAvailable.message, NSNull()])
             return
         }
         
