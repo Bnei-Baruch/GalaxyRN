@@ -954,7 +954,7 @@ PODS:
   - react-native-webrtc (124.0.5):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
-  - react-native-webview (13.13.1):
+  - react-native-webview (13.13.4):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1204,11 +1204,9 @@ PODS:
     - React-logger (= 0.74.5)
     - React-perflogger (= 0.74.5)
     - React-utils (= 0.74.5)
-  - ReactNativeIncallManager (4.2.0):
-    - React-Core
   - RNSecureStorage (3.0.1):
     - React
-  - RNSentry (6.6.0):
+  - RNSentry (6.9.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1229,7 +1227,7 @@ PODS:
     - React-utils
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.44.0)
+    - Sentry/HybridSDK (= 8.45.0)
     - Yoga
   - RNVectorIcons (10.2.0):
     - DoubleConversion
@@ -1252,7 +1250,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - Sentry/HybridSDK (8.44.0)
+  - Sentry/HybridSDK (8.45.0)
   - SocketRocket (0.7.0)
   - Yoga (0.0.0)
 
@@ -1318,7 +1316,6 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - RNSecureStorage (from `../node_modules/rn-secure-storage`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -1451,8 +1448,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  ReactNativeIncallManager:
-    :path: "../node_modules/react-native-incall-manager"
   RNSecureStorage:
     :path: "../node_modules/rn-secure-storage"
   RNSentry:
@@ -1500,7 +1495,7 @@ SPEC CHECKSUMS:
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 141eca0fd4e4191288dfc8b96a7c7e1c2983447a
   react-native-webrtc: 0f1c94069ff1eb9d8fb1618c2dc71f73542c8cfa
-  react-native-webview: 6bda09cc1b0685a54b6b034c40e4c7b6d7b796a3
+  react-native-webview: 1fb6c7a13c02eeac1d3ea8866e00fffafda21397
   React-nativeconfig: ba9a2e54e2f0882cf7882698825052793ed4c851
   React-NativeModulesApple: 8d11ff8955181540585c944cf48e9e7236952697
   React-perflogger: ed4e0c65781521e0424f2e5e40b40cc7879d737e
@@ -1524,11 +1519,10 @@ SPEC CHECKSUMS:
   React-runtimescheduler: cfbe85c3510c541ec6dc815c7729b41304b67961
   React-utils: f242eb7e7889419d979ca0e1c02ccc0ea6e43b29
   ReactCommon: f7da14a8827b72704169a48c929bcde802698361
-  ReactNativeIncallManager: bfc9c67358cd524882a7c4116dcb311ac2293d4b
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
-  RNSentry: 166c7bfd2aa456476253a1c694fb7b8c08580793
+  RNSentry: cb6ff1c2e8547a559c7916ffbb53341b92a49e9c
   RNVectorIcons: 845eda5c7819bd29699cafd0fc98c9d4afe28c96
-  Sentry: 0f9bc9adfc0b960e7f3bb5ec67e9a3d8193f3bdb
+  Sentry: f7c0c4b82e2f7e5909a660544dfaff84e35d5e03
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 2246eea72aaf1b816a68a35e6e4b74563653ae09
 
