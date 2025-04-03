@@ -27,6 +27,9 @@
 		3761934A2D9D5C5700F52320 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376193322D9D5C5600F52320 /* LaunchScreen.storyboard */; };
 		3761934B2D9D5C5700F52320 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193332D9D5C5600F52320 /* main.m */; };
 		3761934C2D9D5C5700F52320 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */; };
+		376193582D9EADDC00F52320 /* BaseEventEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193542D9EADDC00F52320 /* BaseEventEmitter.swift */; };
+		376193592D9EADDC00F52320 /* EventEmitterService.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193552D9EADDC00F52320 /* EventEmitterService.m */; };
+		3761935A2D9EADDC00F52320 /* EventEmitterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193562D9EADDC00F52320 /* EventEmitterService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +59,9 @@
 		376193322D9D5C5600F52320 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		376193332D9D5C5600F52320 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		376193542D9EADDC00F52320 /* BaseEventEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseEventEmitter.swift; sourceTree = "<group>"; };
+		376193552D9EADDC00F52320 /* EventEmitterService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventEmitterService.m; sourceTree = "<group>"; };
+		376193562D9EADDC00F52320 /* EventEmitterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventEmitterService.swift; sourceTree = "<group>"; };
 		37B463BC2D5BA5C6003D2E9C /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		5CED40DEFB4FCC3BBA6A1297 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
 		6B9D5EB551829EFD431AC365 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,6 +131,7 @@
 		376193352D9D5C5600F52320 /* GalaxyRN */ = {
 			isa = PBXGroup;
 			children = (
+				376193572D9EADDC00F52320 /* Shared */,
 				3761931F2D9D5C5600F52320 /* AudioManager */,
 				376193272D9D5C5600F52320 /* CallManager */,
 				3761932C2D9D5C5600F52320 /* KeepAwakeModule */,
@@ -138,6 +145,16 @@
 				376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */,
 			);
 			path = GalaxyRN;
+			sourceTree = "<group>";
+		};
+		376193572D9EADDC00F52320 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				376193542D9EADDC00F52320 /* BaseEventEmitter.swift */,
+				376193552D9EADDC00F52320 /* EventEmitterService.m */,
+				376193562D9EADDC00F52320 /* EventEmitterService.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -327,11 +344,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				376193582D9EADDC00F52320 /* BaseEventEmitter.swift in Sources */,
 				3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */,
 				3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */,
+				376193592D9EADDC00F52320 /* EventEmitterService.m in Sources */,
 				376193362D9D5C5700F52320 /* AudioManager.m in Sources */,
 				3761933F2D9D5C5700F52320 /* CallManager.swift in Sources */,
 				376193372D9D5C5700F52320 /* AudioManager.swift in Sources */,
+				3761935A2D9EADDC00F52320 /* EventEmitterService.swift in Sources */,
 				376193412D9D5C5700F52320 /* CallManager+Events.swift in Sources */,
 				376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */,
 				376193452D9D5C5700F52320 /* KeepAwakeModule.m in Sources */,
@@ -484,10 +504,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -559,10 +576,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

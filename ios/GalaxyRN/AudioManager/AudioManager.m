@@ -1,7 +1,6 @@
 #import <React/RCTBridgeModule.h>
-#import <React/RCTEventEmitter.h>
 
-@interface RCT_EXTERN_MODULE(AudioManager, RCTEventEmitter)
+@interface RCT_EXTERN_MODULE(AudioManager, NSObject)
 
 RCT_EXTERN_METHOD(setAudioOutput:(NSString *)deviceType
                   callback:(RCTResponseSenderBlock)callback)

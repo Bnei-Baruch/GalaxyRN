@@ -3,12 +3,7 @@ import React
 
 extension AudioManager {
     @objc
-  override static func requiresMainQueueSetup() -> Bool {
-        return false
-    }
-    
-    @objc
-  override func constantsToExport() -> [AnyHashable : Any]! {
+    func constantsToExport() -> [AnyHashable : Any]! {
         return [
             "version": "1.0.0",
             "supportedFeatures": ["audioDeviceMonitoring", "audioDeviceSelection"],
@@ -59,10 +54,5 @@ extension AudioManager {
                 AudioDeviceType.carAudio.rawValue: AudioDeviceType.carAudio.minimumIOSVersion
             ]
         ]
-    }
-    
-    @objc
-  override func supportedEvents() -> [String]! {
-        return [AudioManagerConstants.eventName]
     }
 } 

@@ -4,9 +4,8 @@ import AVFoundation
 import UIKit
 
 @objc(AudioManager)
-class AudioManager: RCTEventEmitter {
+class AudioManager: NSObject, RCTBridgeModule {
     // MARK: - Properties
-    private var hasListeners = false
     
     // MARK: - Initialization
     override init() {
@@ -14,6 +13,9 @@ class AudioManager: RCTEventEmitter {
         setupModules()
         setupAudioSession()
         setupMonitoring()
+        
+        // Register events with EventEmitterService
+        EventEmitterService.shared.registerEvent(AudioManagerConstants.eventName)
     }
     
     // MARK: - Setup
@@ -22,16 +24,12 @@ class AudioManager: RCTEventEmitter {
     }
     
     @objc
-    override static func moduleName() -> String! {
+    static func moduleName() -> String! {
         return AudioManagerConstants.moduleName
     }
     
-    // MARK: - Listener Lifecycle
-    override func startObserving() {
-        hasListeners = true
-    }
-    
-    override func stopObserving() {
-        hasListeners = false
+    @objc
+    static func requiresMainQueueSetup() -> Bool {
+        return false
     }
 } 
