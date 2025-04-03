@@ -1,8 +1,12 @@
-#import "KeepAwakeModule.h"
-#import <React/RCTBridge.h>
+#import <React/RCTBridgeModule.h>
 
-@implementation KeepAwakeModule
+@interface RCT_EXTERN_MODULE(KeepAwakeModule, NSObject)
 
-RCT_EXPORT_MODULE()
+RCT_EXTERN_METHOD(keepAwake:(BOOL)enabled)
+RCT_EXTERN_METHOD(getCurrentState:(RCTResponseSenderBlock)callback)
+
++ (BOOL)requiresMainQueueSetup {
+  return YES;
+}
 
 @end 

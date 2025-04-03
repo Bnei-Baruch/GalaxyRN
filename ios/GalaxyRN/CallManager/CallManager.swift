@@ -5,9 +5,9 @@ import UIKit
 import CallKit
 
 @objc(CallManager)
-class CallManager: NSObject, CXCallObserverDelegate {
+class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     // MARK: - Properties
-    private var bridge: RCTEventEmitter?
+    private var hasListeners = false
     private var audioSession: AVAudioSession?
     private var isScreenLocked: Bool = false
     private let callObserver = CXCallObserver()
@@ -61,10 +61,12 @@ class CallManager: NSObject, CXCallObserverDelegate {
         }
         
         // Отправляем событие в React Native
-        bridge?.sendEvent(withName: "phoneCallStateChanged", body: [
-            "state": callState,
-            "callUUID": call.uuid.uuidString
-        ])
+        if hasListeners {
+            self.sendEvent(withName: "phoneCallStateChanged", body: [
+                "state": callState,
+                "callUUID": call.uuid.uuidString
+            ])
+        }
     }
     
     // MARK: - Public Methods
@@ -87,8 +89,22 @@ class CallManager: NSObject, CXCallObserverDelegate {
         UIApplication.shared.isIdleTimerDisabled = keepAwake
     }
     
+    // MARK: - Required RCTEventEmitter overrides
+    override func supportedEvents() -> [String]! {
+        return ["phoneCallStateChanged"]
+    }
+    
+    // MARK: - Listener Lifecycle
+    override func startObserving() {
+        hasListeners = true
+    }
+    
+    override func stopObserving() {
+        hasListeners = false
+    }
+    
     @objc
-    static func moduleName() -> String! {
+    override static func moduleName() -> String! {
         return "CallManager"
     }
 } 

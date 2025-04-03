@@ -45,10 +45,11 @@ extension AudioManager {
             try audioSession.setPreferredInput(audioSession.availableInputs?.first { input in
                 input.portType == deviceTypeEnum.portType
             })
+          /*
             try audioSession.setPreferredOutput(audioSession.availableOutputs?.first { output in
                 output.portType == deviceTypeEnum.portType
             })
-            
+            */
             callback([NSNull(), "Audio output set successfully"])
         } catch {
             callback([AudioManagerError.setOutputFailed.message, NSNull()])

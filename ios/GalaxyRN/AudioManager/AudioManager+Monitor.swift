@@ -27,55 +27,55 @@ extension AudioManager {
             return
         }
         
-        let currentRoute = audioSession.currentRoute
-        let output = currentRoute.outputs.first
-        let deviceType = AudioDeviceType.from(port: output?.portType ?? .unknown)
+        let body = getAvailableAudioDevices()
         
-        let eventData: [String: Any] = [
-            "type": Constants.audioDeviceChanged,
-            "deviceType": deviceType.rawValue,
-            "deviceName": output?.portName ?? "Unknown",
-            "reason": reason.rawValue
-        ]
-        
-        sendEvent(name: Constants.eventName, body: eventData)
+      sendEvent(name: AudioManagerConstants.eventName, body: body)
     }
     
-    @objc
-    func getAvailableAudioDevices(_ callback: @escaping RCTResponseSenderBlock) {
-        guard Self.isIOSVersionSupported() else {
-            callback([AudioManagerError.unsupportedIOSVersion.message, NSNull()])
-            return
+   @objc
+    func handleDevicesChange(_ deviceUID: String, callback: @escaping RCTResponseSenderBlock) {
+        do {
+            let resp = try activateAudioDevice(withUID: deviceUID)
+            callback([NSNull(), resp])
+        } catch {
+            callback([["error": error.localizedDescription], NSNull()])
+        }
+    }
+
+    func activateAudioDevice(withUID deviceUID: String) throws {
+        let session = AVAudioSession.sharedInstance()
+        
+        guard let portDescription = session.availableInputs?.first(where: { $0.uid == deviceUID }) else {
+            throw NSError(domain: "AudioManager", code: 404, userInfo: [NSLocalizedDescriptionKey: "Audio device not found"])
         }
         
-        guard let availableInputs = audioSession.availableInputs,
-              let currentRoute = audioSession.currentRoute else {
-            callback([AudioManagerError.noDeviceAvailable.message, NSNull()])
-            return
+        try session.setPreferredInput(portDescription)
+        
+        let currentRoute = session.currentRoute
+        if currentRoute.outputs.first(where: { $0.uid == deviceUID }) != nil {
+            try session.setCategory(.playAndRecord, options: [.allowBluetooth, .allowBluetoothA2DP])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
         }
         
+        // Notify about the route change
+        let body = getAvailableAudioDevices()
+      sendEvent(name: AudioManagerConstants.eventName, body: body)
+    }
+
+    func getAvailableAudioDevices() -> [[String: Any]] {
         var devices: [[String: Any]] = []
         
-        if let currentOutput = currentRoute.outputs.first {
-            let currentDeviceType = AudioDeviceType.from(port: currentOutput.portType)
-            devices.append([
-                "type": currentDeviceType.rawValue,
-                "name": currentOutput.portName,
-                "isCurrent": true
-            ])
-        }
-        
-        for input in availableInputs {
-            let deviceType = AudioDeviceType.from(port: input.portType)
+
+        for output in audioSession.currentRoute.outputs {
+            let deviceType = AudioDeviceType.from(port: output.portType)
             if Self.isDeviceTypeSupported(deviceType) {
                 devices.append([
-                    "type": deviceType.rawValue,
-                    "name": input.portName,
-                    "isCurrent": false
+                  "id": output.uid,
+                  "type": output.portType,
                 ])
             }
         }
         
-        callback([NSNull(), devices])
+        return devices
     }
 } 

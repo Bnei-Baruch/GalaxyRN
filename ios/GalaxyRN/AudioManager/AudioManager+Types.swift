@@ -1,9 +1,10 @@
 import Foundation
 import AVFoundation
+import UIKit
 
-enum Constants {
+enum AudioManagerConstants {
     static let moduleName = "AudioManager"
-    static let eventName = "AudioManagerEvent"
+    static let eventName = "updateAudioDevice"
     
     static let audioDeviceChanged = "audioDeviceChanged"
     static let audioRouteChanged = "audioRouteChanged"
@@ -31,13 +32,13 @@ enum AudioManagerError: Error {
         case .processingFailed:
             return "Processing failed"
         case .noDeviceAvailable:
-            return Constants.errorNoDevice
+            return AudioManagerConstants.errorNoDevice
         case .invalidDevice:
-            return Constants.errorInvalidDevice
+            return AudioManagerConstants.errorInvalidDevice
         case .setOutputFailed:
-            return Constants.errorSetOutputFailed
+            return AudioManagerConstants.errorSetOutputFailed
         case .unsupportedIOSVersion:
-            return Constants.errorUnsupportedIOSVersion
+            return AudioManagerConstants.errorUnsupportedIOSVersion
         }
     }
 }
@@ -84,18 +85,12 @@ enum AudioDeviceType: String {
             return .bluetoothLE
         case .airPlay:
             return .airPlay
-        case .externalSpeaker:
-            return .externalSpeaker
-        case .externalMic:
-            return .externalMic
-        case .externalAudio:
-            return .externalAudio
         case .carAudio:
             return .carAudio
         case .usbAudio:
             return .usbAudio
         default:
-            return .unknown
+          return .builtInSpeaker
         }
     }
     
@@ -119,16 +114,16 @@ enum AudioDeviceType: String {
             return .bluetoothLE
         case .airPlay:
             return .airPlay
-        case .externalSpeaker:
-            return .externalSpeaker
-        case .externalMic:
-            return .externalMic
-        case .externalAudio:
-            return .externalAudio
         case .carAudio:
             return .carAudio
         case .usbAudio:
             return .usbAudio
+        case .externalSpeaker:
+            return .lineOut
+        case .externalMic:
+            return .lineIn
+        case .externalAudio:
+            return .lineIn
         case .unknown:
             return .builtInSpeaker
         }
@@ -183,14 +178,14 @@ enum AudioDeviceType: String {
     }
 }
 
-protocol DataProcessing {
+protocol AudioManagerDataProcessing {
     func process(data: Any) -> Result<Any, Error>
 }
 
 extension AudioManager {
     static func isIOSVersionSupported() -> Bool {
         let systemVersion = UIDevice.current.systemVersion
-        return (systemVersion as NSString).floatValue >= Constants.minimumIOSVersion
+        return (systemVersion as NSString).floatValue >= AudioManagerConstants.minimumIOSVersion
     }
     
     static func isDeviceTypeSupported(_ deviceType: AudioDeviceType) -> Bool {

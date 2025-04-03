@@ -3,18 +3,18 @@ import React
 
 extension AudioManager {
     @objc
-    static func requiresMainQueueSetup() -> Bool {
+  override static func requiresMainQueueSetup() -> Bool {
         return false
     }
     
     @objc
-    func constantsToExport() -> [AnyHashable : Any]! {
+  override func constantsToExport() -> [AnyHashable : Any]! {
         return [
             "version": "1.0.0",
             "supportedFeatures": ["audioDeviceMonitoring", "audioDeviceSelection"],
             "eventTypes": [
-                "audioDeviceChanged": Constants.audioDeviceChanged,
-                "audioRouteChanged": Constants.audioRouteChanged
+                "audioDeviceChanged": AudioManagerConstants.audioDeviceChanged,
+                "audioRouteChanged": AudioManagerConstants.audioRouteChanged
             ],
             "deviceTypes": [
                 "builtInSpeaker": AudioDeviceType.builtInSpeaker.rawValue,
@@ -62,7 +62,7 @@ extension AudioManager {
     }
     
     @objc
-    func supportedEvents() -> [String]! {
-        return [Constants.eventName]
+  override func supportedEvents() -> [String]! {
+        return [AudioManagerConstants.eventName]
     }
 } 

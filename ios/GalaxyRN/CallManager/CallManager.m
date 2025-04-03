@@ -1,7 +1,10 @@
-#import "CallManager.h"
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@implementation CallManager
+@interface RCT_EXTERN_MODULE(CallManager, RCTEventEmitter)
 
-RCT_EXPORT_MODULE()
+RCT_EXTERN_METHOD(enableBackgroundPlayback)
+RCT_EXTERN_METHOD(disableBackgroundPlayback)
+RCT_EXTERN_METHOD(keepScreenAwake:(BOOL)keepAwake)
 
 @end 

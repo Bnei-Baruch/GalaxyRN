@@ -49,7 +49,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         Log.d(TAG, "initialize");
         try {
             SendEventToClient.init(this.context);
-            UpdateAudioDeviceCallback callback = () -> updateAudioDevices(null);
+            UpdateAudioDeviceCallback callback = () -> handleDevicesChange(null);
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     audioDeviceManager = new AudioDeviceManager(this.context, callback);
@@ -114,11 +114,11 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void initAudioDevices() {
-            updateAudioDevices(null);
+            handleDevicesChange(null);
     }
 
     @ReactMethod
-    public void updateAudioDevices(Integer deviceId) {
+    public void handleDevicesChange(Integer deviceId) {
         Log.d(TAG, "updateAudioDevices() deviceId: " + deviceId);
         UiThreadUtil.runOnUiThread(() -> {
 
