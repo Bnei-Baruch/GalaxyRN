@@ -26,6 +26,10 @@ class AudioManager: RCTEventEmitter {
         return AudioManagerConstants.moduleName
     }
     
+    override func supportedEvents() -> [String]! {
+        return [AudioManagerConstants.eventName]
+    }
+    
     // MARK: - Listener Lifecycle
     override func startObserving() {
         hasListeners = true
