@@ -27,9 +27,4 @@ class AudioManager: NSObject, RCTBridgeModule {
     static func moduleName() -> String! {
         return AudioManagerConstants.moduleName
     }
-    
-    @objc
-    static func requiresMainQueueSetup() -> Bool {
-        return false
-    }
 } 

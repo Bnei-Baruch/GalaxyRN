@@ -8,6 +8,14 @@ extension AudioManager {
     var audioSession: AVAudioSession {
         return AVAudioSession.sharedInstance()
     }
+      // Определение групп аудио-устройств
+  enum AudioOutputGroup: Int {
+    case earpiece = 0
+    case speaker = 1   
+    case bluetooth = 2 
+    case headphones = 3
+    case external = 4  
+  }
     
     func setupAudioSession() {
         do {
@@ -19,40 +27,76 @@ extension AudioManager {
     }
     
     @objc
-    func setAudioOutput(_ deviceType: String, callback: @escaping RCTResponseSenderBlock) {
-        guard Self.isIOSVersionSupported() else {
-            callback([AudioManagerError.unsupportedIOSVersion.message, NSNull()])
-            return
-        }
+    func switchAudioOutput(_ group: Int, callback: @escaping RCTResponseSenderBlock) {
         
-        guard let deviceTypeEnum = AudioDeviceType(rawValue: deviceType) else {
+        guard let groupEnum = AudioOutputGroup(rawValue: group) else {
             callback([AudioManagerError.invalidDevice.message, NSNull()])
             return
         }
         
-        guard Self.isDeviceTypeSupported(deviceTypeEnum) else {
-            callback([AudioManagerError.unsupportedIOSVersion.message, NSNull()])
-            return
-        }
-        
         do {
-            try audioSession.setCategory(.playAndRecord, mode: .default)
+            switchToRouteGroup(groupEnum)
             try audioSession.setActive(true)
             
             try audioSession.setPreferredOutputNumberOfChannels(2)
             try audioSession.setPreferredIOBufferDuration(0.005)
-            
-            try audioSession.setPreferredInput(audioSession.availableInputs?.first { input in
-                input.portType == deviceTypeEnum.portType
-            })
-          /*
-            try audioSession.setPreferredOutput(audioSession.availableOutputs?.first { output in
-                output.portType == deviceTypeEnum.portType
-            })
-            */
             callback([NSNull(), "Audio output set successfully"])
         } catch {
             callback([AudioManagerError.setOutputFailed.message, NSNull()])
         }
     }
+
+  
+  func switchToRouteGroup(_ group: AudioOutputGroup) {
+    if group.rawValue < 0 {
+      return
+    }
+    
+    do {
+      let session = AVAudioSession.sharedInstance()
+      
+      switch group {
+      case AudioOutputGroup.speaker:
+        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+        try session.overrideOutputAudioPort(.speaker)
+        return
+        
+      case AudioOutputGroup.earpiece:
+        try session.setCategory(.playAndRecord, mode: .default, options: [])
+        try session.overrideOutputAudioPort(.none)
+        return
+        
+      case AudioOutputGroup.bluetooth:
+        try session.setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP])
+        
+        let outputs = session.currentRoute.outputs
+        if outputs.contains(where: { 
+          $0.portType == .bluetoothA2DP || 
+          $0.portType == .bluetoothHFP || 
+          $0.portType == .bluetoothLE 
+        }) {
+          return 
+        } else {
+            return switchToRouteGroup(AudioOutputGroup.earpiece)
+        }
+      
+      case AudioOutputGroup.external:
+        try session.setCategory(.playAndRecord, mode: .default, options: [.allowAirPlay])
+        
+        
+        let outputs = session.currentRoute.outputs
+        if outputs.contains(where: { $0.portType == .HDMI || $0.portType == .airPlay || $0.portType == .usbAudio }) {
+          return 
+        } else {
+          return switchToRouteGroup(AudioOutputGroup.bluetooth)
+        }
+      case .headphones:
+        try session.setCategory(.playAndRecord, mode: .default, options: [])
+        return
+      }
+    } catch {
+        return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .speaker)
+      }
+  }
+  
 } 

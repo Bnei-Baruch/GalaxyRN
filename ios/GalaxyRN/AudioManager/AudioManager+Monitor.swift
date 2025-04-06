@@ -29,7 +29,7 @@ extension AudioManager {
         
         let body = getAvailableAudioDevices()
         
-      sendEvent(name: AudioManagerConstants.eventName, body: body)
+      EventEmitterService.shared.emitDataUpdate(eventName: AudioManagerConstants.eventName, data: body)
     }
     
    @objc
@@ -59,7 +59,7 @@ extension AudioManager {
         
         // Notify about the route change
         let body = getAvailableAudioDevices()
-      sendEvent(name: AudioManagerConstants.eventName, body: body)
+      EventEmitterService.shared.emitDataUpdate(eventName: AudioManagerConstants.eventName, data: body)
     }
 
     func getAvailableAudioDevices() -> [[String: Any]] {
