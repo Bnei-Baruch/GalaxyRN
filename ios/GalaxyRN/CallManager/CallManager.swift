@@ -7,7 +7,7 @@ import CallKit
 @objc(CallManager)
 class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     // MARK: - Properties
-    private var hasListeners = false
+    var hasListeners = false
     private var audioSession: AVAudioSession?
     private var isScreenLocked: Bool = false
     private let callObserver = CXCallObserver()
@@ -59,14 +59,7 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
             // Другое состояние
             callState = "unknown"
         }
-        
-        // Отправляем событие в React Native
-        if hasListeners {
-            self.sendEvent(withName: "phoneCallStateChanged", body: [
-                "state": callState,
-                "callUUID": call.uuid.uuidString
-            ])
-        }
+      sendCallState(state: callState)
     }
     
     // MARK: - Public Methods
@@ -87,20 +80,6 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     @objc
     func keepScreenAwake(_ keepAwake: Bool) {
         UIApplication.shared.isIdleTimerDisabled = keepAwake
-    }
-    
-    // MARK: - Required RCTEventEmitter overrides
-    override func supportedEvents() -> [String]! {
-        return ["phoneCallStateChanged"]
-    }
-    
-    // MARK: - Listener Lifecycle
-    override func startObserving() {
-        hasListeners = true
-    }
-    
-    override func stopObserving() {
-        hasListeners = false
     }
     
     @objc

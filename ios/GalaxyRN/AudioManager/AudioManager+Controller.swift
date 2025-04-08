@@ -10,6 +10,7 @@ extension AudioManager {
     }
       // Определение групп аудио-устройств
   enum AudioOutputGroup: Int {
+    case none = -1
     case earpiece = 0
     case speaker = 1   
     case bluetooth = 2 
@@ -27,15 +28,13 @@ extension AudioManager {
     }
     
     @objc
-    func switchAudioOutput(_ group: Int, callback: @escaping RCTResponseSenderBlock) {
-        
-        guard let groupEnum = AudioOutputGroup(rawValue: group) else {
-            callback([AudioManagerError.invalidDevice.message, NSNull()])
-            return
-        }
+    func switchAudioOutput(_ callback: @escaping RCTResponseSenderBlock) {
+      let currentGroup = getCurrentAudioOutputGroup()
+        let nextGroup = (currentGroup.rawValue - 1 < 0) ? AudioOutputGroup.external : AudioOutputGroup(rawValue: currentGroup.rawValue - 1)!
+        print("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
         
         do {
-            switchToRouteGroup(groupEnum)
+            switchToRouteGroup(nextGroup)
             try audioSession.setActive(true)
             
             try audioSession.setPreferredOutputNumberOfChannels(2)
@@ -44,11 +43,38 @@ extension AudioManager {
         } catch {
             callback([AudioManagerError.setOutputFailed.message, NSNull()])
         }
+      sendCurrentAudioGroup()
     }
 
+
+  func getCurrentAudioOutputGroup() -> AudioOutputGroup {
+    guard let output = audioSession.currentRoute.outputs.first else {
+      return .none
+    }
+    
+    return getGroupByPortType(output.portType)
+  }
+  
+  func getGroupByPortType(_ port: AVAudioSession.Port) -> AudioOutputGroup {
+        switch port {
+        case .bluetoothA2DP, .bluetoothHFP, .bluetoothLE:
+            return .bluetooth
+        case .headphones:
+            return .headphones
+        case .builtInSpeaker:
+            return .speaker
+        case .builtInReceiver:
+            return .earpiece
+        case .HDMI, .airPlay, .usbAudio:
+            return .external
+        default:
+          return .none
+        }
+  }
   
   func switchToRouteGroup(_ group: AudioOutputGroup) {
-    if group.rawValue < 0 {
+    print("[audioDevices] switchToRouteGroup next groups", group)
+    if group.rawValue < 0 || group == .none {
       return
     }
     
@@ -64,39 +90,27 @@ extension AudioManager {
       case AudioOutputGroup.earpiece:
         try session.setCategory(.playAndRecord, mode: .default, options: [])
         try session.overrideOutputAudioPort(.none)
-        return
+        break
         
       case AudioOutputGroup.bluetooth:
         try session.setCategory(.playAndRecord, mode: .default, options: [.allowBluetooth, .allowBluetoothA2DP])
-        
-        let outputs = session.currentRoute.outputs
-        if outputs.contains(where: { 
-          $0.portType == .bluetoothA2DP || 
-          $0.portType == .bluetoothHFP || 
-          $0.portType == .bluetoothLE 
-        }) {
-          return 
-        } else {
-            return switchToRouteGroup(AudioOutputGroup.earpiece)
-        }
-      
+        break
+      case AudioOutputGroup.headphones:
+        try session.setCategory(.playAndRecord, mode: .default, options: [])
+        break
       case AudioOutputGroup.external:
         try session.setCategory(.playAndRecord, mode: .default, options: [.allowAirPlay])
-        
-        
-        let outputs = session.currentRoute.outputs
-        if outputs.contains(where: { $0.portType == .HDMI || $0.portType == .airPlay || $0.portType == .usbAudio }) {
-          return 
-        } else {
-          return switchToRouteGroup(AudioOutputGroup.bluetooth)
-        }
-      case .headphones:
-        try session.setCategory(.playAndRecord, mode: .default, options: [])
+        break
+      case .none:
         return
       }
+      let currentGroup = getCurrentAudioOutputGroup()
+      print("[audioDevices] switchToRouteGroup current and preferred groups", currentGroup, group)
+      if currentGroup != group {
+        return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
+      }
     } catch {
-        return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .speaker)
+        return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
       }
   }
-  
 } 

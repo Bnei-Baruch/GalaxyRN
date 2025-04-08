@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		086DB0F40B1A9B315219FFC0 /* libPods-GalaxyRN.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B9D5EB551829EFD431AC365 /* libPods-GalaxyRN.a */; };
 		376193362D9D5C5700F52320 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193172D9D5C5600F52320 /* AudioManager.m */; };
 		376193372D9D5C5700F52320 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193182D9D5C5600F52320 /* AudioManager.swift */; };
 		376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */; };
@@ -27,13 +26,12 @@
 		3761934A2D9D5C5700F52320 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376193322D9D5C5600F52320 /* LaunchScreen.storyboard */; };
 		3761934B2D9D5C5700F52320 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193332D9D5C5600F52320 /* main.m */; };
 		3761934C2D9D5C5700F52320 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */; };
-		376193582D9EADDC00F52320 /* BaseEventEmitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193542D9EADDC00F52320 /* BaseEventEmitter.swift */; };
-		376193592D9EADDC00F52320 /* EventEmitterService.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193552D9EADDC00F52320 /* EventEmitterService.m */; };
-		3761935A2D9EADDC00F52320 /* EventEmitterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193562D9EADDC00F52320 /* EventEmitterService.swift */; };
+		EEE4C679E7EF7F5CC9C2B75D /* libPods-GalaxyRN.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* GalaxyRN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GalaxyRN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2DF3B0EE911E3CBA2541EFA1 /* Pods-GalaxyRN.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.release.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.release.xcconfig"; sourceTree = "<group>"; };
 		376193162D9D5C5600F52320 /* AudioManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioManager.h; sourceTree = "<group>"; };
 		376193172D9D5C5600F52320 /* AudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioManager.m; sourceTree = "<group>"; };
 		376193182D9D5C5600F52320 /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
@@ -59,13 +57,9 @@
 		376193322D9D5C5600F52320 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		376193332D9D5C5600F52320 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		376193542D9EADDC00F52320 /* BaseEventEmitter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseEventEmitter.swift; sourceTree = "<group>"; };
-		376193552D9EADDC00F52320 /* EventEmitterService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventEmitterService.m; sourceTree = "<group>"; };
-		376193562D9EADDC00F52320 /* EventEmitterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventEmitterService.swift; sourceTree = "<group>"; };
 		37B463BC2D5BA5C6003D2E9C /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		5CED40DEFB4FCC3BBA6A1297 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
-		6B9D5EB551829EFD431AC365 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D55293F159F0B7297FE700E3 /* Pods-GalaxyRN.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.release.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.release.xcconfig"; sourceTree = "<group>"; };
+		914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C51E97E138229AE1AF6618C1 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -74,7 +68,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				086DB0F40B1A9B315219FFC0 /* libPods-GalaxyRN.a in Frameworks */,
+				EEE4C679E7EF7F5CC9C2B75D /* libPods-GalaxyRN.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6B9D5EB551829EFD431AC365 /* libPods-GalaxyRN.a */,
+				914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -131,7 +125,6 @@
 		376193352D9D5C5600F52320 /* GalaxyRN */ = {
 			isa = PBXGroup;
 			children = (
-				376193572D9EADDC00F52320 /* Shared */,
 				3761931F2D9D5C5600F52320 /* AudioManager */,
 				376193272D9D5C5600F52320 /* CallManager */,
 				3761932C2D9D5C5600F52320 /* KeepAwakeModule */,
@@ -145,16 +138,6 @@
 				376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */,
 			);
 			path = GalaxyRN;
-			sourceTree = "<group>";
-		};
-		376193572D9EADDC00F52320 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				376193542D9EADDC00F52320 /* BaseEventEmitter.swift */,
-				376193552D9EADDC00F52320 /* EventEmitterService.m */,
-				376193562D9EADDC00F52320 /* EventEmitterService.swift */,
-			);
-			path = Shared;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -190,8 +173,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5CED40DEFB4FCC3BBA6A1297 /* Pods-GalaxyRN.debug.xcconfig */,
-				D55293F159F0B7297FE700E3 /* Pods-GalaxyRN.release.xcconfig */,
+				C51E97E138229AE1AF6618C1 /* Pods-GalaxyRN.debug.xcconfig */,
+				2DF3B0EE911E3CBA2541EFA1 /* Pods-GalaxyRN.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -203,13 +186,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "GalaxyRN" */;
 			buildPhases = (
-				EE93C2F9701FB83ECAA267ED /* [CP] Check Pods Manifest.lock */,
+				57CB0E87934CDE76EA4DC232 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E8D2CB92E743B610F64E6E2C /* [CP] Embed Pods Frameworks */,
-				6A6207EC3453A4DD7D8764A3 /* [CP] Copy Pods Resources */,
+				7F05F0C33DCC8A2E43996818 /* [CP] Embed Pods Frameworks */,
+				67CB9C60F4D36E71F977F67C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -281,41 +264,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		6A6207EC3453A4DD7D8764A3 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E8D2CB92E743B610F64E6E2C /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EE93C2F9701FB83ECAA267ED /* [CP] Check Pods Manifest.lock */ = {
+		57CB0E87934CDE76EA4DC232 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -337,6 +286,40 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		67CB9C60F4D36E71F977F67C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7F05F0C33DCC8A2E43996818 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -344,14 +327,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				376193582D9EADDC00F52320 /* BaseEventEmitter.swift in Sources */,
 				3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */,
 				3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */,
-				376193592D9EADDC00F52320 /* EventEmitterService.m in Sources */,
 				376193362D9D5C5700F52320 /* AudioManager.m in Sources */,
 				3761933F2D9D5C5700F52320 /* CallManager.swift in Sources */,
 				376193372D9D5C5700F52320 /* AudioManager.swift in Sources */,
-				3761935A2D9EADDC00F52320 /* EventEmitterService.swift in Sources */,
 				376193412D9D5C5700F52320 /* CallManager+Events.swift in Sources */,
 				376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */,
 				376193452D9D5C5700F52320 /* KeepAwakeModule.m in Sources */,
@@ -371,7 +351,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5CED40DEFB4FCC3BBA6A1297 /* Pods-GalaxyRN.debug.xcconfig */;
+			baseConfigurationReference = C51E97E138229AE1AF6618C1 /* Pods-GalaxyRN.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -403,7 +383,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D55293F159F0B7297FE700E3 /* Pods-GalaxyRN.release.xcconfig */;
+			baseConfigurationReference = 2DF3B0EE911E3CBA2541EFA1 /* Pods-GalaxyRN.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

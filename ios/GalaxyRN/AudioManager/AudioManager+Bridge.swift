@@ -3,7 +3,7 @@ import React
 
 extension AudioManager {
     @objc
-    func constantsToExport() -> [AnyHashable : Any]! {
+    override func constantsToExport() -> [AnyHashable : Any]! {
         return [
             "version": "1.0.0",
             "supportedFeatures": ["audioDeviceMonitoring", "audioDeviceSelection"],

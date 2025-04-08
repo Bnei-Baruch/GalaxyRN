@@ -27,9 +27,7 @@ extension AudioManager {
             return
         }
         
-        let body = getAvailableAudioDevices()
-        
-      EventEmitterService.shared.emitDataUpdate(eventName: AudioManagerConstants.eventName, data: body)
+        sendCurrentAudioGroup()
     }
     
    @objc
@@ -57,25 +55,7 @@ extension AudioManager {
             try session.setActive(true, options: .notifyOthersOnDeactivation)
         }
         
-        // Notify about the route change
-        let body = getAvailableAudioDevices()
-      EventEmitterService.shared.emitDataUpdate(eventName: AudioManagerConstants.eventName, data: body)
+        sendCurrentAudioGroup()
     }
 
-    func getAvailableAudioDevices() -> [[String: Any]] {
-        var devices: [[String: Any]] = []
-        
-
-        for output in audioSession.currentRoute.outputs {
-            let deviceType = AudioDeviceType.from(port: output.portType)
-            if Self.isDeviceTypeSupported(deviceType) {
-                devices.append([
-                  "id": output.uid,
-                  "type": output.portType,
-                ])
-            }
-        }
-        
-        return devices
-    }
 } 

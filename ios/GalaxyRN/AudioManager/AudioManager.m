@@ -5,6 +5,6 @@
 RCT_EXTERN_METHOD(setAudioOutput:(NSString *)deviceType
                   callback:(RCTResponseSenderBlock)callback)
 
-RCT_EXTERN_METHOD(emitDataUpdate:(id)data)
+RCT_EXTERN_METHOD(switchAudioOutput:(RCTResponseSenderBlock)callback)
 
 @end 
