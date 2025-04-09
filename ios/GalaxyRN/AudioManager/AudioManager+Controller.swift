@@ -31,7 +31,7 @@ extension AudioManager {
     func switchAudioOutput(_ callback: @escaping RCTResponseSenderBlock) {
       let currentGroup = getCurrentAudioOutputGroup()
         let nextGroup = (currentGroup.rawValue - 1 < 0) ? AudioOutputGroup.external : AudioOutputGroup(rawValue: currentGroup.rawValue - 1)!
-        print("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
+        NLOG("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
         
         do {
             switchToRouteGroup(nextGroup)
@@ -73,7 +73,6 @@ extension AudioManager {
   }
   
   func switchToRouteGroup(_ group: AudioOutputGroup) {
-    print("[audioDevices] switchToRouteGroup next groups", group)
     if group.rawValue < 0 || group == .none {
       return
     }
@@ -105,7 +104,6 @@ extension AudioManager {
         return
       }
       let currentGroup = getCurrentAudioOutputGroup()
-      print("[audioDevices] switchToRouteGroup current and preferred groups", currentGroup, group)
       if currentGroup != group {
         return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
       }

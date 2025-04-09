@@ -3,6 +3,13 @@ import React
 import AVFoundation
 import UIKit
 
+// Define NLOG as a global function for logging
+func NLOG(_ items: Any...) {
+    #if DEBUG
+    print(items.map { "\($0)" }.joined(separator: " "))
+    #endif
+}
+
 @objc(AudioManager)
 class AudioManager: RCTEventEmitter {
     // MARK: - Properties

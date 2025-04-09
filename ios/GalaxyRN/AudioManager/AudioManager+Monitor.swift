@@ -7,10 +7,6 @@ extension AudioManager {
     // MARK: - Audio Monitoring
     
     func setupMonitoring() {
-        setupNotifications()
-    }
-    
-    private func setupNotifications() {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleRouteChange),
@@ -19,8 +15,10 @@ extension AudioManager {
         )
     }
     
+    
     @objc 
     private func handleRouteChange(notification: Notification) {
+        NLOG("[audioDevices] handleRouteChange")
         guard let userInfo = notification.userInfo,
               let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
               let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {

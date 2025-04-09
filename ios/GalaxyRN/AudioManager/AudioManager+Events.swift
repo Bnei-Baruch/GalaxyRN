@@ -40,13 +40,11 @@ extension AudioManager {
       var resp: [String: Any] = [:]
       
       let output = audioSession.currentRoute.outputs.first
-      print("[audioDevices] getCurrentAudioDevice output", output)
       let type = getCurrentAudioOutputGroup()
-      print("[audioDevices] getCurrentAudioDevice type", type)
       resp["name"] = output?.uid
       resp["type"] = String(describing: type)
       resp["active"] = true
-      print("[audioDevices] getCurrentAudioDevice resp", resp)
+      NLOG("[audioDevices] getCurrentAudioDevice resp", resp)
       return [resp]
   }
 }
