@@ -4,7 +4,7 @@ import React
 extension CallManager {
   // MARK: - Required RCTEventEmitter overrides
   override func supportedEvents() -> [String]! {
-      return ["phoneCallStateChanged"]
+    return [CallManagerConstants.eventName]
   }
   
   // MARK: - Listener Lifecycle
@@ -18,7 +18,7 @@ extension CallManager {
   
   func sendCallState( state: String ){
     if hasListeners {
-        sendEvent(withName: "phoneCallStateChanged", body: [
+      sendEvent(withName: CallManagerConstants.eventName, body: [
             "state": state,
         ])
     }

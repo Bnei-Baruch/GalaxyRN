@@ -1,8 +1,8 @@
 import Foundation
 
-enum Constants {
+enum CallManagerConstants {
     static let moduleName = "CallManager"
-    static let eventName = "CallManagerEvent"
+    static let eventName = "onCallStateChanged"
 }
 
 enum CallManagerError: Error {
