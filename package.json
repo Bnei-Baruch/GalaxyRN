@@ -1,6 +1,6 @@
 {
   "name": "GalaxyRN",
-  "version": "0.0.1",
+  "version": "1.0.22",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,7 +12,8 @@
     "bundle:android": "mkdir -p android/app/src/main/assets && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ --sourcemap-output android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map",
     "bundle:ios": "mkdir -p ios/main/assets && react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios/main/assets/ --sourcemap-output ios/main.jsbundle.map",
     "sentry:android": "sentry-cli sourcemaps inject --org galaxy --project galaxy-rn --release $npm_package_version ./android/app/src/main/assets/index.android.bundle ./android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map",
-    "sentry:ios": "sentry-cli sourcemaps inject --org galaxy --project galaxy-rn --release $npm_package_version ./ios/main.jsbundle ./ios/main.jsbundle.map"
+    "sentry:ios": "sentry-cli sourcemaps inject --org galaxy --project galaxy-rn --release $npm_package_version ./ios/main.jsbundle ./ios/main.jsbundle.map",
+    "version-bump": "node ./scripts/version-bump.js"
   },
   "dependencies": {
     "@sentry/react-native": "^6.9.0",
