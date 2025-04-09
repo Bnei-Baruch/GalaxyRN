@@ -22,3 +22,9 @@ enum CallManagerError: Error {
 protocol DataProcessing {
     func process(data: Any) -> Result<Any, Error>
 }
+
+enum CallEvents: String {
+    case ON_START_CALL
+    case ON_END_CALL
+    case OTHERS
+}

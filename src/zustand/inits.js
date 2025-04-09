@@ -21,27 +21,13 @@ import { useShidurStore } from "./shidur";
 import kc from "../auth/keycloak";
 import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
+import CallsBridge from "../services/CallsBridge";
 
-const { AudioDeviceModule, VersionModule } = NativeModules;
-const eventEmitter = new NativeEventEmitter(AudioDeviceModule);
+//const { AudioDeviceModule, VersionModule } = NativeModules;
+const eventEmitter = new NativeEventEmitter(CallsBridge.raw);
 
 let subscription;
 
-async function requestPermission(permission) {
-  try {
-    const granted = await PermissionsAndroid.request(permission, {
-      title: `${permission} Permission`,
-      message: `Arvut needs access to your ${permission}`,
-      buttonNeutral: "Ask Me Later",
-      buttonNegative: "Cancel",
-      buttonPositive: "OK",
-    });
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
-  } catch (err) {
-    console.warn(err);
-    return false;
-  }
-}
 
 export const useInitsStore = create((set, get) => ({
   isBridgeReady: false,
@@ -165,7 +151,7 @@ export const useInitsStore = create((set, get) => ({
   },
   fetchVersion: async () => {
     try {
-      const versionInfo = await VersionModule.getVersion();
+      //const versionInfo = await VersionModule.getVersion();
       set({ versionInfo });
     } catch (error) {
       console.error("Error getting version:", error);

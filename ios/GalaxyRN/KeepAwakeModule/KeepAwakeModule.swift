@@ -11,15 +11,21 @@ class KeepAwakeModule: NSObject {
     }
     
     @objc
-    func keepAwake(_ enabled: Bool) {
+    func keepScreenOn() {
         DispatchQueue.main.async {
-            UIApplication.shared.isIdleTimerDisabled = enabled
+            UIApplication.shared.isIdleTimerDisabled = true
         }
     }
     
     @objc
-    func getCurrentState(_ callback: RCTResponseSenderBlock) {
-        let isAwake = UIApplication.shared.isIdleTimerDisabled
-        callback([NSNull(), isAwake])
+    func releaseScreenOn() {
+        DispatchQueue.main.async {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
+    }
+    
+    @objc
+    static func requiresMainQueueSetup() -> Bool {
+        return true
     }
 } 

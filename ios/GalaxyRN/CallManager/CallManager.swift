@@ -20,9 +20,7 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     
     // MARK: - Setup
     private func setupModule() {
-        audioSession = AVAudioSession.sharedInstance()
-        setupAudioSession()
-        setupCallObserver()
+        callObserver.setDelegate(self, queue: nil)
     }
     
     private func setupAudioSession() {
@@ -34,9 +32,6 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
         }
     }
     
-    private func setupCallObserver() {
-        callObserver.setDelegate(self, queue: nil)
-    }
     
     // MARK: - CXCallObserverDelegate
     func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
@@ -44,20 +39,15 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
         let callState: String
         
         if call.hasEnded {
-            // Звонок завершен
-            callState = "disconnected"
+            callState = CallEvents.ON_END_CALL.rawValue
         } else if call.isOutgoing && !call.hasConnected {
-            // Исходящий звонок
-            callState = "dialing"
+            callState = CallEvents.ON_START_CALL.rawValue
         } else if !call.isOutgoing && !call.hasConnected && !call.hasEnded {
-            // Входящий звонок
-            callState = "incoming"
+            callState = CallEvents.ON_START_CALL.rawValue
         } else if call.hasConnected && !call.hasEnded {
-            // Звонок подключен
-            callState = "connected"
+            callState = CallEvents.ON_START_CALL.rawValue
         } else {
-            // Другое состояние
-            callState = "unknown"
+            callState = CallEvents.OTHERS.rawValue
         }
       sendCallState(state: callState)
     }

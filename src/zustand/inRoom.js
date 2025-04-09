@@ -16,10 +16,11 @@ import { useInitsStore } from "./inits";
 import { useShidurStore } from "./shidur";
 import { deepClone } from "../shared/tools";
 import { useUiActions } from "./uiActions";
-import { NativeModules } from "react-native";
 import { sleep } from "../shared/tools";
 import useAudioDevicesStore from "./audioDevices";
-const { AudioDeviceModule, WakeLockModule } = NativeModules;
+import WakeLockBridge from "../services/WakeLockBridge";
+import AudioBridge from "../services/AudioBridge";
+
 
 let subscriber = null;
 let videoroom = null;
@@ -34,8 +35,8 @@ export const useInRoomStore = create((set, get) => ({
   feedById: {},
   joinRoom: async () => {
     try {
-      await AudioDeviceModule.requestAudioFocus();
-      await WakeLockModule.keepScreenOn();
+      await AudioBridge.requestAudioFocus();
+      await WakeLockBridge.keepScreenOn();
       useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
     } catch (error) {
@@ -323,8 +324,8 @@ export const useInRoomStore = create((set, get) => ({
     } catch (error) {
       console.error("Error exiting mqtt rooms", error);
     }
-    AudioDeviceModule.abandonAudioFocus();
-    WakeLockModule.releaseScreenOn();
+    AudioBridge.abandonAudioFocus();
+    WakeLockBridge.releaseScreenOn();
     useAudioDevicesStore.getState().abortAudioDevices();
   },
   restartRoom: async () => {
