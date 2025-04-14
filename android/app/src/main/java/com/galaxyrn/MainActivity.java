@@ -38,24 +38,22 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
-
-        Log.d("MainActivity", "onCreate" + reactContext);
-
+        
+        // Initialize permissionHelper but don't check permissions yet
         permissionHelper = new PermissionHelper(this);
-        permissionHelper.checkPermissions(new PermissionHelper.PermissionCallback() {
-            @Override
-            public void onAllPermissionsGranted() {
-                // Toast.makeText(MainActivity.this, "Разрешение на камеру предоставлено",
-                // Toast.LENGTH_SHORT).show();
-            }
+        
+        // We'll request permissions once the app is fully loaded
+        Log.d("MainActivity", "onCreate");
+    }
 
-            @Override
-            public void onPermissionsDenied() {
-                // Toast.makeText(MainActivity.this, "Разрешение на камеру отклонено",
-                // Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        
+        // Check permissions when the app is resumed (fully visible to the user)
+        if (permissionHelper != null) {
+            permissionHelper.checkPermissions();
+        }
     }
 
     @Override
@@ -76,6 +74,6 @@ public class MainActivity extends ReactActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionHelper.handlePermissionsResult(requestCode, grantResults);
+        permissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
     }
 }
