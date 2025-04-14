@@ -50,10 +50,12 @@ const RoomSelect = () => {
           onFocus={() => toggleOpen(true)}
         />
 
-        <Button title={t('settings.join')} onPress={handleJoinRoom} disabled={!room} styles={{
-          flex  : 1,
-          height: '100%'
-        }} />
+        <Button 
+          title={t('settings.join')} 
+          onPress={handleJoinRoom} 
+          disabled={!room} 
+          styles={styles.button} 
+        />
       </View>
       {
         open && filteredOptions.length > 0 && (filteredOptions.length > 1 || !room) && (
@@ -93,6 +95,7 @@ const styles = StyleSheet.create({
     borderColor      : 'rgba(255, 255, 255, 0.23)',
     borderRadius     : 5,
     marginRight      : 10,
+    minHeight        : 40,
   },
   list           : {
     borderWidth    : 1,
@@ -107,6 +110,10 @@ const styles = StyleSheet.create({
   itemText       : {
     padding: 10,
   },
+  button         : {
+    flex  : 1,
+    height: '100%'
+  }
 });
 
 export default RoomSelect;

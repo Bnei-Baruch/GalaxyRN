@@ -8,7 +8,7 @@ import "./src/i18n/i18n";
 import * as Sentry from "@sentry/react-native";
 import { SENTRY_DSN } from "@env";
 import InitApp from "./src/InitApp";
-import { View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -22,10 +22,12 @@ log.setLevel("info");
 
 const App = () => {
   return (
-    <View style={{ flex: 1 }}>
-      <InitApp />
-      <CheckAuthentication />
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <InitApp />
+        <CheckAuthentication />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

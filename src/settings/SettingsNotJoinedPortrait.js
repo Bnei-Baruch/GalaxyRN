@@ -29,7 +29,7 @@ export const SettingsNotJoinedPortrait = () => {
     <View style={styles.container}>
       <PageHeader page={t('settings.page')} />
       <IconWithText iconName="account-circle" text={t('user.title')} />
-      <LabeledInput label={t('user?.name')} value={user?.display} disabled={true} />
+      <LabeledInput label={t('user.name')} value={user?.display} disabled={true} />
       <SelectUiLanguage />
       <View style={baseStyles.full}>
         <MyVideo styles={{ aspectRatio: 9 / 16, height: '100%' }} />
