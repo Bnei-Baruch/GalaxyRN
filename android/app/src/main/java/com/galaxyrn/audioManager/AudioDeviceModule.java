@@ -25,17 +25,18 @@ import java.util.Comparator;
 public class AudioDeviceModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String REACT_NATIVE_MODULE_NAME = "AudioDeviceModule";
     private static final String TAG = REACT_NATIVE_MODULE_NAME;
+    private static final String EVENT_UPDATE_AUDIO_DEVICE = "updateAudioDevice";
+    private static final float DEFAULT_VOLUME_LEVEL = 0.8f;
+    
     private final ReactApplicationContext context;
+    private AudioDeviceManager audioDeviceManager = null;
+    private AudioFocusManager audioFocusManager = null;
 
     public AudioDeviceModule(ReactApplicationContext reactContext) {
         super(reactContext);
-
         this.context = reactContext;
         reactContext.addLifecycleEventListener(this);
     }
-
-    private AudioDeviceManager audioDeviceManager = null;
-    AudioFocusManager audioFocusManager = null;
 
     @NonNull
     @Override
@@ -47,20 +48,26 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void initialize() {
         super.initialize();
         Log.d(TAG, "initialize");
+        
         try {
             SendEventToClient.init(this.context);
-            UpdateAudioDeviceCallback callback = () -> handleDevicesChange(null);
-            UiThreadUtil.runOnUiThread(() -> {
-                try {
-                    audioDeviceManager = new AudioDeviceManager(this.context, callback);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
-                }
-            });
-            audioFocusManager = new AudioFocusManager(this.context);
+            initializeAudioManagers();
         } catch (Exception e) {
             Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
         }
+    }
+    
+    private void initializeAudioManagers() {
+        UpdateAudioDeviceCallback callback = () -> handleDevicesChange(null);
+        UiThreadUtil.runOnUiThread(() -> {
+            try {
+                audioDeviceManager = new AudioDeviceManager(this.context, callback);
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
+            }
+        });
+        
+        audioFocusManager = new AudioFocusManager(this.context);
     }
 
     @Override
@@ -76,27 +83,37 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     @Override
     public void onHostDestroy() {
         Log.d(TAG, "onHostDestroy()");
+        cleanupResources();
+    }
+    
+    private void cleanupResources() {
         try {
+            if (audioFocusManager != null) {
                 audioFocusManager.abandonAudioFocus();
+            }
+            
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     if (audioDeviceManager != null) {
                         audioDeviceManager.stop();
+                        audioDeviceManager = null;
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Error stopping AudioDeviceManager: " + e.getMessage(), e);
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
+            Log.e(TAG, "Error in cleanupResources(): " + e.getMessage(), e);
         }
     }
 
     @ReactMethod
     public void requestAudioFocus() {
-        Log.d(TAG, "onEnterRoom()");
+        Log.d(TAG, "requestAudioFocus()");
         try {
+            if (audioFocusManager != null) {
                 audioFocusManager.requestAudioFocus();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
         }
@@ -104,9 +121,11 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void abandonAudioFocus() {
-        Log.d(TAG, "onLeaveRoom()");
+        Log.d(TAG, "abandonAudioFocus()");
         try {
+            if (audioFocusManager != null) {
                 audioFocusManager.abandonAudioFocus();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error abandoning audio focus: " + e.getMessage(), e);
         }
@@ -114,74 +133,102 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void initAudioDevices() {
-            handleDevicesChange(null);
+        handleDevicesChange(null);
     }
 
     @ReactMethod
     public void handleDevicesChange(Integer deviceId) {
-        Log.d(TAG, "updateAudioDevices() deviceId: " + deviceId);
-        UiThreadUtil.runOnUiThread(() -> {
+        Log.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
+        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId));
+    }
+    
+    private void processAudioDevicesOnUiThread(Integer deviceId) {
+        Log.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
+        try {
+            AudioManager audioManager = getAudioManager();
+            if (audioManager == null) return;
 
-            Log.d(TAG, "updateAudioDevices() UiThreadUtil.runOnUiThread deviceId: " + deviceId);
-            try {
-                AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
-                if (audioManager == null) {
-                    Log.e(TAG, "Could not get AudioManager service");
-                    return;
-                }
-
-                AudioDeviceInfo[] devices;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    devices = audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
-                } else {
-                    devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-                }
-
-                if (devices.length == 0) {
-                    Log.w(TAG, "No audio devices found");
-                    return;
-                }
-
-                WritableMap data = Arguments.createMap();
-                AudioDeviceInfo selected = null;
-
-                for (AudioDeviceInfo d : devices) {
-                    data.putMap(String.valueOf(d.getId()), deviceInfoToResponse(d));
-
-                    if (deviceId != null && deviceId == d.getId()) {
-                        selected = d;
-                    }
-
-                    Log.d(TAG, "updateAudioDeviceState() devices d.getType() " + d.getType());
-                }
-                Log.d(TAG, "updateAudioDeviceState() selected by id: " + selected);
-                if (selected == null) {
-                    selected = selectDefaultDevice(devices);
-                    Log.d(TAG, "updateAudioDeviceState() selectDefaultDevice: " + selected);
-                }
-                setAudioDevice(selected);
-
-                WritableMap selectedResponse = deviceInfoToResponse(selected);
-                selectedResponse.putBoolean("active", true);
-                data.putMap(String.valueOf(selected.getId()), selectedResponse);
-
-                Log.d(TAG, "updateAudioDeviceState() result " + data);
-                try {
-                    SendEventToClient.sendEvent("updateAudioDevice", data);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error sending event to client: " + e.getMessage(), e);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error updating audio devices: " + e.getMessage(), e);
+            AudioDeviceInfo[] devices = getAvailableAudioDevices(audioManager);
+            if (devices == null || devices.length == 0) {
+                Log.w(TAG, "No audio devices found");
+                return;
             }
-        });
+
+            WritableMap data = Arguments.createMap();
+            AudioDeviceInfo selectedDevice = findOrSelectDevice(devices, deviceId, data);
+            
+            if (selectedDevice != null) {
+                setAudioDevice(selectedDevice);
+                
+                WritableMap selectedResponse = deviceInfoToResponse(selectedDevice);
+                selectedResponse.putBoolean("active", true);
+                data.putMap(String.valueOf(selectedDevice.getId()), selectedResponse);
+                
+                sendDeviceUpdateToClient(data);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
+        }
+    }
+    
+    private AudioManager getAudioManager() {
+        AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
+        if (audioManager == null) {
+            Log.e(TAG, "Could not get AudioManager service");
+        }
+        return audioManager;
+    }
+    
+    private AudioDeviceInfo[] getAvailableAudioDevices(AudioManager audioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
+        } else {
+            return audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        }
+    }
+    
+    private AudioDeviceInfo findOrSelectDevice(AudioDeviceInfo[] devices, Integer deviceId, WritableMap data) {
+        // Map all devices to the response
+        for (AudioDeviceInfo device : devices) {
+            data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
+            Log.d(TAG, "Device type: " + device.getType());
+        }
+        
+        // Find device by ID if specified
+        AudioDeviceInfo selected = null;
+        if (deviceId != null) {
+            for (AudioDeviceInfo device : devices) {
+                if (deviceId == device.getId()) {
+                    selected = device;
+                    break;
+                }
+            }
+        }
+        
+        // If no device found by ID, select default
+        if (selected == null) {
+            selected = selectDefaultDevice(devices);
+            Log.d(TAG, "Selected default device: " + selected);
+        } else {
+            Log.d(TAG, "Selected device by id: " + selected);
+        }
+        
+        return selected;
+    }
+    
+    private void sendDeviceUpdateToClient(WritableMap data) {
+        Log.d(TAG, "sendDeviceUpdateToClient() result: " + data);
+        try {
+            SendEventToClient.sendEvent(EVENT_UPDATE_AUDIO_DEVICE, data);
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending event to client: " + e.getMessage(), e);
+        }
     }
 
     private WritableMap deviceInfoToResponse(AudioDeviceInfo deviceInfo) {
         try {
             WritableMap map = Arguments.createMap();
-            int type = deviceInfo.getType();
-            map.putInt("type", type);
+            map.putInt("type", deviceInfo.getType());
             map.putInt("id", deviceInfo.getId());
             return map;
         } catch (Exception e) {
@@ -214,46 +261,47 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 return;
             }
 
-            AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
-            if (audioManager == null) {
-                Log.e(TAG, "Could not get AudioManager service");
-                return;
-            }
+            AudioManager audioManager = getAudioManager();
+            if (audioManager == null) return;
 
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            configureAudioManager(audioManager);
 
-            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-            int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            if (currentVolume < maxVolume * 0.8) {
-                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, (int) (maxVolume * 0.8), 0);
-            }
-
-            Log.d(TAG, "Build.VERSION.SDK_INT, Build.VERSION_CODES.S " + Build.VERSION.SDK_INT + " "
-                    + Build.VERSION_CODES.S);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 audioManager.setCommunicationDevice(device);
             } else {
-                setAudioDeviceOld();
+                setAudioDeviceOld(audioManager);
             }
             Log.d(TAG, "setAudioDevice() after setCommunicationDevice()");
         } catch (Exception e) {
             Log.e(TAG, "Error setting audio device: " + e.getMessage(), e);
         }
     }
+    
+    private void configureAudioManager(AudioManager audioManager) {
+        audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        adjustVolumeIfNeeded(audioManager);
+    }
+    
+    private void adjustVolumeIfNeeded(AudioManager audioManager) {
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
+        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+        
+        if (currentVolume < maxVolume * DEFAULT_VOLUME_LEVEL) {
+            audioManager.setStreamVolume(
+                AudioManager.STREAM_VOICE_CALL, 
+                (int) (maxVolume * DEFAULT_VOLUME_LEVEL), 
+                0
+            );
+        }
+    }
 
-    private void setAudioDeviceOld() {
+    private void setAudioDeviceOld(AudioManager audioManager) {
         try {
-            AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
-            if (audioManager == null) {
-                Log.e(TAG, "Could not get AudioManager service");
-                return;
-            }
-
             audioManager.startBluetoothSco();
             audioManager.setBluetoothScoOn(true);
             audioManager.setSpeakerphoneOn(false);
         } catch (Exception e) {
-            Log.e(TAG, "Error setting audio device (old method): " + e.getMessage(), e);
+            Log.e(TAG, "Error in setAudioDeviceOld: " + e.getMessage(), e);
         }
     }
 }
