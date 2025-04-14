@@ -52,6 +52,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- Foreground service for maintaining app functionality while in background -->
         <service
             android:name=".foreground.ForegroundService"
             android:enabled="true"

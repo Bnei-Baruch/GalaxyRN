@@ -18,9 +18,12 @@ import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
 import com.galaxyrn.foreground.ForegroundModule;
 
+/**
+ * React Native package that registers Galaxy native modules
+ */
 public class GxyPackage implements ReactPackage {
 
-    final private String TAG = GxyPackage.class.getSimpleName();
+    private static final String TAG = "GxyPackage";
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
@@ -31,7 +34,8 @@ public class GxyPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        Log.i(TAG, "createNativeModules");
+        Log.i(TAG, "Creating Galaxy native modules");
+        
         modules.add(new ForegroundModule(reactContext));
         modules.add(new AudioDeviceModule(reactContext));
         modules.add(new CallListenerModule(reactContext));
@@ -40,5 +44,4 @@ public class GxyPackage implements ReactPackage {
 
         return modules;
     }
-
 }

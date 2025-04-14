@@ -13,35 +13,38 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-
-import androidx.annotation.RequiresApi;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.galaxyrn.R;
 
-import java.util.Random;
-
-
-@RequiresApi(api = Build.VERSION_CODES.ECLAIR)
 public class ForegroundService extends Service {
-    static final int NOTIFICATION_ID = new Random().nextInt(99999) + 10000;
-    private final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
-    private final String TAG = ForegroundService.class.getSimpleName();
-    public final static String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
+    private static final String TAG = "ForegroundService";
+    private static final int NOTIFICATION_ID = 9999;
+    private static final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
+    public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
 
-
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    public void start(Context context) {
+    /**
+     * Starts the foreground service
+     *
+     * @param context The application context
+     */
+    public void start(@NonNull Context context) {
         Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(APP_TO_FOREGROUND_ACTION);
-        ComponentName componentName;
-        createChannel(context);
-        Log.d(TAG, "startForegroundService context is null " + (context == null));
-        Log.d(TAG, "startForegroundService intent is null " + (intent == null));
+        
+        createNotificationChannel(context);
+        
+        Log.d(TAG, "Starting foreground service");
+        ComponentName componentName = null;
+        
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 componentName = context.startForegroundService(intent);
@@ -50,29 +53,32 @@ public class ForegroundService extends Service {
             }
         } catch (RuntimeException e) {
             // Avoid crashing due to ForegroundServiceStartNotAllowedException (API level 31).
-            // See: https://developer.android.com/guide/components/foreground-services#background-start-restrictions
-            Log.w(TAG, "Media projection service not started", e);
+            Log.w(TAG, "Failed to start foreground service", e);
             return;
         }
 
         if (componentName == null) {
-            Log.w(TAG, "Media projection service not started");
+            Log.w(TAG, "Foreground service not started");
         } else {
-            Log.i(TAG, "Media projection service started");
+            Log.i(TAG, "Foreground service started successfully");
         }
     }
 
-    public void stop(Context context) {
-        Log.i(TAG, "service stop");
+    /**
+     * Stops the foreground service
+     *
+     * @param context The application context
+     */
+    public void stop(@NonNull Context context) {
+        Log.i(TAG, "Stopping foreground service");
         Intent intent = new Intent(context, ForegroundService.class);
         context.stopService(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "foreground service onStartCommand");
+        Log.i(TAG, "ForegroundService: onStartCommand");
         Notification notification = buildNotification(this);
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
@@ -86,67 +92,88 @@ public class ForegroundService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Log.i(TAG, "foreground service onTaskRemoved");
-        stopForeground(true);
-        stopSelf();
+        Log.i(TAG, "ForegroundService: onTaskRemoved");
+        cleanup();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        Log.i(TAG, "foreground service onDestroy");
+        Log.i(TAG, "ForegroundService: onDestroy");
+        cleanup();
+    }
+    
+    /**
+     * Clean up resources and stop the foreground service
+     */
+    private void cleanup() {
         stopForeground(true);
+        stopSelf();
     }
 
-    private void createChannel(Context context) {
-        Log.d(TAG, "createNotificationChannel");
+    /**
+     * Creates the notification channel (required for Android O and above)
+     *
+     * @param context The application context
+     */
+    private void createNotificationChannel(@NonNull Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
 
-        NotificationManager manager = (NotificationManager) context.getSystemService(Service.NOTIFICATION_SERVICE);
-
-
+        NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         if (manager == null) {
-            Log.d(TAG, " Cannot create notification channel: no current NotificationManager");
+            Log.d(TAG, "Cannot create notification channel: no NotificationManager");
             return;
         }
 
-        NotificationChannel channel = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
-        if (channel != null) {
-            // The channel was already created
+        NotificationChannel existingChannel = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
+        if (existingChannel != null) {
+            // Channel already exists
             return;
         }
 
-        channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Arvut system notification", NotificationManager.IMPORTANCE_HIGH);
+        NotificationChannel channel = new NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "Arvut System Notification",
+                NotificationManager.IMPORTANCE_HIGH
+        );
         channel.setShowBadge(false);
-
         manager.createNotificationChannel(channel);
+        Log.d(TAG, "Notification channel created");
     }
 
-    private Notification buildNotification(Context context) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
-        //Bitmap largeIconBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.arvut);
+    /**
+     * Builds the notification for the foreground service
+     *
+     * @param context The application context
+     * @return The notification
+     */
+    private Notification buildNotification(@NonNull Context context) {
         Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        return builder
+        
+        return new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
-                .setContentTitle("Arvut system")
-                .setContentText("Arvut system run on background (in audio mode)")
+                .setContentTitle("Arvut System")
+                .setContentText("Arvut system running in background (audio mode)")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(R.mipmap.arvut)
                 .setOngoing(true)
                 .setSilent(true)
                 .setContentIntent(pendingIntent)
-                //.setLargeIcon(largeIconBitmap)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .build();
     }
 
-    public static void moveAppToForeground(Context context) {
+    /**
+     * Brings the app to the foreground
+     *
+     * @param context The application context
+     */
+    public static void moveAppToForeground(@NonNull Context context) {
         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launchIntent != null) {
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
