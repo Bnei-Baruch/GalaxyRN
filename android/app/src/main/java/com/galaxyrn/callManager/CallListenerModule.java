@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.module.annotations.ReactModule;
 import io.sentry.Sentry;
 
@@ -24,6 +25,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     
     private final ReactApplicationContext context;
     private ICallListener callListener;
+    private boolean isInitialized = false;
 
     /**
      * Constructor for the CallListenerModule
@@ -32,9 +34,13 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     public CallListenerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         context = reactContext;
-        reactContext.addLifecycleEventListener(this);
-        callListener = PhoneCallListener.getInstance();
-        Log.d(TAG, "CallListenerModule instantiated for package: " + context.getPackageName());
+        try {
+            reactContext.addLifecycleEventListener(this);
+            Log.d(TAG, "CallListenerModule constructor completed safely");
+        } catch (Exception e) {
+            Log.e(TAG, "Error in constructor: " + e.getMessage());
+            Sentry.captureException(e);
+        }
     }
 
     /**
@@ -54,17 +60,44 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         super.initialize();
 
         try {
-            Log.d(TAG, "Initializing CallListenerModule for package: " + context.getPackageName());
-            if (!callListener.isInitialized()) {
-                boolean success = callListener.initialize(context);
-                if (success) {
-                    Log.d(TAG, "CallListenerModule initialized successfully");
-                } else {
-                    Log.e(TAG, "Failed to initialize CallListenerModule");
-                }
-            } else {
+            // If we're already initialized, don't do it again
+            if (isInitialized) {
                 Log.d(TAG, "CallListenerModule already initialized");
+                return;
             }
+            
+            Log.d(TAG, "Initializing CallListenerModule for package: " + context.getPackageName());
+            
+            // Initialize in a separate thread
+            new Thread(() -> {
+                try {
+                    // Initialize on UI thread using UiThreadUtil instead of ReactContext method
+                    UiThreadUtil.runOnUiThread(() -> {
+                        try {
+                            if (callListener == null) {
+                                callListener = PhoneCallListener.getInstance();
+                                Log.d(TAG, "CallListenerModule instance created");
+                            }
+                            
+                            if (callListener != null && !callListener.isInitialized()) {
+                                boolean success = callListener.initialize(context);
+                                if (success) {
+                                    isInitialized = true;
+                                    Log.d(TAG, "CallListenerModule initialized successfully");
+                                } else {
+                                    Log.e(TAG, "Failed to initialize CallListenerModule");
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error initializing on UI thread: " + e.getMessage(), e);
+                            Sentry.captureException(e);
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Error in initialization thread: " + e.getMessage(), e);
+                    Sentry.captureException(e);
+                }
+            }).start();
         } catch (Exception e) {
             Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
             Sentry.captureException(e);
@@ -77,7 +110,8 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     @Override
     public void onHostResume() {
         Log.d(TAG, "onHostResume()");
-        if (!callListener.isInitialized()) {
+        
+        if (!isInitialized) {
             initialize();
         }
     }
@@ -97,11 +131,17 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     @Override
     public void onHostDestroy() {
         Log.d(TAG, "onHostDestroy()");
+        
         try {
-            if (callListener != null && callListener.isInitialized()) {
-                callListener.cleanup();
-            }
-            Log.d(TAG, "CallListenerModule cleaned up successfully");
+            new Thread(() -> {
+                UiThreadUtil.runOnUiThread(() -> {
+                    if (callListener != null && callListener.isInitialized()) {
+                        callListener.cleanup();
+                        isInitialized = false;
+                    }
+                    Log.d(TAG, "CallListenerModule cleaned up successfully");
+                });
+            }).start();
         } catch (Exception e) {
             Log.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
             Sentry.captureException(e);

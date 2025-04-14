@@ -36,11 +36,24 @@ public class GxyPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
         Log.i(TAG, "Creating Galaxy native modules");
         
-        modules.add(new ForegroundModule(reactContext));
-        modules.add(new AudioDeviceModule(reactContext));
-        modules.add(new CallListenerModule(reactContext));
-        modules.add(new VersionModule(reactContext));
-        modules.add(new WakeLockModule(reactContext));
+        // Add modules
+        try {
+            Log.i(TAG, "Adding standard modules");
+            modules.add(new VersionModule(reactContext));
+            modules.add(new WakeLockModule(reactContext));
+            modules.add(new ForegroundModule(reactContext));
+            modules.add(new AudioDeviceModule(reactContext));
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
+        }
+        
+        try {
+            Log.i(TAG, "Adding CallListenerModule");
+            modules.add(new CallListenerModule(reactContext));
+            Log.i(TAG, "CallListenerModule added successfully");
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating CallListenerModule: " + e.getMessage(), e);
+        }
 
         return modules;
     }

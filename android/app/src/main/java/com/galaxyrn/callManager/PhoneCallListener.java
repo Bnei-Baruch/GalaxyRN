@@ -30,7 +30,8 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
      * Private constructor to enforce singleton pattern
      */
     private PhoneCallListener() {
-        // Private constructor for singleton
+        // Use the default constructor with no arguments
+        super();
     }
     
     /**
