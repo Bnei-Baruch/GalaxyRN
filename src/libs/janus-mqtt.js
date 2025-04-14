@@ -149,28 +149,50 @@ export class JanusMqtt {
     return new Promise((resolve, reject) => {
       if (timeoutMs) {
         BackgroundTimer.setTimeout(() => {
-          reject('[janus] Transaction timed out after ' + timeoutMs + ' ms');
+          // Clean up transaction on timeout
+          if (this.transactions[transactionId]) {
+            delete this.transactions[transactionId];
+            reject(new Error(`[janus] Transaction timed out after ${timeoutMs} ms`));
+          }
         }, timeoutMs);
       }
 
       if (!this.isConnected) {
-        reject('[janus] Janus is not connected');
+        reject(new Error('[janus] Janus is not connected'));
         return;
       }
 
-      const request = Object.assign({}, payload, {
-        token      : this.token,
-        janus      : type,
-        session_id : (payload && parseInt(payload.session_id, 10)) || this.sessionId,
-        transaction: transactionId
-      });
+      try {
+        // Validate inputs
+        if (!type) {
+          return reject(new Error('[janus] Missing transaction type'));
+        }
+        
+        const request = Object.assign({}, payload, {
+          token      : this.token,
+          janus      : type,
+          session_id : (payload && parseInt(payload.session_id, 10)) || this.sessionId,
+          transaction: transactionId
+        });
 
-      if (type === 'keepalive' && this.user.role === 'user' && this.txTopic.match('gxy')) {
-        request.user = this.user;
+        if (type === 'keepalive' && this.user.role === 'user' && this.txTopic.match('gxy')) {
+          request.user = this.user;
+        }
+
+        this.transactions[request.transaction] = { resolve, reject, replyType, request };
+        
+        // Check MQTT connection
+        if (!mqtt.mq || !mqtt.mq.connected) {
+          log.warn('[janus] MQTT not connected when trying to send transaction');
+          return reject(new Error('[janus] MQTT connection unavailable'));
+        }
+        
+        mqtt.send(JSON.stringify(request), false, this.txTopic, this.rxTopic + '/' + this.user.id, this.user);
+      } catch (error) {
+        log.error('[janus] Error in transaction method', error?.message || JSON.stringify(error) || 'undefined');
+        delete this.transactions[transactionId];
+        reject(error || new Error('[janus] Unknown transaction error'));
       }
-
-      this.transactions[request.transaction] = { resolve, reject, replyType, request };
-      mqtt.send(JSON.stringify(request), false, this.txTopic, this.rxTopic + '/' + this.user.id, this.user);
     });
   }
 
@@ -277,7 +299,7 @@ export class JanusMqtt {
     try {
       json = JSON.parse(message);
     } catch (err) {
-      log.error('[janus] cannot parse message', message.data);
+      log.error('[janus] Cannot parse message', message?.data || message || 'undefined', err);
       return;
     }
 

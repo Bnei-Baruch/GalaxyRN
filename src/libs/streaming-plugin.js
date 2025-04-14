@@ -43,7 +43,17 @@ export class StreamingPlugin extends EventEmitter {
     this.streamId = id;
     const body    = { request: 'watch', id, restart };
     return new Promise((resolve, reject) => {
+      if (!this.janus) {
+        log.error('[streaming] Cannot watch stream - janus connection is not initialized');
+        return reject(new Error('Janus connection not initialized'));
+      }
+      
       this.transaction('message', { body }, 'event').then((param) => {
+        if (!param) {
+          log.error('[streaming] Empty response from transaction');
+          return reject(new Error('Empty transaction response'));
+        }
+        
         log.debug('[streaming] watch: ', param);
         const { session_id, json } = param;
 
@@ -68,7 +78,14 @@ export class StreamingPlugin extends EventEmitter {
 
         if (json?.jsep) {
           log.debug('[streaming] sdp: ', json);
-          this.sdpExchange(json.jsep);
+          try {
+            this.sdpExchange(json.jsep);
+          } catch (error) {
+            log.error('[streaming] Error in SDP exchange', error);
+            return reject(error);
+          }
+        } else if (!restart) {
+          log.warn('[streaming] No JSEP received');
         }
 
         if (restart) return;
@@ -76,8 +93,8 @@ export class StreamingPlugin extends EventEmitter {
         this.initPcEvents(resolve);
 
       }).catch((err) => {
-        log.error('[streaming] StreamingJanusPlugin, cannot watch stream', err);
-        reject(err);
+        log.error('[streaming] StreamingJanusPlugin, cannot watch stream', err?.message || JSON.stringify(err) || 'undefined');
+        reject(err || new Error('Unknown streaming error'));
       });
     });
   }
@@ -156,11 +173,13 @@ export class StreamingPlugin extends EventEmitter {
       BackgroundTimer.setTimeout(() => {
         if (attempt < 10 && this.iceState !== 'disconnected' ||
           !this.janus?.isConnected) {
-          log.debug('this.iceState',  this.iceState );
+          log.debug('[streaming] Current ice state:', this.iceState);
           return;
         } else if (mqtt.mq.connected) {
           log.debug('[streaming] - Trigger ICE Restart - ');
-          this.watch(this.streamId, true);
+          this.watch(this.streamId, true).catch(err => {
+            log.error('[streaming] Error during ICE restart', err?.message || JSON.stringify(err) || 'undefined');
+          });
         } else if (attempt >= 10) {
           log.error('[streaming] - ICE Restart failed - ');
           return;
@@ -169,7 +188,7 @@ export class StreamingPlugin extends EventEmitter {
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error('Streaming plugin iceRestart', e);
+      console.error('[streaming] Error in iceRestart', e?.message || JSON.stringify(e) || 'undefined');
     }
   }
 
@@ -182,6 +201,7 @@ export class StreamingPlugin extends EventEmitter {
 
   error(cause) {
     // Couldn't attach to the plugin
+    log.error('[streaming] Plugin error:', cause?.message || JSON.stringify(cause) || 'undefined');
   }
 
   onmessage(data) {

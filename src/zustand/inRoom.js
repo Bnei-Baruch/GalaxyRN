@@ -28,6 +28,7 @@ let janus = null;
 
 let attempts = 0;
 let restartWIP = false;
+let exitWIP = false;
 
 const isVideoStream = (s) => s?.type === "video" && s.codec === "h264";
 
@@ -309,6 +310,9 @@ export const useInRoomStore = create((set, get) => ({
     mqtt.join("galaxy/room/" + room.room + "/chat", true);
   },
   exitRoom: async () => {
+    if (exitWIP) return;
+    exitWIP = true;
+
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
     await useShidurStore.getState().cleanJanus();
@@ -327,11 +331,12 @@ export const useInRoomStore = create((set, get) => ({
     AudioBridge.abandonAudioFocus();
     WakeLockBridge.releaseScreenOn();
     useAudioDevicesStore.getState().abortAudioDevices();
+    exitWIP = false;
   },
   restartRoom: async () => {
     console.log("bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);
 
-    if (restartWIP) return;
+    if (restartWIP || exitWIP) return;
 
     restartWIP = true;
     await get().exitRoom();
@@ -345,10 +350,7 @@ export const useInRoomStore = create((set, get) => ({
     useSettingsStore.getState().enterAudioMode();
   },
   enterForeground: async () => {
-    if (
-      useInitsStore.getState().isBridgeReady &&
-      !useSettingsStore.getState().audioMode
-    ) {
+    if (!useSettingsStore.getState().audioMode) {
       useSettingsStore.getState().exitAudioMode();
     }
   },

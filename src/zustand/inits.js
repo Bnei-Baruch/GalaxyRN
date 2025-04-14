@@ -30,14 +30,12 @@ let subscription;
 
 
 export const useInitsStore = create((set, get) => ({
-  isBridgeReady: false,
   mqttReady: false,
   configReady: false,
   readyForJoin: false,
   versionInfo: null,
   setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
   isPortrait: true,
-  initBridge: () => set({ isBridgeReady: true }),
   setIsPortrait: (isPortrait) => {
     useUiActions.getState().updateWidth();
     set({ isPortrait });

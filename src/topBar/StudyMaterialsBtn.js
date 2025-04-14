@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { TouchableOpacity, Text, Modal, View, ScrollView } from 'react-native';
+import { TouchableOpacity, Text, Modal, View, ScrollView, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
 import useMaterials from '../zustand/fetchMaterials';

@@ -189,7 +189,9 @@ export class SubscriberPlugin extends EventEmitter {
         }
         // ICE restart does not help here, peer connection will be down
         if (this.iceState === "failed") {
-          this.iceFailed();
+          if (typeof this.iceFailed === "function") {
+            this.iceFailed();
+          }
         }
       });
       this.pc.addEventListener("icecandidate", (e) => {
@@ -245,7 +247,9 @@ export class SubscriberPlugin extends EventEmitter {
           this.configure();
         } else if (attempt >= 10) {
           log.error("Ice restart bug: [subscriber] - ICE Restart failed - ");
-          this.iceFailed();
+          if (typeof this.iceFailed === "function") {
+            this.iceFailed();
+          }
           return;
         }
         log.debug("[streaming] ICE Restart try: " + attempt);
@@ -326,7 +330,9 @@ export class SubscriberPlugin extends EventEmitter {
       "[subscriber] webrtcState: RTCPeerConnection is: " +
         (isReady ? "up" : "down")
     );
-    if (!isReady && typeof this.iceFailed === "function") this.iceFailed();
+    if (!isReady && typeof this.iceFailed === "function") {
+      this.iceFailed();
+    }
   }
 
   detach() {

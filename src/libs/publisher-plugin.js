@@ -281,7 +281,7 @@ export class PublisherPlugin extends EventEmitter {
           this.pc.restartIce();
           this.configure(true);
         } else if (attempt >= 10) {
-          this.iceFailed();
+          (typeof this.iceFailed === "function") && this.iceFailed();
           log.error("[streaming] - ICE Restart failed - ");
           return;
         }
@@ -384,7 +384,7 @@ export class PublisherPlugin extends EventEmitter {
         (isReady ? "up" : "down")
     );
     if (!isReady && typeof this.iceFailed === "function")
-      this.iceFailed("publisher");
+      this.iceFailed();
   }
 
   detach() {

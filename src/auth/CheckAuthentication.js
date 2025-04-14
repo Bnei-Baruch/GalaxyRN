@@ -35,6 +35,8 @@ const CheckAuthentication = () => {
     );
   }
 
+  console.log("[keycloak] CheckAuthentication readyForJoin: ", readyForJoin);
+
   return (
     <View style={styles.container}>
       {readyForJoin ? <PrepareRoom /> : <SettingsNotJoined />}

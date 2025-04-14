@@ -5,7 +5,6 @@ import { useInitsStore } from '../zustand/inits';
 
 const useForegroundListener = () => {
   const { enterBackground, enterForeground } = useInRoomStore();
-  const { initBridge }                       = useInitsStore();
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState) => {
@@ -13,7 +12,6 @@ const useForegroundListener = () => {
         enterBackground();
       } else if (nextAppState === 'active') {
         enterForeground();
-        initBridge();
       }
     };
 

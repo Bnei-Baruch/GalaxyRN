@@ -1,5 +1,4 @@
 import * as React from "react";
-import { StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { StudyMaterialsBtn } from "./StudyMaterialsBtn";
 import { DonateBtn } from "./DonateBtn";
