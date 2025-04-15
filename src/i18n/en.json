@@ -14,14 +14,15 @@
   },
   "user": {
     "title": "User settings",
-    "name": "Screen name"
+    "name": "Screen name",
+    "logout": "Logout",
+    "account": "Account"
   },
   "topBar": {
     "materials": "Study Materials",
     "donate": "Donate",
     "support": "Support",
     "settings": "Settings",
-    "logout": "Logout",
     "communicationTitle": "Communication",
     "materialsTitle": "Study Materials"
   },

@@ -2,22 +2,20 @@ import { View, StyleSheet, Button } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
-import { useUserStore } from '../zustand/user';
 import PageHeader from '../components/PageHeader';
 import IconWithText from './IconWithText';
-import LabeledInput from './LabeledInput';
 import SelectUiLanguage from './SelectUiLanguage';
 import LabeledSwitch from './LabeledSwitch';
 import * as React from 'react';
 import { baseStyles } from '../constants';
 import { useShidurStore } from '../zustand/shidur';
 import { useInitsStore } from '../zustand/inits';
+import AccountSettings from '../auth/AccountSettings';
 
 export const SettingsJoined = ({ toggleVisible }) => {
   const { t }                                    = useTranslation();
   const { cammute, toggleCammute }               = useMyStreamStore();
   const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
-  const { user }                                 = useUserStore();
   const { setIsMuted, isMuted }                  = useShidurStore();
   const { isPortrait }                           = useInitsStore();
 
@@ -32,7 +30,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
         <View style={styles.row}>
           {/*user settings*/}
           <IconWithText iconName="account-circle" text="user settings" />
-          <LabeledInput label="Screen Name" value={user.display} disabled={true} />
+          <AccountSettings />
           <SelectUiLanguage />
         </View>
         <View style={styles.row}>

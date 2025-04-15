@@ -65,8 +65,6 @@ export const SelectDeviceBtn = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
   },
   select: {
     padding: 4,

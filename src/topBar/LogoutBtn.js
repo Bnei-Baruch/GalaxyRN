@@ -15,7 +15,7 @@ const LogoutBtn = () => {
   return (
     <TouchableOpacity onPress={handleLogout} style={topMenuBtns.btn}>
       <Icon name="logout" size={30} color="white" />
-      <Text style={topMenuBtns.menuItemText}>{t('topBar.logout')}</Text>
+      <Text style={topMenuBtns.menuItemText}>{t('user.logout')}</Text>
     </TouchableOpacity>
   );
 };

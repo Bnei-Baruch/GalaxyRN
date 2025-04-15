@@ -14,14 +14,14 @@
   },
   "user": {
     "title": "הגדרות משתמש",
-    "name": "כינוי להצגה"
+    "name": "כינוי להצגה",
+    "logout": "יציאה"
   },
   "topBar": {
     "materials": "חומר לימוד",
     "donate": "לתרום",
     "support": "תמיכה",
     "settings": "הגדרות",
-    "logout": "יציאה",
     "communicationTitle": "תקשורת",
     "materialsTitle": "חומר לימוד"
   },

@@ -1,6 +1,4 @@
 import * as React from 'react';
-import IconWithText from './IconWithText';
-import LabeledInput from './LabeledInput';
 import SelectUiLanguage from './SelectUiLanguage';
 import MyVideo from '../components/MyVideo';
 import LabeledSwitch from './LabeledSwitch';
@@ -8,17 +6,16 @@ import { useSettingsStore } from '../zustand/settings';
 import { useMyStreamStore } from '../zustand/myStream';
 import { View, StyleSheet } from 'react-native';
 import PageHeader from '../components/PageHeader';
-import { useUserStore } from '../zustand/user';
 import { useTranslation } from 'react-i18next';
 import { useShidurStore } from '../zustand/shidur';
 import RoomSelect from './RoomSelect';
 import { baseStyles } from '../constants';
+import AccountSettings from '../auth/AccountSettings';
 
 export const SettingsNotJoinedLandscape = () => {
   const { t }                                    = useTranslation();
   const { cammute, toggleCammute }               = useMyStreamStore();
   const { isShidur, audioMode, toggleAudioMode } = useSettingsStore();
-  const { user }                                 = useUserStore();
   const { setIsMuted }                           = useShidurStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
@@ -31,8 +28,7 @@ export const SettingsNotJoinedLandscape = () => {
       {/*user settings*/}
       <View style={styles.forms}>
         <View style={{ width: '43%' }}>
-          <IconWithText iconName="account-circle" text={t('user.title')} />
-          <LabeledInput label={t('user.name')} value={user.display} disabled={true} />
+          <AccountSettings />
           <MyVideo styles={{ aspectRatio: 16 / 9, width: '100%' }} />
         </View>
         <View style={{ width: '50%' }}>

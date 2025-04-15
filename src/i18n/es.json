@@ -14,14 +14,14 @@
   },
   "user": {
     "title": "Material de estudio",
-    "name": "Nombre en pantalla"
+    "name": "Nombre en pantalla",
+    "logout": "Desconectar"
   },
   "topBar": {
     "materials": "Material de estudio",
     "donate": "DONAR",
     "support": "Enviar una pregunta",
     "settings": "Configuración",
-    "logout": "Desconectar",
     "communicationTitle": "Communication",
     "materialsTitle": "Material de estudio"
   },

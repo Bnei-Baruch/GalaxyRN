@@ -14,14 +14,14 @@
   },
   "user": {
     "title": "Пользовательские настройки",
-    "name": "Отображаемое имя пользователя"
+    "name": "Отображаемое имя пользователя",
+    "logout": "Выход"
   },
   "topBar": {
     "materials": "Учебный материал",
     "donate": "ВНЕСТИ ВКЛАД",
     "support": "Поддержка",
     "settings": "Настройки",
-    "logout": "Выход",
     "communicationTitle": "Communication",
     "materialsTitle": "Учебный материал"
   },
