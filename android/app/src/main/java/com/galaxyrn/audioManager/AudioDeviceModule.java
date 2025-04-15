@@ -31,6 +31,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     private final ReactApplicationContext context;
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
+    private boolean isInitialized = false;
 
     public AudioDeviceModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -62,6 +63,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         UiThreadUtil.runOnUiThread(() -> {
             try {
                 audioDeviceManager = new AudioDeviceManager(this.context, callback);
+                isInitialized = true;
             } catch (Exception e) {
                 Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
             }
@@ -133,16 +135,17 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void initAudioDevices() {
-        handleDevicesChange(null);
+        Log.d(TAG, "initAudioDevices()");
+        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(null, true));
     }
 
     @ReactMethod
     public void handleDevicesChange(Integer deviceId) {
         Log.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
-        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId));
+        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId, false));
     }
     
-    private void processAudioDevicesOnUiThread(Integer deviceId) {
+    private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialized) {
         Log.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
         try {
             AudioManager audioManager = getAudioManager();
@@ -154,8 +157,31 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 return;
             }
 
+        
+            
+            AudioDeviceInfo selectedDevice = findDeviceById(devices, deviceId);
+
+            // If no device found by ID, select default
+            if (selectedDevice == null) {
+                selectedDevice = selectDefaultDevice(devices);
+                // If the default device is a built-in earpiece and the module is initialized, select the speaker
+                if (selectedDevice.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE && isInitialized) {
+                    AudioDeviceInfo speaker = findDeviceByType(devices, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
+                    if (speaker != null) {
+                        selectedDevice = speaker;
+                    }
+                }
+                Log.d(TAG, "Selected default device: " + selectedDevice);
+            } else {
+                Log.d(TAG, "Selected device by id: " + selectedDevice); 
+            }
+            
+            // Map all devices to the response
             WritableMap data = Arguments.createMap();
-            AudioDeviceInfo selectedDevice = findOrSelectDevice(devices, deviceId, data);
+            for (AudioDeviceInfo device : devices) {
+                data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
+                Log.d(TAG, "Device type: " + device.getType());
+            }
             
             if (selectedDevice != null) {
                 setAudioDevice(selectedDevice);
@@ -187,34 +213,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         }
     }
     
-    private AudioDeviceInfo findOrSelectDevice(AudioDeviceInfo[] devices, Integer deviceId, WritableMap data) {
-        // Map all devices to the response
-        for (AudioDeviceInfo device : devices) {
-            data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
-            Log.d(TAG, "Device type: " + device.getType());
-        }
-        
-        // Find device by ID if specified
-        AudioDeviceInfo selected = null;
-        if (deviceId != null) {
-            for (AudioDeviceInfo device : devices) {
-                if (deviceId == device.getId()) {
-                    selected = device;
-                    break;
-                }
-            }
-        }
-        
-        // If no device found by ID, select default
-        if (selected == null) {
-            selected = selectDefaultDevice(devices);
-            Log.d(TAG, "Selected default device: " + selected);
-        } else {
-            Log.d(TAG, "Selected device by id: " + selected);
-        }
-        
-        return selected;
-    }
     
     private void sendDeviceUpdateToClient(WritableMap data) {
         Log.d(TAG, "sendDeviceUpdateToClient() result: " + data);
@@ -251,6 +249,30 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             Log.e(TAG, "Error selecting default device: " + e.getMessage(), e);
             return devices.length > 0 ? devices[0] : null;
         }
+    }
+
+    private AudioDeviceInfo findDeviceById(AudioDeviceInfo[] devices, Integer deviceId) {
+        // Find device by ID if specified
+        AudioDeviceInfo selected = null;
+        if (deviceId != null) {
+            for (AudioDeviceInfo device : devices) {
+                if (deviceId == device.getId()) {
+                    selected = device;
+                    break;
+                }
+            }
+        }
+        
+        return selected;
+    }
+
+    private AudioDeviceInfo findDeviceByType(AudioDeviceInfo[] devices, int deviceType) {
+        for (AudioDeviceInfo device : devices) {
+            if (device.getType() == deviceType) {
+                return device;
+            }
+        }
+        return null;
     }
 
     private void setAudioDevice(AudioDeviceInfo device) {

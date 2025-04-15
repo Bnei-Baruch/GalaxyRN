@@ -145,25 +145,4 @@ public class AudioHelper {
                deviceType == AudioDeviceInfo.TYPE_BLE_HEADSET ||
                deviceType == AudioDeviceInfo.TYPE_BUS;
     }
-    
-    /**
-     * Check if the device type has a microphone
-     * 
-     * @param deviceType AudioDeviceInfo device type
-     * @return true if device typically has a microphone
-     */
-    public static boolean hasMicrophone(int deviceType) {
-        switch (deviceType) {
-            case AudioDeviceInfo.TYPE_WIRED_HEADSET:
-            case AudioDeviceInfo.TYPE_USB_HEADSET:
-            case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
-            case AudioDeviceInfo.TYPE_BLE_HEADSET:
-            case AudioDeviceInfo.TYPE_BUS:
-            case AudioDeviceInfo.TYPE_TELEPHONY:
-            case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
-                return true;
-            default:
-                return false;
-        }
-    }
 }
