@@ -23,6 +23,9 @@ public class AudioHelper {
         // USB headset with microphone and speakers
         AudioDeviceInfo.TYPE_USB_HEADSET,
         
+        // Bluetooth Car (automotive)
+        AudioDeviceInfo.TYPE_BUS,
+
         // Bluetooth SCO device (headsets and handsfree devices)
         AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
         
@@ -46,6 +49,12 @@ public class AudioHelper {
         
         // Bluetooth A2DP devices (stereo headphones)
         AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+
+        // Bluetooth LE audio broadcast devices
+        AudioDeviceInfo.TYPE_BLE_BROADCAST,
+        
+        // Bluetooth LE headset devices
+        AudioDeviceInfo.TYPE_BLE_HEADSET,
         
         // HDMI devices
         AudioDeviceInfo.TYPE_HDMI,
@@ -98,6 +107,12 @@ public class AudioHelper {
                 return "Wired Headphones";
             case AudioDeviceInfo.TYPE_BLUETOOTH_A2DP:
                 return "Bluetooth Stereo";
+            case AudioDeviceInfo.TYPE_BLE_BROADCAST:
+                return "Bluetooth LE Broadcast";
+            case AudioDeviceInfo.TYPE_BLE_HEADSET:
+                return "Bluetooth LE Headset";
+            case AudioDeviceInfo.TYPE_BUS:
+                return "Bluetooth Car Audio";
             case AudioDeviceInfo.TYPE_HDMI:
                 return "HDMI";
             case AudioDeviceInfo.TYPE_HDMI_ARC:
@@ -125,7 +140,10 @@ public class AudioHelper {
      */
     public static boolean isBluetoothDevice(int deviceType) {
         return deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO || 
-               deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
+               deviceType == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+               deviceType == AudioDeviceInfo.TYPE_BLE_BROADCAST ||
+               deviceType == AudioDeviceInfo.TYPE_BLE_HEADSET ||
+               deviceType == AudioDeviceInfo.TYPE_BUS;
     }
     
     /**
@@ -139,6 +157,8 @@ public class AudioHelper {
             case AudioDeviceInfo.TYPE_WIRED_HEADSET:
             case AudioDeviceInfo.TYPE_USB_HEADSET:
             case AudioDeviceInfo.TYPE_BLUETOOTH_SCO:
+            case AudioDeviceInfo.TYPE_BLE_HEADSET:
+            case AudioDeviceInfo.TYPE_BUS:
             case AudioDeviceInfo.TYPE_TELEPHONY:
             case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE:
                 return true;
