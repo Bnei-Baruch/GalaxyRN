@@ -29,7 +29,6 @@ export const SettingsJoined = ({ toggleVisible }) => {
       <View style={[styles.container, !isPortrait && styles.landscape]}>
         <View style={styles.row}>
           {/*user settings*/}
-          <IconWithText iconName="account-circle" text="user settings" />
           <AccountSettings />
           <SelectUiLanguage />
         </View>
