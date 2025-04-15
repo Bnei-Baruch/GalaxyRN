@@ -23,7 +23,7 @@ import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
 import CallsBridge from "../services/CallsBridge";
 
-//const { AudioDeviceModule, VersionModule } = NativeModules;
+const { VersionModule } = NativeModules;
 const eventEmitter = new NativeEventEmitter(CallsBridge.raw);
 
 let subscription;
@@ -149,7 +149,7 @@ export const useInitsStore = create((set, get) => ({
   },
   fetchVersion: async () => {
     try {
-      //const versionInfo = await VersionModule.getVersion();
+      const versionInfo = await VersionModule.getVersion();
       set({ versionInfo });
     } catch (error) {
       console.error("Error getting version:", error);
