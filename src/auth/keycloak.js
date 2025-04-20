@@ -249,6 +249,7 @@ class Keycloak {
     const roles = session?.payload?.realm_access?.roles;
     const role = getUserRole(roles);
     try {
+      await this.refreshToken();
       console.log("[keycloak] Checking permission for role:", role);
       const allowed = await this.checkPermission(role);
       console.log("[keycloak] fetchUser allowed", allowed);
@@ -260,9 +261,6 @@ class Keycloak {
       console.error("Error fetching VH info data", error?.message);
       return this.logout();
     }
-
-    console.log("[keycloak] Permission granted, refreshing token");
-    this.refreshToken();
     
     this.saveUser(session.payload);
   };
