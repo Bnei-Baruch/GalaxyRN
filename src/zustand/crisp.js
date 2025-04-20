@@ -9,6 +9,7 @@ export const useCrispStore = create((set, get) => ({
   start: () => {
     if (isInitialized) {
       try {
+        CrispSDK.resetSession();
         console.log("Crisp is already initialized, showing chat window");
         CrispSDK.show();
       } catch (showError) {
