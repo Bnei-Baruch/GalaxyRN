@@ -7,20 +7,31 @@ import { baseStyles } from '../constants';
 export const RoomChat = () => {
   const { roomMsgs } = useChatStore();
   return (
-    <View>
-      <View style={baseStyles.full}>
-        <ScrollView>
+    <View style={[styles.container]}>
+      <View style={styles.messagesContainer}>
+        <ScrollView style={styles.scroll}>
           {roomMsgs.map(m => <Message key={m.time} msg={m} />)}
         </ScrollView>
       </View>
-      <RoomChatForm />
+      <View style={styles.formContainer}>
+        <RoomChatForm />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
-    padding        : 20
+    flex: 1,
+  },
+  messagesContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  scroll: {
+    width: '100%',
+  },
+  formContainer: {
+    marginTop: 10,
   }
 });

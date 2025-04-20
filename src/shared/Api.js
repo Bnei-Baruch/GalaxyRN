@@ -51,16 +51,28 @@ class Api {
     return fetchPromise
       .then((response) => {
         if (!response.ok) {
-          throw Error(response.statusText);
+          console.error(`[API] ${action} status:`, response.status, response.statusText);
+          // Try to extract more detailed error information if possible
+          return response.text().then(errorText => {
+            let errorMessage;
+            try {
+              // Try to parse as JSON to get structured error details
+              const errorJson = JSON.parse(errorText);
+              errorMessage = errorJson.message || errorJson.error || errorText;
+              console.error(`[API] ${action} error response:`, errorJson);
+            } catch (e) {
+              // If not valid JSON, use as raw text
+              errorMessage = errorText;
+              console.error(`[API] ${action} error response text:`, errorText);
+            }
+            throw new Error(errorMessage || response.statusText);
+          });
         }
         return response.json();
       })
-      .then((data) => {
-        //console.debug(`[API] ${action} success`, data);
-        return data;
-      })
       .catch((err) => {
         console.error(`[API] ${action} error`, err);
+        console.error(`[API] ${action} error details:`, err.message);
         return Promise.reject(err);
       });
   };
@@ -93,9 +105,23 @@ class Api {
     const options = this.makeOptions(data);
     return this.logAndParse(`send question`, fetch(`${QST_BACKEND}/ask`, options));
   };
-  getQuestions = (data) => {
-    const options = this.makeOptions(data);
-    return this.logAndParse(`get questions`, fetch(`${QST_BACKEND}/feed`, options));
+  fetchQuestions = (data) => {
+    try {
+      console.log(`[API] fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`);
+      console.log('[API] fetchQuestions - request data:', data);
+      
+      // Validate that serialUserId is present and valid
+      if (!data || !data.serialUserId) {
+        console.error('[API] fetchQuestions - Missing required field: serialUserId');
+        return Promise.reject(new Error('Missing required field: serialUserId'));
+      }
+      
+      const options = this.makeOptions(data);
+      return this.logAndParse(`fetch questions`, fetch(`${QST_BACKEND}/feed`, options));
+    } catch (error) {
+      console.error('[API] fetchQuestions preparation error:', error);
+      return Promise.reject(error);
+    }
   };
   fetchVHInfo = () => this.logAndParse(`fetch vh info`, fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions()));
 

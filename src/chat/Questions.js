@@ -2,13 +2,27 @@ import { StyleSheet, View, ScrollView } from 'react-native';
 import { useChatStore } from '../zustand/chat';
 import { Message } from './Message';
 import { QuestionsForm } from './QuestionsForm';
+import { useEffect, useRef } from 'react';
+
 
 export const Questions = () => {
-  const { questions } = useChatStore();
+  const { questions, fetchQuestions } = useChatStore();
+  const scrollViewRef = useRef(null);
+  
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+  
+  useEffect(() => {
+    if (scrollViewRef.current && questions?.length > 0) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, [questions]);
+  
   return (
-    <View>
-      <ScrollView>
-        {questions.map(m => <Message key={m.time} msg={m} />)}
+    <View style={styles.container}>
+      <ScrollView ref={scrollViewRef}>
+        {questions && questions.length > 0 ? questions.map(m => <Message key={m.time || Date.now()} msg={m} />) : null}
       </ScrollView>
       <QuestionsForm />
     </View>
@@ -17,8 +31,7 @@ export const Questions = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
-    padding        : 20
+    flex           : 1,
   },
   form     : {
     direction: 'rtl',

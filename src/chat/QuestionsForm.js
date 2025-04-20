@@ -70,7 +70,8 @@ const styles = StyleSheet.create({
     borderRadius  : 4,
     borderWidth   : 1,
     borderColor   : 'grey',
-    margin: 5
+    margin: 5,
+    color: 'white'
   },
   containerRtl: {
     direction: 'rtl',

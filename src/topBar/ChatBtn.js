@@ -16,9 +16,8 @@ export const ChatBtn = () => {
   };
 
   return (
-    <View></View>
-    /*<TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
+    <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
       <Icon name="forum" size={30} color="white" />
-    </TouchableOpacity>*/
+    </TouchableOpacity>
   );
 };

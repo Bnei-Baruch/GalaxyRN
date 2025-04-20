@@ -8,7 +8,7 @@ const ScreenTitle = ({ text, close }) => {
       <Text style={styles.header}>Arvut - Virtual Ten</Text>
       <Text style={styles.title}>{text}</Text>
       <TouchableOpacity onPress={close} style={styles.exit}>
-        <Icon name="navigate-next" size={30} color="black" />
+        <Icon name="navigate-next" size={30} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -20,11 +20,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header   : {
-    fontSize: 13
+    fontSize: 13,
+    color: 'white',
   },
-  text     : {
+  title     : {
     fontSize  : 14,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: 'white',
   },
   exit     : {
     position: 'absolute',

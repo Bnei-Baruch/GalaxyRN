@@ -2,15 +2,15 @@ import { StyleSheet, View, Text } from 'react-native';
 import { isRTLString } from './helper';
 
 export const Message = ({ msg }) => {
-  const { text, user, time } = msg;
-  const isRtl                = isRTLString(text);
+  const { text = '', user, time } = msg;
+  const isRtl = isRTLString(text || '');
   return (
     <View style={[styles.container, (isRtl ? styles.containerRtl : styles.containerLtr)]}>
       <View style={styles.containerTime}>
-        <Text>{user.display}</Text>
-        <Text style={styles.time}>{time}</Text>
+        <Text>{user?.display || ''}</Text>
+        <Text style={styles.time}>{time || ''}</Text>
       </View>
-      <Text>{text}</Text>
+      <Text>{text || ''}</Text>
     </View>
   );
 };

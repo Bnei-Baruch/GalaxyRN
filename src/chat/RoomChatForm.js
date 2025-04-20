@@ -27,24 +27,32 @@ export const RoomChatForm = () => {
   return (
     <View style={styles.container}>
       <TextInput
-        type="text"
+        style={styles.input}
         placeholder={t('chat.newMsg')}
+        placeholderTextColor="gray"
         value={value}
         onChangeText={setValue}
-      >
-      </TextInput>
+        color="white"
+      />
       <Button size={30} positive onPress={newChatMessage} title={t('chat.send')} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container   : {
-    borderRadius  : 4,
-    borderWidth   : 1,
-    borderColor   : 'grey',
-    flexDirection : 'row',
-    justifyContent: 'space-between'
+  container: {
+    borderColor: 'grey',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 5,
+    backgroundColor: '#333'
+  },
+  input: {
+    flex: 1,
+    marginRight: 10,
+    padding: 8,
+    color: 'white',
   },
   containerRtl: {
     direction: 'rtl',
@@ -54,7 +62,7 @@ const styles = StyleSheet.create({
     direction: 'ltr',
     textAlign: 'left',
   },
-  time        : {
+  time: {
     color: 'grey'
   }
 });

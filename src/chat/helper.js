@@ -1,6 +1,7 @@
 const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;()]*[-A-Z0-9+&@#/%=~_|()])/gi;
 
 export const textWithLinks = (text) => {
+  if (!text) return [];
   const parts = [];
   let start = 0;
   for (const match of text.matchAll(urlRegex)) {
@@ -27,6 +28,7 @@ const isRTLChar = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/;
 const isAscii = /[\x20-\x7F]/;
 const isAsciiChar        = /[a-zA-Z]/;
 export const isRTLString = (text) => {
+  if (!text) return false;
   let rtl = 0;
   let ltr = 0;
   for (let i = 0; i < text.length; i++) {

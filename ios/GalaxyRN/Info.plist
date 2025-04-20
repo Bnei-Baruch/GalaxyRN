@@ -35,6 +35,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CRISP_WEBSITE_ID</key>
+	<string>a88f7eac-d881-450b-b589-ab82160fb08a</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -50,6 +52,10 @@
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for uploading audio</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Need photo library access for saving photos from chat</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Need photo library access for uploading images to chat</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons.ttf</string>
