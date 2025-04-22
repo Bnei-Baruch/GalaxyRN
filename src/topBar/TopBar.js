@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableWithoutFeedback } from 'react-native';
 import { TopMenuBtn } from './TopMenuBtn';
 import { AudioDevicesBtn } from './AudioDevicesBtn';
 import useRoomStore from '../zustand/fetchRooms';
-import { ChatBtn } from './ChatBtn';
+import { LeaveBtn } from './LeaveBtn';
 import { baseStyles } from '../constants';
 import { useUiActions } from '../zustand/uiActions';
 
@@ -25,7 +25,7 @@ export const TopBar = () => {
         <View>
           <Text style={baseStyles.text}>{room?.description}</Text>
         </View>
-        <ChatBtn />
+        <LeaveBtn />
       </View>
     </TouchableWithoutFeedback>
   );

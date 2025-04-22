@@ -4,8 +4,7 @@ import ListInModal from '../components/ListInModal';
 import { GroupsBtn } from './moreBtns/GroupsBtn';
 import { bottomBar } from './helper';
 import { View, StyleSheet } from 'react-native';
-import { LeaveBtn } from './moreBtns/LeaveBtn';
-import { useInRoomStore } from '../zustand/inRoom';
+import { ChatBtn } from './moreBtns/ChatBtn';
 import { ShidurBtn } from './moreBtns/ShidurBtn';
 import { HideSelfBtn } from './moreBtns/HideSelfBtn';
 import { VoteBtn } from './moreBtns/VoteBtn';
@@ -19,7 +18,7 @@ export const MoreBtn = () => {
     { component: <ShidurBtn />, key: 2 },
     { component: <HideSelfBtn />, key: 3 },
     { component: <VoteBtn />, key: 4 },
-    { component: <LeaveBtn />, key: 5 },
+    { component: <ChatBtn />, key: 5 },
   ];
 
   const handlePress = () => toggleShowBars(false, true);
