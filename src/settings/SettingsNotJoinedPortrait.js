@@ -8,7 +8,6 @@ import { useMyStreamStore } from '../zustand/myStream';
 import { View, StyleSheet } from 'react-native';
 import PageHeader from '../components/PageHeader';
 import { useTranslation } from 'react-i18next';
-import { useShidurStore } from '../zustand/shidur';
 import { baseStyles } from '../constants';
 import AccountSettings from '../auth/AccountSettings';
 
@@ -16,10 +15,8 @@ export const SettingsNotJoinedPortrait = () => {
   const { t }                          = useTranslation();
   const { cammute, toggleCammute }     = useMyStreamStore();
   const { audioMode, toggleAudioMode } = useSettingsStore();
-  const { setIsMuted, isMuted }        = useShidurStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
-  const handleIsMuted         = () => setIsMuted();
   const handleCammute         = () => toggleCammute();
 
   return (
@@ -40,12 +37,7 @@ export const SettingsNotJoinedPortrait = () => {
         value={audioMode}
         onValueChange={handleToggleAudioMode}
       />
-
-      <LabeledSwitch
-        label={t('settings.isMuted')}
-        value={isMuted}
-        onValueChange={handleIsMuted}
-      />
+      <View style={styles.divider}></View>
       <RoomSelect />
     </View>
   );
@@ -56,5 +48,9 @@ const styles = StyleSheet.create({
     padding        : 5,
     flex           : 1,
     backgroundColor: 'black',
-  }
+  },
+  divider: {
+    height: 1,
+    marginVertical: 10,
+  },
 });

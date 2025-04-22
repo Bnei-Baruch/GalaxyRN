@@ -7,6 +7,8 @@ import { useUserStore } from "../zustand/user";
 import kc from "./keycloak";
 import { baseStyles } from "../constants";
 import IconWithText from "../settings/IconWithText";
+import { TextDisplayWithButton } from "../components";
+
 
 const ACCOUNT_URL = "https://accounts.kab.info/auth/realms/main/account";
 
@@ -44,20 +46,16 @@ const AccountSettings = () => {
   return (
     <View style={styles.container}>
       <IconWithText iconName="account-circle" text={t("user.title")} />
-
-      <Text style={[styles.label, baseStyles.text]}>{t("user.name")}</Text>
-
-      <ListInModal
-        items={accauntOptions}
-        onSelect={handleSelect}
-        renderItem={renderItem}
-        trigger={
-          <View style={styles.inputWrapper}>
-            <Text style={[styles.input, { disabled: true }]}>
-              {user?.display}
-            </Text>
-            <Icon name="arrow-drop-down" size={30} color="white" />
-          </View>
+      <TextDisplayWithButton
+        label={t("user.name")}
+        value={user?.display}
+        button={
+          <ListInModal
+            items={accauntOptions}
+            onSelect={handleSelect}
+            renderItem={renderItem}
+            trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
+          />
         }
       />
     </View>
