@@ -1,5 +1,6 @@
 package com.galaxyrn;
 
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Build;
@@ -14,9 +15,11 @@ import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.galaxyrn.foreground.ForegroundService;
 import com.galaxyrn.permissions.PermissionHelper;
 
 public class MainActivity extends ReactActivity {
+    private static final String TAG = "MainActivity";
 
     /**
      * Returns the name of the main component registered from JavaScript.
@@ -43,7 +46,7 @@ public class MainActivity extends ReactActivity {
         permissionHelper = new PermissionHelper(this);
         
         // We'll request permissions once the app is fully loaded
-        Log.d("MainActivity", "onCreate");
+        Log.d(TAG, "onCreate");
     }
 
     @Override
@@ -54,12 +57,29 @@ public class MainActivity extends ReactActivity {
         if (permissionHelper != null) {
             permissionHelper.checkPermissions();
         }
+        
+        Log.d(TAG, "onResume");
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause");
+    }
+    
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
+        Log.d(TAG, "onDestroy - ensuring all services are stopped");
+        
+        // Stop any foreground services that might be running
+        stopForegroundServices();
+        
         setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
         if (getReactInstanceManager() != null) {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
@@ -67,6 +87,25 @@ public class MainActivity extends ReactActivity {
                 reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated",
                         null);
             }
+        }
+        
+        super.onDestroy();
+    }
+    
+    /**
+     * Ensures all foreground services are stopped when the app is destroyed
+     */
+    private void stopForegroundServices() {
+        try {
+            Log.d(TAG, "Manually stopping foreground services");
+            
+            // Stop the foreground service
+            Intent serviceIntent = new Intent(this, ForegroundService.class);
+            boolean stopped = stopService(serviceIntent);
+            Log.d(TAG, "ForegroundService stopped: " + stopped);
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping foreground services", e);
         }
     }
 
