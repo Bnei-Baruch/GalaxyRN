@@ -6,6 +6,9 @@ PODS:
   - AppAuth/ExternalUserAgent (1.7.6):
     - AppAuth/Core
   - boost (1.83.0)
+  - Crisp (2.8.2):
+    - Crisp/Crisp (= 2.8.2)
+  - Crisp/Crisp (2.8.2)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.74.5)
   - fmt (9.1.0)
@@ -947,6 +950,9 @@ PODS:
     - React-Core
   - react-native-background-timer (2.4.1):
     - React-Core
+  - react-native-crisp-chat-sdk (0.16.1):
+    - Crisp (= 2.8.2)
+    - React
   - react-native-render-html (6.3.4):
     - React-Core
   - react-native-safe-area-context (4.14.1):
@@ -1289,6 +1295,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-app-auth (from `../node_modules/react-native-app-auth`)
   - react-native-background-timer (from `../node_modules/react-native-background-timer`)
+  - react-native-crisp-chat-sdk (from `../node_modules/react-native-crisp-chat-sdk`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webrtc (from `../node_modules/react-native-webrtc`)
@@ -1324,6 +1331,7 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - AppAuth
+    - Crisp
     - JitsiWebRTC
     - Sentry
     - SocketRocket
@@ -1394,6 +1402,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-app-auth"
   react-native-background-timer:
     :path: "../node_modules/react-native-background-timer"
+  react-native-crisp-chat-sdk:
+    :path: "../node_modules/react-native-crisp-chat-sdk"
   react-native-render-html:
     :path: "../node_modules/react-native-render-html"
   react-native-safe-area-context:
@@ -1460,6 +1470,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
+  Crisp: 6747c96b2b2c2a81babf1eaecd1688a65d98edd4
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
   FBLazyVector: ac12dc084d1c8ec4cc4d7b3cf1b0ebda6dab85af
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
@@ -1492,6 +1503,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 6c1cacdbf40b531f549eba249e531a7d0bfd8e7f
   react-native-app-auth: 63fa4e58c5bd29aeb974d3a06a23c5858322d533
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
+  react-native-crisp-chat-sdk: ad0ebdfae82665d23bc63c3b2e8caa379418782f
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 141eca0fd4e4191288dfc8b96a7c7e1c2983447a
   react-native-webrtc: 0f1c94069ff1eb9d8fb1618c2dc71f73542c8cfa
