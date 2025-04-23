@@ -21,7 +21,6 @@ import useAudioDevicesStore from "./audioDevices";
 import WakeLockBridge from "../services/WakeLockBridge";
 import AudioBridge from "../services/AudioBridge";
 
-
 let subscriber = null;
 let videoroom = null;
 let janus = null;
@@ -93,11 +92,14 @@ export const useInRoomStore = create((set, get) => ({
 
           if (!feedById[id]) subs.push(_data);
         });
+
         const vStream = avStreams
           .filter(isVideoStream)
           .find((s) => !s.disabled);
-
-        feedById[id] = { id, display: JSON.parse(display) };
+        // dont rewrite feedById[id] was get from mqtt
+        if (!feedById[id]) {
+          feedById[id] = { id, display: JSON.parse(display) };
+        }
         vStream && (feedById[id].vMid = vStream.mid);
       }
 
@@ -321,7 +323,7 @@ export const useInRoomStore = create((set, get) => ({
     videoroom = null;
     subscriber = null;
     useInitsStore.getState().setReadyForJoin(false);
-    
+
     try {
       await mqtt.exit("galaxy/room/" + room.room);
       await mqtt.exit("galaxy/room/" + room.room + "/chat");
