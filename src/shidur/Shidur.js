@@ -20,6 +20,7 @@ const Shidur = () => {
 
   const toggleBar = () => toggleShidurBar();
 
+  const streamURL = videoStream?.toURL();
   return (
     <View style={styles.container}>
       {
@@ -34,9 +35,9 @@ const Shidur = () => {
             }
             <TouchableWithoutFeedback onPress={toggleBar}>
               {
-                (video !== NO_VIDEO_OPTION_VALUE && !audioMode && videoStream) ? (
+                (video !== NO_VIDEO_OPTION_VALUE && !audioMode && streamURL) ? (
                   <RTCView
-                    streamURL={videoStream.toURL()}
+                    streamURL={streamURL}
                     style={styles.viewer}
                   />
                 ) : (
@@ -77,6 +78,7 @@ const styles = StyleSheet.create({
     width         : '100%',
     justifyContent: 'center',
     alignItems    : 'center',
+    backgroundColor: 'red'
   },
   toolbar    : {
     padding        : 4,

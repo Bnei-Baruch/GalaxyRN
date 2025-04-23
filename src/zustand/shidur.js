@@ -19,7 +19,7 @@ import { useInitsStore } from "./inits";
 import { useInRoomStore } from "./inRoom";
 
 let janus = null;
-
+let cleanWIP = false;
 let quadJanus = null;
 let quadStream = null;
 
@@ -53,7 +53,10 @@ const initStream = async (_janus, media) => {
     const stream = await janusStream.watch(media);
     return [stream, janusStream];
   } catch (error) {
-    log.error("[shidur] stream error", error?.message || JSON.stringify(error) || "undefined");
+    log.error(
+      "[shidur] stream error",
+      error?.message || JSON.stringify(error) || "undefined"
+    );
     return [];
   }
 };
@@ -154,13 +157,19 @@ export const useShidurStore = create((set, get) => ({
     set({ janusReady: true });
   },
   cleanJanus: async () => {
-    if (!janus) return;
-
-    get().cleanShidur();
-    get().cleanQuads();
-    set({ janusReady: false });
-    await janus?.destroy();
-    janus = null;
+    if (!janus || cleanWIP) return;
+    cleanWIP = true;
+    try {
+      get().cleanShidur();
+      get().cleanQuads();
+      console.log("[shidur] cleanJanus", janus);
+      await janus.destroy();
+      janus = null;
+      set({ janusReady: false });
+    } catch (error) {
+      log.error("[shidur] Error during cleanJanus:", error);
+    }
+    cleanWIP = false;
   },
   initShidur: async (isPlay = get().isPlay) => {
     if (!useSettingsStore.getState().isShidur || !isPlay) return;
@@ -173,34 +182,44 @@ export const useShidurStore = create((set, get) => ({
     const promises = [];
     if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
       promises.push(
-        initStream(janus, video).then((res) => {
-          if (!res || res.length < 2) {
-            log.error("[shidur] Failed to initialize video stream");
+        initStream(janus, video)
+          .then((res) => {
+            if (!res || res.length < 2) {
+              log.error("[shidur] Failed to initialize video stream");
+              return false;
+            }
+            videoStream = res[0];
+            videoJanus = res[1];
+            return true;
+          })
+          .catch((err) => {
+            log.error(
+              "[shidur] Video stream initialization error",
+              err?.message || JSON.stringify(err) || "undefined"
+            );
             return false;
-          }
-          videoStream = res[0];
-          videoJanus = res[1];
-          return true;
-        }).catch(err => {
-          log.error("[shidur] Video stream initialization error", err?.message || JSON.stringify(err) || "undefined");
-          return false;
-        })
+          })
       );
     }
     if (!audioJanus) {
       promises.push(
-        initStream(janus, audio).then((res) => {
-          if (!res || res.length < 2) {
-            log.error("[shidur] Failed to initialize audio stream");
+        initStream(janus, audio)
+          .then((res) => {
+            if (!res || res.length < 2) {
+              log.error("[shidur] Failed to initialize audio stream");
+              return false;
+            }
+            audioStream = res[0];
+            audioJanus = res[1];
+            return true;
+          })
+          .catch((err) => {
+            log.error(
+              "[shidur] Audio stream initialization error",
+              err?.message || JSON.stringify(err) || "undefined"
+            );
             return false;
-          }
-          audioStream = res[0];
-          audioJanus = res[1];
-          return true;
-        }).catch(err => {
-          log.error("[shidur] Audio stream initialization error", err?.message || JSON.stringify(err) || "undefined");
-          return false;
-        })
+          })
       );
     }
     if (!trlAudioJanus) {
@@ -208,27 +227,34 @@ export const useShidurStore = create((set, get) => ({
         (x) => trllang[x]
       );
       promises.push(
-        initStream(janus, id).then((res) => {
-          if (!res || res.length < 2) {
-            log.error("[shidur] Failed to initialize translation audio stream");
+        initStream(janus, id)
+          .then((res) => {
+            if (!res || res.length < 2) {
+              log.error(
+                "[shidur] Failed to initialize translation audio stream"
+              );
+              return false;
+            }
+            trlAudioStream = res[0];
+            trlAudioStream
+              ?.getAudioTracks()
+              ?.forEach((track) => (track.enabled = false));
+            trlAudioJanus = res[1];
+            return true;
+          })
+          .catch((err) => {
+            log.error(
+              "[shidur] Translation audio stream initialization error",
+              err?.message || JSON.stringify(err) || "undefined"
+            );
             return false;
-          }
-          trlAudioStream = res[0];
-          trlAudioStream
-            ?.getAudioTracks()
-            ?.forEach((track) => (track.enabled = false));
-          trlAudioJanus = res[1];
-          return true;
-        }).catch(err => {
-          log.error("[shidur] Translation audio stream initialization error", err?.message || JSON.stringify(err) || "undefined");
-          return false;
-        })
+          })
       );
     }
     console.log("[shidur] wait for ready all streams", promises.length);
     try {
       const results = await Promise.all(promises);
-      if (results.some(result => result === false)) {
+      if (results.some((result) => result === false)) {
         log.warn("[shidur] Some streams failed to initialize");
       }
       console.log("[shidur] streams are ready", videoStream);
@@ -239,7 +265,10 @@ export const useShidurStore = create((set, get) => ({
         readyShidur: true,
       }));
     } catch (err) {
-      console.error("[shidur] stream error", err?.message || JSON.stringify(err) || "undefined");
+      console.error(
+        "[shidur] stream error",
+        err?.message || JSON.stringify(err) || "undefined"
+      );
     }
   },
   cleanShidur: () => {

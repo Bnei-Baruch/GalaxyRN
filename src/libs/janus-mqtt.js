@@ -107,13 +107,12 @@ export class JanusMqtt {
           this._cleanupTransactions();
           resolve();
         }).catch((err) => {
-          log.debug('[janus] destroy err', err);
+          log.debug('[janus] destroy err', JSON.stringify(err));
           this._cleanupTransactions();
           resolve();
         });
       });
     });
-
   }
 
   detach(plugin) {
@@ -285,13 +284,21 @@ export class JanusMqtt {
     this.sessionId    = null;
     this.isConnected  = false;
 
-    mqtt.exit(this.rxTopic + '/' + this.user.id);
-    mqtt.exit(this.rxTopic);
-    mqtt.exit(this.stTopic);
+    try {
+      mqtt.exit(this.rxTopic + '/' + this.user.id);
+      mqtt.exit(this.rxTopic);
+      mqtt.exit(this.stTopic);
+    } catch (e) {
+      log.error('[janus] Error exiting MQTT topics:', e);
+    }
 
-    mqtt.mq.removeListener(this.srv, this.onMessage);
-    if (this.user.mit) mqtt.mq.removeListener(this.user.mit, this.onMessage);
-    mqtt.mq.removeListener(this.sessionId, this.onMessage);
+    try {
+      mqtt.mq.removeListener(this.srv, this.onMessage);
+      if (this.user.mit) mqtt.mq.removeListener(this.user.mit, this.onMessage);
+      if (this.sessionId) mqtt.mq.removeListener(this.sessionId, this.onMessage);
+    } catch (e) {
+      log.error('[janus] Error removing MQTT listeners:', e);
+    }
   }
 
   onMessage(message, tD) {

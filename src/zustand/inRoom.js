@@ -317,9 +317,15 @@ export const useInRoomStore = create((set, get) => ({
 
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
+    
     await useShidurStore.getState().cleanJanus();
-    await janus?.destroy();
-    janus = null;
+    
+    if (janus) {
+      console.log("useInRoomStore exitRoom janus", janus);
+      await janus.destroy();
+      janus = null;
+    }
+    
     videoroom = null;
     subscriber = null;
     useInitsStore.getState().setReadyForJoin(false);
