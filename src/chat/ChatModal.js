@@ -22,16 +22,16 @@ export const ChatModal = () => {
     };
   }, []);
 
-  console.log("ChatModal render mode ", mode);
-
-  if (mode === modalModes.close) {
-    return null;
-  }
-
   const closeModal = () => setChatMode(modalModes.close);
 
   return (
-    <Modal>
+    <Modal
+      animationType="slide"
+      visible={mode !== modalModes.close}
+      onRequestClose={closeModal}
+      statusBarTranslucent={true}
+      presentationStyle="overFullScreen"
+    >
       <View style={styles.modalContainer}>
         <ScreenTitle text={t("topBar.communicationTitle")} close={closeModal} />
         <View style={styles.tabs}>
@@ -96,6 +96,10 @@ const styles = StyleSheet.create({
   },
   newMsgs: {
     color: "red",
+    fontSize: 16,
+  },
+  text: {
+    color: "white",
     fontSize: 16,
   },
 });

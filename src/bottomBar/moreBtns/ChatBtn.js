@@ -7,7 +7,7 @@ import { baseStyles } from "../../constants";
 import { useChatStore } from "../../zustand/chat";
 import { modalModes } from "../../zustand/helper";
 import { ChatCounter } from "../../chat/ChatCounter";
-
+import { ChatModal } from "../../chat/ChatModal";
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
   const { t } = useTranslation();
@@ -21,6 +21,7 @@ export const ChatBtn = () => {
     <TouchableOpacity onPress={handlePress} style={baseStyles.listItem}>
       <IconWithText iconName="forum" text={t("bottomBar.chat")} />
       <ChatCounter />
+      <ChatModal />
     </TouchableOpacity>
   );
 };

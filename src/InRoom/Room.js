@@ -17,7 +17,6 @@ const Room = () => {
 
   return (
     <View style={styles.container}>
-      <ChatModal />
       <TopBar />
       <RoomLayout />
       <BottomBar />
