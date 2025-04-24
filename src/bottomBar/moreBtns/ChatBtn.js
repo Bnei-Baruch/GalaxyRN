@@ -6,20 +6,21 @@ import IconWithText from "../../settings/IconWithText";
 import { baseStyles } from "../../constants";
 import { useChatStore } from "../../zustand/chat";
 import { modalModes } from "../../zustand/helper";
+import { ChatCounter } from "../../chat/ChatCounter";
 
 export const ChatBtn = () => {
-  const { setChatMode, mode } = useChatStore();
+  const { setChatMode } = useChatStore();
   const { t } = useTranslation();
 
   const handlePress = () => {
-    const _mode =
-      mode === modalModes.close ? modalModes.chat : modalModes.close;
-    setChatMode(_mode);
+    console.log("handlePress chat");
+    setChatMode(modalModes.chat);
   };
 
   return (
     <TouchableOpacity onPress={handlePress} style={baseStyles.listItem}>
       <IconWithText iconName="forum" text={t("bottomBar.chat")} />
+      <ChatCounter />
     </TouchableOpacity>
   );
 };

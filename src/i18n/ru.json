@@ -29,8 +29,9 @@
     "vote": "Голосовать",
     "shidur": "Трансляция",
     "self": "Скрыть мое видео",
-    "quads": "Kli Olamy tens",
-    "leave": "Покинуть комнату"
+    "quads": "Kli Olamy tens",  
+    "leave": "Покинуть комнату",
+    "chat": "Чат"
   },
   "shidur": {
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",

@@ -12,20 +12,19 @@ export const useChatStore = create((set, get) => ({
   mode: modalModes.close,
   setChatMode: (mode) => set(() => ({ mode })),
   supportCount: 0,
-  roomCount: 0,
+  chatNewMsgs: 0,
   supportMsgs: [],
   roomMsgs: [],
   questions: [],
-  resetRoom: set(() => ({ roomCount: 0 })),
-  resetSupport: set(() => ({ supportCount: 0 })),
+  resetChatNewMsgs: () => set(() => ({ chatNewMsgs: 0 })),
   addRoomMsg: (data) => {
     let json = JSON.parse(data);
     if (json?.type === "client-chat") {
-      const msg  = buildMsg(json);
+      const msg = buildMsg(json);
       console.log("Adding room message:", msg);
       set(
         produce((state) => {
-          state.roomCount++;
+          state.chatNewMsgs++;
           state.roomMsgs.push(msg);
         })
       );
@@ -34,7 +33,7 @@ export const useChatStore = create((set, get) => ({
   addSupportMsg: (data) => {
     let json = JSON.parse(data);
     if (json?.type === "client-chat") {
-      const msg  = buildMsg(json);
+      const msg = buildMsg(json);
       console.log("Adding support message:", msg);
       set(
         produce((state) => {
@@ -49,7 +48,7 @@ export const useChatStore = create((set, get) => ({
       produce((state) => {
         state.supportCount = 0;
         state.supportMsgs = [];
-        state.roomCount = 0;
+        state.chatNewMsgs = 0;
         state.roomMsgs = [];
       })
     );
@@ -85,7 +84,7 @@ export const useChatStore = create((set, get) => ({
     try {
       const { feed } = await Api.fetchQuestions(data);
       console.log("Fetched questions:", feed);
-      
+
       if (!feed || !Array.isArray(feed)) {
         console.error("Invalid feed data:", feed);
         set({ questions: [] });
@@ -107,13 +106,13 @@ export const useChatStore = create((set, get) => ({
             } = q;
 
             // Make sure content is a string
-            const textContent = content ? String(content) : '';
-            
+            const textContent = content ? String(content) : "";
+
             return {
               text: textContent,
               user: {
-                display: name || 'Unknown',
-                room: room || 'Unknown',
+                display: name || "Unknown",
+                room: room || "Unknown",
               },
               time: getDateString(new Date(timestamp || Date.now())),
               direction: isRTLString(textContent) ? "rtl" : "ltr",

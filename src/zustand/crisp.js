@@ -18,22 +18,16 @@ export const useCrispStore = create((set, get) => ({
       return;
     }
     try {
-      // Make sure the website ID is in the correct format
-      // Remove any quotes, semicolons, and whitespace
-      const websiteId = CRISP_WEBSITE_ID.replace(/[";'\s]/g, '');
       const { display, email, id } = useUserStore.getState().user || {};
-      console.log("Crisp configuration", websiteId, email, display, id);
+      console.log("Crisp configuration", CRISP_WEBSITE_ID, email, display, id);
       
-      if (!websiteId || websiteId.length === 0) {
-        throw new Error("Invalid CRISP_WEBSITE_ID");
-      }
       
       // Note: For iOS, the SDK may already be configured in AppDelegate.mm
       // For Android, we need to configure it here
       if (Platform.OS === 'android') {
         console.log("Configuring Crisp SDK for Android");
         // First configure the SDK with the website ID
-        CrispSDK.configure(websiteId);
+        CrispSDK.configure(CRISP_WEBSITE_ID);
       } else {
         console.log("Using pre-configured Crisp SDK for iOS");
       }

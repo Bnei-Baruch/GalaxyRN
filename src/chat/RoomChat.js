@@ -1,16 +1,25 @@
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { useChatStore } from '../zustand/chat';
-import { Message } from './Message';
-import { RoomChatForm } from './RoomChatForm';
-import { baseStyles } from '../constants';
+import { useEffect } from "react";
+import { StyleSheet, View, ScrollView } from "react-native";
+
+import { useChatStore } from "../zustand/chat";
+import { Message } from "./Message";
+import { RoomChatForm } from "./RoomChatForm";
+
 
 export const RoomChat = () => {
-  const { roomMsgs } = useChatStore();
+  const { roomMsgs, resetChatNewMsgs } = useChatStore();
+
+  useEffect(() => {
+    resetChatNewMsgs();
+  }, [roomMsgs]);
+
   return (
     <View style={[styles.container]}>
       <View style={styles.messagesContainer}>
         <ScrollView style={styles.scroll}>
-          {roomMsgs.map(m => <Message key={m.time} msg={m} />)}
+          {roomMsgs.map((m) => (
+            <Message key={m.time} msg={m} />
+          ))}
         </ScrollView>
       </View>
       <View style={styles.formContainer}>
@@ -26,12 +35,12 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
-    flexDirection: 'column',
+    flexDirection: "column",
   },
   scroll: {
-    width: '100%',
+    width: "100%",
   },
   formContainer: {
     marginTop: 10,
-  }
+  },
 });

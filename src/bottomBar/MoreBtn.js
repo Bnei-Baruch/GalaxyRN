@@ -9,6 +9,7 @@ import { ShidurBtn } from './moreBtns/ShidurBtn';
 import { HideSelfBtn } from './moreBtns/HideSelfBtn';
 import { VoteBtn } from './moreBtns/VoteBtn';
 import { useUiActions } from '../zustand/uiActions';
+import { ChatCounter } from '../chat/ChatCounter';
 
 export const MoreBtn = () => {
   const { toggleShowBars } = useUiActions();
@@ -34,6 +35,7 @@ export const MoreBtn = () => {
       trigger={
         <View style={[styles.btn, bottomBar.btnMore]}>
           <Icon name="more-vert" size={40} color="white" />
+          <ChatCounter />
         </View>
       }
     />

@@ -17,9 +17,6 @@ export const SwitchDeviceBtn = () => {
   return (
     <TouchableOpacity onPress={handleSwitch}>
       <Icon name={selected.icon} size={30} color="white" />
-      <Text style={baseStyles.listItem}>
-        {selected?.name ? t(`audioDeviceName.${selected.name}`) : 'nothing'}
-      </Text>
     </TouchableOpacity>
   );
 };
