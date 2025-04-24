@@ -26,6 +26,8 @@
 		3761934A2D9D5C5700F52320 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376193322D9D5C5600F52320 /* LaunchScreen.storyboard */; };
 		3761934B2D9D5C5700F52320 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193332D9D5C5600F52320 /* main.m */; };
 		3761934C2D9D5C5700F52320 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */; };
+		3783FD542DBA82C400E470E3 /* VersionModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3783FD522DBA82C400E470E3 /* VersionModule.m */; };
+		3783FD552DBA82C400E470E3 /* VersionModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3783FD532DBA82C400E470E3 /* VersionModule.swift */; };
 		EEE4C679E7EF7F5CC9C2B75D /* libPods-GalaxyRN.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +59,8 @@
 		376193322D9D5C5600F52320 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		376193332D9D5C5600F52320 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3783FD522DBA82C400E470E3 /* VersionModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VersionModule.m; sourceTree = "<group>"; };
+		3783FD532DBA82C400E470E3 /* VersionModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionModule.swift; sourceTree = "<group>"; };
 		37B463BC2D5BA5C6003D2E9C /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C51E97E138229AE1AF6618C1 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
@@ -136,6 +140,8 @@
 				376193322D9D5C5600F52320 /* LaunchScreen.storyboard */,
 				376193332D9D5C5600F52320 /* main.m */,
 				376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */,
+				3783FD522DBA82C400E470E3 /* VersionModule.m */,
+				3783FD532DBA82C400E470E3 /* VersionModule.swift */,
 			);
 			path = GalaxyRN;
 			sourceTree = "<group>";
@@ -330,6 +336,8 @@
 				3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */,
 				3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */,
 				376193362D9D5C5700F52320 /* AudioManager.m in Sources */,
+				3783FD542DBA82C400E470E3 /* VersionModule.m in Sources */,
+				3783FD552DBA82C400E470E3 /* VersionModule.swift in Sources */,
 				3761933F2D9D5C5700F52320 /* CallManager.swift in Sources */,
 				376193372D9D5C5700F52320 /* AudioManager.swift in Sources */,
 				376193412D9D5C5700F52320 /* CallManager+Events.swift in Sources */,
