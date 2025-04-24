@@ -22,7 +22,7 @@ const Shidur = () => {
 
   const streamURL = videoStream?.toURL();
   return (
-    <View style={styles.container}>
+    <>
       {
         isPlay ? (
           <View>
@@ -63,22 +63,16 @@ const Shidur = () => {
           </View>
         )
       }
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container  : {
-    alignItems    : 'center',
-    width         : '100%',
-    justifyContent: 'center'
-  },
   viewer     : {
     aspectRatio   : 16 / 9,
     width         : '100%',
     justifyContent: 'center',
     alignItems    : 'center',
-    backgroundColor: 'red'
   },
   toolbar    : {
     padding        : 4,

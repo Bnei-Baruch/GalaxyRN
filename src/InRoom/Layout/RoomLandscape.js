@@ -52,11 +52,9 @@ const styles = StyleSheet.create({
   },
   shidurWrapper: {
     flex : 1,
-    width: '100%',
-
+    justifyContent: 'center',
   },
   shidur       : {
-    width      : '100%',
-    aspectRatio: 9 / 16
+    width: '100%',
   }
 });

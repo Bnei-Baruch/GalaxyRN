@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import useRoomStore from "../zustand/fetchRooms";
 import { useSettingsStore } from "../zustand/settings";
@@ -53,7 +55,10 @@ const RoomSelect = () => {
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       <TextDisplayWithButton
         label={t("settings.selectRoom")}
         value={room?.description}
@@ -95,7 +100,7 @@ const RoomSelect = () => {
             )}
           />
         )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
