@@ -61,6 +61,7 @@ const ListInModal = (
         transparent={true}
         visible={visible}
         onRequestClose={toggleModal}
+        supportedOrientations={['portrait', 'landscape']}
       >
         <TouchableWithoutFeedback onPress={toggleModal}>
           <View style={styles.modalContainer}>
