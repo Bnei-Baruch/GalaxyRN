@@ -11,10 +11,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class PermissionHelper {
 
@@ -28,7 +26,6 @@ public class PermissionHelper {
             Manifest.permission.READ_PHONE_STATE
     };
     private String[] permissions;
-    private final Map<String, Boolean> permissionDeniedMap = new HashMap<>();
     private int currentPermissionIndex = 0;
 
     public PermissionHelper(Activity activity) {
@@ -97,11 +94,11 @@ public class PermissionHelper {
             return;
         }
         requestPermission(permission);
-       /*  if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-            showPermissionExplanationDialog(permission);
+       if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+            showPermissionDeniedDialog(permission);
         } else {
             requestPermission(permission);
-        } */
+        }
     }
 
     private void requestPermission(String permission) {
@@ -120,8 +117,6 @@ public class PermissionHelper {
     public void handlePermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST_CODE && permissions.length > 0 && grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // Mark this permission as denied
-                permissionDeniedMap.put(permissions[0], true);
                 // Show denied dialog
                 showPermissionDeniedDialog(permissions[0]);
             }
@@ -131,24 +126,8 @@ public class PermissionHelper {
         }
     }
 
-    private void showPermissionExplanationDialog(String permission) {
-        String title = getLocalizedString("permissions_required", "Требуются разрешения");
-        String message = getLocalizedString("permissions_explanation", "Приложению нужны эти разрешения для корректной работы.");
-        String okButton = getLocalizedString("ok", "ОК");
-        String cancelButton = getLocalizedString("cancel", "Отмена");
-
-        new AlertDialog.Builder(activity)
-                .setTitle(title + " " + permission)
-                .setMessage(message)
-                .setPositiveButton(okButton, (dialog, which) -> requestPermission(permission))
-                .setNegativeButton(cancelButton, (dialog, which) -> {
-                    permissionDeniedMap.put(permission, true);
-                })
-                .show();
-    }
-
     private void showPermissionDeniedDialog(String permission) {
-        String title = getLocalizedString("permissions_denied", "Разрешения отклонены");
+        String title = getLocalizedString("permissions_required", "Требуются разрешения");
         String message = getLocalizedString("permissions_denied_explanation", 
                 "Без этих разрешений некоторые функции приложения могут работать некорректно.");
         String requestAgainButton = getLocalizedString("request_again", "Запросить снова");
@@ -162,18 +141,6 @@ public class PermissionHelper {
                 .show();
     }
 
-    /**
-     * Allows manually requesting permissions again for previously denied permissions
-     */
-    public void requestDeniedPermissions() {
-        for (Map.Entry<String, Boolean> entry : permissionDeniedMap.entrySet()) {
-            if (entry.getValue() && 
-                ContextCompat.checkSelfPermission(activity, entry.getKey()) != PackageManager.PERMISSION_GRANTED) {
-                requestPermission(entry.getKey());
-            }
-        }
-    }
-
     private String getLocalizedString(String key, String defaultValue) {
         String language = Locale.getDefault().getLanguage();
 
@@ -181,38 +148,26 @@ public class PermissionHelper {
         switch (language) {
             case "ru":
                 if ("permissions_required".equals(key)) return "Требуются разрешения";
-                if ("permissions_explanation".equals(key)) return "Приложению нужны эти разрешения для корректной работы.";
-                if ("permissions_denied".equals(key)) return "Разрешения отклонены";
                 if ("permissions_denied_explanation".equals(key)) return "Без этих разрешений некоторые функции приложения могут работать некорректно.";
                 if ("request_again".equals(key)) return "Запросить снова";
-                if ("ok".equals(key)) return "ОК";
                 if ("cancel".equals(key)) return "Отмена";
                 break;
             case "es": 
                 if ("permissions_required".equals(key)) return "Se requieren permisos";
-                if ("permissions_explanation".equals(key)) return "La aplicación necesita estos permisos para funcionar correctamente.";
-                if ("permissions_denied".equals(key)) return "Permisos denegados";
                 if ("permissions_denied_explanation".equals(key)) return "Sin estos permisos, algunas funciones de la aplicación pueden no funcionar correctamente.";
                 if ("request_again".equals(key)) return "Solicitar de nuevo";
-                if ("ok".equals(key)) return "Aceptar";
                 if ("cancel".equals(key)) return "Cancelar";
                 break;
             case "he":
                 if ("permissions_required".equals(key)) return "נדרשות הרשאות";
-                if ("permissions_explanation".equals(key)) return "האפליקציה צריכה הרשאות אלה כדי לפעול כראוי.";
-                if ("permissions_denied".equals(key)) return "הרשאות נדחו";
                 if ("permissions_denied_explanation".equals(key)) return "ללא הרשאות אלה, חלק מהתכונות של האפליקציה עלולות שלא לעבוד כראוי.";
                 if ("request_again".equals(key)) return "בקש שוב";
-                if ("ok".equals(key)) return "אישור";
                 if ("cancel".equals(key)) return "ביטול";
                 break;
             default: // English
                 if ("permissions_required".equals(key)) return "Permissions Required";
-                if ("permissions_explanation".equals(key)) return "The app needs these permissions to function properly.";
-                if ("permissions_denied".equals(key)) return "Permissions Denied";
                 if ("permissions_denied_explanation".equals(key)) return "Without these permissions, some app features may not work correctly.";
                 if ("request_again".equals(key)) return "Request Again";
-                if ("ok".equals(key)) return "OK";
                 if ("cancel".equals(key)) return "Cancel";
                 break;
         }
