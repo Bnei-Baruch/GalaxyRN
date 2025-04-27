@@ -98,7 +98,7 @@ export const useInRoomStore = create((set, get) => ({
           .find((s) => !s.disabled);
         // dont rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
-          feedById[id] = { id, display: JSON.parse(display) };
+          feedById[id] = { id, display: JSON.parse(display), camera: !!vStream };
         }
         vStream && (feedById[id].vMid = vStream.mid);
       }
