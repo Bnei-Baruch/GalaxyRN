@@ -18,6 +18,8 @@ export default ScreenTitle;
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    backgroundColor: 'black',
+    paddingVertical: 5,
   },
   header   : {
     fontSize: 13,

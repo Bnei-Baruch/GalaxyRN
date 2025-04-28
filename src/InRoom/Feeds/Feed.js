@@ -16,7 +16,7 @@ const Feed = ({ id }) => {
   const { borders, width } = useUiActions();
 
   const feed = feedById[id];
-  const { display: { display } = {}, url, talking, vMid, camera } = feed || {};
+  const { display: { display } = {}, url, talking, camera } = feed || {};
   console.log("[client] Feed", feed);
 
   const ref = useRef();
@@ -51,7 +51,7 @@ const Feed = ({ id }) => {
   };
 
   const renderContent = () => {
-    if (vMid && camera) {
+    if (camera) {
       return (
         <>
           <FeedDisplay display={display} />
