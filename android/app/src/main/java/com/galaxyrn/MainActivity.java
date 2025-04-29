@@ -52,6 +52,7 @@ public class MainActivity extends ReactActivity {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        permissionHelper.sendPermissions();
     }
     
     @Override

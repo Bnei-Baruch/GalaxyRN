@@ -29,6 +29,7 @@ public class PermissionHelper {
     private static final int SETTINGS_REQUEST_CODE = 102;
     public static final String TAG = "PermissionHelper";
     private final Activity activity;
+    private boolean permissionsReady = false;
 
     private final String[] requiredPermissions = {
             Manifest.permission.CAMERA,
@@ -86,6 +87,12 @@ public class PermissionHelper {
             requestPermission(permission);
         } else {
             Log.d(TAG, "All permissions already granted.");
+            permissionsReady = true;
+        }
+    }
+
+    public void sendPermissions() {
+        if (permissionsReady) {
             notifyClientAllPermissionsGranted();
         }
     }
@@ -141,7 +148,8 @@ public class PermissionHelper {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "Returned from settings, checking permissions requestCode=" + requestCode + " resultCode=" + resultCode + " data=" + data);
+        Log.d(TAG, "Returned from settings, checking permissions requestCode=" + requestCode + " resultCode="
+                + resultCode + " data=" + data);
         if (requestCode == SETTINGS_REQUEST_CODE) {
             Log.d(TAG, "Returned from settings, checking permissions");
             checkPermissions();

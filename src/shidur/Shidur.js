@@ -11,6 +11,7 @@ import { useSettingsStore } from '../zustand/settings';
 import { MuteBtn } from './MuteBtn';
 import { useTranslation } from 'react-i18next';
 import { baseStyles } from '../constants';
+import { FullscreenBtn } from './FullscreenBtn';
 
 const Shidur = () => {
   const { videoStream, isPlay, shidurBar, toggleShidurBar, video, isOnAir } = useShidurStore();
@@ -54,12 +55,15 @@ const Shidur = () => {
       {
         (shidurBar || !isPlay) && (
           <View style={styles.toolbar}>
-            <View style={styles.toolbarLeft}>
+            <View style={styles.toolbarBtnsGroup}>
               <PlayPauseBtn />
               <MuteBtn />
             </View>
-            <OptionsBtn />
-            {/*<FullscreenBtn />*/}
+
+            <View style={styles.toolbarBtnsGroup}>
+              <OptionsBtn />
+              <FullscreenBtn />
+            </View>
           </View>
         )
       }
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
     bottom         : 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
-  toolbarLeft: {
+  toolbarBtnsGroup: {
     flexDirection: 'row',
     flexWrap     : 'nowrap',
     alignItems   : 'center'

@@ -10,7 +10,7 @@ import { SENTRY_DSN } from "@env";
 import InitApp from "./src/InitApp";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useInitsStore } from "./src/zustand/inits";
-import { View, Text } from "react-native";
+import WIP from './src/components/WIP';
 
 Sentry.init({
   dsn: SENTRY_DSN,
