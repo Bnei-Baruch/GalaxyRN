@@ -2,14 +2,22 @@ package com.galaxyrn.permissions;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+import com.galaxyrn.SendEventToClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +26,10 @@ import java.util.Locale;
 public class PermissionHelper {
 
     private static final int PERMISSIONS_REQUEST_CODE = 101;
-    private static final String TAG = "PermissionHelper";
+    private static final int SETTINGS_REQUEST_CODE = 102;
+    public static final String TAG = "PermissionHelper";
     private final Activity activity;
+
     private final String[] requiredPermissions = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -30,18 +40,21 @@ public class PermissionHelper {
 
     public PermissionHelper(Activity activity) {
         this.activity = activity;
-        Log.d(TAG, "PermissionHelper initialized. Ungranted permissions: "
-                + java.util.Arrays.toString(getUngrantedPermissions()));
+        checkPermissions();
     }
 
     private String[] getUngrantedPermissions() {
         List<String> request = new ArrayList<>();
+        Log.d(TAG, "Checking for ungranted permissions...");
         for (String permission : permissionsByVersion()) {
             if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
                 request.add(permission);
                 Log.d(TAG, "Permission not granted: " + permission);
+            } else {
+                Log.d(TAG, "Permission already granted: " + permission);
             }
         }
+        Log.d(TAG, "Total ungranted permissions: " + request.size());
         return request.toArray(new String[0]);
     }
 
@@ -70,39 +83,89 @@ public class PermissionHelper {
         if (ungrantedPermissions.length > 0) {
             String permission = ungrantedPermissions[0];
             Log.d(TAG, "Checking permission: " + permission);
-            checkPermission(permission);
-            // Wait for result in handlePermissionResult
-            return;
+            requestPermission(permission);
+        } else {
+            Log.d(TAG, "All permissions already granted.");
+            notifyClientAllPermissionsGranted();
         }
-        Log.d(TAG, "All permissions already granted.");
     }
 
-    private void checkPermission(String permission) {
-        Log.d(TAG, "Requesting permission: " + permission);
-        if (ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-            Log.d(TAG, "Should show rationale for permission: " + permission);
-            showPermissionDeniedDialog(permission);
-        } else {
-            requestPermission(permission);
+    private void notifyClientAllPermissionsGranted() {
+        try {
+            WritableMap params = Arguments.createMap();
+            params.putBoolean("allGranted", true);
+            SendEventToClient.sendEvent("permissionsStatus", params);
+            Log.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
         }
     }
 
     private void requestPermission(String permission) {
         Log.d(TAG, "Requesting permission via ActivityCompat: " + permission);
+
         ActivityCompat.requestPermissions(activity, new String[] { permission }, PERMISSIONS_REQUEST_CODE);
+        Log.d(TAG, "Permission request sent for: " + permission);
+
+    }
+
+    private void showPermissionPermanentlyDeniedDialog(String permission) {
+        Log.d(TAG, "Showing permanently denied dialog for: " + permission);
+        String title = getLocalizedString("permissions_required", permission);
+        String message = getLocalizedString("permissions_permanently_denied", permission);
+        String settingsButton = getLocalizedString("go_to_settings", permission);
+
+        AlertDialog dialog = new AlertDialog.Builder(activity)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(settingsButton, (dialogInterface, which) -> {
+                    openAppSettings();
+                    dialogInterface.dismiss();
+                })
+                .create();
+
+        dialog.setCanceledOnTouchOutside(false);
+        Log.d(TAG, "Showing permanently denied dialog for: " + permission);
+        dialog.show();
+    }
+
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", activity.getPackageName(), null);
+        intent.setData(uri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        activity.startActivityForResult(intent, SETTINGS_REQUEST_CODE);
+        Log.d(TAG, "Opened app settings with SETTINGS_REQUEST_CODE");
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "Returned from settings, checking permissions requestCode=" + requestCode + " resultCode=" + resultCode + " data=" + data);
+        if (requestCode == SETTINGS_REQUEST_CODE) {
+            Log.d(TAG, "Returned from settings, checking permissions");
+            checkPermissions();
+        }
     }
 
     public void handlePermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         Log.d(TAG, "handlePermissionResult: requestCode=" + requestCode + ", permissions="
                 + java.util.Arrays.toString(permissions) + ", grantResults=" + java.util.Arrays.toString(grantResults));
-        if (requestCode == PERMISSIONS_REQUEST_CODE && permissions.length > 0 && grantResults.length > 0) {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                Log.d(TAG, "Permission denied: " + permissions[0]);
-                showPermissionDeniedDialog(permissions[0]);
-                return;
+
+        String currentPermission = permissions[0];
+        if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            Log.d(TAG, "Permission denied: " + currentPermission);
+            Log.d(TAG, "Will show permission denied dialog for: " + currentPermission);
+            boolean shouldShow = ActivityCompat.shouldShowRequestPermissionRationale(activity, currentPermission);
+            if (!shouldShow) {
+                showPermissionPermanentlyDeniedDialog(currentPermission);
             } else {
-                Log.d(TAG, "Permission granted: " + permissions[0]);
+                showPermissionDeniedDialog(currentPermission);
             }
+
+        } else {
+            Log.d(TAG, "Permission granted: " + currentPermission);
+            Log.d(TAG, "Continuing to check next permissions");
             // Continue checking the next permissions from scratch
             checkPermissions();
         }
@@ -110,35 +173,46 @@ public class PermissionHelper {
 
     private void showPermissionDeniedDialog(String permission) {
         Log.d(TAG, "Showing permission denied dialog for: " + permission);
-        String title = getLocalizedString("permissions_required");
-        String message = getLocalizedString("permissions_denied_explanation");
-        String requestAgainButton = getLocalizedString("request_again");
+        String title = getLocalizedString("permissions_required", permission);
+        String message = getLocalizedString("permissions_denied_explanation", permission);
+        String requestAgainButton = getLocalizedString("request_again", permission);
+
+        final String permissionToRequest = permission;
 
         AlertDialog dialog = new AlertDialog.Builder(activity)
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(requestAgainButton, (d, which) -> {
-                    Log.d(TAG, "User clicked request again for permission: " + permission);
-                    requestPermission(permission);
-                })
                 .setCancelable(false)
+                .setPositiveButton(requestAgainButton, (dialogInterface, which) -> {
+                    Log.d(TAG, "User clicked request again for permission: " + permissionToRequest);
+                    requestPermission(permissionToRequest);
+                    dialogInterface.dismiss();
+                })
                 .create();
+
         dialog.setCanceledOnTouchOutside(false);
+        Log.d(TAG, "Showing permission dialog for: " + permission);
         dialog.show();
     }
 
-    private String getLocalizedString(String key) {
+    private String getLocalizedString(String key, String permission) {
         String language = Locale.getDefault().getLanguage();
 
         // Return text based on device language
         switch (language) {
             case "ru":
                 if ("permissions_required".equals(key))
-                    return "Требуются разрешения";
+                    return "Требуются разрешения: " + permission;
                 if ("permissions_denied_explanation".equals(key))
                     return "Без этих разрешений некоторые функции приложения могут работать некорректно.";
                 if ("request_again".equals(key))
                     return "Запросить снова";
+                if ("permissions_permanently_denied".equals(key))
+                    return "Разрешение было отклонено навсегда. Пожалуйста, откройте настройки приложения, чтобы предоставить необходимые разрешения.";
+                if ("go_to_settings".equals(key))
+                    return "Открыть настройки";
+                if ("cancel".equals(key))
+                    return "Отмена";
                 break;
             case "es":
                 if ("permissions_required".equals(key))
@@ -147,6 +221,10 @@ public class PermissionHelper {
                     return "Sin estos permisos, algunas funciones de la aplicación pueden no funcionar correctamente.";
                 if ("request_again".equals(key))
                     return "Solicitar de nuevo";
+                if ("permissions_permanently_denied".equals(key))
+                    return "El permiso ha sido denegado permanentemente. Por favor, abra la configuración de la aplicación para conceder los permisos necesarios.";
+                if ("go_to_settings".equals(key))
+                    return "Ir a configuración";
                 break;
             case "he":
                 if ("permissions_required".equals(key))
@@ -155,6 +233,10 @@ public class PermissionHelper {
                     return "ללא הרשאות אלה, חלק מהתכונות של האפליקציה עלולות שלא לעבוד כראוי.";
                 if ("request_again".equals(key))
                     return "בקש שוב";
+                if ("permissions_permanently_denied".equals(key))
+                    return "ההרשאה נדחתה לצמיתות. אנא פתח את הגדרות האפליקציה כדי להעניק את ההרשאות הנדרשות.";
+                if ("go_to_settings".equals(key))
+                    return "פתח הגדרות";
                 break;
             default: // English
                 if ("permissions_required".equals(key))
@@ -163,6 +245,10 @@ public class PermissionHelper {
                     return "Without these permissions, some app features may not work correctly.";
                 if ("request_again".equals(key))
                     return "Request Again";
+                if ("permissions_permanently_denied".equals(key))
+                    return "Permission has been permanently denied. Please open app settings to grant the required permissions.";
+                if ("go_to_settings".equals(key))
+                    return "Go to Settings";
                 break;
         }
         return "";

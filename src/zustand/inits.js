@@ -28,8 +28,18 @@ const eventEmitter = new NativeEventEmitter(CallsBridge.raw);
 
 let subscription;
 
+// Setup event listener for permissions status
+const permissionsEventEmitter = new NativeEventEmitter();
+permissionsEventEmitter.addListener('permissionsStatus', (event) => {
+  if (event.allGranted) {
+    console.log('All permissions granted!');
+    useInitsStore.getState().setPermissionsReady(true);
+  }
+});
 
 export const useInitsStore = create((set, get) => ({
+  permissionsReady: false,
+  setPermissionsReady: (permissionsReady = true) => set({ permissionsReady }),
   mqttReady: false,
   configReady: false,
   readyForJoin: false,

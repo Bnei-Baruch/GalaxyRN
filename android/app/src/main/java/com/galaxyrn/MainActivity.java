@@ -42,22 +42,15 @@ public class MainActivity extends ReactActivity {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
         
-        // Initialize permissionHelper but don't check permissions yet
+        
         permissionHelper = new PermissionHelper(this);
         
-        // We'll request permissions once the app is fully loaded
         Log.d(TAG, "onCreate");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        
-        // Check permissions when the app is resumed (fully visible to the user)
-        if (permissionHelper != null) {
-            permissionHelper.checkPermissions();
-        }
-        
         Log.d(TAG, "onResume");
     }
     
@@ -114,5 +107,13 @@ public class MainActivity extends ReactActivity {
             @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (permissionHelper != null) {
+            permissionHelper.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }
