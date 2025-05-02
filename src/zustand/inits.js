@@ -24,7 +24,18 @@ import { useUiActions } from "./uiActions";
 import CallsBridge from "../services/CallsBridge";
 
 const { VersionModule } = NativeModules;
-const eventEmitter = new NativeEventEmitter(CallsBridge.raw);
+
+// Safely create event emitter only if CallsBridge.raw is defined
+let eventEmitter;
+try {
+  if (CallsBridge && CallsBridge.raw) {
+    eventEmitter = new NativeEventEmitter(CallsBridge.raw);
+  } else {
+    log.warn("[inits] CallsBridge.raw is undefined, event emitter not created");
+  }
+} catch (error) {
+  log.error("[inits] Error creating NativeEventEmitter:", error);
+}
 
 let subscription;
 
@@ -138,20 +149,24 @@ export const useInitsStore = create((set, get) => ({
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
     get().fetchVersion();
-    subscription = eventEmitter.addListener(
-      "onCallStateChanged",
-      async (data) => {
-        const { exitRoom } = useInRoomStore.getState();
+    
+    // Only add listener if eventEmitter is defined
+    if (eventEmitter) {
+      subscription = eventEmitter.addListener(
+        "onCallStateChanged",
+        async (data) => {
+          const { exitRoom } = useInRoomStore.getState();
 
-        if (data.state === "ON_START_CALL") {
-          _isPlay = useShidurStore.getState().isPlay;
-          await exitRoom();
-        } else if (data.state === "ON_END_CALL") {
-          _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
-          useInitsStore.getState().setReadyForJoin(true);
+          if (data.state === "ON_START_CALL") {
+            _isPlay = useShidurStore.getState().isPlay;
+            await exitRoom();
+          } else if (data.state === "ON_END_CALL") {
+            _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
+            useInitsStore.getState().setReadyForJoin(true);
+          }
         }
-      }
-    );
+      );
+    }
   },
   terminateApp: () => {
     BackgroundTimer.stop();

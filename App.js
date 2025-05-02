@@ -23,7 +23,15 @@ if (!Intl.PluralRules) register();
 log.setLevel("info");
 
 const App = () => {
-  const { permissionsReady } = useInitsStore();
+  let permissionsReady = false;
+  try {
+    // Safe access to useInitsStore
+    if (useInitsStore) {
+      permissionsReady = useInitsStore().permissionsReady;
+    }
+  } catch (error) {
+    log.error("[App] Error accessing useInitsStore:", error);
+  }
 
   return (
     <SafeAreaProvider>
