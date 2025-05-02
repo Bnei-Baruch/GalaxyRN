@@ -62,6 +62,7 @@ public class PermissionHelper {
     private List<String> permissionsByVersion() {
         List<String> request = new ArrayList<>();
         for (String permission : requiredPermissions) {
+            // Handle Bluetooth permissions based on Android version
             if (permission.equals(Manifest.permission.BLUETOOTH_CONNECT)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     request.add(permission);
@@ -69,11 +70,22 @@ public class PermissionHelper {
                     request.add(Manifest.permission.BLUETOOTH);
                     request.add(Manifest.permission.BLUETOOTH_ADMIN);
                 }
+                continue; // Skip the add at the end
             }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-                    && permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {
-                continue;
+            
+            // Handle Notification permissions (Android 13+)
+            if (permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    request.add(permission);
+                }
+                continue; // Skip the add at the end
             }
+            
+            // Handle any other version-specific permissions
+            // For example, READ_PHONE_STATE has different behavior in different API levels
+            // but it's needed for all versions so we add it directly
+            
+            // Add the permission for all other cases
             request.add(permission);
         }
         return request;
@@ -205,12 +217,13 @@ public class PermissionHelper {
 
     private String getLocalizedString(String key, String permission) {
         String language = Locale.getDefault().getLanguage();
+        String pKey = permission.substring(permission.lastIndexOf('.') + 1);
 
         // Return text based on device language
         switch (language) {
             case "ru":
                 if ("permissions_required".equals(key))
-                    return "Требуются разрешения: " + permission;
+                    return "Требуются разрешения: " + pKey;
                 if ("permissions_denied_explanation".equals(key))
                     return "Без этих разрешений некоторые функции приложения могут работать некорректно.";
                 if ("request_again".equals(key))
