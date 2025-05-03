@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import log from "loglevel";
 import CheckAuthentication from "./src/auth/CheckAuthentication";
 import "react-native-url-polyfill";
@@ -10,7 +10,7 @@ import { SENTRY_DSN } from "@env";
 import InitApp from "./src/InitApp";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useInitsStore } from "./src/zustand/inits";
-import WIP from './src/components/WIP';
+import WIP from "./src/components/WIP";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -23,15 +23,35 @@ if (!Intl.PluralRules) register();
 log.setLevel("info");
 
 const App = () => {
-  let permissionsReady = false;
-  try {
-    // Safe access to useInitsStore
-    if (useInitsStore) {
-      permissionsReady = useInitsStore().permissionsReady;
+  const [permissionsReady, setPermissionsReady] = useState(false);
+
+  useEffect(() => {
+    try {
+      // Initial check
+      if (typeof useInitsStore === "function") {
+        const state = useInitsStore.getState();
+        if (state && typeof state === "object") {
+          setPermissionsReady(state.permissionsReady || false);
+        }
+      }
+
+      // Subscribe to future changes
+      const unsubscribe = useInitsStore.subscribe(
+        (state) => {
+          setPermissionsReady(state.permissionsReady || false);
+          log.info(`[App] Permission state updated: ${state.permissionsReady}`);
+        }
+      );
+
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
+    } catch (error) {
+      log.error("[App] Error setting up permission subscription:", error);
+      // Default to true to prevent app from being stuck in loading state
+      setPermissionsReady(true);
     }
-  } catch (error) {
-    log.error("[App] Error accessing useInitsStore:", error);
-  }
+  }, []);
 
   return (
     <SafeAreaProvider>
