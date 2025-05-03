@@ -90,11 +90,11 @@ const useAudioDevicesStore = create((set, get) => ({
           }
         );
         
-        AudioBridge.initAudioDevices((error, result) => {
+        AudioBridge.initAudioDevices((error) => {
           if (error) {
             console.error("[audioDevices] Error initializing audio devices:", error);
           } else {
-            console.log("[audioDevices] Audio devices initialized successfully:", result);
+            console.log("[audioDevices] Audio devices initialized successfully:");
           }
         });
       } catch (error) {

@@ -2,9 +2,6 @@
 
 @interface RCT_EXTERN_MODULE(AudioManager, NSObject)
 
-RCT_EXTERN_METHOD(setAudioOutput:(NSString *)deviceType
-                  callback:(RCTResponseSenderBlock)callback)
-
-RCT_EXTERN_METHOD(switchAudioOutput:(RCTResponseSenderBlock)callback)
+RCT_EXTERN_METHOD(switchAudioOutput)
 
 @end 

@@ -29,12 +29,11 @@ extension AudioManager {
     }
     
    @objc
-    func handleDevicesChange(_ deviceUID: String, callback: @escaping RCTResponseSenderBlock) {
+    func handleDevicesChange(_ deviceUID: String) {
         do {
-            let resp = try activateAudioDevice(withUID: deviceUID)
-            callback([NSNull(), resp])
+            _ = try activateAudioDevice(withUID: deviceUID)
         } catch {
-            callback([["error": error.localizedDescription], NSNull()])
+            NLOG("[audioDevices] Failed to change device: \(error.localizedDescription)")
         }
     }
 

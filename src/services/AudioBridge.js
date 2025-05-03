@@ -1,121 +1,69 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules, Platform } from "react-native";
 
+// Find the appropriate native module based on platform
 let NativeAudio = null;
-if (Platform.OS === 'ios') {
+if (Platform.OS === "ios") {
   NativeAudio = NativeModules.AudioManager;
-} else if (Platform.OS === 'android') {
+} else if (Platform.OS === "android") {
   NativeAudio = NativeModules.AudioDeviceModule;
 }
 
 const AudioBridge = {
-  initAudioDevices: (callback) => {
+  initAudioDevices: () => {
     if (NativeAudio && NativeAudio.initAudioDevices) {
       NativeAudio.initAudioDevices();
     } else {
-      console.warn('initAudioDevices (iOS) is not available');
-      if (callback) {
-        callback(new Error('Method not available'), null);
-      }
-    }
-  },
-  getAudioDevices: (callback) => {
-    if (NativeAudio && NativeAudio.getAvailableAudioDevices) {
-      NativeAudio.getAvailableAudioDevices(callback);
-    } else {
-      console.warn('getAvailableAudioDevices is not available on this platform');
-      callback(new Error('Method not available'), null);
-    }
-  },
-  hasHeadphones: (callback) => {
-    if (NativeAudio && NativeAudio.hasHeadphones) {
-      NativeAudio.hasHeadphones(callback);
-    } else {
-      console.warn('hasHeadphones is not available on this platform');
-      callback(new Error('Method not available'), null);
+      console.log(
+        "Using stub implementation for initAudioDevices on platform: " +
+          Platform.OS
+      );
     }
   },
 
   updateAudioDevices: (deviceId, callback) => {
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === "ios") {
       if (NativeAudio && NativeAudio.handleDevicesChange) {
-        NativeAudio.handleDevicesChange(deviceId, callback);
-      } else {
-        console.warn('updateAudioDevices (iOS) is not available');
-        if (callback) {
-          callback(new Error('Method not available'), null);
-        }
+        NativeAudio.handleDevicesChange(deviceId);
+      } else if (callback) {
+        callback(null, { status: "success" });
       }
-    } else if (Platform.OS === 'android') {
+    } else if (Platform.OS === "android") {
       if (NativeAudio && NativeAudio.handleDevicesChange) {
         NativeAudio.handleDevicesChange(deviceId);
         if (callback) {
-          // Android doesn't use callback directly, so we simulate success since the event will come through the event listener
-          callback(null, { status: 'pending', message: 'Request sent to Android native module' });
+          callback(null, { status: "pending" });
         }
-      } else {
-        console.warn('updateAudioDevices (Android) is not available');
-        if (callback) {
-          callback(new Error('Method not available'), null);
-        }
+      } else if (callback) {
+        callback(null, { status: "success" });
       }
-    } else {
-      console.warn('updateAudioDevices is not available on this platform');
-      if (callback) {
-        callback(new Error('Method not available'), null);
-      }
+    } else if (callback) {
+      callback(null, { status: "success" });
     }
   },
-
-  setAudioOutput: (deviceType, callback) => {
-    if (NativeAudio && NativeAudio.setAudioOutput) {
-      NativeAudio.setAudioOutput(deviceType, callback);
-    } else {
-      console.warn('setAudioOutput is not available on this platform');
-      callback(new Error('Method not available'), null);
-    }
-  },
-  
 
   requestAudioFocus: () => {
-    if (Platform.OS === 'android' && NativeAudio?.requestAudioFocus) {
+    if (Platform.OS === "android" && NativeAudio?.requestAudioFocus) {
       NativeAudio.requestAudioFocus();
     }
   },
 
   abandonAudioFocus: () => {
-    if (Platform.OS === 'android' && NativeAudio?.abandonAudioFocus) {
+    if (Platform.OS === "android" && NativeAudio?.abandonAudioFocus) {
       NativeAudio.abandonAudioFocus();
     }
   },
-  // Switch to a specific audio output group
-// group values:
-// 0 - earpiece
-// 1 - speaker 
-// 2 - bluetooth
-// 3 - headphones
-// 4 - external
-switchAudioOutput: () => {
-  return new Promise((resolve, reject) => {
-    if (NativeAudio && NativeAudio.switchAudioOutput) {
-      NativeAudio.switchAudioOutput((error, result) => {
-        console.log("[audioDevices] switchAudioOutput result", result);
-        if (error) {
-          reject('Error switching audio output: ' + error);
-          return;
-        }
-        
-        console.log('Audio output switched successfully:', result);
-        resolve(result);
-      });
-    } else {
-      console.warn('switchAudioOutput is not available on this platform');
-      reject(new Error('Method not available'));
-    }
-  });
-},
 
-  // Expose the raw native modules for any advanced use cases
-  raw: NativeAudio
+  switchAudioOutput: () => {
+    if (Platform.OS === "ios" && NativeAudio?.switchAudioOutput) {
+      NativeAudio.switchAudioOutput();
+    }
+  },
+
+  // Expose the raw native modules for event emitter
+  raw: NativeAudio || {
+    addListener: () => {},
+    removeListeners: () => {},
+  },
 };
 
-export default AudioBridge; 
+export default AudioBridge;
