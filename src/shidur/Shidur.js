@@ -36,14 +36,14 @@ const Shidur = () => {
             }
             <TouchableWithoutFeedback onPress={toggleBar}>
               {
-                (video !== NO_VIDEO_OPTION_VALUE && !audioMode && streamURL) ? (
+                (video !== NO_VIDEO_OPTION_VALUE && streamURL) ? (
                   <RTCView
                     streamURL={streamURL}
                     style={styles.viewer}
                   />
                 ) : (
                   <View style={styles.noVideo}>
-                    <Icon name="videocam-off" color="white" size={70} />
+                    <Icon name="graphic-eq" color="white" size={70} />
                   </View>
                 )
               }
