@@ -28,7 +28,7 @@ extension AudioManager {
     }
     
     @objc
-    func switchAudioOutput(_ callback: @escaping RCTResponseSenderBlock) {
+    func switchAudioOutput() {
       let currentGroup = getCurrentAudioOutputGroup()
         let nextGroup = (currentGroup.rawValue - 1 < 0) ? AudioOutputGroup.external : AudioOutputGroup(rawValue: currentGroup.rawValue - 1)!
         NLOG("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
@@ -39,9 +39,8 @@ extension AudioManager {
             
             try audioSession.setPreferredOutputNumberOfChannels(2)
             try audioSession.setPreferredIOBufferDuration(0.005)
-            callback([NSNull(), "Audio output set successfully"])
         } catch {
-            callback([AudioManagerError.setOutputFailed.message, NSNull()])
+            print("Error switching audio output: \(error)")
         }
       sendCurrentAudioGroup()
     }
