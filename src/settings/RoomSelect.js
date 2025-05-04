@@ -55,60 +55,58 @@ const RoomSelect = () => {
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <TextDisplayWithButton
-        label={t("settings.selectRoom")}
-        value={room?.description}
-        button={
-          <TouchableOpacity
-            onPress={handleJoinRoom}
-            disabled={!room}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>{t("settings.join")}</Text>
-          </TouchableOpacity>
-        }
-        input={
-          <TextInput
-            style={[styles.searchInput, baseStyles.text]}
-            placeholder={t("settings.search")}
-            value={searchText}
-            onChangeText={handleSearch}
-            onFocus={() => toggleOpen(true)}
-            onBlur={() => toggleOpen(false)}
-          />
-        }
-      />
+    <KeyboardAvoidingView behavior={"position"} keyboardVerticalOffset={45}>
+      <View style={styles.container}>
+        <TextDisplayWithButton
+          label={t("settings.selectRoom")}
+          value={room?.description}
+          button={
+            <TouchableOpacity
+              onPress={handleJoinRoom}
+              disabled={!room}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>{t("settings.join")}</Text>
+            </TouchableOpacity>
+          }
+          input={
+            <TextInput
+              style={[styles.searchInput, baseStyles.text]}
+              placeholder={t("settings.search")}
+              value={searchText}
+              onChangeText={handleSearch}
+              onFocus={() => toggleOpen(true)}
+              onBlur={() => toggleOpen(false)}
+            />
+          }
+        />
 
-      {open &&
-        filteredOptions.length > 0 &&
-        (filteredOptions.length > 1 || !room) && (
-          <FlatList
-            keyboardShouldPersistTaps={"handled"}
-            style={styles.list}
-            data={filteredOptions}
-            keyExtractor={(item) => item.room}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleSelect(item)}>
-                <Text style={[styles.itemText, baseStyles.text]}>
-                  {item.description}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        )}
+        {open &&
+          filteredOptions.length > 0 &&
+          (filteredOptions.length > 1 || !room) && (
+            <FlatList
+              keyboardShouldPersistTaps={"handled"}
+              style={styles.list}
+              data={filteredOptions}
+              keyExtractor={(item) => item.room}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => handleSelect(item)}>
+                  <Text style={[styles.itemText, baseStyles.text]}>
+                    {item.description}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  container: {
+    backgroundColor: "black",
+    paddingTop: 10,
   },
   searchInput: {
     flex: 1,
@@ -122,7 +120,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#9e9e9e",
     borderRadius: 5,
-    bottom: 60,
+    bottom: 70,
     position: "absolute",
     width: "100%",
     backgroundColor: "black",
