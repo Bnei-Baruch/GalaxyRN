@@ -15,7 +15,6 @@ import { FullscreenBtn } from './FullscreenBtn';
 
 const Shidur = () => {
   const { videoStream, isPlay, shidurBar, toggleShidurBar, video, isOnAir } = useShidurStore();
-  const { audioMode }                                                       = useSettingsStore();
 
   const { t } = useTranslation();
 
@@ -23,7 +22,7 @@ const Shidur = () => {
 
   const streamURL = videoStream?.toURL();
   return (
-    <>
+    <View>
       {
         isPlay ? (
           <View>
@@ -67,7 +66,7 @@ const Shidur = () => {
           </View>
         )
       }
-    </>
+    </View>
   );
 };
 

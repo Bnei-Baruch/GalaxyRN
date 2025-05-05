@@ -13,7 +13,7 @@ export const PlayPauseBtn = () => {
   };
 
   return (
-    <TouchableOpacity onPress={toggle} style={topMenuBtns.btn}>
+    <TouchableOpacity onPress={toggle} style={[topMenuBtns.btn, topMenuBtns.firstBtn]}>
       <Icon name={isPlay ? 'stop' : 'play-arrow'} size={30} color="white" />
     </TouchableOpacity>
   );

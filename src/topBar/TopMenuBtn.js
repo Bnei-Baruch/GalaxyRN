@@ -8,6 +8,7 @@ import LogoutBtn from "./LogoutBtn";
 import ListInModal from "../components/ListInModal";
 import { useUiActions } from "../zustand/uiActions";
 import VersionInfo from "../components/VersionInfo";
+import { StyleSheet } from "react-native";
 
 export const TopMenuBtn = () => {
   const { toggleShowBars } = useUiActions();
@@ -30,7 +31,13 @@ export const TopMenuBtn = () => {
       onOpen={handlePress}
       items={items}
       renderItem={renderItem}
-      trigger={<Icon name="menu" size={30} color="white" />}
+      trigger={<Icon name="menu" size={30} color="white" style={styles.btn} />}
     />
   );
 };
+
+const styles = StyleSheet.create({
+  btn: {
+    marginRight: 10,
+  },
+});
