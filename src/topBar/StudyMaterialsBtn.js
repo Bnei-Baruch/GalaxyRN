@@ -37,8 +37,7 @@ export const StudyMaterialsBtn = () => {
         onRequestClose={toggleModal}
         style={styles.modal}
         animationType="slide"
-        statusBarTranslucent={true}
-        presentationStyle="overFullScreen"
+        presentationStyle="pageSheet"
       >
         <View style={styles.modal}>
           <ScreenTitle text={t("topBar.materialsTitle")} close={toggleModal} />
