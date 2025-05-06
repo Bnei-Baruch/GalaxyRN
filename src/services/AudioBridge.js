@@ -12,11 +12,13 @@ const AudioBridge = {
   initAudioDevices: () => {
     if (NativeAudio && NativeAudio.initAudioDevices) {
       NativeAudio.initAudioDevices();
+      return Promise.resolve({ status: "success" });
     } else {
       console.log(
         "Using stub implementation for initAudioDevices on platform: " +
           Platform.OS
       );
+      return Promise.resolve({ status: "success" });
     }
   },
 

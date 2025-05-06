@@ -18,35 +18,52 @@ extension AudioManager {
     case external = 4  
   }
     
-    func setupAudioSession() {
-        do {
-            try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowBluetoothA2DP, .allowAirPlay])
-            try audioSession.setActive(true)
-        } catch {
-            print("Failed to setup audio session: \(error)")
-        }
-    }
-    
-    @objc
-    func switchAudioOutput() {
-      let currentGroup = getCurrentAudioOutputGroup()
-        let nextGroup = (currentGroup.rawValue - 1 < 0) ? AudioOutputGroup.external : AudioOutputGroup(rawValue: currentGroup.rawValue - 1)!
-        NLOG("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
+  func setupAudioSession() {
+      do {
+          try audioSession.setCategory(.playAndRecord, mode: .videoChat, options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowBluetoothA2DP, .allowAirPlay])
+          try audioSession.setActive(true)
+      } catch {
+          print("Failed to setup audio session: \(error)")
+      }
+  }
+  
+  @objc
+  func initAudioDevices() {    
+        let currentGroup = getCurrentAudioOutputGroup()
         
-        do {
-            switchToRouteGroup(nextGroup)
-            try audioSession.setActive(true)
-            
-            try audioSession.setPreferredOutputNumberOfChannels(2)
-            try audioSession.setPreferredIOBufferDuration(0.005)
-        } catch {
-            print("Error switching audio output: \(error)")
+        NLOG("[audioDevices] switchAudioOutput started with:", "currentGroup:", currentGroup)
+        
+        if(currentGroup == .speaker) {
+          NLOG("[audioDevices] skipSpeaker is true and current group is speaker, switching to earpiece")
+          switchToRouteGroup(.earpiece)
+          NLOG("[audioDevices] after switching to earpiece, currentGroup:", getCurrentAudioOutputGroup())
         }
+  }
+    
+  @objc
+  func switchAudioOutput() {
+      let currentGroup = getCurrentAudioOutputGroup()
+      
+      NLOG("[audioDevices] switchAudioOutput started with currentGroup:", currentGroup)
+      
+      let nextGroup = (currentGroup.rawValue - 1 < 0) ? AudioOutputGroup.external : AudioOutputGroup(rawValue: currentGroup.rawValue - 1)!
+      NLOG("[audioDevices] switchAudioOutput current and next groups", currentGroup, nextGroup)
+      
+      do {
+          switchToRouteGroup(nextGroup)
+          try audioSession.setActive(true)
+          
+          try audioSession.setPreferredOutputNumberOfChannels(2)
+          try audioSession.setPreferredIOBufferDuration(0.005)
+      } catch {
+          print("Error switching audio output: \(error)")
+      }
+      NLOG("[audioDevices] final audio group after switching:", getCurrentAudioOutputGroup())
       sendCurrentAudioGroup()
-    }
+  }
 
 
-  func getCurrentAudioOutputGroup() -> AudioOutputGroup {
+    func getCurrentAudioOutputGroup() -> AudioOutputGroup {
     guard let output = audioSession.currentRoute.outputs.first else {
       return .none
     }

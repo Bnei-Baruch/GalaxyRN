@@ -35,7 +35,6 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     
     // MARK: - CXCallObserverDelegate
     func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
-        // Определяем состояние звонка
         let callState: String
         
         if call.hasEnded {
