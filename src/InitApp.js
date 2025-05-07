@@ -11,7 +11,7 @@ import useAudioDevicesStore from "./zustand/audioDevices";
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
-  const { initAudioDevices, abortAudioDevices } = useAudioDevicesStore();
+  const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
 
   useForegroundListener();
 
@@ -19,7 +19,7 @@ const InitApp = () => {
     const init = async () => {
       await myInit();
       await initApp();
-      initAudioDevices();
+      await initAudioDevices();
     };
     init();
     return () => {

@@ -98,7 +98,11 @@ export const useInRoomStore = create((set, get) => ({
           .find((s) => !s.disabled);
         // dont rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
-          feedById[id] = { id, display: JSON.parse(display), camera: !!vStream };
+          feedById[id] = {
+            id,
+            display: JSON.parse(display),
+            camera: !!vStream,
+          };
         }
         vStream && (feedById[id].vMid = vStream.mid);
       }
@@ -184,7 +188,9 @@ export const useInRoomStore = create((set, get) => ({
     videoroom.talkEvent = (id, talking) => {
       set(
         produce((state) => {
-          if (state.feedById[id]) state.feedById[id].talking = talking;
+          if (state.feedById[id]) {
+            state.feedById[id].talking = talking;
+          }
         })
       );
     };
@@ -243,6 +249,7 @@ export const useInRoomStore = create((set, get) => ({
       .then((data) => {
         console.log("[client] joinRoom on janus.init", data);
         janus.attach(videoroom).then((data) => {
+          AudioBridge.activateAudioOutput();
           console.info("[client] Publisher Handle: ", data);
           user.camera = !cammute;
           user.question = false;
@@ -317,15 +324,15 @@ export const useInRoomStore = create((set, get) => ({
 
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
-    
+
     await useShidurStore.getState().cleanJanus();
-    
+
     if (janus) {
       console.log("useInRoomStore exitRoom janus", janus);
       await janus.destroy();
       janus = null;
     }
-    
+
     videoroom = null;
     subscriber = null;
     useInitsStore.getState().setReadyForJoin(false);

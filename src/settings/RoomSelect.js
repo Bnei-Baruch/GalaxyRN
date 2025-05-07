@@ -55,7 +55,10 @@ const RoomSelect = () => {
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   return (
-    <KeyboardAvoidingView behavior={"position"} keyboardVerticalOffset={45}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "position" : "height"}
+      keyboardVerticalOffset={45}
+    >
       <View style={styles.container}>
         <TextDisplayWithButton
           label={t("settings.selectRoom")}

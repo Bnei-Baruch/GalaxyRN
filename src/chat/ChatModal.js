@@ -10,9 +10,8 @@ import { Questions } from "./Questions";
 import { useCrispStore } from "../zustand/crisp";
 import { ChatCounter } from "./ChatCounter";
 
-
 export const ChatModal = () => {
-  const { mode, setChatMode, cleanChat, chatNewMsgs} = useChatStore();
+  const { mode, setChatMode, cleanChat, chatNewMsgs } = useChatStore();
   const { start: openSupport } = useCrispStore();
   const { t } = useTranslation();
 
@@ -26,11 +25,10 @@ export const ChatModal = () => {
 
   return (
     <Modal
-      animationType="slide"
       visible={mode !== modalModes.close}
       onRequestClose={closeModal}
-      statusBarTranslucent={true}
-      presentationStyle="overFullScreen"
+      animationType="slide"
+      presentationStyle="pageSheet"
     >
       <View style={styles.modalContainer}>
         <ScreenTitle text={t("topBar.communicationTitle")} close={closeModal} />
@@ -71,6 +69,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: "black",
+    paddingVertical: 10,
   },
   container: {
     flex: 1,

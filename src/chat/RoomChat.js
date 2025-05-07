@@ -22,9 +22,7 @@ export const RoomChat = () => {
           ))}
         </ScrollView>
       </View>
-      <View style={styles.formContainer}>
-        <RoomChatForm />
-      </View>
+      <RoomChatForm />
     </View>
   );
 };

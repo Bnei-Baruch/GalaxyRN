@@ -1,10 +1,11 @@
-import React from 'react';
-import FeedAudioModeView from './FeedAudioModeView';
-import { useUserStore } from '../../zustand/user';
+import React from "react";
+import FeedAudioModeView from "./FeedAudioModeView";
+import { useUserStore } from "../../zustand/user";
 
 const MyAudioMode = () => {
-  const { user } = useUserStore();
-
-  return <FeedAudioModeView display={user.username} />;
+  const { user: { username: display, talking, question } = {} } =
+    useUserStore();
+  const feed = { display: { display }, talking, question };
+  return <FeedAudioModeView feed={feed} />;
 };
 export default MyAudioMode;

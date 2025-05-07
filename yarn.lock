@@ -3484,7 +3484,6 @@ __metadata:
     react-native-background-timer: "npm:^2.4.1"
     react-native-crisp-chat-sdk: "npm:^0.16.1"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-orientation-locker: "npm:^1.7.0"
     react-native-render-html: "npm:^6.3.4"
     react-native-safe-area-context: "npm:^4.10.9"
     react-native-url-polyfill: "npm:^2.0.0"
@@ -9004,20 +9003,6 @@ __metadata:
   peerDependencies:
     "@babel/runtime": ^7.20.6
   checksum: 10c0/9ed4a37fb59030706d17a1cc49d05af9d8fc57dcb2ef97e122b844f3ab6f6331ebc089afac559fe5bddf37806aa282b4118005f1b27aae5e37fdc3fc8bd7625c
-  languageName: node
-  linkType: hard
-
-"react-native-orientation-locker@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "react-native-orientation-locker@npm:1.7.0"
-  peerDependencies:
-    react: ">=16.13.1"
-    react-native: ">=0.63.2"
-    react-native-windows: ">=0.63.3"
-  peerDependenciesMeta:
-    react-native-windows:
-      optional: true
-  checksum: 10c0/68ac54460a0722c203cda17d8a26cf8409115e6ed1ecc4324c25b60f94476f6200ae6646fa71495288d553f3a77a20c5548d0d33b434066ef8d7284dbbd094ff
   languageName: node
   linkType: hard
 

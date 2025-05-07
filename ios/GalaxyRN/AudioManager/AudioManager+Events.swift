@@ -30,9 +30,14 @@ extension AudioManager {
     
     // Event emitter method
     func sendCurrentAudioGroup() {
+        NLOG("[audioDevices swift] 📢 Sending current audio group to JS")
         if hasListeners {
             let body = getCurrentAudioDevice()
+            NLOG("[audioDevices swift] 📢 Emitting event with data:", body)
             sendEvent(withName: AudioManagerConstants.eventName, body: body)
+            NLOG("[audioDevices swift] 📢 Event emitted successfully")
+        } else {
+            NLOG("[audioDevices swift] ⚠️ Not emitting event - no JS listeners registered")
         }
     }
   
@@ -44,7 +49,7 @@ extension AudioManager {
       resp["name"] = output?.uid
       resp["type"] = String(describing: type)
       resp["active"] = true
-      NLOG("[audioDevices] getCurrentAudioDevice resp", resp)
+      NLOG("[audioDevices swift] getCurrentAudioDevice resp", resp)
       return [resp]
   }
 }
