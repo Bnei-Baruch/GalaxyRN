@@ -23,16 +23,6 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
         callObserver.setDelegate(self, queue: nil)
     }
     
-    private func setupAudioSession() {
-        do {
-            try audioSession?.setCategory(.playAndRecord, mode: .videoChat, options: [.duckOthers, .allowBluetooth, .allowBluetoothA2DP, .allowBluetoothA2DP, .allowAirPlay])
-            try audioSession?.setActive(true)
-        } catch {
-            print("Failed to setup audio session: \(error)")
-        }
-    }
-    
-    
     // MARK: - CXCallObserverDelegate
     func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
         let callState: String
@@ -52,19 +42,6 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
     }
     
     // MARK: - Public Methods
-    @objc
-    func enableBackgroundPlayback() {
-        setupAudioSession()
-    }
-    
-    @objc
-    func disableBackgroundPlayback() {
-        do {
-            try audioSession?.setActive(false)
-        } catch {
-            print("Failed to deactivate audio session: \(error)")
-        }
-    }
     
     @objc
     func keepScreenAwake(_ keepAwake: Bool) {

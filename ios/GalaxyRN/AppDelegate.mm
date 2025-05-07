@@ -20,11 +20,15 @@
   self.moduleName = @"GalaxyRN";
   self.initialProps = @{};
 
-  // Initialize Crisp SDK with website ID
-  NSString *websiteID = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CRISP_WEBSITE_ID"];
-  if (websiteID) {
-    [CrispSDK configureWithWebsiteID:websiteID];
-  }
+  // Initialize Crisp SDK with website ID - move to background thread
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    NSString *websiteID = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CRISP_WEBSITE_ID"];
+    if (websiteID) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [CrispSDK configureWithWebsiteID:websiteID];
+      });
+    }
+  });
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -39,7 +43,12 @@
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  // Load bundle URL in background
+  __block NSURL *bundleURL = nil;
+  dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    bundleURL = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  });
+  return bundleURL;
 #endif
 }
 

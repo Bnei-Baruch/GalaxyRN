@@ -7,13 +7,11 @@ import { useInitsStore } from "./zustand/inits";
 import { Dimensions } from "react-native";
 import useForegroundListener from "./InRoom/useForegroundListener";
 import useAudioDevicesStore from "./zustand/audioDevices";
-import { useSettingsStore } from "./zustand/settings";
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
-  const { initAudioDevices, abortAudioDevices } = useAudioDevicesStore();
-  const { cleanup } = useSettingsStore();
+  const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
 
   useForegroundListener();
 
@@ -21,14 +19,13 @@ const InitApp = () => {
     const init = async () => {
       await myInit();
       await initApp();
-      initAudioDevices();
+      await initAudioDevices();
     };
     init();
     return () => {
       myAbort();
       terminateApp();
       abortAudioDevices();
-      cleanup();
     };
   }, []);
 
