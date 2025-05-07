@@ -26,8 +26,10 @@ export const StudyMaterialsBtn = () => {
     setOpen(!open);
   };
 
+  //console.log("[StudyMaterialsBtn] open", materials);
+
   return (
-    <>
+    <View>
       <TouchableOpacity onPress={toggleModal} style={topMenuBtns.btn}>
         <Icon name="library-books" size={30} color="white" />
         <Text style={topMenuBtns.menuItemText}>{t("topBar.materials")}</Text>
@@ -38,29 +40,24 @@ export const StudyMaterialsBtn = () => {
         style={styles.modal}
         animationType="slide"
         presentationStyle="pageSheet"
+        supportedOrientations={["portrait", "landscape"]}
       >
         <View style={styles.modal}>
           <ScreenTitle text={t("topBar.materialsTitle")} close={toggleModal} />
           <WIP isReady={!isLoading}>
             <ScrollView>
-              <View style={styles.container}>
                 {materials.map((m) => (
                   <StudyMaterialItem msg={m} key={m.Title} />
                 ))}
-              </View>
             </ScrollView>
           </WIP>
         </View>
       </Modal>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "black",
-  },
   modal: {
     backgroundColor: "black",
     flex: 1,

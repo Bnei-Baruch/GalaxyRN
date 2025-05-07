@@ -1,12 +1,13 @@
 import {
   StyleSheet,
-  Button,
+  TouchableOpacity,
   View,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Text,
 } from "react-native";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import useRoomStore from "../zustand/fetchRooms";
 import { useUserStore } from "../zustand/user";
 import mqtt from "../shared/mqtt";
@@ -15,13 +16,17 @@ import { useTranslation } from "react-i18next";
 export const RoomChatForm = () => {
   const [value, setValue] = useState("");
   const { t } = useTranslation();
+  const inputRef = useRef(null);
 
   const { room } = useRoomStore();
   const { user } = useUserStore();
 
   if (!room?.room) return null;
 
-  const newChatMessage = () => {
+  // This function will send the message without dismissing the keyboard
+  const forceSubmit = () => {
+    if (!value.trim()) return;
+
     const { id, display, role } = user;
 
     const msg = {
@@ -32,47 +37,70 @@ export const RoomChatForm = () => {
 
     mqtt.send(JSON.stringify(msg), false, `galaxy/room/${room?.room}/chat`);
     setValue("");
+    
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "position" : "height"}
-      keyboardVerticalOffset={45}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={150}
     >
-      <View style={styles.container}>
+      <View style={styles.inputContainer}>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           placeholder={t("chat.newMsg")}
-          placeholderTextColor="gray"
           value={value}
           onChangeText={setValue}
-          color="white"
+          returnKeyType="send"
+          autoCorrect={false}
         />
-        <Button
-          size={30}
-          positive
-          onPress={newChatMessage}
-          title={t("chat.send")}
-        />
+        <TouchableOpacity
+          style={[styles.button, !value.trim() && styles.buttonDisabled]}
+          onPress={forceSubmit}
+          disabled={!value.trim()}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.buttonText}>{t("chat.send")}</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    borderColor: "grey",
+  inputContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 5,
-    backgroundColor: "#333",
+    padding: 10,
   },
   input: {
     flex: 1,
-    marginRight: 10,
-    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "grey",
+    padding: 10,
+    height: 44,
     color: "white",
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    marginRight: 10,
+  },
+  button: {
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderWidth: 0,
+    backgroundColor: "blue",
+    alignItems: "center",
+    height: 44,
+    justifyContent: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#444",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 16,
   },
   containerRtl: {
     direction: "rtl",
