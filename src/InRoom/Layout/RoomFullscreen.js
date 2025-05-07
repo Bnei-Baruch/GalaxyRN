@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal } from "react-native";
 import { useSettingsStore } from "../../zustand/settings";
 import { View, StyleSheet } from "react-native";
+import Orientation from "react-native-orientation-locker";
 
 const RoomFullscreen = ({ shidur }) => {
   const { toggleIsFullscreen } = useSettingsStore();
+
+  useEffect(() => {
+    Orientation.lockToLandscape();
+
+    return () => {
+      Orientation.unlockAllOrientations();
+    };
+  }, []);
 
   return (
     <Modal
@@ -16,10 +25,8 @@ const RoomFullscreen = ({ shidur }) => {
       supportedOrientations={["landscape"]}
     >
       <View style={styles.container}>
-    <View style={styles.shidur}>
-      {shidur}
-    </View>
-  </View>
+        <View style={styles.shidur}>{shidur}</View>
+      </View>
     </Modal>
   );
 };
