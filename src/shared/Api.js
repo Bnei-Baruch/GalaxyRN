@@ -1,44 +1,53 @@
-import { API_BACKEND, STUDY_MATERIALS, QST_BACKEND } from '@env';
-import mqtt from '../shared/mqtt';
+import { API_BACKEND, STUDY_MATERIALS, QST_BACKEND, STRDB_BACKEND } from "@env";
+import mqtt from "../shared/mqtt";
 
 class Api {
   static encode = encodeURIComponent;
 
   constructor() {
     this.accessToken = null;
-    this.username    = null;
-    this.password    = null;
+    this.username = null;
+    this.password = null;
   }
 
   static makeParams = (params) =>
     `${Object.entries(params)
       .filter(([_, v]) => v !== undefined && v !== null)
       .map((pair) => {
-        const key   = pair[0];
+        const key = pair[0];
         const value = pair[1];
         if (Array.isArray(value)) {
-          return value.map((val) => `${key}=${Api.encode(val)}`).join('&');
+          return value.map((val) => `${key}=${Api.encode(val)}`).join("&");
         }
         return `${key}=${Api.encode(value)}`;
       })
       //can happen if parameter value is empty array
-      .filter((p) => p !== '')
-      .join('&')}`;
+      .filter((p) => p !== "")
+      .join("&")}`;
 
   // Galaxy API
 
-  fetchConfig = () => this.logAndParse('fetch config', fetch(this.urlFor('/v2/config'), this.defaultOptions()));
+  fetchConfig = () =>
+    this.logAndParse(
+      "fetch config",
+      fetch(this.urlFor("/v2/config"), this.defaultOptions())
+    );
 
   fetchAvailableRooms = (params = {}) =>
     this.logAndParse(
-      'fetch available rooms',
-      fetch(`${this.urlFor('/groups')}?${Api.makeParams(params)}`, this.defaultOptions())
+      "fetch available rooms",
+      fetch(
+        `${this.urlFor("/groups")}?${Api.makeParams(params)}`,
+        this.defaultOptions()
+      )
     );
 
   urlFor = (path) => API_BACKEND + path;
 
   defaultOptions = () => {
-    const auth = this.accessToken ? `Bearer ${this.accessToken}` : `Basic ${btoa(`${this.username}:${this.password}`)}`;
+    const auth = this.accessToken
+      ? `Bearer ${this.accessToken}`
+      : `Basic ${btoa(`${this.username}:${this.password}`)}`;
 
     return {
       headers: {
@@ -51,9 +60,13 @@ class Api {
     return fetchPromise
       .then((response) => {
         if (!response.ok) {
-          console.error(`[API] ${action} status:`, response.status, response.statusText);
+          console.error(
+            `[API] ${action} status:`,
+            response.status,
+            response.statusText
+          );
           // Try to extract more detailed error information if possible
-          return response.text().then(errorText => {
+          return response.text().then((errorText) => {
             let errorMessage;
             try {
               // Try to parse as JSON to get structured error details
@@ -83,48 +96,71 @@ class Api {
   };
   fetchMaterials = async () => {
     try {
-      const res = await fetch(STUDY_MATERIALS, { method: 'GET' });
+      const res = await fetch(STUDY_MATERIALS, { method: "GET" });
       return res.json();
     } catch (e) {
       return null;
     }
   };
 
-  makeOptions  = (payload) => {
+  makeOptions = (payload) => {
     const options = {
       ...this.defaultOptions(),
-      method: 'POST',
+      method: "POST",
     };
     if (payload) {
-      options.body                    = JSON.stringify(payload);
-      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(payload);
+      options.headers["Content-Type"] = "application/json";
     }
     return options;
   };
   sendQuestion = (data) => {
     const options = this.makeOptions(data);
-    return this.logAndParse(`send question`, fetch(`${QST_BACKEND}/ask`, options));
+    return this.logAndParse(
+      `send question`,
+      fetch(`${QST_BACKEND}/ask`, options)
+    );
   };
   fetchQuestions = (data) => {
     try {
       console.log(`[API] fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`);
-      console.log('[API] fetchQuestions - request data:', data);
-      
+      console.log("[API] fetchQuestions - request data:", data);
+
       // Validate that serialUserId is present and valid
       if (!data || !data.serialUserId) {
-        console.error('[API] fetchQuestions - Missing required field: serialUserId');
-        return Promise.reject(new Error('Missing required field: serialUserId'));
+        console.error(
+          "[API] fetchQuestions - Missing required field: serialUserId"
+        );
+        return Promise.reject(
+          new Error("Missing required field: serialUserId")
+        );
       }
-      
+
       const options = this.makeOptions(data);
-      return this.logAndParse(`fetch questions`, fetch(`${QST_BACKEND}/feed`, options));
+      return this.logAndParse(
+        `fetch questions`,
+        fetch(`${QST_BACKEND}/feed`, options)
+      );
     } catch (error) {
-      console.error('[API] fetchQuestions preparation error:', error);
+      console.error("[API] fetchQuestions preparation error:", error);
       return Promise.reject(error);
     }
   };
-  fetchVHInfo = () => this.logAndParse(`fetch vh info`, fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions()));
 
+  fetchStrServer = (data) => {
+    const options = this.makeOptions("POST", data);
+    const url = `${STRDB_BACKEND}/server`;
+    return this.logAndParse(
+      `fetch str server for: ${data}`,
+      fetch(url, options)
+    );
+  };
+
+  fetchVHInfo = () =>
+    this.logAndParse(
+      `fetch vh info`,
+      fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions())
+    );
 }
 
 const defaultApi = new Api();

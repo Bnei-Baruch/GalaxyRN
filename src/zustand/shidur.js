@@ -15,9 +15,8 @@ import log from "loglevel";
 import { StreamingPlugin } from "../libs/streaming-plugin";
 import { getFromStorage, setToStorage } from "../shared/tools";
 import { HIDE_BARS_TIMEOUT_MS } from "./helper";
-import { useInitsStore } from "./inits";
 import { useInRoomStore } from "./inRoom";
-
+import api from "../shared/Api";
 let janus = null;
 let cleanWIP = false;
 let quadJanus = null;
@@ -126,11 +125,17 @@ export const useShidurStore = create((set, get) => ({
     setToStorage("vrt_langtext", text);
     set({ videoStream, audio });
   },
-  initJanus: async (srv) => {
+  initJanus: async () => {
     const { user } = useUserStore.getState();
     if (janus) get().cleanShidur();
 
-    let str = srv;
+    let srv = null;
+    try {
+      srv = await api.fetchStrServer();
+    } catch (error) {
+      console.error("[shidur] Error during fetchStrServer:", error);
+    }
+
     if (!srv) {
       const gw_list = GxyConfig.gatewayNames("streaming");
       let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
