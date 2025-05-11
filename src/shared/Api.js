@@ -148,6 +148,7 @@ class Api {
   };
 
   fetchStrServer = (data) => {
+    console.log("[API] fetchStrServer - request data:", data);
     const options = this.makeOptions("POST", data);
     const url = `${STRDB_BACKEND}/server`;
     return this.logAndParse(
