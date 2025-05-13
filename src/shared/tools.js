@@ -82,31 +82,6 @@ export const checkNotification = () => {
   }
 };
 
-export const geoInfo = (url, cb) =>
-  fetch(`${url}`)
-    .then((response) => {
-      if (response.ok) {
-        return response.json().then((data) => cb(data));
-      } else {
-        cb(false);
-      }
-    })
-    .catch((ex) => console.log(`get geoInfo`, ex));
-
-export const updateGxyUser = (user) => {
-  mqtt.send(JSON.stringify(user), false, "gxydb/users");
-  // api
-  //   .updateUser(user.id, user)
-  //   .then((data) => {
-  //     if (data.result === "success") {
-  //       //console.log("[User] success updating user state", user.id);
-  //     }
-  //   })
-  //   .catch((err) => {
-  //     //console.error("[User] error updating user state", user.id, err);
-  //   });
-};
-
 export const recordAudio = (stream) =>
   new Promise(async (resolve) => {
     const mediaRecorder = new MediaRecorder(stream);

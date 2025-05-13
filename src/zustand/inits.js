@@ -116,24 +116,19 @@ export const useInitsStore = create((set, get) => ({
     await mqtt.end();
     set(() => ({ mqttReady: false, configReady: false }));
   },
-  initConfig: () => {
-    const userInfo = {};
-    return geoInfo(GEO_IP_INFO, (data) => {
-      userInfo.ip = data && data.ip ? data.ip : "127.0.0.1";
-      userInfo.country = data && data.country ? data.country : "XX";
+  initConfig: async () => {
 
-      return api
-        .fetchConfig()
-        .then((data) => {
-          log.debug("[client] got config: ", data);
-          ConfigStore.setGlobalConfig(data);
-          GxyConfig.setGlobalConfig(data);
-          set(() => ({ configReady: true }));
-        })
-        .catch((err) => {
-          log.error("[client] error initializing app", err);
-        });
-    });
+    useUserStore.getState().setGeoInfo();
+    
+    try {
+      const configData = await api.fetchConfig();
+      log.debug("[client] got config: ", configData);
+      ConfigStore.setGlobalConfig(configData);
+      GxyConfig.setGlobalConfig(configData);
+      set(() => ({ configReady: true }));
+    } catch (err) {
+      log.error("[client] error initializing app", err);
+    }
   },
   initApp: async () => {
     BackgroundTimer.start();
@@ -141,7 +136,6 @@ export const useInitsStore = create((set, get) => ({
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
     get().fetchVersion();
-    
     // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(

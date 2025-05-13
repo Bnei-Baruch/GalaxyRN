@@ -56,9 +56,8 @@ export const useInRoomStore = create((set, get) => ({
     }
     const { user } = useUserStore.getState();
     const { room } = useRoomStore.getState();
-    const { cammute, setTimestmap } = useMyStreamStore.getState();
+    const { cammute } = useMyStreamStore.getState();
 
-    setTimestmap();
     let _subscriberJoined = false;
 
     const makeSubscription = async (pubs) => {
@@ -251,13 +250,9 @@ export const useInRoomStore = create((set, get) => ({
         janus.attach(videoroom).then((data) => {
           AudioBridge.activateAudioOutput();
           console.info("[client] Publisher Handle: ", data);
-          user.camera = !cammute;
-          user.question = false;
-          user.timestamp = new Date().getTime();
-          user.session = janus.sessionId;
-          user.handle = videoroom.janusHandleId;
+          const timestamp = new Date().getTime();
 
-          const { id, timestamp, role, username } = user;
+          const { id, role, username } = user;
           const d = {
             id,
             timestamp,
@@ -271,7 +266,13 @@ export const useInRoomStore = create((set, get) => ({
             .join(room.room, d)
             .then(async (data) => {
               log.info("[client] Joined respond:", data);
-              useUserStore.getState().setRfid(data.id);
+
+              useUserStore.getState().setJannusInfo({
+                session: janus.sessionId,
+                handle: videoroom.janusHandleId,
+                rfid: data.id,
+                timestamp,
+              });
 
               // Feeds count with user role
               let feeds_count = data.publishers.filter(
@@ -284,7 +285,7 @@ export const useInRoomStore = create((set, get) => ({
               }
 
               await makeSubscription(data.publishers);
-              useUserStore.getState().sendUserState({}, d);
+              useUserStore.getState().sendUserState();
               attempts = 0;
               const stream = getStream();
               stream.getVideoTracks().forEach((track) => {
@@ -293,6 +294,10 @@ export const useInRoomStore = create((set, get) => ({
               return videoroom
                 .publish(stream)
                 .then((json) => {
+                  useUserStore.getState().setExtraInfo({
+                    streams: json.streams,
+                    isGroup: false,
+                  });
                   log.debug("[client] videoroom published", json);
                 })
                 .catch((err) => {

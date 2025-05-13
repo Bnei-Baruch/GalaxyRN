@@ -1,4 +1,10 @@
-import { API_BACKEND, STUDY_MATERIALS, QST_BACKEND, STRDB_BACKEND } from "@env";
+import {
+  API_BACKEND,
+  STUDY_MATERIALS,
+  QST_BACKEND,
+  STRDB_BACKEND,
+  GEO_IP_INFO,
+} from "@env";
 import mqtt from "../shared/mqtt";
 
 class Api {
@@ -149,7 +155,7 @@ class Api {
 
   fetchStrServer = (data) => {
     console.log("[API] fetchStrServer - request data:", data);
-    const options = this.makeOptions("POST", data);
+    const options = this.makeOptions(data);
     const url = `${STRDB_BACKEND}/server`;
     return this.logAndParse(
       `fetch str server for: ${data}`,
@@ -162,6 +168,24 @@ class Api {
       `fetch vh info`,
       fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions())
     );
+
+  fetchGeoInfo = async () => {
+    const defaultInfo = {
+      ip: "127.0.0.1",
+      country: "XX",
+    };
+    try {
+      const response = await fetch(GEO_IP_INFO);
+      if (response.ok) {
+        return await response.json();
+      } else {
+        return defaultInfo;
+      }
+    } catch (ex) {
+      console.log(`get geoInfo`, ex);
+      return defaultInfo;
+    }
+  };
 }
 
 const defaultApi = new Api();

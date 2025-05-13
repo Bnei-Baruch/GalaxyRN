@@ -301,7 +301,6 @@ class Keycloak {
         role: getUserRole(roles) 
       });
 
-      // Restore original user structure
       const user = {
         id: sub,
         display: name,
@@ -310,9 +309,7 @@ class Keycloak {
         name,
         email,
         role: getUserRole(roles),
-        isAdmin: roles?.includes(userRolesEnum.admin),
-        isProduction: roles?.includes(userRolesEnum.broadcast),
-        isRoot: roles?.includes(userRolesEnum.root),
+        roles,
       };
 
       console.log("[keycloak] Setting user in store and setting WIP to false");

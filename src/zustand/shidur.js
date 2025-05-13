@@ -131,7 +131,12 @@ export const useShidurStore = create((set, get) => ({
 
     let srv = null;
     try {
-      srv = await api.fetchStrServer(user).then((res) => res?.server);
+      const _userState = useUserStore.getState().buildUserState();
+      console.log("[shidur] initJanus fetchStrServer", _userState);
+      srv = await api.fetchStrServer(_userState).then((res) => {
+        console.log("[shidur] initJanus fetchStrServer", res);
+        return res?.server;
+      });
     } catch (error) {
       console.error("[shidur] Error during fetchStrServer:", error);
     }
@@ -143,7 +148,12 @@ export const useShidurStore = create((set, get) => ({
       config = GxyConfig.instanceConfig(inst);
       srv = config.name;
       console.log("[shidur] init build janus", inst, config);
+    } else {
+      config = GxyConfig.instanceConfig(srv);
     }
+
+
+    console.log("[shidur] new JanusMqtt", user, srv);
     janus = new JanusMqtt(user, srv);
 
     /* janus.onStatus = async (srv, status) => {
