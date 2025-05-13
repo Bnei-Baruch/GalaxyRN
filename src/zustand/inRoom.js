@@ -383,6 +383,7 @@ export const useInRoomStore = create((set, get) => ({
           state.feedById[rfid].camera = camera;
           state.feedById[rfid].question = question;
         }
+        state.isRoomQuestion = !!question;
       })
     );
   },
