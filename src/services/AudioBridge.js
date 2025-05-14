@@ -10,34 +10,16 @@ if (Platform.OS === "ios") {
 
 const AudioBridge = {
   initAudioDevices: () => {
-    if (NativeAudio && NativeAudio.initAudioDevices) {
+    if (NativeAudio?.initAudioDevices) {
       NativeAudio.initAudioDevices();
-    } else {
-      console.log(
-        "Using stub implementation for initAudioDevices on platform: " +
-          Platform.OS
-      );
     }
   },
 
-  updateAudioDevices: (deviceId, callback) => {
-    if (Platform.OS === "ios") {
-      if (NativeAudio && NativeAudio.handleDevicesChange) {
-        NativeAudio.handleDevicesChange(deviceId);
-      } else if (callback) {
-        callback(null, { status: "success" });
-      }
-    } else if (Platform.OS === "android") {
-      if (NativeAudio && NativeAudio.handleDevicesChange) {
-        NativeAudio.handleDevicesChange(deviceId);
-        if (callback) {
-          callback(null, { status: "pending" });
-        }
-      } else if (callback) {
-        callback(null, { status: "success" });
-      }
-    } else if (callback) {
-      callback(null, { status: "success" });
+  updateAudioDevices: (deviceId) => {
+    if (Platform.OS === "ios" && NativeAudio?.handleDevicesChange) {
+      NativeAudio.handleDevicesChange(deviceId);
+    } else if (Platform.OS === "android" && NativeAudio?.handleDevicesChange) {
+      NativeAudio.handleDevicesChange(deviceId);
     }
   },
 
@@ -47,15 +29,29 @@ const AudioBridge = {
     }
   },
 
+  activateAudioOutput: () => {
+    if (Platform.OS === "ios" && NativeAudio?.activateAudioOutput) {
+      // activate audio output after webRTC defined audio output
+      setTimeout(() => {
+        NativeAudio.activateAudioOutput();
+      }, 500);
+    }
+  },
+
   abandonAudioFocus: () => {
     if (Platform.OS === "android" && NativeAudio?.abandonAudioFocus) {
       NativeAudio.abandonAudioFocus();
+    } else if (Platform.OS === "ios" && NativeAudio?.releaseAudioFocus) {
+      NativeAudio.releaseAudioFocus();
     }
   },
 
   switchAudioOutput: () => {
+    console.log("[AudioBridge] Attempting to call switchAudioOutput");
     if (Platform.OS === "ios" && NativeAudio?.switchAudioOutput) {
+      console.log("[AudioBridge] Calling iOS native switchAudioOutput method");
       NativeAudio.switchAudioOutput();
+      console.log("[AudioBridge] iOS native switchAudioOutput method called");
     }
   },
 

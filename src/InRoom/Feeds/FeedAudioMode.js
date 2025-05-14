@@ -6,14 +6,9 @@ const FeedAudioMode = ({ id }) => {
   const { feedById } = useInRoomStore();
 
   const feed = feedById[id];
-  const { display, talk, question }  =feed;
 
   return (
-    <FeedAudioModeView
-      display={display?.display}
-      talk={talk}
-      question={question}
-    />
+    <FeedAudioModeView feed={feed} />
   );
 };
 export default FeedAudioMode;

@@ -190,13 +190,14 @@ class MqttMsg {
             }
           } else if (service === 'users' && id === 'broadcast')
             useChatStore.getState().addSupportMsg(data);
-          //this.mq.emit('MqttBroadcastMessage', data);
+          /* 
           else if (service === 'users' && id === 'notification')
             this.mq.emit('MqttNotificationMessage', data);
           else if (service === 'users' && id === 'notification_test')
             this.mq.emit('MqttTestMessage', data);
           else
-            this.mq.emit('MqttPrivateMessage', data);
+            this.mq.emit('MqttPrivateMessage', data); 
+          */
           break;
         case 'janus':
           const json = JSON.parse(data);

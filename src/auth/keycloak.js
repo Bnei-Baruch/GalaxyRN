@@ -8,7 +8,7 @@ import api from "../shared/Api";
 import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
 import BackgroundTimer from "react-native-background-timer";
-import { sendSentry } from "../sentryHelper";
+import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../sentryHelper";
 import { AUTH_CONFIG_ISSUER, MEMBERSHIP_URL } from "@env";
 import { setToStorage, getFromStorage } from "../shared/tools";
 
@@ -74,6 +74,10 @@ class Keycloak {
    */
   logout = async () => {
     this.clearTimeout();
+    
+    addBreadcrumb('auth', 'User logging out');
+    // Clear the user from Sentry tracking
+    clearSentryUser();
 
     if (this.session) {
       try {
@@ -269,31 +273,52 @@ class Keycloak {
    * Saves user data to the store
    */
   saveUser = (token) => {
-    console.log("[keycloak] Saving user data to store");
-    const {
-      realm_access: { roles },
-      sub,
-      given_name,
-      name,
-      email,
-      family_name,
-    } = token;
+    try {
+      if (!token) {
+        console.error("[keycloak] No token available");
+        return;
+      }
 
-    const user = {
-      id: sub,
-      display: name,
-      username: given_name,
-      familyname: family_name,
-      name,
-      email,
-      role: getUserRole(roles),
-      isAdmin: roles?.includes(userRolesEnum.admin),
-      isProduction: roles?.includes(userRolesEnum.broadcast),
-      isRoot: roles?.includes(userRolesEnum.root),
-    };
+      const {
+        realm_access: { roles },
+        sub,
+        given_name,
+        name,
+        email,
+        family_name,
+        preferred_username,
+      } = token;
 
-    console.log("[keycloak] Setting user in store and setting WIP to false");
-    useUserStore.getState().setUser(user);
+      // Add Sentry user tracking
+      setSentryUser({
+        id: sub,
+        username: preferred_username || given_name,
+        email: email,
+        role: getUserRole(roles)
+      });
+      
+      addBreadcrumb('auth', 'User authenticated successfully', { 
+        role: getUserRole(roles) 
+      });
+
+      const user = {
+        id: sub,
+        display: name,
+        username: given_name,
+        familyname: family_name,
+        name,
+        email,
+        role: getUserRole(roles),
+        roles,
+      };
+
+      console.log("[keycloak] Setting user in store and setting WIP to false");
+      useUserStore.getState().setUser(user);
+      useUserStore.getState().setWIP(false);
+    } catch (error) {
+      console.error("[keycloak] Error saving user:", error);
+      this.logout();
+    }
   };
 
   /**

@@ -14,10 +14,15 @@ import WIP from "./src/components/WIP";
 
 Sentry.init({
   dsn: SENTRY_DSN,
-  tracesSampleRate: 0.0,
-  profilesSampleRate: 0.0,
+  tracesSampleRate: 0.2,
+  profilesSampleRate: 0.1,
   environment: process.env.NODE_ENV,
   attachStacktrace: true,
+  release: `GalaxyRN@${require('./package.json').version}`,
+  enableAutoSessionTracking: true,
+  sessionTrackingIntervalMillis: 30000,
+  maxBreadcrumbs: 100,
+  autoInitializeNativeSdk: true,
 });
 if (!Intl.PluralRules) register();
 log.setLevel("info");

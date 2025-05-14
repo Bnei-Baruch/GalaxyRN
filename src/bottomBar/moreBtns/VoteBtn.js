@@ -24,7 +24,8 @@ export const VoteBtn = () => {
       </TouchableOpacity>
       {open && (
         <Modal
-          animationType="fade"
+          animationType="slide"
+          presentationStyle="pageSheet"
           transparent={true}
           visible={open}
           onRequestClose={toggleOpen}

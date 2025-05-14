@@ -38,11 +38,11 @@ const deviceInfoToOptionIOS = (d) => {
   let res = { ...d };
   switch (d.type.toLowerCase()) {
     case "headphones":
-      return { ...res, icon: "headset"};
+      return { ...res, icon: "headset" };
     case "external":
-      return { ...res, icon: "Speaker"};
+      return { ...res, icon: "Speaker" };
     case "bluetooth":
-      return { ...res, icon: "bluetooth-audio"};
+      return { ...res, icon: "bluetooth-audio" };
     case "earpiece":
       return { ...res, icon: "volume-off", priority: 6 };
     case "speaker":
@@ -52,57 +52,46 @@ const deviceInfoToOptionIOS = (d) => {
   }
 };
 
-const deviceInfoToOption = Platform.OS === 'android' ? deviceInfoToOptionAndroid : deviceInfoToOptionIOS;
+const deviceInfoToOption =
+  Platform.OS === "android" ? deviceInfoToOptionAndroid : deviceInfoToOptionIOS;
 
 const useAudioDevicesStore = create((set, get) => ({
   selected: null,
   select: async (id) => {
-    console.log("[audioDevices] select called with id:", id);
-    await AudioBridge.updateAudioDevices(id, (error, result) => {
-      if (error) {
-        console.error("[audioDevices] Error updating audio devices:", error);
-      } else {
-        console.log("[audioDevices] Audio devices updated successfully:", result);
-      }
-    });
+    console.log("[audioDevices js] select called with id:", id);
+    await AudioBridge.updateAudioDevices(id);
   },
   devices: [],
   initAudioDevices: () => {
-    console.log("[audioDevices] initAudioDevices called");
-      if (subscription) {
-        console.log("[audioDevices] Removing existing subscription");
-        subscription.remove();
-        subscription = null;
-      }
+    console.log("[audioDevices js] initAudioDevices called");
+    if (subscription) {
+      console.log("[audioDevices js] Removing existing subscription");
+      subscription.remove();
+      subscription = null;
+    }
 
-     try {
-        subscription = eventEmitter.addListener(
-          "updateAudioDevice",
-          async (data) => {
-            console.log("[audioDevices] updateAudioDevice event received",data);
-            const devices = Object.values(data)
-              .map(deviceInfoToOption)
-              .sort((a, b) => a.priority - b.priority);
-            const selected = deviceInfoToOption(
-              Object.values(data).find((d) => d.active)
-            );
-            set({ devices, selected });
-          }
-        );
-        
-        AudioBridge.initAudioDevices((error) => {
-          if (error) {
-            console.error("[audioDevices] Error initializing audio devices:", error);
-          } else {
-            console.log("[audioDevices] Audio devices initialized successfully:");
-          }
-        });
-      } catch (error) {
-        console.error("[audioDevices] Error in initAudioDevices:", error);
-      }
+    try {
+      subscription = eventEmitter.addListener(
+        "updateAudioDevice",
+        async (data) => {
+          console.log("[audioDevices js] updateAudioDevice event received",data);
+          const devices = Object.values(data)
+            .map(deviceInfoToOption)
+            .sort((a, b) => a.priority - b.priority);
+          const selected = deviceInfoToOption(
+            Object.values(data).find((d) => d.active)
+          );
+          set({ devices, selected });
+        }
+      );
+
+      AudioBridge.initAudioDevices();
+    } catch (error) {
+      console.error("[audioDevices js] Error in initAudioDevices:", error);
+    }
   },
   abortAudioDevices: () => {
-    console.log("[audioDevices] abortAudioDevices called");
+    console.log("[audioDevices js] abortAudioDevices called");
     if (subscription) {
       AudioBridge.abandonAudioFocus();
       subscription.remove();

@@ -70,7 +70,13 @@ public class MainActivity extends ReactActivity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy - ensuring all services are stopped");
-        
+        try {
+            ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
+            AudioManager audioManager = (AudioManager) getSystemService(reactContext.AUDIO_SERVICE);
+            audioManager.abandonAudioFocus(null);
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping audio session", e);
+        }
         // Stop any foreground services that might be running
         stopForegroundServices();
         

@@ -15,9 +15,8 @@ import log from "loglevel";
 import { StreamingPlugin } from "../libs/streaming-plugin";
 import { getFromStorage, setToStorage } from "../shared/tools";
 import { HIDE_BARS_TIMEOUT_MS } from "./helper";
-import { useInitsStore } from "./inits";
 import { useInRoomStore } from "./inRoom";
-
+import api from "../shared/Api";
 let janus = null;
 let cleanWIP = false;
 let quadJanus = null;
@@ -126,20 +125,36 @@ export const useShidurStore = create((set, get) => ({
     setToStorage("vrt_langtext", text);
     set({ videoStream, audio });
   },
-  initJanus: async (srv) => {
+  initJanus: async () => {
     const { user } = useUserStore.getState();
     if (janus) get().cleanShidur();
 
-    let str = srv;
+    let srv = null;
+    try {
+      const _userState = useUserStore.getState().buildUserState();
+      console.log("[shidur] initJanus fetchStrServer", _userState);
+      srv = await api.fetchStrServer(_userState).then((res) => {
+        console.log("[shidur] initJanus fetchStrServer", res);
+        return res?.server;
+      });
+    } catch (error) {
+      console.error("[shidur] Error during fetchStrServer:", error);
+    }
+
     if (!srv) {
       const gw_list = GxyConfig.gatewayNames("streaming");
       let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
 
       config = GxyConfig.instanceConfig(inst);
-      str = config.name;
+      srv = config.name;
       console.log("[shidur] init build janus", inst, config);
+    } else {
+      config = GxyConfig.instanceConfig(srv);
     }
-    janus = new JanusMqtt(user, str);
+
+
+    console.log("[shidur] new JanusMqtt", user, srv);
+    janus = new JanusMqtt(user, srv);
 
     /* janus.onStatus = async (srv, status) => {
       if (status !== 'online') {

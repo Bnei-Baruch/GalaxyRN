@@ -12,6 +12,9 @@ import { useUiActions } from "./uiActions";
 import { useInitsStore } from "./inits";
 import { setLanguage } from "../i18n/i18n";
 
+// Держим референс на слушатель, чтобы можно было удалить его при необходимости
+let orientationListener = null;
+
 export const useSettingsStore = create((set, get) => ({
   uiLang: "en",
   autoEnterRoom: false,
@@ -24,8 +27,15 @@ export const useSettingsStore = create((set, get) => ({
   isFullscreen: false,
   toggleIsFullscreen: () => {
     const isFullscreen = !get().isFullscreen;
-    useUiActions.getState().toggleShowBars(isFullscreen);
+
+    if (isFullscreen) {
+      useUiActions.getState().toggleShowBars(false, false);
+    } else {
+      useUiActions.getState().toggleShowBars(true);
+    }
+
     useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
+
     set({ isFullscreen });
   },
   toggleQuestion: (question = !get().question) => {

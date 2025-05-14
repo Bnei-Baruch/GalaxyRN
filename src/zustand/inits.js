@@ -116,24 +116,18 @@ export const useInitsStore = create((set, get) => ({
     await mqtt.end();
     set(() => ({ mqttReady: false, configReady: false }));
   },
-  initConfig: () => {
-    const userInfo = {};
-    return geoInfo(GEO_IP_INFO, (data) => {
-      userInfo.ip = data && data.ip ? data.ip : "127.0.0.1";
-      userInfo.country = data && data.country ? data.country : "XX";
+  initConfig: async () => {
+    useUserStore.getState().setGeoInfo();
 
-      return api
-        .fetchConfig()
-        .then((data) => {
-          log.debug("[client] got config: ", data);
-          ConfigStore.setGlobalConfig(data);
-          GxyConfig.setGlobalConfig(data);
-          set(() => ({ configReady: true }));
-        })
-        .catch((err) => {
-          log.error("[client] error initializing app", err);
-        });
-    });
+    try {
+      const configData = await api.fetchConfig();
+      log.debug("[client] got config: ", configData);
+      ConfigStore.setGlobalConfig(configData);
+      GxyConfig.setGlobalConfig(configData);
+      set(() => ({ configReady: true }));
+    } catch (err) {
+      log.error("[client] error initializing app", err);
+    }
   },
   initApp: async () => {
     BackgroundTimer.start();
@@ -141,7 +135,6 @@ export const useInitsStore = create((set, get) => ({
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
     get().fetchVersion();
-    
     // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(
@@ -176,7 +169,7 @@ export const useInitsStore = create((set, get) => ({
 
 // Handle permissions after the store is defined
 try {
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === "ios") {
     // For iOS, automatically set permissions ready since there's no PermissionsManager
     log.info("[inits] iOS platform detected - auto-approving permissions");
     setTimeout(() => {
@@ -185,12 +178,12 @@ try {
   } else {
     // For Android, use the permissions module if available
     const permissionsModule = NativeModules.PermissionsModule;
-    
+
     if (permissionsModule) {
       const permissionsEventEmitter = new NativeEventEmitter(permissionsModule);
-      permissionsEventEmitter.addListener('permissionsStatus', (event) => {
+      permissionsEventEmitter.addListener("permissionsStatus", (event) => {
         if (event && event.allGranted) {
-          log.info('[inits] All Android permissions granted!');
+          log.info("[inits] All Android permissions granted!");
           useInitsStore.getState().setPermissionsReady(true);
         }
       });

@@ -54,7 +54,7 @@ const Feed = ({ id }) => {
     if (camera) {
       return (
         <>
-          <FeedDisplay display={display} />
+          <FeedDisplay display={display} talking={talking} />
           <WIP isReady={!(ref.current?.isOn && !feed.url)}>
             <RTCView streamURL={url} style={styles.viewer} />
           </WIP>

@@ -56,9 +56,8 @@ export const useInRoomStore = create((set, get) => ({
     }
     const { user } = useUserStore.getState();
     const { room } = useRoomStore.getState();
-    const { cammute, setTimestmap } = useMyStreamStore.getState();
+    const { cammute } = useMyStreamStore.getState();
 
-    setTimestmap();
     let _subscriberJoined = false;
 
     const makeSubscription = async (pubs) => {
@@ -98,7 +97,11 @@ export const useInRoomStore = create((set, get) => ({
           .find((s) => !s.disabled);
         // dont rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
-          feedById[id] = { id, display: JSON.parse(display), camera: !!vStream };
+          feedById[id] = {
+            id,
+            display: JSON.parse(display),
+            camera: !!vStream,
+          };
         }
         vStream && (feedById[id].vMid = vStream.mid);
       }
@@ -184,7 +187,9 @@ export const useInRoomStore = create((set, get) => ({
     videoroom.talkEvent = (id, talking) => {
       set(
         produce((state) => {
-          if (state.feedById[id]) state.feedById[id].talking = talking;
+          if (state.feedById[id]) {
+            state.feedById[id].talking = talking;
+          }
         })
       );
     };
@@ -243,14 +248,11 @@ export const useInRoomStore = create((set, get) => ({
       .then((data) => {
         console.log("[client] joinRoom on janus.init", data);
         janus.attach(videoroom).then((data) => {
+          AudioBridge.activateAudioOutput();
           console.info("[client] Publisher Handle: ", data);
-          user.camera = !cammute;
-          user.question = false;
-          user.timestamp = new Date().getTime();
-          user.session = janus.sessionId;
-          user.handle = videoroom.janusHandleId;
+          const timestamp = new Date().getTime();
 
-          const { id, timestamp, role, username } = user;
+          const { id, role, username } = user;
           const d = {
             id,
             timestamp,
@@ -264,7 +266,13 @@ export const useInRoomStore = create((set, get) => ({
             .join(room.room, d)
             .then(async (data) => {
               log.info("[client] Joined respond:", data);
-              useUserStore.getState().setRfid(data.id);
+
+              useUserStore.getState().setJannusInfo({
+                session: janus.sessionId,
+                handle: videoroom.janusHandleId,
+                rfid: data.id,
+                timestamp,
+              });
 
               // Feeds count with user role
               let feeds_count = data.publishers.filter(
@@ -277,7 +285,7 @@ export const useInRoomStore = create((set, get) => ({
               }
 
               await makeSubscription(data.publishers);
-              useUserStore.getState().sendUserState({}, d);
+              useUserStore.getState().sendUserState();
               attempts = 0;
               const stream = getStream();
               stream.getVideoTracks().forEach((track) => {
@@ -286,6 +294,10 @@ export const useInRoomStore = create((set, get) => ({
               return videoroom
                 .publish(stream)
                 .then((json) => {
+                  useUserStore.getState().setExtraInfo({
+                    streams: json.streams,
+                    isGroup: false,
+                  });
                   log.debug("[client] videoroom published", json);
                 })
                 .catch((err) => {
@@ -317,15 +329,15 @@ export const useInRoomStore = create((set, get) => ({
 
     const { room } = useRoomStore.getState();
     set({ feedById: {} });
-    
+
     await useShidurStore.getState().cleanJanus();
-    
+
     if (janus) {
       console.log("useInRoomStore exitRoom janus", janus);
       await janus.destroy();
       janus = null;
     }
-    
+
     videoroom = null;
     subscriber = null;
     useInitsStore.getState().setReadyForJoin(false);
@@ -371,6 +383,7 @@ export const useInRoomStore = create((set, get) => ({
           state.feedById[rfid].camera = camera;
           state.feedById[rfid].question = question;
         }
+        state.isRoomQuestion = !!question;
       })
     );
   },

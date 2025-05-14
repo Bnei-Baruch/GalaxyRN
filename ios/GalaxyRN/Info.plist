@@ -37,6 +37,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CRISP_WEBSITE_ID</key>
 	<string>a88f7eac-d881-450b-b589-ab82160fb08a</string>
+	<key>SENTRY_DSN</key>
+	<string>https://a6ae38afea36a98b0db2e3ad0e52e6bd@sentry.kab.info/11</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

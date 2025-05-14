@@ -7,21 +7,46 @@ import { useInitsStore } from "./zustand/inits";
 import { Dimensions } from "react-native";
 import useForegroundListener from "./InRoom/useForegroundListener";
 import useAudioDevicesStore from "./zustand/audioDevices";
+import { setUser, setTag, addBreadcrumb } from "./sentryHelper";
+import SentryErrorBoundary from "./components/SentryErrorBoundary";
+import { withSentryMonitoring } from "./sentryHOC";
 
-const InitApp = () => {
+const InitAppContent = () => {
   const { myInit, myAbort } = useMyStreamStore();
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
-  const { initAudioDevices, abortAudioDevices } = useAudioDevicesStore();
+  const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
 
   useForegroundListener();
 
   useEffect(() => {
     const init = async () => {
-      await myInit();
-      await initApp();
-      initAudioDevices();
+      try {
+        addBreadcrumb('initialization', 'Starting app initialization');
+        
+        // Set global tags for better error context
+        setTag('app_version', require('../package.json').version);
+        setTag('platform', 'react-native');
+        
+        await myInit();
+        addBreadcrumb('initialization', 'myInit completed');
+        
+        await initApp();
+        addBreadcrumb('initialization', 'initApp completed');
+        
+        initAudioDevices();
+        addBreadcrumb('initialization', 'Audio devices initialized');
+        
+        // If you have user information, you can set it for Sentry
+        // This could be moved to after authentication
+        // Example: setUser({ id: user.id, username: user.username });
+      } catch (error) {
+        console.error('Error during initialization:', error);
+        throw error; // Let the error boundary catch this
+      }
     };
+    
     init();
+    
     return () => {
       myAbort();
       terminateApp();
@@ -42,6 +67,17 @@ const InitApp = () => {
   }, []);
 
   return null;
+};
+
+// Wrap the component with Sentry monitoring
+const MonitoredInitApp = withSentryMonitoring(InitAppContent);
+
+const InitApp = () => {
+  return (
+    <SentryErrorBoundary>
+      <MonitoredInitApp />
+    </SentryErrorBoundary>
+  );
 };
 
 export default InitApp;
