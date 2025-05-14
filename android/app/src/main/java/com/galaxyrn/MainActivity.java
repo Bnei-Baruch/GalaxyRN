@@ -1,12 +1,9 @@
 package com.galaxyrn;
 
 import android.content.Intent;
-import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -41,7 +38,6 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        
         
         permissionHelper = new PermissionHelper(this);
         

@@ -1,19 +1,17 @@
 package com.galaxyrn;
 
 import android.app.Application;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactHost;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
-import com.facebook.react.bridge.ReactContext;
 
 import java.util.List;
 

@@ -1,18 +1,17 @@
 package com.galaxyrn;
 
 import android.app.Activity;
-import android.os.Build;
-import android.os.PowerManager;
-import android.view.WindowManager;
-import android.util.Log;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.util.Log;
+import android.view.WindowManager;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Promise;
 
 public class WakeLockModule extends ReactContextBaseJavaModule {
     private static final String TAG = "WakeLockModule";
