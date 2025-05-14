@@ -1,70 +1,69 @@
 package com.galaxyrn;
 
 import android.app.Activity;
-import android.os.Build;
-import android.os.PowerManager;
-import android.view.WindowManager;
 import android.util.Log;
-import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
+import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Promise;
 
 public class WakeLockModule extends ReactContextBaseJavaModule {
     private static final String TAG = "WakeLockModule";
-    private PowerManager.WakeLock wakeLock;
     private final ReactApplicationContext reactContext;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public WakeLockModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
     }
 
+    @NonNull
     @Override
     public String getName() {
         return "WakeLockModule";
     }
 
     @ReactMethod
-    public void keepScreenOn(Promise promise) {
-        Activity activity = getCurrentActivity();
-        if (activity != null) {
-            mainHandler.post(() -> {
-                try {
-                    activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    Log.d(TAG, "Screen wake lock enabled");
-                    promise.resolve(true);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error enabling screen wake lock", e);
-                    promise.reject("SCREEN_WAKE_LOCK_ERROR", e.getMessage());
-                }
-            });
-        } else {
-            promise.reject("NO_ACTIVITY", "No activity available");
+    public void keepScreenOn() {
+        try {
+            Activity activity = getCurrentActivity();
+            if (activity != null) {
+                activity.runOnUiThread(() -> {
+                    try {
+                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        Log.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added)");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error keeping screen on: " + e.getMessage());
+                    }
+                });
+            } else {
+                Log.w(TAG, "Could not get current activity to keep screen on");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in keepScreenOn: " + e.getMessage());
         }
     }
 
     @ReactMethod
-    public void releaseScreenOn(Promise promise) {
-        Activity activity = getCurrentActivity();
-        if (activity != null) {
-            mainHandler.post(() -> {
-                try {
-                    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    Log.d(TAG, "Screen wake lock disabled");
-                    promise.resolve(true);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error disabling screen wake lock", e);
-                    promise.reject("SCREEN_WAKE_LOCK_ERROR", e.getMessage());
-                }
-            });
-        } else {
-            promise.reject("NO_ACTIVITY", "No activity available");
+    public void releaseScreenOn() {
+        try {
+            Activity activity = getCurrentActivity();
+            if (activity != null) {
+                activity.runOnUiThread(() -> {
+                    try {
+                        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        Log.d(TAG, "Screen can turn off normally (FLAG_KEEP_SCREEN_ON cleared)");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error releasing screen lock: " + e.getMessage());
+                    }
+                });
+            } else {
+                Log.w(TAG, "Could not get current activity to release screen lock");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in releaseScreenOn: " + e.getMessage());
         }
     }
 }

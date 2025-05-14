@@ -1,8 +1,8 @@
 import Foundation
-import React
 import AVFoundation
-import UIKit
 import CallKit
+import React
+import UIKit
 
 @objc(CallManager)
 class CallManager: RCTEventEmitter, CXCallObserverDelegate {
@@ -38,11 +38,10 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
         } else {
             callState = CallEvents.OTHERS.rawValue
         }
-      sendCallState(state: callState)
+        sendCallState(state: callState)
     }
     
     // MARK: - Public Methods
-    
     @objc
     func keepScreenAwake(_ keepAwake: Bool) {
         UIApplication.shared.isIdleTimerDisabled = keepAwake

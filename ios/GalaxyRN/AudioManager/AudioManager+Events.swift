@@ -42,14 +42,14 @@ extension AudioManager {
     }
   
     private func getCurrentAudioDevice() -> [[String: Any]] {
-      var resp: [String: Any] = [:]
+        var resp: [String: Any] = [:]
       
-      let output = audioSession.currentRoute.outputs.first
-      let type = getCurrentAudioOutputGroup()
-      resp["name"] = output?.uid
-      resp["type"] = String(describing: type)
-      resp["active"] = true
-      NLOG("[audioDevices swift] getCurrentAudioDevice resp", resp)
-      return [resp]
-  }
+        let output = audioSession.currentRoute.outputs.first
+        let type = getCurrentAudioOutputGroup()
+        resp["name"] = output?.uid
+        resp["type"] = String(describing: type)
+        resp["active"] = true
+        NLOG("[audioDevices swift] getCurrentAudioDevice resp", resp)
+        return [resp]
+    }
 }

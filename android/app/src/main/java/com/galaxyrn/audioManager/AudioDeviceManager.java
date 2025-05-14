@@ -20,10 +20,10 @@ import java.util.Arrays;
 
 public class AudioDeviceManager {
     private static final String TAG = AudioDeviceManager.class.getSimpleName();
-    
+
     // Bluetooth related constants
     private static final int BLUETOOTH_SCO_TIMEOUT_MS = 1000;
-    
+
     private final BroadcastReceiver receiver;
     private final ReactApplicationContext reactContext;
     private final UpdateAudioDeviceCallback callback;
@@ -35,7 +35,7 @@ public class AudioDeviceManager {
         this.reactContext = context;
         this.callback = callback;
         this.handler = new Handler(Looper.getMainLooper());
-        
+
         // Initialize audio manager
         this.audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
         if (this.audioManager == null) {
@@ -44,11 +44,11 @@ public class AudioDeviceManager {
             this.audioCallback = null;
             return;
         }
-        
+
         // Initialize audio callback
         this.audioCallback = createAudioDeviceCallback();
         registerAudioDeviceCallback();
-        
+
         // Initialize broadcast receiver
         this.receiver = createBroadcastReceiver();
         registerBroadcastReceiver();
@@ -69,7 +69,7 @@ public class AudioDeviceManager {
             }
         };
     }
-    
+
     private void registerAudioDeviceCallback() {
         try {
             if (audioManager != null && audioCallback != null) {
@@ -79,7 +79,7 @@ public class AudioDeviceManager {
             Log.e(TAG, "Failed to register audio device callback", e);
         }
     }
-    
+
     private BroadcastReceiver createBroadcastReceiver() {
         return new BroadcastReceiver() {
             @Override
@@ -87,13 +87,13 @@ public class AudioDeviceManager {
                 try {
                     String action = intent.getAction();
                     Log.d(TAG, "onReceive() action: " + action);
-                    
+
                     if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                         handleBluetoothStateChange(intent);
                     } else if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
                         handleBluetoothConnectionStateChange(intent);
                     }
-                    
+
                     notifyDeviceStateChanged();
                 } catch (Exception e) {
                     Log.e(TAG, "Exception in onReceive", e);
@@ -101,13 +101,13 @@ public class AudioDeviceManager {
             }
         };
     }
-    
+
     private void notifyDeviceStateChanged() {
         if (callback != null && reactContext != null && reactContext.hasActiveCatalystInstance()) {
             callback.onUpdateAudioDeviceState();
         }
     }
-    
+
     private void handleBluetoothStateChange(Intent intent) {
         int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
         if (state == BluetoothAdapter.STATE_ON) {
@@ -116,7 +116,7 @@ public class AudioDeviceManager {
             disableBluetoothSco();
         }
     }
-    
+
     private void handleBluetoothConnectionStateChange(Intent intent) {
         int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
         if (state == BluetoothAdapter.STATE_CONNECTED) {
@@ -125,13 +125,13 @@ public class AudioDeviceManager {
             disableBluetoothSco();
         }
     }
-    
+
     private void enableBluetoothSco() {
         try {
             if (audioManager != null) {
                 audioManager.startBluetoothSco();
                 audioManager.setBluetoothScoOn(true);
-                
+
                 // Add a delayed check to ensure SCO is started
                 handler.postDelayed(() -> {
                     try {
@@ -147,7 +147,7 @@ public class AudioDeviceManager {
             Log.e(TAG, "Failed to start Bluetooth SCO", e);
         }
     }
-    
+
     private void disableBluetoothSco() {
         try {
             if (audioManager != null) {
@@ -158,13 +158,13 @@ public class AudioDeviceManager {
             Log.e(TAG, "Failed to stop Bluetooth SCO", e);
         }
     }
-    
+
     private void registerBroadcastReceiver() {
         if (reactContext == null || receiver == null) {
             Log.d(TAG, "Cannot register receiver - context or receiver is null");
             return;
         }
-        
+
         try {
             IntentFilter filter = createIntentFilter();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -176,7 +176,7 @@ public class AudioDeviceManager {
             Log.e(TAG, "Failed to register receiver", e);
         }
     }
-    
+
     private IntentFilter createIntentFilter() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -193,7 +193,7 @@ public class AudioDeviceManager {
         unregisterAudioDeviceCallback();
         disableBluetoothSco();
     }
-    
+
     private void unregisterBroadcastReceiver() {
         try {
             if (receiver != null && reactContext != null) {
@@ -203,7 +203,7 @@ public class AudioDeviceManager {
             Log.e(TAG, "Failed to unregister receiver", e);
         }
     }
-    
+
     private void unregisterAudioDeviceCallback() {
         try {
             if (audioCallback != null && audioManager != null) {

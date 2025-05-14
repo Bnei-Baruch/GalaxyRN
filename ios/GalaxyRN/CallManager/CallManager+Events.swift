@@ -16,7 +16,7 @@ extension CallManager {
       hasListeners = false
   }
   
-  func sendCallState( state: String ){
+  func sendCallState(state: String) {
     if hasListeners {
       sendEvent(withName: CallManagerConstants.eventName, body: [
             "state": state,
