@@ -3,7 +3,6 @@ import { authorize, logout, refresh } from "react-native-app-auth";
 import { Linking } from "react-native";
 import RNSecureStorage from "rn-secure-storage";
 import { decode } from "base-64";
-import log from "loglevel";
 import api from "../shared/Api";
 import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
