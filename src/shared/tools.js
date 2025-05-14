@@ -1,6 +1,7 @@
 import { WKLI_ENTER, WKLI_LEAVE } from "@env";
 import mqtt from "./mqtt";
 import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
+import BackgroundTimer from "react-native-background-timer";
 
 export const notifyMe = (title, message, tout) => {
   if (!!window.Notification) {
