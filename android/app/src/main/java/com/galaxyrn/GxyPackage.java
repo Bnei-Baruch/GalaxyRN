@@ -17,6 +17,7 @@ import java.util.List;
 import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
 import com.galaxyrn.foreground.ForegroundModule;
+import com.galaxyrn.permissions.PermissionsModule;
 
 /**
  * React Native package that registers Galaxy native modules
@@ -35,7 +36,7 @@ public class GxyPackage implements ReactPackage {
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
         Log.i(TAG, "Creating Galaxy native modules");
-        
+
         // Add modules
         try {
             Log.i(TAG, "Adding standard modules");
@@ -43,10 +44,11 @@ public class GxyPackage implements ReactPackage {
             modules.add(new WakeLockModule(reactContext));
             modules.add(new ForegroundModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
+            modules.add(new PermissionsModule(reactContext));
         } catch (Exception e) {
             Log.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
         }
-        
+
         try {
             Log.i(TAG, "Adding CallListenerModule");
             modules.add(new CallListenerModule(reactContext));
