@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import {
-  PermissionsAndroid,
   Platform,
   NativeEventEmitter,
   NativeModules,
@@ -8,8 +7,7 @@ import {
 import mqtt from "../shared/mqtt";
 import log from "loglevel";
 import { useUserStore } from "./user";
-import { geoInfo, getFromStorage } from "../shared/tools";
-import { GEO_IP_INFO } from "@env";
+import { getFromStorage } from "../shared/tools";
 import api from "../shared/Api";
 import ConfigStore from "../shared/ConfigStore";
 import GxyConfig from "../shared/janus-config";
