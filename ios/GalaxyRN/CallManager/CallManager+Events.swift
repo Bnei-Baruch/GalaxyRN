@@ -16,6 +16,20 @@ extension CallManager {
       hasListeners = false
   }
   
+  // Method required by NativeEventEmitter
+  @objc
+  func addListener(_ eventName: String) {
+      // Keep track of listeners if needed
+      print("[calls swift] addListener called for event:", eventName)
+  }
+  
+  // Method required by NativeEventEmitter
+  @objc
+  func removeListeners(_ count: Double) {
+      // Remove listeners if needed
+      print("[calls swift] removeListeners called, count:", count)
+  }
+  
   func sendCallState(state: String) {
     if hasListeners {
       sendEvent(withName: CallManagerConstants.eventName, body: [

@@ -12,6 +12,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.module.annotations.ReactModule;
 import io.sentry.Sentry;
+import com.facebook.react.bridge.ReactMethod;
 
 /**
  * React Native module for managing phone call events.
@@ -102,6 +103,18 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
             Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
             Sentry.captureException(e);
         }
+    }
+
+    @ReactMethod
+    public void addListener(String eventName) {
+        // Keep track of listeners if needed
+        Log.d(TAG, "addListener() for event: " + eventName);
+    }
+    
+    @ReactMethod
+    public void removeListeners(int count) {
+        // Remove listeners if needed
+        Log.d(TAG, "removeListeners() count: " + count);
     }
 
     /**

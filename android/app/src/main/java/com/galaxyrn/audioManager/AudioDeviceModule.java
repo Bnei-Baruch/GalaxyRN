@@ -134,6 +134,18 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     }
 
     @ReactMethod
+    public void addListener(String eventName) {
+        // Keep track of listeners if needed
+        Log.d(TAG, "addListener() for event: " + eventName);
+    }
+    
+    @ReactMethod
+    public void removeListeners(int count) {
+        // Remove listeners if needed
+        Log.d(TAG, "removeListeners() count: " + count);
+    }
+
+    @ReactMethod
     public void initAudioDevices() {
         Log.d(TAG, "initAudioDevices()");
         UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(null, true));

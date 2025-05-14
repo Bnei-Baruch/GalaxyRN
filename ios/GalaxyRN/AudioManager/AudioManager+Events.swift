@@ -28,6 +28,20 @@ extension AudioManager {
         hasListeners = false
     }
     
+    // Method required by NativeEventEmitter
+    @objc
+    func addListener(_ eventName: String) {
+        // Keep track of listeners if needed
+        NLOG("[audioDevices swift] addListener called for event:", eventName)
+    }
+    
+    // Method required by NativeEventEmitter
+    @objc
+    func removeListeners(_ count: Double) {
+        // Remove listeners if needed
+        NLOG("[audioDevices swift] removeListeners called, count:", count)
+    }
+    
     // Event emitter method
     func sendCurrentAudioGroup() {
         NLOG("[audioDevices swift] 📢 Sending current audio group to JS")
