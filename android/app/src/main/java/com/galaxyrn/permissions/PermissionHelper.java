@@ -71,6 +71,7 @@ public class PermissionHelper {
                     request.add(Manifest.permission.BLUETOOTH_ADMIN);
                 }
                 continue;
+            }
             
             // Handle Notification permissions (Android 13+)
             if (permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {

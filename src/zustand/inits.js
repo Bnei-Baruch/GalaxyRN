@@ -1,9 +1,5 @@
 import { create } from "zustand";
-import {
-  Platform,
-  NativeEventEmitter,
-  NativeModules,
-} from "react-native";
+import { Platform, NativeEventEmitter, NativeModules } from "react-native";
 import mqtt from "../shared/mqtt";
 import log from "loglevel";
 import { useUserStore } from "./user";
@@ -174,10 +170,12 @@ try {
       useInitsStore.getState().setPermissionsReady(true);
     }, 500);
   } else {
-    // For Android, use the permissions module if available
     const permissionsModule = NativeModules.PermissionsModule;
 
-    if (permissionsModule) {
+    try {
+      // Make sure to invoke addListener method on module to initialize events
+      permissionsModule?.addListener("permissionsStatus");
+
       const permissionsEventEmitter = new NativeEventEmitter(permissionsModule);
       permissionsEventEmitter.addListener("permissionsStatus", (event) => {
         if (event && event.allGranted) {
@@ -185,12 +183,9 @@ try {
           useInitsStore.getState().setPermissionsReady(true);
         }
       });
-    } else {
-      log.warn("[inits] Android PermissionsModule not found");
-      // Set permissions ready to true by default
-      setTimeout(() => {
-        useInitsStore.getState().setPermissionsReady(true);
-      }, 500);
+    } catch (error) {
+      log.error("[inits] Error setting up permissions event emitter:", error);
+      useInitsStore.getState().setPermissionsReady(true);
     }
   }
 } catch (error) {
