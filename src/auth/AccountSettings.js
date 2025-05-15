@@ -8,9 +8,7 @@ import kc from "./keycloak";
 import { baseStyles } from "../constants";
 import IconWithText from "../settings/IconWithText";
 import { TextDisplayWithButton } from "../components";
-
-
-const ACCOUNT_URL = "https://accounts.kab.info/auth/realms/main/account";
+import { ACCOUNT_URL } from "@env";
 
 const AccountSettings = () => {
   const { t } = useTranslation();
