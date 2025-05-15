@@ -10,7 +10,8 @@ import IconWithText from "../settings/IconWithText";
 import { TextDisplayWithButton } from "../components";
 import { ACCOUNT_URL } from "@env";
 
-const AccountSettings = () => {
+
+const AccountSettings = ({withTitle = true}) => {
   const { t } = useTranslation();
   const { user } = useUserStore();
 
@@ -43,7 +44,7 @@ const AccountSettings = () => {
 
   return (
     <View style={styles.container}>
-      <IconWithText iconName="account-circle" text={t("user.title")} />
+      {withTitle && <IconWithText style={styles.title} iconName="account-circle" text={t("user.title")} />}
       <TextDisplayWithButton
         label={t("user.name")}
         value={user?.display}
@@ -63,6 +64,7 @@ const AccountSettings = () => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
+    width: "100%",
   },
   inputWrapper: {
     flexDirection: "row",
@@ -72,9 +74,6 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     justifyContent: "center",
     alignItems: "center",
-  },
-  container: {
-    marginBottom: 15,
   },
   label: {
     fontSize: 16,
@@ -90,6 +89,9 @@ const styles = StyleSheet.create({
   },
   disabled: {
     color: "grey",
+  },
+  title: {
+    marginBottom: 15,
   },
 });
 

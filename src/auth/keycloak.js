@@ -8,7 +8,7 @@ import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
 import BackgroundTimer from "react-native-background-timer";
 import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../sentryHelper";
-import { AUTH_CONFIG_ISSUER, MEMBERSHIP_URL } from "@env";
+import { AUTH_CONFIG_ISSUER } from "@env";
 import { setToStorage, getFromStorage } from "../shared/tools";
 
 // Configuration
@@ -31,14 +31,6 @@ const decodeJWT = (token) =>{
     return {};
   }
 }
-
-const openMembershipPage = () => {
-  try {
-    Linking.openURL(MEMBERSHIP_URL);
-  } catch (error) {
-    console.error("Error opening membership page", error);
-  }
-};
 
 class Keycloak {
   constructor() {
@@ -254,12 +246,7 @@ class Keycloak {
     try {
       await this.refreshToken();
       console.log("[keycloak] Checking permission for role:", role);
-      const allowed = await this.checkPermission(role);
-      console.log("[keycloak] fetchUser allowed", allowed);
-      if (!allowed) {
-        openMembershipPage();
-        return this.logout();
-      }
+      await this.checkPermission(role);
     } catch (error) {
       console.error("Error fetching VH info data", error?.message);
       return this.logout();

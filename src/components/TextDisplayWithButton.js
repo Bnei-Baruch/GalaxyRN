@@ -28,7 +28,8 @@ const TextDisplayWithButton = ({ label, value, button = null, input = null }) =>
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginTop: 15,
+    marginBottom: 5,
     position: "relative",
   },
   labelContainer: {
