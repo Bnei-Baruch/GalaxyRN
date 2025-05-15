@@ -324,15 +324,32 @@ class Keycloak {
    * Checks if the user has required permissions
    */
   checkPermission = async (role) => {
-    if (!role) return false;
+    console.log("[keycloak] Checking permission for role:", role);
+    if (!role) {
+      console.log("[keycloak] Permission check failed: No role provided");
+      return false;
+    }
 
-    const vhinfo = await api.fetchVHInfo();
+    try {
+      console.log("[keycloak] Fetching VH info...");
+      const vhinfo = await api.fetchVHInfo();
+      console.log("[keycloak] VH info received:", JSON.stringify(vhinfo));
 
-    useUserStore.getState().setVhinfo(vhinfo);
+      useUserStore.getState().setVhinfo(vhinfo);
 
-    const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
+      const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
+      console.log("[keycloak] Authorization result:", isAuthorized, {
+        active: !!vhinfo.active,
+        roleMatches: role === userRolesEnum.user,
+        role,
+        expectedRole: userRolesEnum.user
+      });
 
-    return isAuthorized;
+      return isAuthorized;
+    } catch (error) {
+      console.error("[keycloak] Error in permission check:", error);
+      return false;
+    }
   };
 
   /**

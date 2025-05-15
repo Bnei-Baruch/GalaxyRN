@@ -16,10 +16,9 @@ export const TopMenuBtn = () => {
   const items = [
     { component: <StudyMaterialsBtn />, key: 1 },
     { component: <DonateBtn />, key: 2 },
-    { component: <SupportBtn />, key: 3 },
-    { component: <SettingsBtn />, key: 4 },
-    { component: <LogoutBtn />, key: 5 },
-    { component: <VersionInfo />, key: 6 },
+    { component: <SettingsBtn />, key: 3 },
+    { component: <LogoutBtn />, key: 4 },
+    { component: <VersionInfo />, key: 5 },
   ];
 
   const renderItem = (item) => item.component;
