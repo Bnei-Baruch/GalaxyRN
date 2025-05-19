@@ -1,18 +1,27 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { baseStyles } from "../constants";
-import { useInitsStore } from "../zustand/inits";
+import { useVersionStore } from "../zustand/version";
 import { topMenuBtns } from "../topBar/helper";
 
 const VersionInfo = () => {
-  const { versionInfo } = useInitsStore();
-  if (!versionInfo) return null;
+  const { currentVersion, latestVersion, updateAvailable, openAppStore } =
+    useVersionStore();
+
+  if (!latestVersion) return null;
 
   return (
     <View style={topMenuBtns.btn}>
       <Text style={[styles.text, baseStyles.text]}>
-        app v{versionInfo.versionName} ({versionInfo.versionCode})
+        app v{currentVersion} ({latestVersion})
       </Text>
+      {updateAvailable && (
+        <TouchableOpacity onPress={openAppStore}>
+          <Text style={[styles.text, baseStyles.text]}>
+            {t("update.updateNow")}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

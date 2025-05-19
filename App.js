@@ -11,6 +11,7 @@ import InitApp from "./src/InitApp";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useInitsStore } from "./src/zustand/inits";
 import WIP from "./src/components/WIP";
+import VersionCheck from "./src/components/VersionCheck";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -61,10 +62,12 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
-        <WIP isReady={permissionsReady}>
-          <InitApp />
-          <CheckAuthentication />
-        </WIP>
+        <VersionCheck>
+          <WIP isReady={permissionsReady}>
+            <InitApp />
+            <CheckAuthentication />
+          </WIP>
+        </VersionCheck>
       </SafeAreaView>
     </SafeAreaProvider>
   );

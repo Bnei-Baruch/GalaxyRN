@@ -40,7 +40,6 @@ export const useInitsStore = create((set, get) => ({
   mqttReady: false,
   configReady: false,
   readyForJoin: false,
-  versionInfo: null,
   setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
   isPortrait: true,
   setIsPortrait: (isPortrait) => {
@@ -128,7 +127,7 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
-    get().fetchVersion();
+    
     // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(
