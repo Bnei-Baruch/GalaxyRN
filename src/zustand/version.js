@@ -176,7 +176,7 @@ export const useVersionStore = create((set, get) => ({
       log.debug(`${LOG_TAG} Current version`, { currentVersion });
 
       // Get the latest version from store
-      const storeVersion = "1.2.1"; //await get().fetchStoreVersion() || currentVersion;
+      const storeVersion = await get().fetchStoreVersion() || currentVersion;
       log.debug(`${LOG_TAG} Store version fetched`, { storeVersion });
 
       // Get assessment based on version comparison
