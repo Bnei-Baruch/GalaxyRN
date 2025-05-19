@@ -46,7 +46,7 @@ export const useUserStore = create((set, get) => ({
       vhinfo,
       janus,
       isClient: true,
-      allowed: true,
+      allowed: vhinfo?.allowed,
       extra: extraInfo,
       ...geoInfo,
       ...jannusInfo,

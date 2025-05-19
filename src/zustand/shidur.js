@@ -88,8 +88,9 @@ export const useShidurStore = create((set, get) => ({
   },
   setVideo: async (video, updateState = true) => {
     if (!janus) return;
-
-    await setToStorage("vrt_video", video);
+    if (updateState) {
+      await setToStorage("vrt_video", video);
+    }
     if (video === NO_VIDEO_OPTION_VALUE) {
       if (videoJanus !== null) {
         cleanStream(videoStream);
@@ -151,7 +152,6 @@ export const useShidurStore = create((set, get) => ({
     } else {
       config = GxyConfig.instanceConfig(srv);
     }
-
 
     console.log("[shidur] new JanusMqtt", user, srv);
     janus = new JanusMqtt(user, srv);
@@ -386,12 +386,7 @@ export const useShidurStore = create((set, get) => ({
     else set({ quadUrl: null });
   },
   enterAudioMode: () => {
-    if (videoJanus) {
-      cleanStream(videoStream);
-      videoJanus.detach();
-      videoJanus = null;
-      videoStream = null;
-    }
+    get().setVideo(NO_VIDEO_OPTION_VALUE, false);
 
     if (trlAudioJanus) {
       cleanStream(trlAudioStream);

@@ -28,6 +28,20 @@ extension AudioManager {
         hasListeners = false
     }
     
+    // Method required by NativeEventEmitter
+    @objc
+    func addListener(_ eventName: String) {
+        // Keep track of listeners if needed
+        NLOG("[audioDevices swift] addListener called for event:", eventName)
+    }
+    
+    // Method required by NativeEventEmitter
+    @objc
+    func removeListeners(_ count: Double) {
+        // Remove listeners if needed
+        NLOG("[audioDevices swift] removeListeners called, count:", count)
+    }
+    
     // Event emitter method
     func sendCurrentAudioGroup() {
         NLOG("[audioDevices swift] 📢 Sending current audio group to JS")
@@ -42,14 +56,14 @@ extension AudioManager {
     }
   
     private func getCurrentAudioDevice() -> [[String: Any]] {
-      var resp: [String: Any] = [:]
+        var resp: [String: Any] = [:]
       
-      let output = audioSession.currentRoute.outputs.first
-      let type = getCurrentAudioOutputGroup()
-      resp["name"] = output?.uid
-      resp["type"] = String(describing: type)
-      resp["active"] = true
-      NLOG("[audioDevices swift] getCurrentAudioDevice resp", resp)
-      return [resp]
-  }
+        let output = audioSession.currentRoute.outputs.first
+        let type = getCurrentAudioOutputGroup()
+        resp["name"] = output?.uid
+        resp["type"] = String(describing: type)
+        resp["active"] = true
+        NLOG("[audioDevices swift] getCurrentAudioDevice resp", resp)
+        return [resp]
+    }
 }

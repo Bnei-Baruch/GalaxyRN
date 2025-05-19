@@ -5,27 +5,24 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.WritableMap;
-import com.galaxyrn.SendEventToClient;
-import com.galaxyrn.foreground.ForegroundService;
 import io.sentry.Sentry;
 
 /**
- * Phone call listener that monitors call state changes and triggers appropriate events.
+ * Phone call listener that monitors call state changes and triggers appropriate
+ * events.
  * Implemented as a singleton to ensure only one instance is active at a time.
  */
 public class PhoneCallListener extends PhoneStateListener implements ICallListener {
     private static final String TAG = "PhoneCallListener";
-    
+
     // Singleton instance
     private static PhoneCallListener instance;
-    
+
     private ReactApplicationContext context;
     private boolean isInitialized = false;
     private TelephonyManager telephonyManager;
-    
+
     /**
      * Private constructor to enforce singleton pattern
      */
@@ -33,9 +30,10 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
         // Use the default constructor with no arguments
         super();
     }
-    
+
     /**
      * Get the singleton instance of the PhoneCallListener
+     * 
      * @return The singleton instance
      */
     public static synchronized PhoneCallListener getInstance() {
@@ -47,6 +45,7 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
 
     /**
      * Initialize the phone call listener with the provided context
+     * 
      * @param context ReactApplicationContext to use for initialization
      * @return true if initialization was successful, false otherwise
      */
@@ -90,7 +89,7 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
 
         try {
             Log.d(TAG, "Call state changed to: " + getStateString(state));
-            
+
             switch (state) {
                 case TelephonyManager.CALL_STATE_RINGING:
                     CallEventManager.dispatchCallStateEvent(CallStateType.ON_RINGING);
@@ -108,7 +107,7 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
                         CallEventManager.bringAppToForeground(context);
                     }
                     break;
-                    
+
                 default:
                     CallEventManager.dispatchCallStateEvent(CallStateType.UNKNOWN);
                     break;
@@ -118,16 +117,20 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
             Sentry.captureException(e);
         }
     }
-    
+
     /**
      * Convert call state integer to string for logging
      */
     private String getStateString(int state) {
         switch (state) {
-            case TelephonyManager.CALL_STATE_RINGING: return "RINGING";
-            case TelephonyManager.CALL_STATE_OFFHOOK: return "OFFHOOK";
-            case TelephonyManager.CALL_STATE_IDLE: return "IDLE";
-            default: return "UNKNOWN (" + state + ")";
+            case TelephonyManager.CALL_STATE_RINGING:
+                return "RINGING";
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+                return "OFFHOOK";
+            case TelephonyManager.CALL_STATE_IDLE:
+                return "IDLE";
+            default:
+                return "UNKNOWN (" + state + ")";
         }
     }
 
@@ -146,7 +149,7 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
                 Log.e(TAG, "TelephonyManager is null during cleanup");
                 return;
             }
-            
+
             telephonyManager.listen(this, PhoneStateListener.LISTEN_NONE);
             isInitialized = false;
             telephonyManager = null;
@@ -157,9 +160,10 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
             Sentry.captureException(e);
         }
     }
-    
+
     /**
      * Check if the listener is currently initialized
+     * 
      * @return true if initialized, false otherwise
      */
     @Override

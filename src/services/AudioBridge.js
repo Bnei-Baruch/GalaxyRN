@@ -58,7 +58,7 @@ const AudioBridge = {
   // Expose the raw native modules for event emitter
   raw: NativeAudio || {
     addListener: () => {},
-    removeListeners: () => {},
+    removeListeners: (count) => {},
   },
 };
 

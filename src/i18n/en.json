@@ -78,5 +78,12 @@
     "TYPE_LINE_DIGITAL": "Digital input/output",
     "TYPE_FM": "FM radio",
     "TYPE_HEARING_AID": "Hearing aid"
+  },
+  "update": {
+    "isRequired": "Update Required",
+    "pleaseUpdate": "Please update the app to the latest version to continue.",
+    "currentVersion": "Current version",
+    "latestVersion": "Latest version",
+    "updateNow": "Update Now"
   }
 }

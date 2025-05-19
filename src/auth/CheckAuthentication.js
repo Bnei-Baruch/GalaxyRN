@@ -1,15 +1,17 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+
 import kc from "./keycloak";
 import { useUserStore } from "../zustand/user";
-import { useTranslation } from "react-i18next";
 import { useInitsStore } from "../zustand/inits";
 import WIP from "../components/WIP";
+import UserPermissions from "../components/UserPermissions";
 import PrepareRoom from "../InRoom/PrepareRoom";
 import { SettingsNotJoined } from "../settings/SettingsNotJoined";
 
 const CheckAuthentication = () => {
-  const { user, wip } = useUserStore();
+  const { user, wip, vhinfo } = useUserStore();
   const { readyForJoin } = useInitsStore();
   const { t } = useTranslation();
 
@@ -35,6 +37,9 @@ const CheckAuthentication = () => {
     );
   }
 
+  if (vhinfo && !vhinfo.active) {
+    return <UserPermissions />;
+  }
 
   return (
     <View style={styles.container}>

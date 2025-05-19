@@ -1,16 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
 import log from 'loglevel';
 
-let NativeAudio = null;
+let NativeCall = null;
 try {
   if (Platform.OS === 'ios') {
-    NativeAudio = NativeModules.CallManager;
+    NativeCall = NativeModules.CallManager;
   } else if (Platform.OS === 'android') {
-    NativeAudio = NativeModules.CallListenerModule;
+    NativeCall = NativeModules.CallListenerModule;
   }
   
   // Log warning if native module is undefined
-  if (!NativeAudio) {
+  if (!NativeCall) {
     log.warn(`[CallsBridge] Native module not found for platform ${Platform.OS}`);
   }
 } catch (error) {
@@ -18,7 +18,10 @@ try {
 }
 
 const CallsBridge = {
-  raw: NativeAudio
+  raw: NativeCall || {
+    addListener: () => {},
+    removeListeners: (count) => {},
+  }
 };
 
 export default CallsBridge; 

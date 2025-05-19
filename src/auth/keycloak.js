@@ -3,13 +3,12 @@ import { authorize, logout, refresh } from "react-native-app-auth";
 import { Linking } from "react-native";
 import RNSecureStorage from "rn-secure-storage";
 import { decode } from "base-64";
-import log from "loglevel";
 import api from "../shared/Api";
 import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
 import BackgroundTimer from "react-native-background-timer";
 import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../sentryHelper";
-import { AUTH_CONFIG_ISSUER, MEMBERSHIP_URL } from "@env";
+import { AUTH_CONFIG_ISSUER } from "@env";
 import { setToStorage, getFromStorage } from "../shared/tools";
 
 // Configuration
@@ -32,14 +31,6 @@ const decodeJWT = (token) =>{
     return {};
   }
 }
-
-const openMembershipPage = () => {
-  try {
-    Linking.openURL(MEMBERSHIP_URL);
-  } catch (error) {
-    console.error("Error opening membership page", error);
-  }
-};
 
 class Keycloak {
   constructor() {
@@ -255,12 +246,7 @@ class Keycloak {
     try {
       await this.refreshToken();
       console.log("[keycloak] Checking permission for role:", role);
-      const allowed = await this.checkPermission(role);
-      console.log("[keycloak] fetchUser allowed", allowed);
-      if (!allowed) {
-        openMembershipPage();
-        return this.logout();
-      }
+      await this.checkPermission(role);
     } catch (error) {
       console.error("Error fetching VH info data", error?.message);
       return this.logout();
@@ -325,15 +311,32 @@ class Keycloak {
    * Checks if the user has required permissions
    */
   checkPermission = async (role) => {
-    if (!role) return false;
+    console.log("[keycloak] Checking permission for role:", role);
+    if (!role) {
+      console.log("[keycloak] Permission check failed: No role provided");
+      return false;
+    }
 
-    const vhinfo = await api.fetchVHInfo();
+    try {
+      console.log("[keycloak] Fetching VH info...");
+      const vhinfo = await api.fetchVHInfo();
+      console.log("[keycloak] VH info received:", JSON.stringify(vhinfo));
 
-    useUserStore.getState().setVhinfo(vhinfo);
+      useUserStore.getState().setVhinfo(vhinfo);
 
-    const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
+      const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
+      console.log("[keycloak] Authorization result:", isAuthorized, {
+        active: !!vhinfo.active,
+        roleMatches: role === userRolesEnum.user,
+        role,
+        expectedRole: userRolesEnum.user
+      });
 
-    return isAuthorized;
+      return isAuthorized;
+    } catch (error) {
+      console.error("[keycloak] Error in permission check:", error);
+      return false;
+    }
   };
 
   /**

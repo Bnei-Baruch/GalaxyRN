@@ -1,15 +1,9 @@
 import { create } from "zustand";
-import {
-  PermissionsAndroid,
-  Platform,
-  NativeEventEmitter,
-  NativeModules,
-} from "react-native";
+import { Platform, NativeEventEmitter, NativeModules } from "react-native";
 import mqtt from "../shared/mqtt";
 import log from "loglevel";
 import { useUserStore } from "./user";
-import { geoInfo, getFromStorage } from "../shared/tools";
-import { GEO_IP_INFO } from "@env";
+import { getFromStorage } from "../shared/tools";
 import api from "../shared/Api";
 import ConfigStore from "../shared/ConfigStore";
 import GxyConfig from "../shared/janus-config";
@@ -22,8 +16,6 @@ import kc from "../auth/keycloak";
 import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
 import CallsBridge from "../services/CallsBridge";
-
-const { VersionModule } = NativeModules;
 
 // Safely create event emitter only if CallsBridge.raw is defined
 let eventEmitter;
@@ -46,7 +38,6 @@ export const useInitsStore = create((set, get) => ({
   mqttReady: false,
   configReady: false,
   readyForJoin: false,
-  versionInfo: null,
   setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
   isPortrait: true,
   setIsPortrait: (isPortrait) => {
@@ -134,7 +125,7 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
-    get().fetchVersion();
+    
     // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(
@@ -157,14 +148,6 @@ export const useInitsStore = create((set, get) => ({
     BackgroundTimer.stop();
     if (subscription) subscription.remove();
   },
-  fetchVersion: async () => {
-    try {
-      const versionInfo = await VersionModule.getVersion();
-      set({ versionInfo });
-    } catch (error) {
-      console.error("Error getting version:", error);
-    }
-  },
 }));
 
 // Handle permissions after the store is defined
@@ -176,10 +159,12 @@ try {
       useInitsStore.getState().setPermissionsReady(true);
     }, 500);
   } else {
-    // For Android, use the permissions module if available
     const permissionsModule = NativeModules.PermissionsModule;
 
-    if (permissionsModule) {
+    try {
+      // Make sure to invoke addListener method on module to initialize events
+      permissionsModule?.addListener("permissionsStatus");
+
       const permissionsEventEmitter = new NativeEventEmitter(permissionsModule);
       permissionsEventEmitter.addListener("permissionsStatus", (event) => {
         if (event && event.allGranted) {
@@ -187,12 +172,9 @@ try {
           useInitsStore.getState().setPermissionsReady(true);
         }
       });
-    } else {
-      log.warn("[inits] Android PermissionsModule not found");
-      // Set permissions ready to true by default
-      setTimeout(() => {
-        useInitsStore.getState().setPermissionsReady(true);
-      }, 500);
+    } catch (error) {
+      log.error("[inits] Error setting up permissions event emitter:", error);
+      useInitsStore.getState().setPermissionsReady(true);
     }
   }
 } catch (error) {

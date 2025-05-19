@@ -77,5 +77,12 @@
     "TYPE_LINE_DIGITAL": "כניסת/יציאת דיגיטלי",
     "TYPE_FM": "רדיו FM",
     "TYPE_HEARING_AID": "מכשיר שמיעה"
+  },
+  "update": {
+    "isRequired": "נדרש עדכון",
+    "pleaseUpdate": "אנא עדכן את האפליקציה לגרסה האחרונה כדי להמשיך.",
+    "currentVersion": "גרסה נוכחית",
+    "latestVersion": "גרסה אחרונה",
+    "updateNow": "עדכן עכשיו"
   }
 }

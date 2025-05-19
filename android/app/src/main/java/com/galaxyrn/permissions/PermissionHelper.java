@@ -70,7 +70,7 @@ public class PermissionHelper {
                     request.add(Manifest.permission.BLUETOOTH);
                     request.add(Manifest.permission.BLUETOOTH_ADMIN);
                 }
-                continue; // Skip the add at the end
+                continue;
             }
             
             // Handle Notification permissions (Android 13+)
@@ -78,14 +78,9 @@ public class PermissionHelper {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     request.add(permission);
                 }
-                continue; // Skip the add at the end
+                continue;
             }
             
-            // Handle any other version-specific permissions
-            // For example, READ_PHONE_STATE has different behavior in different API levels
-            // but it's needed for all versions so we add it directly
-            
-            // Add the permission for all other cases
             request.add(permission);
         }
         return request;
