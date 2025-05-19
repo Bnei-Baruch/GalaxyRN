@@ -10,14 +10,14 @@ import { useUiActions } from "../../zustand/uiActions";
 import CammutedFeed from "./CammutedFeed";
 
 const MyRoomMedia = () => {
-  const { cammute } = useMyStreamStore();
+  const { cammute, mute } = useMyStreamStore();
   const { question } = useSettingsStore();
   const { user } = useUserStore();
   const { width } = useUiActions();
 
   return (
     <View style={{ width }}>
-      {(!cammute) && <FeedDisplay display={user.username} />}
+      {(!cammute) && <FeedDisplay display={user.username} talking={!mute} />}
       <View style={styles.content}>
         {cammute ? <CammutedFeed display={user.username} /> : <MyRTCView />}
 
