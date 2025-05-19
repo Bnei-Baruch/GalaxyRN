@@ -17,8 +17,6 @@ import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
 import CallsBridge from "../services/CallsBridge";
 
-const { VersionModule } = NativeModules;
-
 // Safely create event emitter only if CallsBridge.raw is defined
 let eventEmitter;
 try {
@@ -149,14 +147,6 @@ export const useInitsStore = create((set, get) => ({
   terminateApp: () => {
     BackgroundTimer.stop();
     if (subscription) subscription.remove();
-  },
-  fetchVersion: async () => {
-    try {
-      const versionInfo = await VersionModule.getVersion();
-      set({ versionInfo });
-    } catch (error) {
-      console.error("Error getting version:", error);
-    }
   },
 }));
 

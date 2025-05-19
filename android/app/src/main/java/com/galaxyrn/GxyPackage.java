@@ -40,7 +40,6 @@ public class GxyPackage implements ReactPackage {
         // Add modules
         try {
             Log.i(TAG, "Adding standard modules");
-            modules.add(new VersionModule(reactContext));
             modules.add(new WakeLockModule(reactContext));
             modules.add(new ForegroundModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
