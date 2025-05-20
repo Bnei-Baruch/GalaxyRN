@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableWithoutFeedback, Text } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseBtn } from './PlayPauseBtn';
+import { SubtitleBtn } from './SubtitleBtn';
 import { OptionsBtn } from './OptionsBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -61,6 +62,7 @@ const Shidur = () => {
 
             <View style={styles.toolbarBtnsGroup}>
               <OptionsBtn />
+              <SubtitleBtn />
               <FullscreenBtn />
             </View>
           </View>

@@ -166,7 +166,8 @@ class MqttMsg {
         console.log('[mqtt] <-- receive msg  ', root, service, id, target);
       switch (root) {
         case 'subtitles':
-          this.mq.emit('MqttSubtitlesEvent', data);
+          log.debug("[mqtt] On subtitles msg from topic", topic);
+          useSubtitleStore.getState().onMessage(data);
           break;
         case 'galaxy':
           // FIXME: we need send cmd messages to separate topic
