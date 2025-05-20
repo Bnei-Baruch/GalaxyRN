@@ -1,7 +1,13 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
-import { baseStyles } from '../../constants';
-import { useUiActions } from '../../zustand/uiActions';
+import React from "react";
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  TouchableWithoutFeedback,
+} from "react-native";
+import { baseStyles } from "../../constants";
+import { useUiActions } from "../../zustand/uiActions";
+import Subtitle from '../../shidur/Subtitle';
 
 const RoomLandscape = ({ shidur, quads, members }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
@@ -9,18 +15,15 @@ const RoomLandscape = ({ shidur, quads, members }) => {
   const isShidur = !!shidur;
 
   const handleAnyPress = () => toggleShowBars(true);
-  const handleScroll   = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+  const handleScroll = (e) => setFeedsScrollY(e.nativeEvent.contentOffset.y);
   return (
     <View style={styles.container}>
-      {
-        isShidur && (
-          <View style={styles.shidurWrapper}>
-            <View style={styles.shidur}>
-              {shidur}
-            </View>
-          </View>
-        )
-      }
+      {isShidur && (
+        <View style={styles.shidurWrapper}>
+          <View style={styles.shidur}>{shidur}</View>
+          <Subtitle />
+        </View>
+      )}
       <View style={isShidur ? { width: width * 2 } : baseStyles.full}>
         <ScrollView
           showsHorizontalScrollIndicator={false}
@@ -30,6 +33,7 @@ const RoomLandscape = ({ shidur, quads, members }) => {
           <TouchableWithoutFeedback onPress={handleAnyPress}>
             <View style={styles.scrollContent}>
               {quads}
+              <Subtitle />
               {members}
             </View>
           </TouchableWithoutFeedback>
@@ -41,20 +45,20 @@ const RoomLandscape = ({ shidur, quads, members }) => {
 export default RoomLandscape;
 
 const styles = StyleSheet.create({
-  container    : {
-    flex           : 1,
-    backgroundColor: 'black',
-    flexDirection  : 'row',
+  container: {
+    flex: 1,
+    backgroundColor: "black",
+    flexDirection: "row",
   },
   scrollContent: {
-    flex     : 1,
-    minHeight: '100%'
+    flex: 1,
+    minHeight: "100%",
   },
   shidurWrapper: {
-    flex : 1,
-    justifyContent: 'center',
+    flex: 1,
+    justifyContent: "center",
   },
-  shidur       : {
-    width: '100%',
-  }
+  shidur: {
+    width: "100%",
+  },
 });
