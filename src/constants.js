@@ -22,6 +22,14 @@ export const baseStyles = StyleSheet.create({
   }
 });
 
+export const renderHtmlStyles = {
+  body: {
+    color: "black",
+    backgroundColor: "white",
+    padding: 8,
+  },
+};
+
 export const AUDIO_DEVICE_TYPES = {
   TYPE_WIRED_HEADSET   : 3,
   TYPE_WIRED_HEADPHONES: 4,

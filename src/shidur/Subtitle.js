@@ -2,6 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import markdownit from "markdown-it";
 import RenderHtml from "react-native-render-html";
+import { renderHtmlStyles } from "../constants";
 import { useSubtitleStore } from "../zustand/subtitle";
 
 const md = markdownit({ html: true, breaks: false }).disable([
@@ -11,28 +12,18 @@ const md = markdownit({ html: true, breaks: false }).disable([
 
 const Subtitle = () => {
   const { isOpen, lastMsg } = useSubtitleStore();
+  const { width } = useWindowDimensions();
 
   if (!isOpen || !lastMsg?.slide) return null;
-
-  console.log(
-    `[Subtitle View] Rendering subtitle: ${JSON.stringify(lastMsg)}`
-  );
 
   const htmlContent = md.render(lastMsg.slide);
 
   return (
     <View>
       <RenderHtml
+        contentWidth={width}
         source={{ html: htmlContent }}
-        tagsStyles={{
-          body: {
-            color: "black",
-            backgroundColor: "white",
-            padding: 8,
-            textAlign: "center",
-          },
-          // Add more tag styles as needed
-        }}
+        tagsStyles={renderHtmlStyles}
       />
     </View>
   );

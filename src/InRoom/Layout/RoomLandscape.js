@@ -33,7 +33,6 @@ const RoomLandscape = ({ shidur, quads, members }) => {
           <TouchableWithoutFeedback onPress={handleAnyPress}>
             <View style={styles.scrollContent}>
               {quads}
-              <Subtitle />
               {members}
             </View>
           </TouchableWithoutFeedback>
