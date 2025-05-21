@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next";
 import { useChatStore } from "../zustand/chat";
 import { TouchableOpacity, Text } from "react-native";
 
-
 export const QuestionsForm = () => {
   const [value, setValue] = useState("");
   const { t } = useTranslation();
@@ -40,11 +39,7 @@ export const QuestionsForm = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      keyboardVerticalOffset={150}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.keyboardView}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "position" : null}>
       <View style={styles.inputContainer}>
         <TextInput
           placeholder={t("chat.myName")}
@@ -81,12 +76,9 @@ export const QuestionsForm = () => {
 };
 
 const styles = StyleSheet.create({
-  keyboardView: {
-    width: '100%',
-  },
   inputContainer: {
     marginVertical: 8,
-    width: '100%',
+    width: "100%",
   },
   input: {
     borderRadius: 8,
@@ -95,7 +87,7 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 44,
     color: "white",
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
   },
   button: {
     borderRadius: 8,
@@ -104,7 +96,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderWidth: 0,
     backgroundColor: "#4A6FFF",
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
     color: "white",

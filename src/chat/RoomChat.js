@@ -5,7 +5,6 @@ import { useChatStore } from "../zustand/chat";
 import { Message } from "./Message";
 import { RoomChatForm } from "./RoomChatForm";
 
-
 export const RoomChat = () => {
   const { roomMsgs, resetChatNewMsgs } = useChatStore();
 
@@ -14,9 +13,9 @@ export const RoomChat = () => {
   }, [roomMsgs]);
 
   return (
-    <View style={[styles.container]}>
+    <View style={styles.container}>
       <View style={styles.messagesContainer}>
-        <ScrollView style={styles.scroll}>
+        <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
           {roomMsgs.map((m) => (
             <Message key={m.time} msg={m} />
           ))}

@@ -20,6 +20,7 @@ const Room = () => {
       <TopBar />
       <RoomLayout />
       <BottomBar />
+      <ChatModal />
     </View>
   );
 };
