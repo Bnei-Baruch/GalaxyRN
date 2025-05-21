@@ -92,6 +92,18 @@ if (newBuildNumber) {
     /CURRENT_PROJECT_VERSION = [^;]+;/g,
     `CURRENT_PROJECT_VERSION = ${newBuildNumber};`
   );
+} else {
+  // If no build number provided, increment the existing one
+  const currentVersionMatch = iosPbxproj.match(/CURRENT_PROJECT_VERSION = (\d+);/);
+  if (currentVersionMatch) {
+    const currentVersion = parseInt(currentVersionMatch[1], 10);
+    const newVersion = currentVersion + 1;
+    console.log(`Auto-incrementing iOS CURRENT_PROJECT_VERSION from ${currentVersion} to ${newVersion}`);
+    iosPbxproj = iosPbxproj.replace(
+      /CURRENT_PROJECT_VERSION = \d+;/g,
+      `CURRENT_PROJECT_VERSION = ${newVersion};`
+    );
+  }
 }
 
 fs.writeFileSync(IOS_PBXPROJ_PATH, iosPbxproj);

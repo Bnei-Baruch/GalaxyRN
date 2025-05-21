@@ -30,14 +30,14 @@ extension AudioManager {
     
     // Method required by NativeEventEmitter
     @objc
-    func addListener(_ eventName: String) {
+    override func addListener(_ eventName: String) {
         // Keep track of listeners if needed
         NLOG("[audioDevices swift] addListener called for event:", eventName)
     }
     
     // Method required by NativeEventEmitter
     @objc
-    func removeListeners(_ count: Double) {
+    override func removeListeners(_ count: Double) {
         // Remove listeners if needed
         NLOG("[audioDevices swift] removeListeners called, count:", count)
     }
