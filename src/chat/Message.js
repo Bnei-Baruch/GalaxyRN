@@ -7,10 +7,10 @@ export const Message = ({ msg }) => {
   return (
     <View style={[styles.container, (isRtl ? styles.containerRtl : styles.containerLtr)]}>
       <View style={styles.containerTime}>
-        <Text>{user?.display || ''}</Text>
+        <Text style={styles.text}>{user?.display || ''}</Text>
         <Text style={styles.time}>{time || ''}</Text>
       </View>
-      <Text>{text || ''}</Text>
+      <Text style={styles.text} >{text || ''}</Text>
     </View>
   );
 };
@@ -37,5 +37,8 @@ const styles = StyleSheet.create({
     fontStyle  : 'italic',
     marginLeft : 5,
     marginRight: 5
+  },
+  text: {
+    color: 'black',
   }
 });

@@ -27,7 +27,7 @@ export const ChatModal = () => {
     <Modal
       visible={mode !== modalModes.close}
       onRequestClose={closeModal}
-      animationType="slide"
+      animationType="none"
       presentationStyle="pageSheet"
     >
       <View style={styles.modalContainer}>

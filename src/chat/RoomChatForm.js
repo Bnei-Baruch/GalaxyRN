@@ -7,7 +7,7 @@ import {
   Platform,
   Text,
 } from "react-native";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import useRoomStore from "../zustand/fetchRooms";
 import { useUserStore } from "../zustand/user";
 import mqtt from "../shared/mqtt";
@@ -16,7 +16,6 @@ import { useTranslation } from "react-i18next";
 export const RoomChatForm = () => {
   const [value, setValue] = useState("");
   const { t } = useTranslation();
-  const inputRef = useRef(null);
 
   const { room } = useRoomStore();
   const { user } = useUserStore();
@@ -37,23 +36,16 @@ export const RoomChatForm = () => {
 
     mqtt.send(JSON.stringify(msg), false, `galaxy/room/${room?.room}/chat`);
     setValue("");
-    
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={150}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "position" : null}>
       <View style={styles.inputContainer}>
         <TextInput
-          ref={inputRef}
           style={styles.input}
           placeholder={t("chat.newMsg")}
           value={value}
           onChangeText={setValue}
-          returnKeyType="send"
-          autoCorrect={false}
         />
         <TouchableOpacity
           style={[styles.button, !value.trim() && styles.buttonDisabled]}

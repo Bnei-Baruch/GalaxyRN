@@ -38,7 +38,7 @@ export const StudyMaterialsBtn = () => {
         visible={open}
         onRequestClose={toggleModal}
         style={styles.modal}
-        animationType="slide"
+        animationType="none"
         presentationStyle="pageSheet"
         supportedOrientations={["portrait", "landscape"]}
       >

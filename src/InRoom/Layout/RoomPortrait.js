@@ -6,6 +6,7 @@ import { useShidurStore } from '../../zustand/shidur';
 import { baseStyles } from '../../constants';
 import WIP from '../../components/WIP';
 import { useUiActions } from '../../zustand/uiActions';
+import Subtitle from '../../shidur/Subtitle';
 
 const RoomPortrait = ({ shidur, quads, members }) => {
   const { janusReady }     = useShidurStore();
@@ -27,6 +28,7 @@ const RoomPortrait = ({ shidur, quads, members }) => {
             <WIP isReady={janusReady}>
               <View style={baseStyles.full}>
                 {shidur}
+                <Subtitle />
                 {quads}
               </View>
             </WIP>

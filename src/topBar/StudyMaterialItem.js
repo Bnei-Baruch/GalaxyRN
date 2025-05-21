@@ -8,10 +8,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import RenderHtml from "react-native-render-html";
+import { renderHtmlStyles } from "../constants";
 
-const tagsStyles = {
-  body: { backgroundColor: "black", color: "white", padding: 8 },
-};
 
 export const StudyMaterialItem = ({ msg }) => {
   const [open, setOpen] = useState(false);
@@ -35,7 +33,7 @@ export const StudyMaterialItem = ({ msg }) => {
         <RenderHtml
           contentWidth={contentWidth}
           source={source}
-          tagsStyles={tagsStyles}
+          tagsStyles={renderHtmlStyles}
         />
       )}
     </View>

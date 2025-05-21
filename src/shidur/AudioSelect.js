@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 
 import ListInModal from '../components/ListInModal';
-import { audiog_options2 } from '../shared/consts';
+import { audio_options2 } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
 import { baseStyles } from '../constants';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -36,7 +36,7 @@ const AudioSelect   = () => {
     );
   };
 
-  const selected = audiog_options2.find(option => option.value === audio);
+  const selected = audio_options2.find(option => option.value === audio);
 
   const trigger = (
     <View style={styles.container} key={selected.key}>
@@ -50,7 +50,7 @@ const AudioSelect   = () => {
 
   return (
     <ListInModal
-      items={audiog_options2}
+      items={audio_options2}
       selected={selected?.text}
       onSelect={handleSetAudio}
       renderItem={renderItem}
