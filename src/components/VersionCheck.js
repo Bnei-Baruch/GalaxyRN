@@ -19,7 +19,7 @@ const VersionCheck = ({ children }) => {
   useEffect(() => {
     checkForUpdate();
   }, []);
-
+  console.log("[VersionCheck] running", checking, forceUpdate);
   if (!checking && !forceUpdate) {
     return children;
   }
@@ -30,9 +30,7 @@ const VersionCheck = ({ children }) => {
         <View style={styles.content}>
           <Text style={styles.title}>{t("update.isRequired")}</Text>
 
-          <Text style={styles.message}>
-            {t("update.pleaseUpdate")}
-          </Text>
+          <Text style={styles.message}>{t("update.pleaseUpdate")}</Text>
 
           <Text style={styles.versionInfo}>
             {t("update.currentVersion")}: {currentVersion}
@@ -43,10 +41,7 @@ const VersionCheck = ({ children }) => {
             </Text>
           )}
 
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={openAppStore}
-          >
+          <TouchableOpacity style={styles.updateButton} onPress={openAppStore}>
             <Text style={styles.updateButtonText}>{t("update.updateNow")}</Text>
           </TouchableOpacity>
         </View>

@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import markdownit from "markdown-it";
 import RenderHtml from "react-native-render-html";
 import { renderHtmlStyles } from "../constants";
