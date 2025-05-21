@@ -51,7 +51,7 @@ const RoomSelect = () => {
     Keyboard.dismiss();
     toggleOpen(false);
   };
-  const handleJoinRoom = () => setReadyForJoin();
+  
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   return (
@@ -65,7 +65,7 @@ const RoomSelect = () => {
           value={room?.description}
           button={
             <TouchableOpacity
-              onPress={handleJoinRoom}
+              onPress={setReadyForJoin}
               disabled={!room}
               style={styles.button}
             >

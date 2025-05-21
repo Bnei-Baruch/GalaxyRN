@@ -6,7 +6,7 @@ const MyAudioMode = () => {
   const { user: { username: display, question } = {} } =
     useUserStore();
   const { mute } = useMyStreamStore();
-  const feed = { display: { display }, talking: mute, question };
+  const feed = { display: { display }, talking: !mute, question };
   return <FeedAudioModeView feed={feed} />;
 };
 export default MyAudioMode;
