@@ -1,10 +1,13 @@
 package com.galaxyrn.callManager;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.core.content.ContextCompat;
 import com.facebook.react.bridge.ReactApplicationContext;
 import io.sentry.Sentry;
 
@@ -67,6 +70,17 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
                 Log.e(TAG, "TelephonyManager is null");
                 return false;
             }
+
+            // Check if READ_PHONE_STATE permission is granted
+            int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
+            Log.d(TAG, "READ_PHONE_STATE permission check result: " + permissionCheck + " (GRANTED=" + PackageManager.PERMISSION_GRANTED + ")");
+            
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                Log.e(TAG, "READ_PHONE_STATE permission not granted. Cannot register phone state listener.");
+                return false;
+            }
+            
+            Log.d(TAG, "READ_PHONE_STATE permission granted, proceeding with listener registration");
 
             this.context = context;
             telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
@@ -160,6 +174,8 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
             Sentry.captureException(e);
         }
     }
+
+
 
     /**
      * Check if the listener is currently initialized

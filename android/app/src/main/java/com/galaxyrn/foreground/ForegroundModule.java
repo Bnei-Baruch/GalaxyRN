@@ -16,13 +16,16 @@ import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.module.annotations.ReactModule;
 
 /**
  * React Native module that manages foreground service and screen behavior 
  * based on application lifecycle.
  */
+@ReactModule(name = ForegroundModule.NAME)
 public class ForegroundModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
+    public static final String NAME = "GxyModule";
     private static final String TAG = "ForegroundModule";
     private final ForegroundService foregroundService;
     private final Handler mainHandler;
@@ -48,7 +51,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     @NonNull
     @Override
     public String getName() {
-        return "GxyModule";
+        return NAME;
     }
 
     /**
@@ -78,7 +81,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
      */
     private boolean shouldDebounceBackground() {
         long now = System.currentTimeMillis();
-        // If we recently went to foreground, debounce the background event
+        
         if (now - lastForegroundTime < DEBOUNCE_TIME_MS) {
             Log.d(TAG, "Debouncing background transition - too soon after foreground");
             return true;
@@ -92,7 +95,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
      */
     private boolean shouldDebounceForeground() {
         long now = System.currentTimeMillis();
-        // If we recently went to background, debounce the foreground event
+        
         if (now - lastBackgroundTime < DEBOUNCE_TIME_MS) {
             Log.d(TAG, "Debouncing foreground transition - too soon after background");
             return true;
@@ -123,12 +126,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         }
         disableKeepScreenOn();
     }
-    
-    /**
-     * Handles actions when app returns to foreground
-     *
-     * @param context The React application context
-     */
+ 
     private void handleAppForegrounded(ReactApplicationContext context) {
         if (shouldDebounceForeground()) {
             return;
@@ -147,11 +145,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         enableKeepScreenOn();
     }
     
-    /**
-     * Ensures service is stopped in any case
-     *
-     * @param context The React application context
-     */
+
     private void ensureServiceStopped(ReactApplicationContext context) {
         if (context != null && isServiceRunning) {
             Log.d(TAG, "Ensuring foreground service is stopped during cleanup");

@@ -1,7 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-const TextDisplayWithButton = ({ label, value, button = null, input = null }) => {
+const TextDisplayWithButton = ({
+  label,
+  value,
+  button = null,
+  input = null,
+}) => {
   let _content = null;
   if (input) {
     _content = input;
@@ -9,7 +14,7 @@ const TextDisplayWithButton = ({ label, value, button = null, input = null }) =>
     _content = <Text style={styles.displayText}>{value}</Text>;
   }
 
-    return(
+  return (
     <View style={styles.container}>
       {label && (
         <View style={styles.labelContainer}>
@@ -17,9 +22,7 @@ const TextDisplayWithButton = ({ label, value, button = null, input = null }) =>
         </View>
       )}
       <View style={styles.displayContainer}>
-        <View style={styles.textContainer}>
-          {_content}
-        </View>
+        <View style={styles.textContainer}>{_content}</View>
         <View style={styles.buttonContainer}>{button}</View>
       </View>
     </View>
@@ -70,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export { TextDisplayWithButton };
+export default TextDisplayWithButton;

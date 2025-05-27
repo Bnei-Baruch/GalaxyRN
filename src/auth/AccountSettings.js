@@ -7,11 +7,10 @@ import { useUserStore } from "../zustand/user";
 import kc from "./keycloak";
 import { baseStyles } from "../constants";
 import IconWithText from "../settings/IconWithText";
-import { TextDisplayWithButton } from "../components";
+import TextDisplayWithButton from "../components/TextDisplayWithButton";
 import { ACCOUNT_URL } from "@env";
 
-
-const AccountSettings = ({withTitle = true}) => {
+const AccountSettings = ({ withTitle = true }) => {
   const { t } = useTranslation();
   const { user } = useUserStore();
 
@@ -42,9 +41,20 @@ const AccountSettings = ({withTitle = true}) => {
     <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>
   );
 
+  console.log("AccountSettings rendering. IconWithText:", IconWithText);
+  console.log("AccountSettings rendering. TextDisplayWithButton:", TextDisplayWithButton);
+  console.log("AccountSettings rendering. ListInModal:", ListInModal);
+  console.log("AccountSettings rendering. Icon (from vector-icons):", Icon);
+
   return (
     <View style={styles.container}>
-      {withTitle && <IconWithText style={styles.title} iconName="account-circle" text={t("user.title")} />}
+      {withTitle && (
+        <IconWithText
+          style={styles.title}
+          iconName="account-circle"
+          text={t("user.title")}
+        />
+      )}
       <TextDisplayWithButton
         label={t("user.name")}
         value={user?.display}
@@ -60,6 +70,8 @@ const AccountSettings = ({withTitle = true}) => {
     </View>
   );
 };
+
+export default AccountSettings;
 
 const styles = StyleSheet.create({
   container: {
@@ -94,5 +106,3 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 });
-
-export default AccountSettings;

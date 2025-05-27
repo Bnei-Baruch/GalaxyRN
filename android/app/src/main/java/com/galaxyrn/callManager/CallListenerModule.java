@@ -17,6 +17,7 @@ import com.facebook.react.bridge.ReactMethod;
 /**
  * React Native module for managing phone call events.
  * Handles lifecycle events and manages the phone call listener.
+ * Note: This module is initialized only after permissions are granted.
  */
 @ReactModule(name = CallListenerModule.NAME)
 @RequiresApi(api = Build.VERSION_CODES.M)
@@ -27,6 +28,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     private final ReactApplicationContext context;
     private ICallListener callListener;
     private boolean isInitialized = false;
+    private boolean autoInitializeDisabled = true; // Disable auto-initialization
 
     /**
      * Constructor for the CallListenerModule
@@ -37,7 +39,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         context = reactContext;
         try {
             reactContext.addLifecycleEventListener(this);
-            Log.d(TAG, "CallListenerModule constructor completed safely");
+            Log.d(TAG, "CallListenerModule constructor completed safely - auto-initialization disabled");
         } catch (Exception e) {
             Log.e(TAG, "Error in constructor: " + e.getMessage());
             Sentry.captureException(e);
@@ -53,13 +55,22 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         return NAME;
     }
 
-    /**
-     * Initialize the module and phone call listener
-     */
     @Override
     public void initialize() {
         super.initialize();
 
+        if (autoInitializeDisabled) {
+            Log.d(TAG, "Auto-initialization disabled - waiting for permissions");
+            return;
+        }
+
+        initializeCallListener();
+    }
+
+    /**
+     * Initialize the call listener - called after permissions are granted
+     */
+    private void initializeCallListener() {
         try {
             // If we're already initialized, don't do it again
             if (isInitialized) {
@@ -84,6 +95,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
                                 boolean success = callListener.initialize(context);
                                 if (success) {
                                     isInitialized = true;
+                                    autoInitializeDisabled = false; // Enable for future lifecycle events
                                     Log.d(TAG, "CallListenerModule initialized successfully");
                                 } else {
                                     Log.e(TAG, "Failed to initialize CallListenerModule");
@@ -100,9 +112,19 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
                 }
             }).start();
         } catch (Exception e) {
-            Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
+            Log.e(TAG, "Error in initializeCallListener(): " + e.getMessage(), e);
             Sentry.captureException(e);
         }
+    }
+
+    /**
+     * Public method to initialize the module after permissions are granted
+     * This is called from the PermissionHelper
+     */
+    public void initializeAfterPermissions() {
+        Log.d(TAG, "initializeAfterPermissions() called");
+        autoInitializeDisabled = false;
+        initializeCallListener();
     }
 
     @ReactMethod
@@ -124,8 +146,8 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     public void onHostResume() {
         Log.d(TAG, "onHostResume()");
         
-        if (!isInitialized) {
-            initialize();
+        if (!isInitialized && !autoInitializeDisabled) {
+            initializeCallListener();
         }
     }
 

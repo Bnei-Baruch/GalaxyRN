@@ -12,7 +12,6 @@ import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Process;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -26,7 +25,7 @@ public class ForegroundService extends Service {
     private static final int NOTIFICATION_ID = 9999;
     private static final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
     public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
-    
+
     private volatile boolean mIsServiceStarted = false;
     private final Handler mHandler = new Handler(android.os.Looper.getMainLooper());
     private static ForegroundService sInstance;
@@ -36,7 +35,7 @@ public class ForegroundService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -52,12 +51,12 @@ public class ForegroundService extends Service {
     public void start(@NonNull Context context) {
         Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(APP_TO_FOREGROUND_ACTION);
-        
+
         createNotificationChannel(context);
-        
+
         Log.d(TAG, "Starting foreground service");
         ComponentName componentName = null;
-        
+
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 componentName = context.startForegroundService(intent);
@@ -65,7 +64,6 @@ public class ForegroundService extends Service {
                 componentName = context.startService(intent);
             }
         } catch (RuntimeException e) {
-            // Avoid crashing due to ForegroundServiceStartNotAllowedException (API level 31).
             Log.w(TAG, "Failed to start foreground service", e);
             return;
         }
@@ -84,9 +82,8 @@ public class ForegroundService extends Service {
      */
     public void stop(@NonNull Context context) {
         Log.i(TAG, "Stopping foreground service");
-        
+
         if (sInstance != null) {
-            // If the service is still starting up, delay the stop request
             if (!sInstance.mIsServiceStarted) {
                 Log.i(TAG, "Service not fully started yet, delaying stop request");
                 mHandler.postDelayed(() -> {
@@ -95,10 +92,10 @@ public class ForegroundService extends Service {
                 return;
             }
         }
-        
+
         stopServiceSafely(context);
     }
-    
+
     /**
      * Safely stops the service after ensuring it's been properly started
      */
@@ -106,8 +103,7 @@ public class ForegroundService extends Service {
         Intent intent = new Intent(context, ForegroundService.class);
         boolean stopped = context.stopService(intent);
         Log.i(TAG, "Service stopped by context: " + stopped);
-        
-        // If service wasn't stopped successfully, force stop
+
         if (!stopped && sInstance != null) {
             sInstance.cleanup();
         }
@@ -116,7 +112,7 @@ public class ForegroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "ForegroundService: onStartCommand");
-        
+
         // Create and start foreground immediately to avoid timing issues
         Notification notification = buildNotification(this);
 
@@ -127,76 +123,61 @@ public class ForegroundService extends Service {
             } else {
                 startForeground(NOTIFICATION_ID, notification);
             }
-            
+
             // Mark that service is now in foreground state
             mIsServiceStarted = true;
             Log.i(TAG, "Successfully called startForeground()");
         } catch (Exception e) {
             Log.e(TAG, "Error starting foreground", e);
         }
-
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         Log.i(TAG, "ForegroundService: onTaskRemoved - App was swiped away");
-        
-        // Force cleanup when task is removed (app swiped away)
-        forceCleanupAndStop();
+
+        cleanup();
     }
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "ForegroundService: onDestroy");
-        super.onDestroy();
-        
-        // Ensure all resources are released
-        forceCleanupAndStop();
-        sInstance = null;
+        Log.i(TAG, "ForegroundService: onDestroy - Service is being destroyed");
+        try {
+            cleanup();
+            Log.i(TAG, "ForegroundService: onDestroy completed - Resources cleaned up");
+        } catch (Exception e) {
+            Log.e(TAG, "Error during onDestroy cleanup", e);
+        } finally {
+            super.onDestroy();
+        }
     }
     
-    /**
-     * Clean up resources and stop the foreground service
-     */
     private void cleanup() {
         try {
             mIsServiceStarted = false;
-            
+
             // First stop foreground state
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);
             } else {
                 stopForeground(true);
             }
-            
-            // Then stop the service itself
+
+            // Clear any pending handler callbacks to prevent memory leaks
+            if (mHandler != null) {
+                mHandler.removeCallbacksAndMessages(null);
+            }
+
+            // Clear static instance reference
+            sInstance = null;
+
             stopSelf();
-            
+
             Log.i(TAG, "Service cleanup completed");
         } catch (Exception e) {
             Log.e(TAG, "Error during cleanup", e);
-        }
-    }
-    
-    /**
-     * Force cleanup and ensure service is completely stopped
-     * This method is more aggressive and used when the app is swiped away
-     */
-    private void forceCleanupAndStop() {
-        Log.i(TAG, "Forcing service cleanup and stop");
-        
-        try {
-            // Release any other resources, listeners, etc.
-            
-            // Stop foreground and service
-            cleanup();
-            
-            // Log that we're trying to ensure service is fully stopped
-            Log.i(TAG, "Service should be completely stopped now");
-        } catch (Exception e) {
-            Log.e(TAG, "Error during force cleanup", e);
         }
     }
 
@@ -225,8 +206,7 @@ public class ForegroundService extends Service {
         NotificationChannel channel = new NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 "Arvut System Notification",
-                NotificationManager.IMPORTANCE_HIGH
-        );
+                NotificationManager.IMPORTANCE_HIGH);
         channel.setShowBadge(false);
         manager.createNotificationChannel(channel);
         Log.d(TAG, "Notification channel created");
@@ -241,9 +221,8 @@ public class ForegroundService extends Service {
     private Notification buildNotification(@NonNull Context context) {
         Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-        
+                this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
         return new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setContentTitle("Arvut System")

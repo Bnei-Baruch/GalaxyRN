@@ -16,7 +16,7 @@ import { useSettingsStore } from "../zustand/settings";
 import { baseStyles } from "../constants";
 import { useTranslation } from "react-i18next";
 import { useInitsStore } from "../zustand/inits";
-import { TextDisplayWithButton } from "../components";
+import TextDisplayWithButton from "../components/TextDisplayWithButton";
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();

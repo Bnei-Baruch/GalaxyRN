@@ -16,13 +16,16 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.module.annotations.ReactModule;
 import com.galaxyrn.SendEventToClient;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
+@ReactModule(name = AudioDeviceModule.NAME)
 public class AudioDeviceModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+    public static final String NAME = "AudioDeviceModule";
     private static final String REACT_NATIVE_MODULE_NAME = "AudioDeviceModule";
     private static final String TAG = REACT_NATIVE_MODULE_NAME;
     private static final String EVENT_UPDATE_AUDIO_DEVICE = "updateAudioDevice";
@@ -32,6 +35,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
     private boolean isInitialized = false;
+    private boolean autoInitializeDisabled = true; // Disable auto-initialization
 
     public AudioDeviceModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -42,7 +46,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     @NonNull
     @Override
     public String getName() {
-        return REACT_NATIVE_MODULE_NAME;
+        return NAME;
     }
 
     @Override
@@ -50,11 +54,30 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         super.initialize();
         Log.d(TAG, "initialize");
         
+        if (autoInitializeDisabled) {
+            Log.d(TAG, "Auto-initialization disabled - waiting for permissions");
+            return;
+        }
+        
+        initializeAudioManagersInternal();
+    }
+    
+    /**
+     * Public method to initialize the module after permissions are granted
+     * This is called from the ModuleInitializer
+     */
+    public void initializeAfterPermissions() {
+        Log.d(TAG, "initializeAfterPermissions() called");
+        autoInitializeDisabled = false;
+        initializeAudioManagersInternal();
+    }
+    
+    private void initializeAudioManagersInternal() {
         try {
             SendEventToClient.init(this.context);
             initializeAudioManagers();
         } catch (Exception e) {
-            Log.e(TAG, "Error in initialize(): " + e.getMessage(), e);
+            Log.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);
         }
     }
     
@@ -64,6 +87,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             try {
                 audioDeviceManager = new AudioDeviceManager(this.context, callback);
                 isInitialized = true;
+                autoInitializeDisabled = false; // Enable for future lifecycle events
             } catch (Exception e) {
                 Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
             }

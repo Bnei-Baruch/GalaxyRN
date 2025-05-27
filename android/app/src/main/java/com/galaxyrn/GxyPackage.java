@@ -40,20 +40,14 @@ public class GxyPackage implements ReactPackage {
         // Add modules
         try {
             Log.i(TAG, "Adding standard modules");
+            modules.add(new PermissionsModule(reactContext));
+            
             modules.add(new WakeLockModule(reactContext));
             modules.add(new ForegroundModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
-            modules.add(new PermissionsModule(reactContext));
+            modules.add(new CallListenerModule(reactContext));
         } catch (Exception e) {
             Log.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
-        }
-
-        try {
-            Log.i(TAG, "Adding CallListenerModule");
-            modules.add(new CallListenerModule(reactContext));
-            Log.i(TAG, "CallListenerModule added successfully");
-        } catch (Exception e) {
-            Log.e(TAG, "Error creating CallListenerModule: " + e.getMessage(), e);
         }
 
         return modules;

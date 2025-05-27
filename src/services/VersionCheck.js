@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useVersionStore } from "../zustand/version";
-import WIP from "./WIP";
+import WIP from "../components/WIP";
 
 const VersionCheck = ({ children }) => {
   const {

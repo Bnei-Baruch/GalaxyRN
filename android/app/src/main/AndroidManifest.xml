@@ -39,7 +39,13 @@
         android:icon="@mipmap/arvut"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:keepScreenOn="true"
+        android:allowClearUserData="true"
+        android:excludeFromRecents="false"
+        android:largeHeap="true"
+        android:hardwareAccelerated="true"
+        android:process=":main">
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
@@ -58,6 +64,7 @@
             android:name=".foreground.ForegroundService"
             android:enabled="true"
             android:exported="false"
+            android:stopWithTask="true"
             android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>

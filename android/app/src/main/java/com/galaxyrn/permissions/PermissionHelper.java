@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.galaxyrn.SendEventToClient;
+import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,14 @@ import java.util.Locale;
 
 public class PermissionHelper {
 
+    public boolean permissionsReady = false;
+
     private static final int PERMISSIONS_REQUEST_CODE = 101;
     private static final int SETTINGS_REQUEST_CODE = 102;
     public static final String TAG = "PermissionHelper";
     private final Activity activity;
-    private boolean permissionsReady = false;
+    private ReactApplicationContext reactContext;
+    private ModuleInitializer moduleInitializer;
 
     private final String[] requiredPermissions = {
             Manifest.permission.CAMERA,
@@ -40,7 +44,14 @@ public class PermissionHelper {
     };
 
     public PermissionHelper(Activity activity) {
+        Log.d(TAG, "Creating PermissionHelper");
         this.activity = activity;
+    }
+
+    public void initModules(ReactApplicationContext reactContext) {
+        Log.d(TAG, "Initializing modules with reactContext");
+        this.reactContext = reactContext;
+        this.moduleInitializer = new ModuleInitializer(reactContext);
         checkPermissions();
     }
 
@@ -72,7 +83,7 @@ public class PermissionHelper {
                 }
                 continue;
             }
-            
+
             // Handle Notification permissions (Android 13+)
             if (permission.equals(Manifest.permission.POST_NOTIFICATIONS)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -80,7 +91,7 @@ public class PermissionHelper {
                 }
                 continue;
             }
-            
+
             request.add(permission);
         }
         return request;
@@ -110,6 +121,11 @@ public class PermissionHelper {
             params.putBoolean("allGranted", true);
             SendEventToClient.sendEvent("permissionsStatus", params);
             Log.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
+
+            // Initialize modules after permissions are granted
+            if (moduleInitializer != null) {
+                moduleInitializer.initializeModules();
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
         }

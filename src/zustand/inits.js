@@ -31,7 +31,7 @@ try {
 
 let subscription;
 
-// Export the store first so it can be referenced in the initialization code
+// Export the store
 export const useInitsStore = create((set, get) => ({
   permissionsReady: false,
   setPermissionsReady: (permissionsReady = true) => set({ permissionsReady }),
@@ -125,7 +125,7 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     const uiLang = await getFromStorage("ui_lang", "en");
     useSettingsStore.getState().setUiLang(uiLang);
-    
+
     // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(
@@ -149,38 +149,3 @@ export const useInitsStore = create((set, get) => ({
     if (subscription) subscription.remove();
   },
 }));
-
-// Handle permissions after the store is defined
-try {
-  if (Platform.OS === "ios") {
-    // For iOS, automatically set permissions ready since there's no PermissionsManager
-    log.info("[inits] iOS platform detected - auto-approving permissions");
-    setTimeout(() => {
-      useInitsStore.getState().setPermissionsReady(true);
-    }, 500);
-  } else {
-    const permissionsModule = NativeModules.PermissionsModule;
-
-    try {
-      // Make sure to invoke addListener method on module to initialize events
-      permissionsModule?.addListener("permissionsStatus");
-
-      const permissionsEventEmitter = new NativeEventEmitter(permissionsModule);
-      permissionsEventEmitter.addListener("permissionsStatus", (event) => {
-        if (event && event.allGranted) {
-          log.info("[inits] All Android permissions granted!");
-          useInitsStore.getState().setPermissionsReady(true);
-        }
-      });
-    } catch (error) {
-      log.error("[inits] Error setting up permissions event emitter:", error);
-      useInitsStore.getState().setPermissionsReady(true);
-    }
-  }
-} catch (error) {
-  log.error("[inits] Error setting up permissions:", error);
-  // Fail gracefully by setting permissions ready to true
-  setTimeout(() => {
-    useInitsStore.getState().setPermissionsReady(true);
-  }, 500);
-}
