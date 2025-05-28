@@ -18,7 +18,6 @@ import { HIDE_BARS_TIMEOUT_MS } from "./helper";
 import { useInRoomStore } from "./inRoom";
 import api from "../shared/Api";
 
-
 let janus = null;
 let cleanWIP = false;
 let quadJanus = null;
@@ -108,10 +107,8 @@ export const useShidurStore = create((set, get) => ({
         await get().initShidur();
       }
     }
-    const langtext = audio_options2.find((option) => option.value === audio)
-      ?.eng_text;
 
-    set({ videoStream, video, langtext });
+    set({ videoStream, video });
   },
   setAudio: async (audio, langtext) => {
     if (get().isOnAir) {
