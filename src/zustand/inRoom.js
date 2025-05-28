@@ -61,6 +61,7 @@ export const useInRoomStore = create((set, get) => ({
     let _subscriberJoined = false;
 
     const makeSubscription = async (pubs) => {
+      console.log("makeSubscription pubs", pubs);
       const { audioMode } = useSettingsStore.getState();
 
       const feedById = deepClone(get().feedById);
@@ -76,37 +77,46 @@ export const useInRoomStore = create((set, get) => ({
           continue;
         }
 
-        const avStreams = pub.streams.filter(
-          (s) =>
-            (!audioMode && isVideoStream(s)) ||
-            (s.type === "audio" && s.codec === "opus")
+        //sub audio streams
+        // TODO: if mid was changed
+        pub.streams
+          .filter((s) => s.type === "audio" && s.codec === "opus")
+          .forEach((s) => {
+            const _data = { feed: id, mid: s.mid };
+            if (!feedById[id]) subs.push(_data);
+          });
+
+        //sub video streams
+        const vStream = pub.streams.find(
+          (s) => s?.type === "video" && s.codec === "h264"
         );
 
-        avStreams.forEach((s) => {
-          const _data = { feed: id, mid: s.mid };
-          if (isVideoStream(s)) {
-            s.disabled ? unsubs.push(_data) : subs.push(_data);
-            return;
+        if (vStream) {
+          console.log("makeSubscription vStream", vStream);
+          const _data = { feed: id, mid: vStream.mid };
+          if (!feedById[id] && !vStream.disabled && !audioMode) {
+            console.log("makeSubscription subs.push(_data)", _data);
+            subs.push(_data);
+          } else if (feedById[id] && (vStream.disabled || audioMode)) {
+            console.log("makeSubscription unsubs.push(_data)", _data);
+            unsubs.push(_data);
           }
+        }
 
-          if (!feedById[id]) subs.push(_data);
-        });
-
-        const vStream = avStreams
-          .filter(isVideoStream)
-          .find((s) => !s.disabled);
         // dont rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
           feedById[id] = {
             id,
             display: JSON.parse(display),
-            camera: !!vStream,
+            camera: !!vStream && !vStream.disabled,
           };
         }
-        vStream && (feedById[id].vMid = vStream.mid);
+        feedById[id].vMid = vStream?.mid;
+        console.log("makeSubscription feedById[id]", feedById[id]);
       }
 
       if (_subscriberJoined) {
+        console.log("makeSubscription when _subscriberJoined");
         set({ feedById });
 
         if (subs.length > 0) await subscriber.sub(subs);
@@ -121,6 +131,7 @@ export const useInRoomStore = create((set, get) => ({
       await subscriber.join(subs, room.room);
       set({ feedById });
       _subscriberJoined = true;
+      console.log("makeSubscription end");
       return subs.map((s) => s.feed);
     };
 
@@ -144,11 +155,17 @@ export const useInRoomStore = create((set, get) => ({
      * publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo = (pubs) =>
-      makeSubscription(pubs).then(() => {
-        useUserStore.getState().sendUserState();
-        useUiActions.getState().updateWidth();
-      });
+    videoroom.subTo = async (pubs) => {
+      console.log("videoroom.subTo start");
+      try {
+        await makeSubscription(pubs);
+      } catch (error) {
+        console.error("Error subscribing to publishers", error);
+      }
+      console.log("videoroom.subTo sendUserState");
+      useUserStore.getState().sendUserState();
+      useUiActions.getState().updateWidth();
+    };
 
     videoroom.unsubFrom = async (ids) => {
       const params = [];
@@ -392,6 +409,7 @@ export const useInRoomStore = create((set, get) => ({
 export const activateFeedsVideos = (feeds) => {
   const params = [];
   for (const f of feeds) {
+    console.log("activateFeedsVideos f", f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 
@@ -403,6 +421,7 @@ export const activateFeedsVideos = (feeds) => {
 export const deactivateFeedsVideos = (feeds) => {
   const params = [];
   for (const f of feeds) {
+    console.log("deactivateFeedsVideos f", f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 
