@@ -7,6 +7,7 @@ extension AudioManager {
     // MARK: - Event Emitter Methods
     @objc
     override func supportedEvents() -> [String]! {
+        NLOG("[audioDevices swift] supportedEvents called")
         return [AudioManagerConstants.eventName]
     }
     
@@ -20,26 +21,14 @@ extension AudioManager {
     @objc
     override func startObserving() {
         hasListeners = true
+        NLOG("[audioDevices swift] startObserving")
+        sendCurrentAudioGroup()
     }
     
     // Method to handle stopping observation
     @objc
     override func stopObserving() {
         hasListeners = false
-    }
-    
-    // Method required by NativeEventEmitter
-    @objc
-    override func addListener(_ eventName: String) {
-        // Keep track of listeners if needed
-        NLOG("[audioDevices swift] addListener called for event:", eventName)
-    }
-    
-    // Method required by NativeEventEmitter
-    @objc
-    override func removeListeners(_ count: Double) {
-        // Remove listeners if needed
-        NLOG("[audioDevices swift] removeListeners called, count:", count)
     }
     
     // Event emitter method

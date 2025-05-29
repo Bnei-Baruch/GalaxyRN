@@ -13,7 +13,7 @@ export const SelectDeviceBtn = () => {
   const { t } = useTranslation();
 
   if (!selected) {
-    console.log("[audioDevices js] AudioDevicesBtn no selected device");
+    console.log("[audioDevices js] SelectDeviceBtn no selected device");
     return null;
   }
 
@@ -26,7 +26,7 @@ export const SelectDeviceBtn = () => {
   };
 
   const handleSelect = (id) => {
-    console.log("[audioDevices js] AudioDevicesBtn handleSelect", id);
+    console.log("[audioDevices js] SelectDeviceBtn handleSelect", id);
     setOpen(false);
     select(id);
   };

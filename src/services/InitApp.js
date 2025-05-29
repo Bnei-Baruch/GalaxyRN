@@ -13,6 +13,7 @@ import useAudioDevicesStore from "../zustand/audioDevices";
 import { useInitsStore } from "../zustand/inits";
 import { useMyStreamStore } from "../zustand/myStream";
 import { useSubtitleStore } from "../zustand/subtitle";
+import { useShidurStore } from "../zustand/shidur";
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();

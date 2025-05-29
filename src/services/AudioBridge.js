@@ -4,6 +4,8 @@ import { NativeModules, Platform } from "react-native";
 let NativeAudio = null;
 if (Platform.OS === "ios") {
   NativeAudio = NativeModules.AudioManager;
+  console.log("[AudioBridge] NativeModules.AudioManager on iOS:", NativeModules.AudioManager);
+  console.log("[AudioBridge] NativeAudio on iOS:", NativeAudio);
 } else if (Platform.OS === "android") {
   NativeAudio = NativeModules.AudioDeviceModule;
 }
@@ -56,10 +58,7 @@ const AudioBridge = {
   },
 
   // Expose the raw native modules for event emitter
-  raw: NativeAudio || {
-    addListener: () => {},
-    removeListeners: (count) => {},
-  },
+  raw: NativeAudio,
 };
 
 export default AudioBridge;

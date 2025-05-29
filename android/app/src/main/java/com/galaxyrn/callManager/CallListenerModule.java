@@ -126,19 +126,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
         autoInitializeDisabled = false;
         initializeCallListener();
     }
-
-    @ReactMethod
-    public void addListener(String eventName) {
-        // Keep track of listeners if needed
-        Log.d(TAG, "addListener() for event: " + eventName);
-    }
     
-    @ReactMethod
-    public void removeListeners(int count) {
-        // Remove listeners if needed
-        Log.d(TAG, "removeListeners() count: " + count);
-    }
-
     /**
      * Called when the host app is resumed
      */

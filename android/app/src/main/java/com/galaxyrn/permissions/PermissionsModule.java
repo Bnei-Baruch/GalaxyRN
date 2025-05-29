@@ -42,20 +42,4 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
     public String getName() {
         return NAME;
     }
-
-    /**
-     * Required method for NativeEventEmitter
-     */
-    @ReactMethod
-    public void addListener(String eventName) {
-        // Implementation required by NativeEventEmitter
-    }
-
-    /**
-     * Required method for NativeEventEmitter
-     */
-    @ReactMethod
-    public void removeListeners(Integer count) {
-        // Implementation required by NativeEventEmitter
-    }
 }
