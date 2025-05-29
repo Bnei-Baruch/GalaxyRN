@@ -9,7 +9,7 @@ import { baseStyles } from "../../constants";
 import { useUiActions } from "../../zustand/uiActions";
 import Subtitle from '../../shidur/Subtitle';
 
-const RoomLandscape = ({ shidur, quads, members }) => {
+const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
 
   const isShidur = !!shidur;
@@ -21,7 +21,7 @@ const RoomLandscape = ({ shidur, quads, members }) => {
       {isShidur && (
         <View style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>
-          <Subtitle />
+          {subtitle}
         </View>
       )}
       <View style={isShidur ? { width: width * 2 } : baseStyles.full}>

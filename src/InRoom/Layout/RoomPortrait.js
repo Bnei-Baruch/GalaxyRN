@@ -8,7 +8,7 @@ import WIP from '../../components/WIP';
 import { useUiActions } from '../../zustand/uiActions';
 import Subtitle from '../../shidur/Subtitle';
 
-const RoomPortrait = ({ shidur, quads, members }) => {
+const RoomPortrait = ({ shidur, quads, members, subtitle }) => {
   const { janusReady }     = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
@@ -28,7 +28,7 @@ const RoomPortrait = ({ shidur, quads, members }) => {
             <WIP isReady={janusReady}>
               <View style={baseStyles.full}>
                 {shidur}
-                <Subtitle />
+                {subtitle}
                 {quads}
               </View>
             </WIP>

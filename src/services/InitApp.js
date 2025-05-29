@@ -12,11 +12,23 @@ import { SettingsNotJoined } from "../settings/SettingsNotJoined";
 import useAudioDevicesStore from "../zustand/audioDevices";
 import { useInitsStore } from "../zustand/inits";
 import { useMyStreamStore } from "../zustand/myStream";
+import { useSubtitleStore } from "../zustand/subtitle";
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
+  const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
+  const { audio } = useShidurStore();
+
+  useEffect(() => {
+    console.log("[SubtitleBtn] Initializing with language");
+    initSubtitle(audio);
+    return () => {
+      console.log("[SubtitleBtn] Component unmounting, exiting");
+      exitSubtitle(audio);
+    };
+  }, [audio]);
 
   const { readyForJoin } = useInitsStore();
 
@@ -38,6 +50,9 @@ const InitApp = () => {
 
         initAudioDevices();
         addBreadcrumb("initialization", "Audio devices initialized");
+
+        initSubtitle();
+        addBreadcrumb("initialization", "Subtitle initialized");
       } catch (error) {
         console.error("Error during initialization:", error);
         throw error;

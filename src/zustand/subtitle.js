@@ -25,9 +25,7 @@ export const useSubtitleStore = create((set, get) => ({
   toggleIsOpen: (isOpen) =>
     set((state) => ({ isOpen: isOpen ?? !state.isOpen })),
   lastMsg: null,
-  init: () => {
-    const { audio } = useShidurStore.getState();
-
+  init: (audio) => {
     let subLang = audio_options2
       .filter((op) => op.value === audio)
       .map((op) => {

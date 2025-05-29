@@ -1,30 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useSubtitleStore } from "../zustand/subtitle";
 import { topMenuBtns } from "../topBar/helper";
-import { useShidurStore } from "../zustand/shidur";
 
 export const SubtitleBtn = () => {
-  const { toggleIsOpen, lastMsg, isOpen, init, exit } = useSubtitleStore();
-  const { audio } = useShidurStore();
+  const { toggleIsOpen, lastMsg, isOpen } = useSubtitleStore();
 
-  useEffect(() => {
-    console.log("[SubtitleBtn] Initializing with language");
-    init();
-    return () => {
-      console.log("[SubtitleBtn] Component unmounting, exiting");
-      exit();
-    };
-  }, [audio]);
-
-  const toggle = () => {
-    console.log(
-      "[SubtitleBtn] Toggling subtitle visibility. Current state:",
-      isOpen
-    );
-    toggleIsOpen();
-  };
+  const toggle = () => toggleIsOpen();
 
   return (
     <TouchableOpacity
