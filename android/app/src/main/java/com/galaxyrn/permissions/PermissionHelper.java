@@ -51,6 +51,7 @@ public class PermissionHelper {
     public void initModules(ReactApplicationContext reactContext) {
         Log.d(TAG, "Initializing modules with reactContext");
         this.reactContext = reactContext;
+        SendEventToClient.init(reactContext);
         this.moduleInitializer = new ModuleInitializer(reactContext);
         checkPermissions();
     }
@@ -106,6 +107,7 @@ public class PermissionHelper {
         } else {
             Log.d(TAG, "All permissions already granted.");
             permissionsReady = true;
+            notifyClientAllPermissionsGranted();
         }
     }
 

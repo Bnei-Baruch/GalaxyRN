@@ -29,10 +29,49 @@ let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
 
-const isVideoStream = (s) => s?.type === "video" && s.codec === "h264";
-
 export const useInRoomStore = create((set, get) => ({
   feedById: {},
+  feedIds: [],
+  setFeedIds: () => {
+    const { feedById } = get();
+    const { hideSelf } = useSettingsStore.getState();
+    const { timestamp } = useMyStreamStore.getState();
+    console.log("[RN render] Feeds feedIds", timestamp);
+
+    const _ms = Object.values(feedById);
+    _ms.sort((a, b) => {
+      if (!!a.display?.is_group && !b.display?.is_group) {
+        return -1;
+      }
+      if (!a.display?.is_group && !!b.display?.is_group) {
+        return 1;
+      }
+      return a.display?.timestamp - b.display?.timestamp;
+    });
+
+    let notAddMy = hideSelf;
+    if (_ms.length === 0) {
+      return notAddMy ? [] : ["my"];
+    }
+
+    const feedIds = _ms.reduce((acc, x, i) => {
+      if (!x) return acc;
+
+      if (!notAddMy && x.display?.timestamp > timestamp) {
+        acc.push("my");
+        notAddMy = true;
+      }
+
+      acc.push(x.id);
+      return acc;
+    }, []);
+
+    if (!notAddMy) {
+      feedIds.push("my");
+    }
+
+    set({ feedIds });
+  },
   joinRoom: async () => {
     try {
       await AudioBridge.requestAudioFocus();
@@ -118,6 +157,7 @@ export const useInRoomStore = create((set, get) => ({
       if (_subscriberJoined) {
         console.log("makeSubscription when _subscriberJoined");
         set({ feedById });
+        get().setFeedIds();
 
         if (subs.length > 0) await subscriber.sub(subs);
 
@@ -130,6 +170,7 @@ export const useInRoomStore = create((set, get) => ({
 
       await subscriber.join(subs, room.room);
       set({ feedById });
+      get().setFeedIds();
       _subscriberJoined = true;
       console.log("makeSubscription end");
       return subs.map((s) => s.feed);
@@ -345,7 +386,7 @@ export const useInRoomStore = create((set, get) => ({
     exitWIP = true;
 
     const { room } = useRoomStore.getState();
-    set({ feedById: {} });
+    set({ feedById: {}, feedIds: [] });
 
     await useShidurStore.getState().cleanJanus();
 

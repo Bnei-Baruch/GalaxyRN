@@ -16,6 +16,7 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.galaxyrn.foreground.ForegroundService;
 import com.galaxyrn.permissions.PermissionHelper;
+import com.facebook.react.ReactInstanceManager;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -44,31 +45,25 @@ public class MainActivity extends ReactActivity {
         permissionHelper = new PermissionHelper(this);
 
         Log.d(TAG, "onCreate");
+
+        getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+            @Override
+            public void onReactContextInitialized(ReactContext context) {
+                Log.d(TAG, "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
+                        + permissionHelper.permissionsReady);
+                if (!permissionHelper.permissionsReady) {
+                    permissionHelper.initModules((ReactApplicationContext) context);
+                } else {
+                    permissionHelper.sendPermissions();
+                }
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-
-        try {
-            if (getReactInstanceManager() != null) {
-                Log.d(TAG, "getReactInstanceManager() != null");
-                ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
-                if (reactContext instanceof ReactApplicationContext) {
-                    ReactApplicationContext reactAppContext = (ReactApplicationContext) reactContext;
-                    Log.d(TAG, "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
-                            + permissionHelper.permissionsReady);
-                    if (!permissionHelper.permissionsReady) {
-                        permissionHelper.initModules(reactAppContext);
-                    }
-                    permissionHelper.sendPermissions();
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error updating PermissionHelper with ReactApplicationContext: " + e.getMessage(), e);
-        }
-
     }
 
     @Override

@@ -33,16 +33,13 @@ export const useAndroidPermissionsStore = create((set, get) => ({
     }
 
     try {
-      permissionsModule.addListener("permissionsStatus");
-      subscription = eventEmitter?.addListener(
-        "permissionsStatus",
-        (event) => {
-          if (event && event.allGranted) {
-            log.info("[inits] All Android permissions granted!");
-            set({ permissionsReady: true });
-          }
+      subscription = eventEmitter?.addListener("permissionsStatus", (event) => {
+        console.log("[RN render] initAndroidPermissions eventEmitter", event);
+        if (event && event.allGranted) {
+          log.info("[inits] All Android permissions granted!");
+          set({ permissionsReady: true });
         }
-      );
+      });
     } catch (error) {
       log.error("[inits] Error setting up permissions event emitter:", error);
       set({ permissionsReady: true });
