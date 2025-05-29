@@ -15,15 +15,18 @@ const Subtitle = () => {
   const { width } = useWindowDimensions();
 
   if (!isOpen || !lastMsg?.slide) return null;
-
-  const htmlContent = md.render(lastMsg.slide);
-
+  
+  const { isLtr, slide } = lastMsg;
+  
+  const htmlContent = md.render(slide);
+  const tagsStyles = renderHtmlStyles(isLtr);
+  
   return (
     <View>
       <RenderHtml
         contentWidth={width}
         source={{ html: htmlContent }}
-        tagsStyles={renderHtmlStyles}
+        tagsStyles={tagsStyles}
       />
     </View>
   );
