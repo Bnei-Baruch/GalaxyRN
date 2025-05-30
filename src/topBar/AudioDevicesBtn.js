@@ -4,8 +4,8 @@ import { SwitchDeviceBtn } from "./SwitchDeviceBtn";
 import { SelectDeviceBtn } from "./SelectDeviceBtn";
 
 export const AudioDevicesBtn = () => {
-  if(Platform.OS === 'ios'){
-    return <SwitchDeviceBtn />
+  if (Platform.OS === "ios") {
+    return <SwitchDeviceBtn />;
   }
-    return <SelectDeviceBtn />
+  return <SelectDeviceBtn />;
 };

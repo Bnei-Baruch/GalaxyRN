@@ -7,7 +7,7 @@ import api from "../shared/Api";
 import { getUserRole, userRolesEnum } from "../shared/enums";
 import { useUserStore } from "../zustand/user";
 import BackgroundTimer from "react-native-background-timer";
-import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../sentryHelper";
+import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../libs/sentry/sentryHelper";
 import { AUTH_CONFIG_ISSUER } from "@env";
 import { setToStorage, getFromStorage } from "../shared/tools";
 

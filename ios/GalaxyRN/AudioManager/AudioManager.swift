@@ -16,6 +16,7 @@ class AudioManager: RCTEventEmitter {
     // MARK: - Initialization
     override init() {
         super.init()
+        NLOG("[audioDevices swift] AudioManager init")
         setupMonitoring()
         activateAudioOutput()
     }

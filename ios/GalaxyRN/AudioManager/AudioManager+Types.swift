@@ -8,39 +8,6 @@ enum AudioManagerConstants {
     
     static let audioDeviceChanged = "audioDeviceChanged"
     static let audioRouteChanged = "audioRouteChanged"
-    
-    static let errorNoDevice = "No audio device available"
-    static let errorInvalidDevice = "Invalid audio device"
-    static let errorSetOutputFailed = "Failed to set audio output"
-    static let errorUnsupportedIOSVersion = "This feature requires iOS 7.0 or later"
-    
-    static let minimumIOSVersion: Float = 7.0
-}
-
-enum AudioManagerError: Error {
-    case invalidParameters
-    case processingFailed
-    case noDeviceAvailable
-    case invalidDevice
-    case setOutputFailed
-    case unsupportedIOSVersion
-    
-    var message: String {
-        switch self {
-        case .invalidParameters:
-            return "Invalid parameters provided"
-        case .processingFailed:
-            return "Processing failed"
-        case .noDeviceAvailable:
-            return AudioManagerConstants.errorNoDevice
-        case .invalidDevice:
-            return AudioManagerConstants.errorInvalidDevice
-        case .setOutputFailed:
-            return AudioManagerConstants.errorSetOutputFailed
-        case .unsupportedIOSVersion:
-            return AudioManagerConstants.errorUnsupportedIOSVersion
-        }
-    }
 }
 
 enum AudioDeviceType: String {
@@ -129,19 +96,7 @@ enum AudioDeviceType: String {
         }
     }
     
-    var minimumIOSVersion: Float {
-        switch self {
-        case .bluetoothLE:
-            return 10.0
-        case .usbAudio:
-            return 9.0
-        case .carAudio:
-            return 8.0
-        default:
-            return 7.0
-        }
-    }
-    
+  
     var description: String {
         switch self {
         case .builtInSpeaker:
@@ -180,16 +135,4 @@ enum AudioDeviceType: String {
 
 protocol AudioManagerDataProcessing {
     func process(data: Any) -> Result<Any, Error>
-}
-
-extension AudioManager {
-    static func isIOSVersionSupported() -> Bool {
-        let systemVersion = UIDevice.current.systemVersion
-        return (systemVersion as NSString).floatValue >= AudioManagerConstants.minimumIOSVersion
-    }
-    
-    static func isDeviceTypeSupported(_ deviceType: AudioDeviceType) -> Bool {
-        let systemVersion = UIDevice.current.systemVersion
-        return (systemVersion as NSString).floatValue >= deviceType.minimumIOSVersion
-    }
 }

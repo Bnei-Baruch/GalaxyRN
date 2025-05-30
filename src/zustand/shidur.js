@@ -2,7 +2,7 @@ import { create } from "zustand";
 import {
   VIDEO_240P_OPTION_VALUE,
   NO_VIDEO_OPTION_VALUE,
-  audiog_options2,
+  audio_options2,
   trllang,
   NOTRL_STREAM_ID,
   gxycol,
@@ -17,6 +17,7 @@ import { getFromStorage, setToStorage } from "../shared/tools";
 import { HIDE_BARS_TIMEOUT_MS } from "./helper";
 import { useInRoomStore } from "./inRoom";
 import api from "../shared/Api";
+
 let janus = null;
 let cleanWIP = false;
 let quadJanus = null;
@@ -66,6 +67,7 @@ const cleanStream = (stream) =>
 export const useShidurStore = create((set, get) => ({
   video: VIDEO_240P_OPTION_VALUE,
   audio: 64,
+  langtext: "Original",
   videoStream: null,
   quadUrl: null,
   trlUrl: null,
@@ -108,9 +110,9 @@ export const useShidurStore = create((set, get) => ({
 
     set({ videoStream, video });
   },
-  setAudio: async (audio, text) => {
+  setAudio: async (audio, langtext) => {
     if (get().isOnAir) {
-      const audio_option = audiog_options2.find(
+      const audio_option = audio_options2.find(
         (option) => option.value === audio
       );
       const id = trllang[audio_option.eng_text];
@@ -120,11 +122,11 @@ export const useShidurStore = create((set, get) => ({
     } else {
       await audioJanus?.switch(audio);
     }
-    console.log("setAudio", audio, text);
+    console.log("setAudio", audio, langtext);
     setToStorage("vrt_lang", audio);
     if (audio !== NOTRL_STREAM_ID) setToStorage("trl_lang", audio);
-    setToStorage("vrt_langtext", text);
-    set({ videoStream, audio });
+    setToStorage("vrt_langtext", langtext);
+    set({ videoStream, audio, langtext });
   },
   initJanus: async () => {
     const { user } = useUserStore.getState();

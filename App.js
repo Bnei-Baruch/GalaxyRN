@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+
+import * as Sentry from "@sentry/react-native";
+import { register } from "@formatjs/intl-pluralrules";
 import log from "loglevel";
-import CheckAuthentication from "./src/auth/CheckAuthentication";
+
 import "react-native-url-polyfill";
 import "intl-pluralrules";
-import { register } from "@formatjs/intl-pluralrules";
-import "./src/i18n/i18n";
-import * as Sentry from "@sentry/react-native";
+
 import { SENTRY_DSN } from "@env";
-import InitApp from "./src/InitApp";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { useInitsStore } from "./src/zustand/inits";
-import WIP from "./src/components/WIP";
-import VersionCheck from "./src/components/VersionCheck";
+
+import "./src/i18n/i18n";
+
+import AndroidPermissions from "./src/services/AndroidPermissions";
+import InitApp from "./src/services/InitApp";
+import VersionCheck from "./src/services/VersionCheck";
+import CheckAuthentication from "./src/auth/CheckAuthentication";
+import SentryErrorBoundary from "./src/libs/sentry/SentryErrorBoundary";
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -19,7 +24,7 @@ Sentry.init({
   profilesSampleRate: 0.1,
   environment: process.env.NODE_ENV,
   attachStacktrace: true,
-  release: `GalaxyRN@${require('./package.json').version}`,
+  release: `GalaxyRN@${require("./package.json").version}`,
   enableAutoSessionTracking: true,
   sessionTrackingIntervalMillis: 30000,
   maxBreadcrumbs: 100,
@@ -29,45 +34,18 @@ if (!Intl.PluralRules) register();
 log.setLevel("info");
 
 const App = () => {
-  const [permissionsReady, setPermissionsReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      // Initial check
-      if (typeof useInitsStore === "function") {
-        const state = useInitsStore.getState();
-        if (state && typeof state === "object") {
-          setPermissionsReady(state.permissionsReady || false);
-        }
-      }
-
-      // Subscribe to future changes
-      const unsubscribe = useInitsStore.subscribe(
-        (state) => {
-          setPermissionsReady(state.permissionsReady || false);
-          log.info(`[App] Permission state updated: ${state.permissionsReady}`);
-        }
-      );
-
-      return () => {
-        if (unsubscribe) unsubscribe();
-      };
-    } catch (error) {
-      log.error("[App] Error setting up permission subscription:", error);
-      // Default to true to prevent app from being stuck in loading state
-      setPermissionsReady(true);
-    }
-  }, []);
-
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
-        <VersionCheck>
-          <WIP isReady={permissionsReady}>
-            <InitApp />
-            <CheckAuthentication />
-          </WIP>
-        </VersionCheck>
+        <SentryErrorBoundary>
+          <VersionCheck>
+            <AndroidPermissions>
+              <CheckAuthentication>
+                <InitApp />
+              </CheckAuthentication>
+            </AndroidPermissions>
+          </VersionCheck>
+        </SentryErrorBoundary>
       </SafeAreaView>
     </SafeAreaProvider>
   );

@@ -11,7 +11,6 @@ export const useMyStreamStore = create((set, get) => ({
   mute         : true,
   cammute     : false,
   timestamp    : Date.now(),
-  setTimestmap : () => set({ timestamp: Date.now() }),
   myInit       : async () => {
     const cammute = await getFromStorage('cammute').then(x => x === 'true');
     get().myAbort();

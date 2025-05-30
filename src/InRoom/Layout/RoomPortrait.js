@@ -1,19 +1,26 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View, TouchableWithoutFeedback } from 'react-native';
+import React from "react";
+import {
+  StyleSheet,
+  ScrollView,
+  View,
+  TouchableWithoutFeedback,
+  Dimensions,
+} from "react-native";
 
-import { useInRoomStore } from '../../zustand/inRoom';
-import { useShidurStore } from '../../zustand/shidur';
-import { baseStyles } from '../../constants';
-import WIP from '../../components/WIP';
-import { useUiActions } from '../../zustand/uiActions';
+import { useShidurStore } from "../../zustand/shidur";
+import { useUiActions } from "../../zustand/uiActions";
+import { baseStyles } from "../../constants";
+import WIP from "../../components/WIP";
 
-const RoomPortrait = ({ shidur, quads, members }) => {
-  const { janusReady }     = useShidurStore();
+const RoomPortrait = ({ shidur, quads, members, subtitle }) => {
+  const { janusReady } = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
   const handleAnyPress = () => toggleShowBars(true);
 
-  const handleScroll = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+  const handleScroll = (e) => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+
+  const { width } = Dimensions.get("window");
 
   return (
     <View style={styles.container}>
@@ -25,8 +32,9 @@ const RoomPortrait = ({ shidur, quads, members }) => {
         <TouchableWithoutFeedback onPress={handleAnyPress}>
           <View style={styles.scrollContent}>
             <WIP isReady={janusReady}>
-              <View style={baseStyles.full}>
+              <View style={[baseStyles.full, { width }]}>
                 {shidur}
+                {subtitle}
                 {quads}
               </View>
             </WIP>
@@ -40,13 +48,13 @@ const RoomPortrait = ({ shidur, quads, members }) => {
 export default RoomPortrait;
 
 const styles = StyleSheet.create({
-  container    : {
-    flex         : 1,
-    position     : 'relative',
-    flexDirection: 'column'
+  container: {
+    flex: 1,
+    position: "relative",
+    flexDirection: "column",
   },
   scrollContent: {
-    flex     : 1,
-    minHeight: '100%'
-  }
+    flex: 1,
+    minHeight: "100%",
+  },
 });

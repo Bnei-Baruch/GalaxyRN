@@ -164,7 +164,7 @@ export const subtitle_options = [
   { key: 'en', value: 'en', eng_text: 'English', text: 'English' },
   { key: 'es', value: 'es', eng_text: 'Spanish', text: 'Español' },
 ];
-export const audiog_options2  = [
+export const audio_options2  = [
   { header     : true,
     text       : 'shidur.streamForWorkshop',
     description: 'shidur.streamForWorkshopDescription',

@@ -4,16 +4,19 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.os.Process;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.galaxyrn.foreground.ForegroundService;
 import com.galaxyrn.permissions.PermissionHelper;
+import com.facebook.react.ReactInstanceManager;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -38,25 +41,37 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        
+
         permissionHelper = new PermissionHelper(this);
-        
+
         Log.d(TAG, "onCreate");
+
+        getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+            @Override
+            public void onReactContextInitialized(ReactContext context) {
+                Log.d(TAG, "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
+                        + permissionHelper.permissionsReady);
+                if (!permissionHelper.permissionsReady) {
+                    permissionHelper.initModules((ReactApplicationContext) context);
+                } else {
+                    permissionHelper.sendPermissions();
+                }
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        permissionHelper.sendPermissions();
     }
-    
+
     @Override
     protected void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
     }
-    
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -75,7 +90,7 @@ public class MainActivity extends ReactActivity {
         }
         // Stop any foreground services that might be running
         stopForegroundServices();
-        
+
         setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
         if (getReactInstanceManager() != null) {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
@@ -84,22 +99,22 @@ public class MainActivity extends ReactActivity {
                         null);
             }
         }
-        
+
         super.onDestroy();
     }
-    
+
     /**
      * Ensures all foreground services are stopped when the app is destroyed
      */
     private void stopForegroundServices() {
         try {
             Log.d(TAG, "Manually stopping foreground services");
-            
+
             // Stop the foreground service
             Intent serviceIntent = new Intent(this, ForegroundService.class);
             boolean stopped = stopService(serviceIntent);
             Log.d(TAG, "ForegroundService stopped: " + stopped);
-            
+
         } catch (Exception e) {
             Log.e(TAG, "Error stopping foreground services", e);
         }

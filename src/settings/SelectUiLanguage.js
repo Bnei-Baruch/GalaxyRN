@@ -5,7 +5,7 @@ import ListInModal from "../components/ListInModal";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../zustand/settings";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { TextDisplayWithButton } from "../components";
+import TextDisplayWithButton from "../components/TextDisplayWithButton";
 
 const languagesOptions = [
   { key: "en", value: "en", text: "English" },

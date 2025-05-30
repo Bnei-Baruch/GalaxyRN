@@ -9,8 +9,11 @@ import androidx.annotation.NonNull;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.module.annotations.ReactModule;
 
+@ReactModule(name = WakeLockModule.NAME)
 public class WakeLockModule extends ReactContextBaseJavaModule {
+    public static final String NAME = "WakeLockModule";
     private static final String TAG = "WakeLockModule";
     private final ReactApplicationContext reactContext;
 
@@ -22,7 +25,7 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
     @NonNull
     @Override
     public String getName() {
-        return "WakeLockModule";
+        return NAME;
     }
 
     @ReactMethod

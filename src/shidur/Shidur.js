@@ -1,16 +1,21 @@
+// Core React and React Native imports
 import React from 'react';
-import { StyleSheet, View, TouchableWithoutFeedback, Text } from 'react-native';
+import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+
+// Third-party libraries
 import { RTCView } from 'react-native-webrtc';
+import { useTranslation } from 'react-i18next';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// Local imports
 import { useShidurStore } from '../zustand/shidur';
+import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
+import { baseStyles } from '../constants';
 import { PlayPauseBtn } from './PlayPauseBtn';
+import { SubtitleBtn } from './SubtitleBtn';
 import { OptionsBtn } from './OptionsBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
-import { useSettingsStore } from '../zustand/settings';
 import { MuteBtn } from './MuteBtn';
-import { useTranslation } from 'react-i18next';
-import { baseStyles } from '../constants';
 import { FullscreenBtn } from './FullscreenBtn';
 
 const Shidur = () => {
@@ -61,6 +66,7 @@ const Shidur = () => {
 
             <View style={styles.toolbarBtnsGroup}>
               <OptionsBtn />
+              <SubtitleBtn />
               <FullscreenBtn />
             </View>
           </View>

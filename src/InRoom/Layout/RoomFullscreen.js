@@ -19,7 +19,7 @@ const RoomFullscreen = ({ shidur }) => {
     <Modal
       visible={true}
       onRequestClose={toggleIsFullscreen}
-      animationType="slide"
+      animationType="none"
       presentationStyle="fullScreen"
       statusBarTranslucent={true}
       supportedOrientations={["landscape"]}

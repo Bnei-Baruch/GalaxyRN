@@ -1,18 +1,14 @@
 import React, { useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import kc from "./keycloak";
-import { useUserStore } from "../zustand/user";
-import { useInitsStore } from "../zustand/inits";
 import WIP from "../components/WIP";
-import UserPermissions from "../components/UserPermissions";
-import PrepareRoom from "../InRoom/PrepareRoom";
-import { SettingsNotJoined } from "../settings/SettingsNotJoined";
+import UserPermissions from "../services/UserPermissions";
+import { useUserStore } from "../zustand/user";
 
-const CheckAuthentication = () => {
+const CheckAuthentication = ({ children }) => {
   const { user, wip, vhinfo } = useUserStore();
-  const { readyForJoin } = useInitsStore();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -41,11 +37,7 @@ const CheckAuthentication = () => {
     return <UserPermissions />;
   }
 
-  return (
-    <View style={styles.container}>
-      {readyForJoin ? <PrepareRoom /> : <SettingsNotJoined />}
-    </View>
-  );
+  return <View style={styles.container}>{children}</View>;
 };
 
 const styles = StyleSheet.create({
