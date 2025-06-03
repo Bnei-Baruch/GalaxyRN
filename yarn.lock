@@ -3224,7 +3224,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/readable-stream@npm:^4.0.0":
+"@types/readable-stream@npm:^4.0.0, @types/readable-stream@npm:^4.0.5":
   version: 4.0.21
   resolution: "@types/readable-stream@npm:4.0.21"
   dependencies:
@@ -3251,6 +3251,15 @@ __metadata:
   version: 1.19.25
   resolution: "@types/urijs@npm:1.19.25"
   checksum: 10c0/462464294f0cd5f2271e1ab760a45abe252a946559444188a4ad0edba39b1a8bff41b140b79596a5e3c44a5d0d29f78c9ab97b5e82efb1e8617093a549c22bf6
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.5.9":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
   languageName: node
   linkType: hard
 
@@ -3511,7 +3520,7 @@ __metadata:
     jest: "npm:^29.6.3"
     loglevel: "npm:^1.9.1"
     markdown-it: "npm:^14.1.0"
-    mqtt: "npm:^5.9.1"
+    mqtt: "npm:5.9.1"
     react: "npm:18.2.0"
     react-i18next: "npm:^15.0.2"
     react-native: "npm:0.74.5"
@@ -8217,7 +8226,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt-packet@npm:^9.0.2":
+"mqtt-packet@npm:^9.0.0, mqtt-packet@npm:^9.0.2":
   version: 9.0.2
   resolution: "mqtt-packet@npm:9.0.2"
   dependencies:
@@ -8228,7 +8237,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt@npm:^5.9.1":
+"mqtt@npm:5.9.1":
+  version: 5.9.1
+  resolution: "mqtt@npm:5.9.1"
+  dependencies:
+    "@types/readable-stream": "npm:^4.0.5"
+    "@types/ws": "npm:^8.5.9"
+    commist: "npm:^3.2.0"
+    concat-stream: "npm:^2.0.0"
+    debug: "npm:^4.3.4"
+    help-me: "npm:^5.0.0"
+    lru-cache: "npm:^10.0.1"
+    minimist: "npm:^1.2.8"
+    mqtt: "npm:^5.2.0"
+    mqtt-packet: "npm:^9.0.0"
+    number-allocator: "npm:^1.0.14"
+    readable-stream: "npm:^4.4.2"
+    reinterval: "npm:^1.1.0"
+    rfdc: "npm:^1.3.0"
+    split2: "npm:^4.2.0"
+    worker-timers: "npm:^7.1.4"
+    ws: "npm:^8.17.1"
+  bin:
+    mqtt: build/bin/mqtt.js
+    mqtt_pub: build/bin/pub.js
+    mqtt_sub: build/bin/sub.js
+  checksum: 10c0/fa109a216cbe7e3b7d851189c10b7762d09cd7f1516ad8513ba45b86a80be78241d582d6f2923677778cd80eb50528520d3b012e28c164d823e028ab5c199013
+  languageName: node
+  linkType: hard
+
+"mqtt@npm:^5.2.0":
   version: 5.13.0
   resolution: "mqtt@npm:5.13.0"
   dependencies:
@@ -9352,7 +9390,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:^4.2.0, readable-stream@npm:^4.7.0":
+"readable-stream@npm:^4.2.0, readable-stream@npm:^4.4.2, readable-stream@npm:^4.7.0":
   version: 4.7.0
   resolution: "readable-stream@npm:4.7.0"
   dependencies:
@@ -9484,6 +9522,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"reinterval@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "reinterval@npm:1.1.0"
+  checksum: 10c0/83ffcd92363acd57feaecfd98819eeeb618a4ebb6db092ee60aafdb592195447648227bf36891c10ccb3959c1fbd0c4fa2cd7cd74460015c664385248c4e0c72
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -9611,7 +9656,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rfdc@npm:^1.4.1":
+"rfdc@npm:^1.3.0, rfdc@npm:^1.4.1":
   version: 1.4.1
   resolution: "rfdc@npm:1.4.1"
   checksum: 10c0/4614e4292356cafade0b6031527eea9bc90f2372a22c012313be1dcc69a3b90c7338158b414539be863fa95bfcb2ddcd0587be696841af4e6679d85e62c060c7
@@ -11059,7 +11104,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"worker-timers@npm:^7.1.8":
+"worker-timers@npm:^7.1.4, worker-timers@npm:^7.1.8":
   version: 7.1.8
   resolution: "worker-timers@npm:7.1.8"
   dependencies:
@@ -11156,7 +11201,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.18.0":
+"ws@npm:^8.17.1, ws@npm:^8.18.0":
   version: 8.18.2
   resolution: "ws@npm:8.18.2"
   peerDependencies:

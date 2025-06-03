@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import CrispSDK from "react-native-crisp-sdk";
+import CrispSDK from "react-native-crisp-chat-sdk";
 import { CRISP_WEBSITE_ID } from "@env";
 import { useUserStore } from "./user";
 import { Platform } from "react-native";
