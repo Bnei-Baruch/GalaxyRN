@@ -13,7 +13,9 @@ public class SendEventToClient {
     static ReactContext context = null;
 
     static public void init(ReactContext context) {
-        SendEventToClient.context = context;
+        if (SendEventToClient.context == null) {
+            SendEventToClient.context = context;
+        }
     }
 
     public static void sendEvent(final String eventName, @Nullable WritableMap params) {

@@ -1,13 +1,17 @@
 package com.galaxyrn.permissions;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import android.util.Log;
+import com.galaxyrn.SendEventToClient;
 
 /**
  * Module that serves as a bridge for permissions handling in React Native.
@@ -30,6 +34,15 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "Initializing PermissionsModule after permissions granted");
         PermissionsModule.isInitialized = true;
         Log.d(TAG, "PermissionsModule initialized: " + PermissionsModule.isInitialized);
+        
+        // Send event to React Native that permissions are ready
+        try {
+            WritableMap params = Arguments.createMap();
+            params.putBoolean("allGranted", true);
+            SendEventToClient.sendEvent("permissionsStatus", params);
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending permissions status event: " + e.getMessage(), e);
+        }
     }
 
     @ReactMethod
@@ -38,6 +51,7 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
         promise.resolve(PermissionsModule.isInitialized);
     }
 
+    @NonNull
     @Override
     public String getName() {
         return NAME;

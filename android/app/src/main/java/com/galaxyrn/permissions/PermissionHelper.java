@@ -51,7 +51,6 @@ public class PermissionHelper {
     public void initModules(ReactApplicationContext reactContext) {
         Log.d(TAG, "Initializing modules with reactContext");
         this.reactContext = reactContext;
-        SendEventToClient.init(reactContext);
         this.moduleInitializer = new ModuleInitializer(reactContext);
         checkPermissions();
     }

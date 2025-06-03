@@ -74,7 +74,6 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     
     private void initializeAudioManagersInternal() {
         try {
-            SendEventToClient.init(this.context);
             initializeAudioManagers();
         } catch (Exception e) {
             Log.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);

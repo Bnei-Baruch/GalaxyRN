@@ -1,21 +1,29 @@
+// Third-party packages
 import { create } from "zustand";
-import { NativeEventEmitter } from "react-native";
-import mqtt from "../shared/mqtt";
-import logger from '../services/logger';
-import { useUserStore } from "./user";
-import { useMyStreamStore } from "./myStream";
-import { useShidurStore } from "./shidur";
-import { useSettingsStore } from "./settings";
-import { useInRoomStore } from "./inRoom";
-import { useUiActions } from "./uiActions";
-import ConfigStore from "../shared/ConfigStore";
-import GxyConfig from "../shared/janus-config";
 import BackgroundTimer from "react-native-background-timer";
-import { getFromStorage } from "../shared/tools";
+
+// React Native modules
+import { NativeEventEmitter } from "react-native";
+
+// Local modules - same directory (./)
+import { useInRoomStore } from "./inRoom";
+import { useMyStreamStore } from "./myStream";
+import { useSettingsStore } from "./settings";
+import { useShidurStore } from "./shidur";
+import { useUiActions } from "./uiActions";
+import { useUserStore } from "./user";
+
+// Local modules - parent directories (../)
 import kc from "../auth/keycloak";
 import CallsBridge from "../services/CallsBridge";
+import logger from "../services/logger";
+import api from "../shared/Api";
+import ConfigStore from "../shared/ConfigStore";
+import GxyConfig from "../shared/janus-config";
+import mqtt from "../shared/mqtt";
+import { getFromStorage } from "../shared/tools";
 
-const NAMESPACE = 'Inits';
+const NAMESPACE = "Inits";
 
 // Safely create event emitter only if CallsBridge.raw is defined
 let eventEmitter;
@@ -23,7 +31,10 @@ try {
   if (CallsBridge && CallsBridge.raw) {
     eventEmitter = new NativeEventEmitter(CallsBridge.raw);
   } else {
-    logger.warn(NAMESPACE, "CallsBridge.raw is undefined, event emitter not created");
+    logger.warn(
+      NAMESPACE,
+      "CallsBridge.raw is undefined, event emitter not created"
+    );
   }
 } catch (error) {
   logger.error(NAMESPACE, "Error creating NativeEventEmitter:", error);
@@ -86,7 +97,11 @@ export const useInitsStore = create((set, get) => ({
         } else if (type === "video-mute" && user.id === id) {
           toggleCammute();
         } else if (type === "audio-out") {
-          logger.debug(NAMESPACE, "call streamGalaxy bug: [mqtt] audio-out: ", data);
+          logger.debug(
+            NAMESPACE,
+            "call streamGalaxy bug: [mqtt] audio-out: ",
+            data
+          );
           streamGalaxy(data.status);
           if (data.status) {
             // remove question mark when sndman unmute our room
