@@ -11,12 +11,14 @@ import { useUserStore } from "./user";
 import { useSettingsStore } from "./settings";
 import GxyConfig from "../shared/janus-config";
 import { JanusMqtt } from "../libs/janus-mqtt";
-import log from "loglevel";
+import { debug, info, warn, error } from "../services/logger";
 import { StreamingPlugin } from "../libs/streaming-plugin";
 import { getFromStorage, setToStorage } from "../shared/tools";
 import { HIDE_BARS_TIMEOUT_MS } from "./helper";
 import { useInRoomStore } from "./inRoom";
 import api from "../shared/Api";
+
+const NAMESPACE = 'Shidur';
 
 let janus = null;
 let cleanWIP = false;
@@ -44,16 +46,16 @@ const initStream = async (_janus, media) => {
     const janusStream = new StreamingPlugin(config?.iceServers);
     janusStream.onStatus = async (srv, status) => {
       if (status !== "online") {
-        log.warn("[shidur] janus status: ", status);
+        warn(NAMESPACE, "[shidur] janus status: ", status);
         useInRoomStore.getState().restartRoom();
       }
     };
     const _data = await _janus.attach(janusStream);
-    log.debug("[shidur] attach media", _data);
+    debug(NAMESPACE, "[shidur] attach media", _data);
     const stream = await janusStream.watch(media);
     return [stream, janusStream];
   } catch (error) {
-    log.error(
+    error(NAMESPACE, 
       "[shidur] stream error",
       error?.message || JSON.stringify(error) || "undefined"
     );
@@ -122,7 +124,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       await audioJanus?.switch(audio);
     }
-    console.log("setAudio", audio, langtext);
+    debug(NAMESPACE, "setAudio", audio, langtext);
     setToStorage("vrt_lang", audio);
     if (audio !== NOTRL_STREAM_ID) setToStorage("trl_lang", audio);
     setToStorage("vrt_langtext", langtext);
@@ -135,13 +137,13 @@ export const useShidurStore = create((set, get) => ({
     let srv = null;
     try {
       const _userState = useUserStore.getState().buildUserState();
-      console.log("[shidur] initJanus fetchStrServer", _userState);
+      debug(NAMESPACE, "initJanus fetchStrServer", _userState);
       srv = await api.fetchStrServer(_userState).then((res) => {
-        console.log("[shidur] initJanus fetchStrServer", res);
+        debug(NAMESPACE, "initJanus fetchStrServer", res);
         return res?.server;
       });
     } catch (error) {
-      console.error("[shidur] Error during fetchStrServer:", error);
+      error(NAMESPACE, "Error during fetchStrServer:", error);
     }
 
     if (!srv) {
@@ -150,27 +152,16 @@ export const useShidurStore = create((set, get) => ({
 
       config = GxyConfig.instanceConfig(inst);
       srv = config.name;
-      console.log("[shidur] init build janus", inst, config);
+      debug(NAMESPACE, "init build janus", inst, config);
     } else {
       config = GxyConfig.instanceConfig(srv);
     }
 
-    console.log("[shidur] new JanusMqtt", user, srv);
+    debug(NAMESPACE, "new JanusMqtt", user, srv);
     janus = new JanusMqtt(user, srv);
 
-    /* janus.onStatus = async (srv, status) => {
-      if (status !== 'online') {
-        log.warn('[shidur] janus status: ', status);
-        if (janus)
-          await get().cleanShidur();
-        janus = null;
-        setTimeout(() => {
-          get().initJanus(srv);
-        }, 7000);
-      }
-    }; */
     await janus.init(config.token);
-    log.debug("[shidur] init janus ready");
+    debug(NAMESPACE, "init janus ready");
     set({ janusReady: true });
   },
   cleanJanus: async () => {
@@ -179,12 +170,12 @@ export const useShidurStore = create((set, get) => ({
     try {
       get().cleanShidur();
       get().cleanQuads();
-      console.log("[shidur] cleanJanus", janus);
+      debug(NAMESPACE, "cleanJanus", janus);
       await janus.destroy();
       janus = null;
       set({ janusReady: false });
     } catch (error) {
-      log.error("[shidur] Error during cleanJanus:", error);
+      error(NAMESPACE, "Error during cleanJanus:", error);
     }
     cleanWIP = false;
   },
@@ -198,95 +189,27 @@ export const useShidurStore = create((set, get) => ({
 
     const promises = [];
     if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
-      promises.push(
-        initStream(janus, video)
-          .then((res) => {
-            if (!res || res.length < 2) {
-              log.error("[shidur] Failed to initialize video stream");
-              return false;
-            }
-            videoStream = res[0];
-            videoJanus = res[1];
-            return true;
-          })
-          .catch((err) => {
-            log.error(
-              "[shidur] Video stream initialization error",
-              err?.message || JSON.stringify(err) || "undefined"
-            );
-            return false;
-          })
-      );
+      promises.push(initStream(janus, video));
     }
     if (!audioJanus) {
-      promises.push(
-        initStream(janus, audio)
-          .then((res) => {
-            if (!res || res.length < 2) {
-              log.error("[shidur] Failed to initialize audio stream");
-              return false;
-            }
-            audioStream = res[0];
-            audioJanus = res[1];
-            return true;
-          })
-          .catch((err) => {
-            log.error(
-              "[shidur] Audio stream initialization error",
-              err?.message || JSON.stringify(err) || "undefined"
-            );
-            return false;
-          })
-      );
+      promises.push(initStream(janus, audio));
     }
-    if (!trlAudioJanus) {
-      const id = await getFromStorage("vrt_langtext", "Original").then(
-        (x) => trllang[x]
-      );
-      promises.push(
-        initStream(janus, id)
-          .then((res) => {
-            if (!res || res.length < 2) {
-              log.error(
-                "[shidur] Failed to initialize translation audio stream"
-              );
-              return false;
-            }
-            trlAudioStream = res[0];
-            trlAudioStream
-              ?.getAudioTracks()
-              ?.forEach((track) => (track.enabled = false));
-            trlAudioJanus = res[1];
-            return true;
-          })
-          .catch((err) => {
-            log.error(
-              "[shidur] Translation audio stream initialization error",
-              err?.message || JSON.stringify(err) || "undefined"
-            );
-            return false;
-          })
-      );
-    }
-    console.log("[shidur] wait for ready all streams", promises.length);
-    try {
-      const results = await Promise.all(promises);
-      if (results.some((result) => result === false)) {
-        log.warn("[shidur] Some streams failed to initialize");
+
+    debug(NAMESPACE, "wait for ready all streams", promises.length);
+    const results = await Promise.all(promises);
+
+    for (const [stream, janusStream] of results) {
+      if (stream?.getVideoTracks().length > 0) {
+        videoStream = stream;
+        videoJanus = janusStream;
+      } else if (stream?.getAudioTracks().length > 0) {
+        audioStream = stream;
+        audioJanus = janusStream;
       }
-      console.log("[shidur] streams are ready", videoStream);
-      set(() => ({
-        videoStream,
-        audioUrl: audioStream?.toURL(),
-        trlUrl: trlAudioStream?.toURL(),
-        readyShidur: true,
-      }));
-    } catch (err) {
-      console.error(
-        "[shidur] stream error",
-        err?.message || JSON.stringify(err) || "undefined"
-      );
     }
+
+    debug(NAMESPACE, "streams are ready", videoStream);
+    set({ videoStream, readyShidur: true });
   },
   cleanShidur: () => {
     cleanStream(videoStream);
@@ -312,9 +235,9 @@ export const useShidurStore = create((set, get) => ({
     });
   },
   streamGalaxy: async (isOnAir) => {
-    log.debug("call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
+    debug(NAMESPACE, "call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
     if (!trlAudioJanus) {
-      log.debug(
+      debug(NAMESPACE, 
         "call streamGalaxy bug:[shidur] look like we got talk event before stream init finished"
       );
       setTimeout(() => {
@@ -326,7 +249,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
-      log.debug(
+      debug(NAMESPACE, 
         "call streamGalaxy bug:[shidur] Switch audio stream: ",
         gxycol[col]
       );
@@ -335,22 +258,22 @@ export const useShidurStore = create((set, get) => ({
       const id = trllang[_langtext];
       // Don't bring translation on toggle trl stream
       if (!id) {
-        log.debug("[shidur] no id in local storage or client use togle stream");
+        debug(NAMESPACE, "[shidur] no id in local storage or client use togle stream");
       } else {
-        log.debug(
+        debug(NAMESPACE, 
           `[shidur] Switch trl stream: langtext - ${_langtext}, id - ${id}`
         );
         await trlAudioJanus.switch(id);
       }
       audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.2));
-      log.debug("[shidur] You now talking");
+      debug(NAMESPACE, "[shidur] You now talking");
     } else {
-      log.debug("[shidur] Stop talking");
+      debug(NAMESPACE, "[shidur] Stop talking");
       // Bring back source if was choosen before
       const id = await getFromStorage("vrt_lang", 2).then((x) => Number(x));
-      log.debug("[shidur] get stream back id: ", id);
+      debug(NAMESPACE, "[shidur] get stream back id: ", id);
       await audioJanus.switch(id);
-      log.debug("[shidur] Switch audio stream back");
+      debug(NAMESPACE, "[shidur] Switch audio stream back");
       audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.8));
     }
     trlAudioStream

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { TouchableOpacity, View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { debug } from '../../services/logger';
 
 import IconWithText from "../../settings/IconWithText";
 import { baseStyles } from "../../constants";
@@ -8,12 +9,14 @@ import { useChatStore } from "../../zustand/chat";
 import { modalModes } from "../../zustand/helper";
 import { ChatCounter } from "../../chat/ChatCounter";
 
+const NAMESPACE = 'ChatBtn';
+
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
   const { t } = useTranslation();
 
   const handlePress = () => {
-    console.log("handlePress chat");
+    debug(NAMESPACE, "handlePress chat");
     setChatMode(modalModes.chat);
   };
 

@@ -14,6 +14,9 @@ import { useInitsStore } from "../zustand/inits";
 import { useMyStreamStore } from "../zustand/myStream";
 import { useSubtitleStore } from "../zustand/subtitle";
 import { useShidurStore } from "../zustand/shidur";
+import { info, error } from "./logger";
+
+const NAMESPACE = 'InitApp';
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
@@ -23,10 +26,10 @@ const InitApp = () => {
   const { audio } = useShidurStore();
 
   useEffect(() => {
-    console.log("[SubtitleBtn] Initializing with language");
+    info(NAMESPACE, "Initializing with language");
     initSubtitle(audio);
     return () => {
-      console.log("[SubtitleBtn] Component unmounting, exiting");
+      info(NAMESPACE, "Component unmounting, exiting");
       exitSubtitle(audio);
     };
   }, [audio]);
@@ -55,7 +58,7 @@ const InitApp = () => {
         initSubtitle();
         addBreadcrumb("initialization", "Subtitle initialized");
       } catch (error) {
-        console.error("Error during initialization:", error);
+        error(NAMESPACE, "Error during initialization:", error);
         throw error;
       }
     };

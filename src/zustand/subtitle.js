@@ -4,6 +4,9 @@ import { useShidurStore } from "./shidur";
 import { SUBTITLES_TOPIC } from "@env";
 import { audio_options2, subtitle_options } from "../shared/consts";
 import { useSettingsStore } from "./settings";
+import { debug, info, warn, error } from "../services/logger";
+
+const NAMESPACE = 'Subtitle';
 
 const MSGS_QUESTION = {
   type: "question",
@@ -34,44 +37,44 @@ export const useSubtitleStore = create((set, get) => ({
         return subOp?.value;
       })[0];
 
-    console.log(`[Subtitle] Subtitle language: ${subLang}`);
+    debug(NAMESPACE, `Subtitle language: ${subLang}`);
 
     if (!subLang) {
       subLang = useSettingsStore.getState().uiLang;
     }
 
-    console.log(`[Subtitle] Initializing with language: ${subLang}`);
+    info(NAMESPACE, `Initializing with language: ${subLang}`);
     mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
     mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    console.log(
-      `[Subtitle] Joined topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
+    debug(NAMESPACE, 
+      `Joined topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
     );
   },
   exit: () => {
     set({ lastMsg: null });
-    console.log(`[Subtitle] Exiting and clearing messages`);
+    info(NAMESPACE, `Exiting and clearing messages`);
     mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
     mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    console.log(
-      `[Subtitle] Left topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
+    debug(NAMESPACE, 
+      `Left topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
     );
   },
   onMessage: async (data) => {
-    console.log(`[Subtitle] Message received:`, data);
+    debug(NAMESPACE, `Message received:`, data);
     let msg = JSON.parse(data);
-    console.log(`[Subtitle] Parsed message:`, msg);
+    debug(NAMESPACE, `Parsed message:`, msg);
 
     if (!msg.visible) {
-      console.log(`[Subtitle] Message is not visible - ignored`);
+      debug(NAMESPACE, `Message is not visible - ignored`);
       return;
     }
     msg.display_status = "subtitles";
     if (!msg || msg.display_status === MSGS_NONE.display_status || !msg.slide) {
-      console.log(`[Subtitle] Clearing message - null or none display status`);
+      debug(NAMESPACE, `Clearing message - null or none display status`);
       set({ lastMsg: null });
       return;
     }
-    console.log(`[Subtitle] Setting lastMsg:`, msg);
+    debug(NAMESPACE, `Setting lastMsg:`, msg);
     set({ lastMsg: msg });
   },
 }));

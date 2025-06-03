@@ -15,6 +15,9 @@ import WIP from "../components/WIP";
 import { useTranslation } from "react-i18next";
 import { StudyMaterialItem } from "./StudyMaterialItem";
 import ScreenTitle from "../components/ScreenTitle";
+import { debug, error } from '../services/logger';
+
+const NAMESPACE = 'StudyMaterialsBtn';
 
 export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
@@ -25,8 +28,6 @@ export const StudyMaterialsBtn = () => {
     if (!open) fetchMaterials();
     setOpen(!open);
   };
-
-  //console.log("[StudyMaterialsBtn] open", materials);
 
   return (
     <View>

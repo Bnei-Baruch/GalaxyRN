@@ -1,10 +1,12 @@
 import { randomString } from "../shared/tools";
 import { EventEmitter } from "events";
-import log from "loglevel";
+import { debug, info, error } from '../services/logger';
 import mqtt from "../shared/mqtt";
 import { STUN_SRV_GXY } from "@env";
 import { RTCPeerConnection } from "react-native-webrtc";
 import BackgroundTimer from "react-native-background-timer";
+
+const NAMESPACE = 'PublisherPlugin';
 
 export class PublisherPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -52,13 +54,13 @@ export class PublisherPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          log.info("[publisher] join: ", param);
+          info(NAMESPACE, "join: ", param);
           const { data, json } = param;
 
           if (data) resolve(data);
         })
         .catch((err) => {
-          log.error("[publisher] error join room", err);
+          error(NAMESPACE, "error join room", err);
           reject(err);
         });
     });
@@ -70,13 +72,13 @@ export class PublisherPlugin extends EventEmitter {
       return new Promise((resolve, reject) => {
         this.transaction("message", { body }, "event")
           .then((param) => {
-            log.info("[publisher] leave: ", param);
+            info(NAMESPACE, "leave: ", param);
             const { data, json } = param;
 
             if (data) resolve(data);
           })
           .catch((err) => {
-            log.debug("[publisher] error leave room", err);
+            debug(NAMESPACE, "error leave room", err);
             reject(err);
           });
       });
@@ -131,7 +133,7 @@ export class PublisherPlugin extends EventEmitter {
           .then((param) => {
             const { data, json } = param || {};
             const jsep = json.jsep;
-            log.debug("[publisher] Configure respond: ", param);
+            debug(NAMESPACE, "Configure respond: ", param);
             resolve(data);
             this.pc.setRemoteDescription(jsep);
           })
@@ -170,13 +172,13 @@ export class PublisherPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          log.info("[publisher] set bitrate: ", param);
+          info(NAMESPACE, "set bitrate: ", param);
           const { data, json } = param;
 
           if (data) resolve(data);
         })
         .catch((err) => {
-          log.debug("[publisher] error set bitrate", err);
+          debug(NAMESPACE, "error set bitrate", err);
           reject(err);
         });
     });
@@ -209,18 +211,18 @@ export class PublisherPlugin extends EventEmitter {
       this.pc
         .setLocalDescription(offer)
         .catch((error) =>
-          log.error("[publisher] setLocalDescription: ", error)
+          error(NAMESPACE, "setLocalDescription: ", error)
         );
       const body = { request: "configure", restart };
       return this.transaction("message", { body, jsep: offer }, "event").then(
         (param) => {
           const { data, json } = param || {};
           const jsep = json.jsep;
-          log.debug("[publisher] Configure respond: ", param);
+          debug(NAMESPACE, "Configure respond: ", param);
           this.pc
             .setRemoteDescription(jsep)
-            .then((e) => log.info(e))
-            .catch((e) => log.error(e));
+            .then((e) => info(NAMESPACE, e))
+            .catch((e) => error(NAMESPACE, e));
         }
       );
     });
@@ -228,7 +230,7 @@ export class PublisherPlugin extends EventEmitter {
 
   initPcEvents() {
     this.pc.addEventListener("connectionstatechange", (e) => {
-      log.info("[publisher] ICE State: ", e.target.connectionState);
+      info(NAMESPACE, "ICE State: ", e.target.connectionState);
       this.iceState = e.target.connectionState;
 
       if (this.iceState === "disconnected") {
@@ -246,7 +248,7 @@ export class PublisherPlugin extends EventEmitter {
         !e.candidate ||
         e.candidate.candidate.indexOf("endOfCandidates") > 0
       ) {
-        log.debug("[publisher] End of candidates");
+        debug(NAMESPACE, "End of candidates");
       } else {
         // JSON.stringify doesn't work on some WebRTC objects anymore
         // See https://code.google.com/p/chromium/issues/detail?id=467366
@@ -262,9 +264,9 @@ export class PublisherPlugin extends EventEmitter {
       }
     });
     this.pc.addEventListener("track", (e) => {
-      log.debug("[subscriber] Got track: ", e);
+      debug(NAMESPACE, "Got track: ", e);
       this.onTrack(e.track, e.streams[0], true);
-      log.info("[publisher] Got track: ", e);
+      info(NAMESPACE, "Got track: ", e);
     });
   }
 
@@ -277,19 +279,19 @@ export class PublisherPlugin extends EventEmitter {
         ) {
           return;
         } else if (mqtt.mq.connected) {
-          log.debug("[publisher] - Trigger ICE Restart - ");
+          debug(NAMESPACE, "- Trigger ICE Restart - ");
           this.pc.restartIce();
           this.configure(true);
         } else if (attempt >= 10) {
           (typeof this.iceFailed === "function") && this.iceFailed();
-          log.error("[streaming] - ICE Restart failed - ");
+          error(NAMESPACE, "- ICE Restart failed - ");
           return;
         }
-        log.debug("[streaming] ICE Restart try: " + attempt);
+        debug(NAMESPACE, "ICE Restart try: " + attempt);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error("Streaming plugin iceRestart", e);
+      error(NAMESPACE, "Streaming plugin iceRestart", e);
     }
   }
 
@@ -305,14 +307,14 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   onmessage(data) {
-    log.debug("[publisher] onmessage: ", data);
+    debug(NAMESPACE, "onmessage: ", data);
     if (data?.publishers) {
-      log.info("[publisher] New feed enter: ", data.publishers[0]);
+      info(NAMESPACE, "New feed enter: ", data.publishers[0]);
       this.subTo(data.publishers);
     }
 
     if (data?.unpublished) {
-      log.info("[publisher] Feed leave: ", data.unpublished);
+      info(NAMESPACE, "Feed leave: ", data.unpublished);
       if (data?.unpublished === "ok") {
         // That's us
         this.janus.detach(this);
@@ -322,42 +324,43 @@ export class PublisherPlugin extends EventEmitter {
     }
 
     if (data?.leaving) {
-      log.info("[publisher] Feed leave: ", data.leaving);
+      info(NAMESPACE, "Feed leave: ", data.leaving);
       this.unsubFrom([data.leaving], false);
     }
 
     if (data?.videoroom === "talking") {
-      log.debug("[publisher] talking: ", data.id);
+      debug(NAMESPACE, "talking: ", data.id);
       this.talkEvent(data.id, true);
     }
 
     if (data?.videoroom === "stopped-talking") {
-      log.debug("[publisher] stopped talking: ", data.id);
+      debug(NAMESPACE, "stopped talking: ", data.id);
       this.talkEvent(data.id, false);
     }
   }
 
   oncleanup() {
-    log.info("[publisher] - oncleanup - ");
+    info(NAMESPACE, "- oncleanup - ");
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
   }
 
   detached() {
-    log.info("[publisher] - detached - ");
+    info(NAMESPACE, "- detached - ");
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
   }
 
   hangup() {
-    log.info("[publisher] - hangup - ", this.janus);
+    info(NAMESPACE, "- hangup - ", this.janus);
     this.detach();
   }
 
   slowLink(uplink, lost, mid) {
     const direction = uplink ? "sending" : "receiving";
-    log.info(
-      "[publisher] slowLink on " +
+    info(
+      NAMESPACE,
+      "slowLink on " +
         direction +
         " packets on mid " +
         mid +
@@ -369,8 +372,9 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   mediaState(media, on) {
-    log.info(
-      "[publisher] mediaState: Janus " +
+    info(
+      NAMESPACE,
+      "mediaState: Janus " +
         (on ? "start" : "stop") +
         " receiving our " +
         media
@@ -379,8 +383,9 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   webrtcState(isReady) {
-    log.info(
-      "[publisher] webrtcState: RTCPeerConnection is: " +
+    info(
+      NAMESPACE,
+      "webrtcState: RTCPeerConnection is: " +
         (isReady ? "up" : "down")
     );
     if (!isReady && typeof this.iceFailed === "function")

@@ -1,4 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
+import { debug, info, warn, error } from "./logger";
+
+const NAMESPACE = 'WakeLockBridge';
 
 let NativeAudio = null;
 if (Platform.OS === 'ios') {
@@ -14,7 +17,7 @@ const WakeLockBridge = {
         NativeAudio.keepScreenOn();
         resolve(true);
       } else {
-        console.warn('keepScreenOn is not available');
+        warn(NAMESPACE, 'keepScreenOn is not available');
         reject(new Error('Method not available'));
       }
     });
@@ -23,7 +26,7 @@ const WakeLockBridge = {
     if (NativeAudio && NativeAudio.releaseScreenOn) {
       NativeAudio.releaseScreenOn();
     } else {
-      console.warn('releaseScreenOn is not available on this platform');
+      warn(NAMESPACE, 'releaseScreenOn is not available on this platform');
     }
   },
   raw: NativeAudio

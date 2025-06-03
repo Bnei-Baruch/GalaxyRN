@@ -1,14 +1,18 @@
+import { error } from '../services/logger';
+
+const NAMESPACE = 'ConfigStore';
+
 class ConfigStore {
   static globalConfig = {};
 
   static PRE_MODERATION_KEY = 'galaxy_premod';
 
   static setGlobalConfig = (config) => {
-    ConfigStore.globalConfig = config;
     try {
+      ConfigStore.globalConfig = config;
       ConfigStore.globalConfig.lastModified = new Date(config.last_modified);
     } catch (e) {
-      console.error('ConfigStore.setGlobalConfig', e);
+      error(NAMESPACE, 'ConfigStore.setGlobalConfig', e);
     }
   };
 

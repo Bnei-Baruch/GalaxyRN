@@ -1,8 +1,9 @@
 import mqtt from "mqtt";
 //import GxyConfig from "./janus-utils";
-import log from "loglevel";
+import logger from "../services/logger";
 import { MQTT_URL, MSG_URL } from "@env";
 import BackgroundTimer from "react-native-background-timer";
+import { debug } from '../services/logger';
 
 import { isServiceID, userRolesEnum } from "./enums";
 import { randomString } from "./tools";
@@ -11,6 +12,8 @@ import { useSubtitleStore } from "../zustand/subtitle";
 
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
+
+const NAMESPACE = 'MQTT';
 
 class MqttMsg {
   constructor() {
@@ -82,11 +85,11 @@ class MqttMsg {
 
     this.mq.on("connect", (data) => {
       if (data && !this.isConnected) {
-        log.info("[mqtt] Connected to server: ", data);
+        logger.info("[mqtt] Connected to server: ", data);
         this.isConnected = true;
         if (typeof callback === "function") callback(false, false);
       } else {
-        log.info("[mqtt] Connected: ", data);
+        logger.info("[mqtt] Connected: ", data);
         this.isConnected = true;
         if (this.reconnect_count > RC) {
           if (typeof callback === "function") callback(true, false);
@@ -98,11 +101,11 @@ class MqttMsg {
     this.mq.on("close", () => {
       if (this.reconnect_count < RC + 2) {
         this.reconnect_count++;
-        log.debug("[mqtt] reconnecting counter: " + this.reconnect_count);
+        logger.debug("[mqtt] reconnecting counter: " + this.reconnect_count);
       }
       if (this.reconnect_count === RC) {
         this.reconnect_count++;
-        log.warn(
+        logger.warn(
           "[mqtt] - disconnected - after: " + this.reconnect_count + " seconds"
         );
         if (typeof callback === "function") callback(false, true);
@@ -112,29 +115,29 @@ class MqttMsg {
 
   join = (topic, chat) => {
     if (!this.mq) return;
-    log.info("[mqtt] Subscribe to: ", topic);
+    logger.info("[mqtt] Subscribe to: ", topic);
     let options = chat ? { qos: 0, nl: false } : { qos: 1, nl: true };
     this.mq.subscribe(topic, { ...options }, (err) => {
-      err && log.error("[mqtt] Error: ", err);
+      err && logger.error("[mqtt] Error: ", err);
     });
   };
 
   sub = (topic, qos) => {
     if (!this.mq) return;
-    log.info("[mqtt] Subscribe to: ", topic);
+    logger.info("[mqtt] Subscribe to: ", topic);
     let options = { qos, nl: true };
     this.mq.subscribe(topic, { ...options }, (err) => {
-      err && log.error("[mqtt] Error: ", err);
+      err && logger.error("[mqtt] Error: ", err);
     });
   };
 
   exit = (topic) => {
     if (!this.mq) return;
     let options = {};
-    log.info("[mqtt] Unsubscribe from: ", topic);
+    logger.info("[mqtt] Unsubscribe from: ", topic);
     return new Promise((resolve, reject) => {
       this.mq.unsubscribe(topic, { ...options }, (err) => {
-        err && log.error("[mqtt] Error: ", err);
+        err && logger.error("[mqtt] Error: ", err);
         err ? reject(err) : resolve();
       });
     });
@@ -144,14 +147,13 @@ class MqttMsg {
     if (!this.mq) return;
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? " | transaction: " + correlationData : "";
-    log.debug(
-      "%c[mqtt] --> send message" +
+    logger.debug(
+      "[mqtt] --> send message" +
         cd +
         " | topic: " +
         topic +
         " | data: " +
-        message,
-      "color: darkgrey"
+        message
     );
     let properties = !!rxTopic
       ? {
@@ -163,28 +165,26 @@ class MqttMsg {
 
     let options = { qos: 1, retain, properties };
     this.mq.publish(topic, message, { ...options }, (err) => {
-      err && log.error("[mqtt] Error: ", err);
+      err && logger.error("[mqtt] Error: ", err);
     });
   };
 
   watch = (callback) => {
     this.mq.on("message", (topic, data, packet) => {
-      log.trace("[mqtt] <-- receive packet: ", packet);
+      logger.trace("[mqtt] <-- receive packet: ", packet);
       let cd = packet?.properties?.correlationData
         ? " | transaction: " + packet?.properties?.correlationData?.toString()
         : "";
-      log.debug(
-        "%c[mqtt] <-- receive message" + cd + " | topic : " + topic,
-        "color: darkgrey"
+      logger.debug(
+        "[mqtt] <-- receive message" + cd + " | topic : " + topic
       );
       const t = topic.split("/");
       if (t[0] === "msg") t.shift();
       const [root, service, id, target] = t;
-      if (root !== "janus")
-        console.log("[mqtt] <-- receive msg  ", root, service, id, target);
+      debug(NAMESPACE, "<-- receive msg  ", root, service, id, target);
       switch (root) {
         case "subtitles":
-          log.debug("[mqtt] On subtitles msg from topic", topic);
+          logger.debug("[mqtt] On subtitles msg from topic", topic);
           useSubtitleStore.getState().onMessage(data);
           break;
         case "galaxy":
@@ -206,8 +206,8 @@ class MqttMsg {
                 let msg = JSON.parse(str);
                 callback(msg, topic);
               } catch (e) {
-                log.error(e);
-                log.error("[mqtt] Not valid JSON, ", data.toString());
+                logger.error(e);
+                logger.error("[mqtt] Not valid JSON, ", data.toString());
                 return;
               }
             }

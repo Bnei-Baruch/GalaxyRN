@@ -3,6 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useVersionStore } from "../zustand/version";
 import WIP from "../components/WIP";
+import { debug } from './logger';
+
+const NAMESPACE = 'VersionCheck';
 
 const VersionCheck = ({ children }) => {
   const {
@@ -19,7 +22,7 @@ const VersionCheck = ({ children }) => {
   useEffect(() => {
     checkForUpdate();
   }, []);
-  console.log("[VersionCheck] running", checking, forceUpdate);
+  debug(NAMESPACE, "running", checking, forceUpdate);
   if (!checking && !forceUpdate) {
     return children;
   }

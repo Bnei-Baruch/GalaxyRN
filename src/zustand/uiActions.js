@@ -3,6 +3,7 @@ import { Dimensions } from 'react-native';
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
+import { debug } from '../services/logger';
 
 let lastTimestemp = 0;
 
@@ -50,7 +51,7 @@ export const useUiActions = create((set, get) => ({
 
     feedLength = feedLength ?? Object.keys(useInRoomStore.getState().feedById).length;
     const num  = feedLength + (hideSelf ? 0 : 1);
-    console.log('updateWidth', num);
+    debug('UiActions', 'updateWidth', num);
 
     if (isShidur) {
       set({ width: parseInt(height / 4 * 16 / 9, 10) });

@@ -3,7 +3,7 @@ import { JanusMqtt } from "../libs/janus-mqtt";
 import GxyConfig from "../shared/janus-config";
 import { PublisherPlugin } from "../libs/publisher-plugin";
 import { SubscriberPlugin } from "../libs/subscriber-plugin";
-import log from "loglevel";
+import { debug, info, warn, error } from "../services/logger";
 import { userRolesEnum } from "../shared/enums";
 import produce from "immer";
 import { useUserStore } from "./user";
@@ -21,6 +21,8 @@ import useAudioDevicesStore from "./audioDevices";
 import WakeLockBridge from "../services/WakeLockBridge";
 import AudioBridge from "../services/AudioBridge";
 
+const NAMESPACE = 'InRoom';
+
 let subscriber = null;
 let videoroom = null;
 let janus = null;
@@ -36,7 +38,7 @@ export const useInRoomStore = create((set, get) => ({
     const { feedById } = get();
     const { hideSelf } = useSettingsStore.getState();
     const { timestamp } = useMyStreamStore.getState();
-    console.log("[RN render] Feeds feedIds", timestamp);
+    debug(NAMESPACE, "Feeds feedIds", timestamp);
 
     const _ms = Object.values(feedById);
     _ms.sort((a, b) => {
@@ -79,7 +81,7 @@ export const useInRoomStore = create((set, get) => ({
       useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
     } catch (error) {
-      console.error("Error requesting audio focus or keeping screen on", error);
+      error(NAMESPACE, "Error requesting audio focus or keeping screen on", error);
       return get().exitRoom();
     }
 
@@ -100,7 +102,7 @@ export const useInRoomStore = create((set, get) => ({
     let _subscriberJoined = false;
 
     const makeSubscription = async (pubs) => {
-      console.log("makeSubscription pubs", pubs);
+      debug(NAMESPACE, "makeSubscription pubs", pubs);
       const { audioMode } = useSettingsStore.getState();
 
       const feedById = deepClone(get().feedById);
@@ -131,13 +133,13 @@ export const useInRoomStore = create((set, get) => ({
         );
 
         if (vStream) {
-          console.log("makeSubscription vStream", vStream);
+          debug(NAMESPACE, "makeSubscription vStream", vStream);
           const _data = { feed: id, mid: vStream.mid };
           if (!feedById[id] && !vStream.disabled && !audioMode) {
-            console.log("makeSubscription subs.push(_data)", _data);
+            debug(NAMESPACE, "makeSubscription subs.push(_data)", _data);
             subs.push(_data);
           } else if (feedById[id] && (vStream.disabled || audioMode)) {
-            console.log("makeSubscription unsubs.push(_data)", _data);
+            debug(NAMESPACE, "makeSubscription unsubs.push(_data)", _data);
             unsubs.push(_data);
           }
         }
@@ -151,11 +153,11 @@ export const useInRoomStore = create((set, get) => ({
           };
         }
         feedById[id].vMid = vStream?.mid;
-        console.log("makeSubscription feedById[id]", feedById[id]);
+        debug(NAMESPACE, "makeSubscription feedById[id]", feedById[id]);
       }
 
       if (_subscriberJoined) {
-        console.log("makeSubscription when _subscriberJoined");
+        debug(NAMESPACE, "makeSubscription when _subscriberJoined");
         set({ feedById });
         get().setFeedIds();
 
@@ -172,12 +174,12 @@ export const useInRoomStore = create((set, get) => ({
       set({ feedById });
       get().setFeedIds();
       _subscriberJoined = true;
-      console.log("makeSubscription end");
+      debug(NAMESPACE, "makeSubscription end");
       return subs.map((s) => s.feed);
     };
 
     const config = GxyConfig.instanceConfig(room.janus);
-    console.log("useInRoomStore joinRoom config", config);
+    debug(NAMESPACE, "useInRoomStore joinRoom config", config);
     janus = new JanusMqtt(user, config.name);
     janus.onStatus = (srv, status) => {
       if (status === "offline") {
@@ -187,7 +189,7 @@ export const useInRoomStore = create((set, get) => ({
       }
 
       if (status === "error") {
-        console.error("[client] Janus error, reconnecting...");
+        error(NAMESPACE, "Janus error, reconnecting...");
         get().restartRoom();
       }
     };
@@ -197,13 +199,13 @@ export const useInRoomStore = create((set, get) => ({
      */
     videoroom = new PublisherPlugin(config.iceServers);
     videoroom.subTo = async (pubs) => {
-      console.log("videoroom.subTo start");
+      debug(NAMESPACE, "videoroom.subTo start");
       try {
         await makeSubscription(pubs);
       } catch (error) {
-        console.error("Error subscribing to publishers", error);
+        error(NAMESPACE, "Error subscribing to publishers", error);
       }
-      console.log("videoroom.subTo sendUserState");
+      debug(NAMESPACE, "videoroom.subTo sendUserState");
       useUserStore.getState().sendUserState();
       useUiActions.getState().updateWidth();
     };
@@ -215,7 +217,7 @@ export const useInRoomStore = create((set, get) => ({
         if (!feed) return;
 
         params.push({ feed: parseInt(feed.id) });
-        log.info(
+        info(NAMESPACE, 
           "[client] Feed " +
             JSON.stringify(feed) +
             " (" +
@@ -258,7 +260,7 @@ export const useInRoomStore = create((set, get) => ({
     subscriber = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack = (track, stream, on) => {
       const { id } = stream;
-      log.info(
+      info(NAMESPACE, 
         "[client] >> This track is coming from feed " + id + ":",
         track.id,
         track,
@@ -283,7 +285,7 @@ export const useInRoomStore = create((set, get) => ({
         if (s.type !== "video" || !s.active) continue;
         _videosByFeed[s.feed_id] = s;
       }
-      log.debug("[client] Updated _videosByFeed", _videosByFeed);
+      debug(NAMESPACE, "[client] Updated _videosByFeed", _videosByFeed);
       set(
         produce((state) => {
           for (const k in state.feedById) {
@@ -297,17 +299,17 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.iceFailed = async () => {
-      log.warn("[subscriber] iceFailed");
+      warn(NAMESPACE, "[subscriber] iceFailed");
       get().restartRoom();
     };
 
     janus
       .init(config.token)
       .then((data) => {
-        console.log("[client] joinRoom on janus.init", data);
+        info(NAMESPACE, "[client] joinRoom on janus.init", data);
         janus.attach(videoroom).then((data) => {
           AudioBridge.activateAudioOutput();
-          console.info("[client] Publisher Handle: ", data);
+          info(NAMESPACE, "[client] Publisher Handle: ", data);
           const timestamp = new Date().getTime();
 
           const { id, role, username } = user;
@@ -319,11 +321,11 @@ export const useInRoomStore = create((set, get) => ({
             is_group: false,
             is_desktop: false,
           };
-          log.info(`[client] Videoroom init: d - ${d} room - ${room.room}`);
+          info(NAMESPACE, `[client] Videoroom init: d - ${d} room - ${room.room}`);
           videoroom
             .join(room.room, d)
             .then(async (data) => {
-              log.info("[client] Joined respond:", data);
+              info(NAMESPACE, "[client] Joined respond:", data);
 
               useUserStore.getState().setJannusInfo({
                 session: janus.sessionId,
@@ -356,25 +358,25 @@ export const useInRoomStore = create((set, get) => ({
                     streams: json.streams,
                     isGroup: false,
                   });
-                  log.debug("[client] videoroom published", json);
+                  debug(NAMESPACE, "[client] videoroom published", json);
                 })
                 .catch((err) => {
-                  log.error("[client] Publish error :", err);
+                  error(NAMESPACE, "[client] Publish error :", err);
                   get().restartRoom();
                 });
             })
             .catch((err) => {
-              log.error("[client] Join error:", err);
+              error(NAMESPACE, "[client] Join error:", err);
               get().restartRoom();
             });
         });
 
         janus.attach(subscriber).then((data) => {
-          console.info("[client] Subscriber Handle: ", data);
+          info(NAMESPACE, "[client] Subscriber Handle: ", data);
         });
       })
       .catch((err) => {
-        log.error("[client] Janus init error", err);
+        error(NAMESPACE, "[client] Janus init error", err);
         get().restartRoom();
       });
 
@@ -391,7 +393,7 @@ export const useInRoomStore = create((set, get) => ({
     await useShidurStore.getState().cleanJanus();
 
     if (janus) {
-      console.log("useInRoomStore exitRoom janus", janus);
+      info(NAMESPACE, "useInRoomStore exitRoom janus", janus);
       await janus.destroy();
       janus = null;
     }
@@ -404,7 +406,7 @@ export const useInRoomStore = create((set, get) => ({
       await mqtt.exit("galaxy/room/" + room.room);
       await mqtt.exit("galaxy/room/" + room.room + "/chat");
     } catch (error) {
-      console.error("Error exiting mqtt rooms", error);
+      error(NAMESPACE, "Error exiting mqtt rooms", error);
     }
     AudioBridge.abandonAudioFocus();
     WakeLockBridge.releaseScreenOn();
@@ -412,7 +414,7 @@ export const useInRoomStore = create((set, get) => ({
     exitWIP = false;
   },
   restartRoom: async () => {
-    console.log("bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);
+    debug(NAMESPACE, "bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);
 
     if (restartWIP || exitWIP) return;
 
@@ -450,7 +452,7 @@ export const useInRoomStore = create((set, get) => ({
 export const activateFeedsVideos = (feeds) => {
   const params = [];
   for (const f of feeds) {
-    console.log("activateFeedsVideos f", f);
+    debug(NAMESPACE, "activateFeedsVideos f", f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 
@@ -462,7 +464,7 @@ export const activateFeedsVideos = (feeds) => {
 export const deactivateFeedsVideos = (feeds) => {
   const params = [];
   for (const f of feeds) {
-    console.log("deactivateFeedsVideos f", f);
+    debug(NAMESPACE, "deactivateFeedsVideos f", f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 

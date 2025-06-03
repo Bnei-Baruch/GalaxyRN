@@ -1,10 +1,12 @@
 import { randomString } from "../shared/tools";
 import { EventEmitter } from "events";
-import log from "loglevel";
+import { debug, info, error } from '../services/logger';
 import mqtt from "../shared/mqtt";
 import { STUN_SRV_GXY } from "@env";
 import { RTCPeerConnection, RTCSessionDescription } from "react-native-webrtc";
 import BackgroundTimer from "react-native-background-timer";
+
+const NAMESPACE = 'SubscriberPlugin';
 
 export class SubscriberPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -44,51 +46,51 @@ export class SubscriberPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          log.info("[subscriber] Subscribe to: ", param);
+          info(NAMESPACE, "[subscriber] Subscribe to: ", param);
           const { data, json } = param;
 
           if (data?.videoroom === "updated") {
-            log.info("[subscriber] Streams updated: ", data.streams);
+            info(NAMESPACE, "[subscriber] Streams updated: ", data.streams);
             this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
-            log.debug("[subscriber] Got jsep: ", json.jsep);
+            debug(NAMESPACE, "[subscriber] Got jsep: ", json.jsep);
             this.handleJsep(json.jsep);
           }
 
           if (data) resolve(data);
         })
         .catch((err) => {
-          log.error("[subscriber] Subscribe to: ", err);
+          error(NAMESPACE, "[subscriber] Subscribe to: ", err);
           reject(err);
         });
     });
   }
 
   unsub(streams) {
-    log.info("Unsubscribe from streams: ", streams);
+    info(NAMESPACE, "Unsubscribe from streams: ", streams);
     const body = { request: "unsubscribe", streams };
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          log.info("[subscriber] Unsubscribe from: ", param);
+          info(NAMESPACE, "[subscriber] Unsubscribe from: ", param);
           const { data, json } = param;
 
           if (data?.videoroom === "updated") {
-            log.info("[subscriber] Streams updated: ", data.streams);
+            info(NAMESPACE, "[subscriber] Streams updated: ", data.streams);
             this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
-            log.debug("[subscriber] Got jsep: ", json.jsep);
+            debug(NAMESPACE, "[subscriber] Got jsep: ", json.jsep);
             this.handleJsep(json.jsep);
           }
 
           if (data) resolve(data);
         })
         .catch((err) => {
-          log.error("[subscriber] Unsubscribe from: ", err);
+          error(NAMESPACE, "[subscriber] Unsubscribe from: ", err);
           reject(err);
         });
     });
@@ -106,7 +108,7 @@ export class SubscriberPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          log.debug("[subscriber] join: ", param);
+          debug(NAMESPACE, "[subscriber] join: ", param);
           const { data, json } = param;
 
           if (data) {
@@ -115,31 +117,31 @@ export class SubscriberPlugin extends EventEmitter {
           }
 
           if (json?.jsep) {
-            log.debug("[subscriber] Got jsep: ", json.jsep);
+            debug(NAMESPACE, "[subscriber] Got jsep: ", json.jsep);
             this.handleJsep(json.jsep);
           }
         })
         .catch((err) => {
-          log.error("[subscriber] join: ", err);
+          error(NAMESPACE, "[subscriber] join: ", err);
           reject(err);
         });
     });
   }
 
   configure() {
-    console.log("Subscriber plugin configure");
+    info(NAMESPACE, "Subscriber plugin configure");
     const body = { request: "configure", restart: true };
     return this.transaction("message", { body }, "event")
       .then((param) => {
-        log.info("[subscriber] iceRestart: ", param);
+        info(NAMESPACE, "[subscriber] iceRestart: ", param);
         const { json } = param || {};
         if (json?.jsep) {
-          log.debug("[subscriber] Got jsep: ", json.jsep);
+          debug(NAMESPACE, "[subscriber] Got jsep: ", json.jsep);
           this.handleJsep(json.jsep);
         }
       })
       .catch((err) => {
-        console.error("Subscriber plugin configure", err);
+        error(NAMESPACE, "Subscriber plugin configure", err);
       });
   }
 
@@ -151,13 +153,13 @@ export class SubscriberPlugin extends EventEmitter {
         return this.pc.createAnswer();
       })
       .then((answer) => {
-        log.debug("[subscriber] Answer created", answer);
+        debug(NAMESPACE, "[subscriber] Answer created", answer);
         this.pc
           .setLocalDescription(answer)
           .then((data) => {
-            log.debug("[subscriber] setLocalDescription", data);
+            debug(NAMESPACE, "[subscriber] setLocalDescription", data);
           })
-          .catch((error) => log.error(error, answer));
+          .catch((error) => error(NAMESPACE, error, answer));
         this.start(answer);
       });
   }
@@ -169,11 +171,11 @@ export class SubscriberPlugin extends EventEmitter {
       this.transaction("message", { body, jsep }, "event")
         .then((param) => {
           const { data, json } = param || {};
-          log.info("[subscriber] start: ", param);
+          info(NAMESPACE, "[subscriber] start: ", param);
           resolve();
         })
         .catch((err) => {
-          log.error("[subscriber] start", err, jsep);
+          error(NAMESPACE, "[subscriber] start", err, jsep);
           reject(err);
         });
     });
@@ -182,7 +184,7 @@ export class SubscriberPlugin extends EventEmitter {
   initPcEvents() {
     if (this.pc) {
       this.pc.addEventListener("connectionstatechange", (e) => {
-        log.debug("[subscriber] ICE State: ", e.target.connectionState);
+        debug(NAMESPACE, "[subscriber] ICE State: ", e.target.connectionState);
         this.iceState = e.target.connectionState;
         if (this.iceState === "disconnected") {
           this.iceRestart();
@@ -195,13 +197,13 @@ export class SubscriberPlugin extends EventEmitter {
         }
       });
       this.pc.addEventListener("icecandidate", (e) => {
-        log.debug("[subscriber] onicecandidate set", e.candidate);
+        debug(NAMESPACE, "[subscriber] onicecandidate set", e.candidate);
         let candidate = { completed: true };
         if (
           !e.candidate ||
           e.candidate.candidate.indexOf("endOfCandidates") > 0
         ) {
-          log.debug("[subscriber] End of candidates");
+          debug(NAMESPACE, "[subscriber] End of candidates");
         } else {
           // JSON.stringify doesn't work on some WebRTC objects anymore
           // See https://code.google.com/p/chromium/issues/detail?id=467366
@@ -216,19 +218,19 @@ export class SubscriberPlugin extends EventEmitter {
         }
       });
       this.pc.addEventListener("track", (e) => {
-        log.debug("[subscriber] Got track: ", e);
+        debug(NAMESPACE, "[subscriber] Got track: ", e);
         this.onTrack(e.track, e.streams[0], true);
 
         e.track.onmute = (ev) => {
-          log.debug("[subscriber] onmute event: ", ev);
+          debug(NAMESPACE, "[subscriber] onmute event: ", ev);
         };
 
         e.track.onunmute = (ev) => {
-          log.debug("[subscriber] onunmute event: ", ev);
+          debug(NAMESPACE, "[subscriber] onunmute event: ", ev);
         };
 
         e.track.onended = (ev) => {
-          log.debug("[subscriber] onended event: ", ev);
+          debug(NAMESPACE, "[subscriber] onended event: ", ev);
         };
       });
     }
@@ -243,20 +245,20 @@ export class SubscriberPlugin extends EventEmitter {
         ) {
           return;
         } else if (mqtt.mq.connected) {
-          log.debug("[streaming] - Trigger ICE Restart - ");
+          debug(NAMESPACE, "[streaming] - Trigger ICE Restart - ");
           this.configure();
         } else if (attempt >= 10) {
-          log.error("Ice restart bug: [subscriber] - ICE Restart failed - ");
+          error(NAMESPACE, "Ice restart bug: [subscriber] - ICE Restart failed - ");
           if (typeof this.iceFailed === "function") {
             this.iceFailed();
           }
           return;
         }
-        log.debug("[streaming] ICE Restart try: " + attempt);
+        debug(NAMESPACE, "[streaming] ICE Restart try: " + attempt);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error("Subscriber plugin iceRestart", e);
+      error(NAMESPACE, "Subscriber plugin iceRestart", e);
     }
   }
 
@@ -272,38 +274,39 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   onmessage(data, json) {
-    log.info("[subscriber] onmessage: ", data, json);
+    info(NAMESPACE, "[subscriber] onmessage: ", data, json);
     if (data?.videoroom === "updated") {
-      log.info("[subscriber] Streams updated: ", data.streams);
+      info(NAMESPACE, "[subscriber] Streams updated: ", data.streams);
       this.onUpdate(data.streams);
     }
 
     if (json?.jsep) {
-      log.debug("[subscriber] Handle jsep: ", json.jsep);
+      debug(NAMESPACE, "[subscriber] Handle jsep: ", json.jsep);
       this.handleJsep(json.jsep);
     }
   }
 
   oncleanup() {
-    log.info("[subscriber] - oncleanup - ");
+    info(NAMESPACE, "[subscriber] - oncleanup - ");
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
   }
 
   detached() {
-    log.info("[subscriber] - detached - ");
+    info(NAMESPACE, "[subscriber] - detached - ");
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
   }
 
   hangup() {
-    log.info("[subscriber] - hangup - ", this.janus);
+    info(NAMESPACE, "[subscriber] - hangup - ", this.janus);
     this.detach();
   }
 
   slowLink(uplink, lost, mid) {
     const direction = uplink ? "sending" : "receiving";
-    log.info(
+    info(
+      NAMESPACE,
       "[subscriber] slowLink on " +
         direction +
         " packets on mid " +
@@ -316,7 +319,8 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   mediaState(media, on) {
-    log.info(
+    info(
+      NAMESPACE,
       "[subscriber] mediaState: Janus " +
         (on ? "start" : "stop") +
         " receiving our " +
@@ -326,7 +330,8 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   webrtcState(isReady) {
-    log.info(
+    info(
+      NAMESPACE,
       "[subscriber] webrtcState: RTCPeerConnection is: " +
         (isReady ? "up" : "down")
     );

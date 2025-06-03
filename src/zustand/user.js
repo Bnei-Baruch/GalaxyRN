@@ -5,6 +5,9 @@ import { useSettingsStore } from "./settings";
 import { useMyStreamStore } from "./myStream";
 import mqtt from "../shared/mqtt";
 import api from "../shared/Api";
+import { debug, info, warn, error } from "../services/logger";
+
+const NAMESPACE = 'User';
 
 export const useUserStore = create((set, get) => ({
   wip: false,
@@ -62,23 +65,23 @@ export const useUserStore = create((set, get) => ({
     };
 
     if (!opts.room) {
-      console.log("sendUserState no room", opts.room);
+      warn(NAMESPACE, "No room specified in sendUserState", opts);
       return;
     }
 
     const msg = { type: "client-state", user: opts };
-    console.log("sendUserState room message", msg);
+    debug(NAMESPACE, "Sending room message", msg);
     try {
       mqtt.send(JSON.stringify(msg), false, "galaxy/room/" + opts.room);
     } catch (error) {
-      console.log("sendUserState room message error", error);
+      error(NAMESPACE, "Error sending room message", error);
     }
 
-    console.log("sendUserState gxydb message", opts);
+    debug(NAMESPACE, "Sending gxydb message", opts);
     try {
       mqtt.send(JSON.stringify(opts), false, "gxydb/users");
     } catch (error) {
-      console.log("sendUserState gxydb message error", error);
+      error(NAMESPACE, "Error sending gxydb message", error);
     }
   },
 }));

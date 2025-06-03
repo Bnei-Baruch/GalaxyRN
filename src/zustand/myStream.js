@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import { mediaDevices } from 'react-native-webrtc';
 import { useUserStore } from './user';
 import { getFromStorage, setToStorage } from '../shared/tools';
+import { error } from '../services/logger';
+
+const NAMESPACE = 'MyStream';
 
 let stream             = null;
 export const getStream = () => stream;
@@ -34,7 +37,7 @@ export const useMyStreamStore = create((set, get) => ({
         },
       });
     } catch (e) {
-      console.error('Error accessing media devices:', e);
+      error(NAMESPACE, 'Error accessing media devices:', e);
     }
     set(() => ({ stream, cammute }));
   },

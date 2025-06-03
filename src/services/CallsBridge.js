@@ -1,5 +1,7 @@
 import { NativeModules, Platform } from "react-native";
-import log from "loglevel";
+import { warn, error } from "./logger";
+
+const NAMESPACE = 'CallsBridge';
 
 let NativeCall = null;
 try {
@@ -11,12 +13,10 @@ try {
 
   // Log warning if native module is undefined
   if (!NativeCall) {
-    log.warn(
-      `[CallsBridge] Native module not found for platform ${Platform.OS}`
-    );
+    warn(NAMESPACE, `Native module not found for platform ${Platform.OS}`);
   }
 } catch (error) {
-  log.error("[CallsBridge] Error accessing native modules:", error);
+  error(NAMESPACE, "Error accessing native modules:", error);
 }
 
 const CallsBridge = {

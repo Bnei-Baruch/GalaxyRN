@@ -1,3 +1,7 @@
+import { debug } from '../services/logger';
+
+const NAMESPACE = 'Enums';
+
 export const userRolesEnum = {
   none: null,
   ghost: "ghost",
@@ -8,7 +12,7 @@ export const userRolesEnum = {
 };
 
 export const getUserRole = (roles) => {
-  console.log("getUserRole", roles);
+  debug(NAMESPACE, "getUserRole", roles);
   if (!roles) return userRolesEnum.none;
 
   switch (true) {

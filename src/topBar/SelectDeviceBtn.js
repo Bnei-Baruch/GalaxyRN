@@ -6,6 +6,9 @@ import useAudioDevicesStore from "../zustand/audioDevices";
 import { baseStyles } from "../constants";
 import ListInModal from "../components/ListInModal";
 import { useTranslation } from "react-i18next";
+import { debug, error } from '../services/logger'; 
+
+const NAMESPACE = 'SelectDeviceBtn';
 
 export const SelectDeviceBtn = () => {
   const [open, setOpen] = useState();
@@ -13,7 +16,7 @@ export const SelectDeviceBtn = () => {
   const { t } = useTranslation();
 
   if (!selected) {
-    console.log("[audioDevices js] SelectDeviceBtn no selected device");
+    debug(NAMESPACE, "SelectDeviceBtn no selected device");
     return null;
   }
 
@@ -26,7 +29,7 @@ export const SelectDeviceBtn = () => {
   };
 
   const handleSelect = (id) => {
-    console.log("[audioDevices js] SelectDeviceBtn handleSelect", id);
+    debug(NAMESPACE, "SelectDeviceBtn handleSelect", id);
     setOpen(false);
     select(id);
   };

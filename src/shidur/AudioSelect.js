@@ -7,13 +7,16 @@ import { useShidurStore } from '../zustand/shidur';
 import { baseStyles } from '../constants';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
+import { debug } from '../services/logger';
+
+const NAMESPACE = 'AudioSelect';
 
 const AudioSelect   = () => {
   const { audio, setAudio, toggleShidurBar } = useShidurStore();
   const { t }                                = useTranslation();
 
   const handleSetAudio = (item) => {
-    console.log('handleSetAudio', item);
+    debug(NAMESPACE, 'handleSetAudio', item);
     setAudio(item.value, item.eng_text);
     toggleShidurBar(false, true);
   };

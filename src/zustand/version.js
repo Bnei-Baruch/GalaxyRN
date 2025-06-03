@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import { Platform, Linking } from "react-native";
 import { APP_STORE_ID, GOOGLE_PLAY_ID } from "@env";
-import log from "loglevel";
+import { debug, info, warn, error } from "../services/logger";
+
+const NAMESPACE = 'Version';
 
 const LOG_TAG = "[VersionStore]";
 
@@ -29,11 +31,11 @@ const getStoreUrl = () => {
 };
 
 const getUpdateAssessment = (storeVersion, currentVersion) => {
-  log.debug(`${LOG_TAG} Assessing update`, { storeVersion, currentVersion });
+  debug(NAMESPACE, "Assessing update", { storeVersion, currentVersion });
 
   // If we couldn't fetch store version, no updates available
   if (!storeVersion) {
-    log.info(`${LOG_TAG} No store version available for assessment`);
+    info(NAMESPACE, "No store version available for assessment");
     return {
       updateAvailable: false,
       forceUpdate: false,
@@ -41,11 +43,11 @@ const getUpdateAssessment = (storeVersion, currentVersion) => {
   }
 
   const versionDiff = compareVersions(storeVersion, currentVersion);
-  log.debug(`${LOG_TAG} Version difference`, { versionDiff });
+  debug(NAMESPACE, "Version difference", { versionDiff });
 
   if (versionDiff <= 0) {
     // Store version is same or older than current version
-    log.info(`${LOG_TAG} No update needed, current version is up to date`);
+    info(NAMESPACE, "No update needed, current version is up to date");
     return {
       updateAvailable: false,
       forceUpdate: false,
@@ -62,7 +64,7 @@ const getUpdateAssessment = (storeVersion, currentVersion) => {
     storeParts[0] > currentParts[0] ||
     (storeParts[0] === currentParts[0] && storeParts[1] > currentParts[1]);
 
-  log.info(`${LOG_TAG} Update assessment complete`, {
+  info(NAMESPACE, "Update assessment complete", {
     updateAvailable: true,
     forceUpdate,
     storeVersion,
@@ -86,11 +88,11 @@ export const useVersionStore = create((set, get) => ({
   // Actions
   openAppStore: () => {
     const url = getStoreUrl();
-    log.info(`${LOG_TAG} Attempting to open app store`, { url });
+    info(NAMESPACE, "Attempting to open app store", { url });
 
     Linking.canOpenURL(url).then((supported) => {
       if (supported) {
-        log.info(`${LOG_TAG} Opening app store with deep link`, { url });
+        info(NAMESPACE, "Opening app store with deep link", { url });
         Linking.openURL(url);
       } else {
         // If the deep link fails, try the web URL
@@ -99,21 +101,21 @@ export const useVersionStore = create((set, get) => ({
             ? `https://apps.apple.com/app/id${APP_STORE_ID}`
             : `https://play.google.com/store/apps/details?id=${GOOGLE_PLAY_ID}`;
 
-        log.info(`${LOG_TAG} Deep link not supported, trying web URL`, {
+        info(NAMESPACE, "Deep link not supported, trying web URL", {
           webUrl,
         });
         Linking.openURL(webUrl).catch((err) => {
-          log.error(`${LOG_TAG} Cannot open app store URL:`, err);
+          error(NAMESPACE, "Cannot open app store URL:", err);
         });
       }
     });
   },
 
   fetchPlayStoreVersion: async () => {
-    log.info(`${LOG_TAG} Fetching Play Store version`);
+    info(NAMESPACE, "Fetching Play Store version");
     try {
       const url = `https://play.google.com/store/apps/details?id=${GOOGLE_PLAY_ID}&hl=en`;
-      log.debug(`${LOG_TAG} Fetching from URL`, { url });
+      debug(NAMESPACE, "Fetching from URL", { url });
 
       const response = await fetch(url);
       const html = await response.text();
@@ -124,39 +126,39 @@ export const useVersionStore = create((set, get) => ({
       );
       if (versionMatch && versionMatch[1]) {
         const version = versionMatch[1].trim();
-        log.info(`${LOG_TAG} Play Store version found`, { version });
+        info(NAMESPACE, "Play Store version found", { version });
         return version;
       }
-      log.warn(`${LOG_TAG} Could not extract Play Store version from response`);
+      warn(NAMESPACE, "Could not extract Play Store version from response");
     } catch (error) {
-      log.error(`${LOG_TAG} Error fetching Play Store version:`, error);
+      error(NAMESPACE, "Error fetching Play Store version:", error);
     }
     return null;
   },
 
   fetchAppStoreVersion: async () => {
-    log.info(`${LOG_TAG} Fetching App Store version`);
+    info(NAMESPACE, "Fetching App Store version");
     try {
       const url = `https://itunes.apple.com/lookup?id=${APP_STORE_ID}`;
-      log.debug(`${LOG_TAG} Fetching from URL`, { url });
+      debug(NAMESPACE, "Fetching from URL", { url });
 
       const response = await fetch(url);
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
         const version = data.results[0].version;
-        log.info(`${LOG_TAG} App Store version found`, { version });
+        info(NAMESPACE, "App Store version found", { version });
         return version;
       }
-      log.warn(`${LOG_TAG} No version found in App Store response`);
+      warn(NAMESPACE, "No version found in App Store response");
     } catch (error) {
-      log.error(`${LOG_TAG} Error fetching App Store version:`, error);
+      error(NAMESPACE, "Error fetching App Store version:", error);
     }
     return null;
   },
 
   fetchStoreVersion: async () => {
-    log.info(`${LOG_TAG} Fetching store version for platform`, {
+    info(NAMESPACE, "Fetching store version for platform", {
       platform: Platform.OS,
     });
     if (Platform.OS === "ios") {
@@ -164,20 +166,20 @@ export const useVersionStore = create((set, get) => ({
     } else if (Platform.OS === "android") {
       return get().fetchPlayStoreVersion();
     }
-    log.warn(`${LOG_TAG} Unknown platform, cannot fetch store version`);
+    warn(NAMESPACE, "Unknown platform, cannot fetch store version");
     return null;
   },
 
   checkForUpdate: async () => {
-    log.info(`${LOG_TAG} Starting version update check`);
+    info(NAMESPACE, "Starting version update check");
     try {
       set({ checking: true });
       const { currentVersion } = get();
-      log.debug(`${LOG_TAG} Current version`, { currentVersion });
+      debug(NAMESPACE, "Current version", { currentVersion });
 
       // Get the latest version from store
       const storeVersion = await get().fetchStoreVersion() || currentVersion;
-      log.debug(`${LOG_TAG} Store version fetched`, { storeVersion });
+      debug(NAMESPACE, "Store version fetched", { storeVersion });
 
       // Get assessment based on version comparison
       const { updateAvailable, forceUpdate } = getUpdateAssessment(
@@ -192,16 +194,15 @@ export const useVersionStore = create((set, get) => ({
         latestVersion: storeVersion,
       };
 
-      log.info(`${LOG_TAG} Update check complete`, result);
+      info(NAMESPACE, "Update check complete", result);
       set(result);
     } catch (error) {
-      log.error(`${LOG_TAG} Error checking for updates:`, error);
+      error(NAMESPACE, "Error checking for updates:", error);
       set({
         checking: false,
         updateAvailable: false,
         forceUpdate: false,
       });
-      return null;
     }
   },
 }));

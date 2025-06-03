@@ -7,13 +7,16 @@ import { baseStyles } from '../constants';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { styles } from './AudioSelect';
 import { useTranslation } from 'react-i18next';
+import { debug } from '../services/logger';
+
+const NAMESPACE = 'VideoSelect';
 
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
   const { t }               = useTranslation();
 
   const handleSetVideo = (item) => {
-    console.log('handleSetVideo', item);
+    debug(NAMESPACE, 'handleSetVideo', item);
     setVideo(item.value);
   };
 

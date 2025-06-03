@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { Platform, NativeEventEmitter, NativeModules } from "react-native";
+import { NativeEventEmitter } from "react-native";
 import mqtt from "../shared/mqtt";
-import log from "loglevel";
+import { debug, info, warn, error } from '../services/logger';
 import { useUserStore } from "./user";
 import { getFromStorage } from "../shared/tools";
 import api from "../shared/Api";
@@ -17,16 +17,18 @@ import BackgroundTimer from "react-native-background-timer";
 import { useUiActions } from "./uiActions";
 import CallsBridge from "../services/CallsBridge";
 
+const NAMESPACE = 'Inits';
+
 // Safely create event emitter only if CallsBridge.raw is defined
 let eventEmitter;
 try {
   if (CallsBridge && CallsBridge.raw) {
     eventEmitter = new NativeEventEmitter(CallsBridge.raw);
   } else {
-    log.warn("[inits] CallsBridge.raw is undefined, event emitter not created");
+    warn(NAMESPACE, "CallsBridge.raw is undefined, event emitter not created");
   }
 } catch (error) {
-  log.error("[inits] Error creating NativeEventEmitter:", error);
+  error(NAMESPACE, "Error creating NativeEventEmitter:", error);
 }
 
 let subscription;
@@ -48,12 +50,12 @@ export const useInitsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     mqtt.init(user, (reconnected, error) => {
       if (error) {
-        log.info("[client] MQTT disconnected");
+        info(NAMESPACE, "MQTT disconnected");
         set(() => ({ mqttReady: false }));
         alert("- Lost Connection to Arvut System -");
       } else if (reconnected) {
         set(() => ({ mqttReady: true }));
-        log.info("[client] MQTT reconnected");
+        info(NAMESPACE, "MQTT reconnected");
       } else {
         set(() => ({ mqttReady: true }));
 
@@ -86,7 +88,7 @@ export const useInitsStore = create((set, get) => ({
           } else if (type === "video-mute" && user.id === id) {
             toggleCammute();
           } else if (type === "audio-out") {
-            log.debug("call streamGalaxy bug: [mqtt] audio-out: ", data);
+            debug(NAMESPACE, "call streamGalaxy bug: [mqtt] audio-out: ", data);
             streamGalaxy(data.status);
             if (data.status) {
               // remove question mark when sndman unmute our room
@@ -112,12 +114,12 @@ export const useInitsStore = create((set, get) => ({
 
     try {
       const configData = await api.fetchConfig();
-      log.debug("[client] got config: ", configData);
+      debug(NAMESPACE, "got config: ", configData);
       ConfigStore.setGlobalConfig(configData);
       GxyConfig.setGlobalConfig(configData);
       set(() => ({ configReady: true }));
     } catch (err) {
-      log.error("[client] error initializing app", err);
+      error(NAMESPACE, "error initializing app", err);
     }
   },
   initApp: async () => {

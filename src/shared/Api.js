@@ -6,6 +6,9 @@ import {
   GEO_IP_INFO,
 } from "@env";
 import mqtt from "../shared/mqtt";
+import { debug, error } from '../services/logger';
+
+const NAMESPACE = 'Api';
 
 class Api {
   static encode = encodeURIComponent;
@@ -66,8 +69,9 @@ class Api {
     return fetchPromise
       .then((response) => {
         if (!response.ok) {
-          console.error(
-            `[API] ${action} status:`,
+          error(
+            NAMESPACE,
+            `${action} status:`,
             response.status,
             response.statusText
           );
@@ -78,11 +82,11 @@ class Api {
               // Try to parse as JSON to get structured error details
               const errorJson = JSON.parse(errorText);
               errorMessage = errorJson.message || errorJson.error || errorText;
-              console.error(`[API] ${action} error response:`, errorJson);
+              error(NAMESPACE, `${action} error response:`, errorJson);
             } catch (e) {
               // If not valid JSON, use as raw text
               errorMessage = errorText;
-              console.error(`[API] ${action} error response text:`, errorText);
+              error(NAMESPACE, `${action} error response text:`, errorText);
             }
             throw new Error(errorMessage || response.statusText);
           });
@@ -90,8 +94,8 @@ class Api {
         return response.json();
       })
       .catch((err) => {
-        console.error(`[API] ${action} error`, err);
-        console.error(`[API] ${action} error details:`, err.message);
+        error(NAMESPACE, `${action} error`, err);
+        error(NAMESPACE, `${action} error details:`, err.message);
         return Promise.reject(err);
       });
   };
@@ -129,13 +133,14 @@ class Api {
   };
   fetchQuestions = (data) => {
     try {
-      console.log(`[API] fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`);
-      console.log("[API] fetchQuestions - request data:", data);
+      debug(NAMESPACE, `fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`);
+      debug(NAMESPACE, "fetchQuestions - request data:", data);
 
       // Validate that serialUserId is present and valid
       if (!data || !data.serialUserId) {
-        console.error(
-          "[API] fetchQuestions - Missing required field: serialUserId"
+        error(
+          NAMESPACE,
+          "fetchQuestions - Missing required field: serialUserId"
         );
         return Promise.reject(
           new Error("Missing required field: serialUserId")
@@ -148,13 +153,13 @@ class Api {
         fetch(`${QST_BACKEND}/feed`, options)
       );
     } catch (error) {
-      console.error("[API] fetchQuestions preparation error:", error);
+      error(NAMESPACE, "fetchQuestions preparation error:", error);
       return Promise.reject(error);
     }
   };
 
   fetchStrServer = (data) => {
-    console.log("[API] fetchStrServer - request data:", data);
+    debug(NAMESPACE, "fetchStrServer - request data:", data);
     const options = this.makeOptions(data);
     const url = `${STRDB_BACKEND}/server`;
     return this.logAndParse(
@@ -182,7 +187,7 @@ class Api {
         return defaultInfo;
       }
     } catch (ex) {
-      console.log(`get geoInfo`, ex);
+      debug(NAMESPACE, `get geoInfo`, ex);
       return defaultInfo;
     }
   };

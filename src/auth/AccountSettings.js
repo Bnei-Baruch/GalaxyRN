@@ -9,6 +9,9 @@ import { baseStyles } from "../constants";
 import IconWithText from "../settings/IconWithText";
 import TextDisplayWithButton from "../components/TextDisplayWithButton";
 import { ACCOUNT_URL } from "@env";
+import { debug, error } from '../services/logger';
+
+const NAMESPACE = 'AccountSettings';
 
 const AccountSettings = ({ withTitle = true }) => {
   const { t } = useTranslation();
@@ -23,7 +26,7 @@ const AccountSettings = ({ withTitle = true }) => {
         try {
           Linking.openURL(ACCOUNT_URL);
         } catch (error) {
-          console.error("Error opening account page", error);
+          error(NAMESPACE, "Error opening account page", error);
         }
       },
     },
@@ -41,10 +44,10 @@ const AccountSettings = ({ withTitle = true }) => {
     <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>
   );
 
-  console.log("AccountSettings rendering. IconWithText:", IconWithText);
-  console.log("AccountSettings rendering. TextDisplayWithButton:", TextDisplayWithButton);
-  console.log("AccountSettings rendering. ListInModal:", ListInModal);
-  console.log("AccountSettings rendering. Icon (from vector-icons):", Icon);
+  debug(NAMESPACE, "AccountSettings rendering. IconWithText:", IconWithText);
+  debug(NAMESPACE, "AccountSettings rendering. TextDisplayWithButton:", TextDisplayWithButton);
+  debug(NAMESPACE, "AccountSettings rendering. ListInModal:", ListInModal);
+  debug(NAMESPACE, "AccountSettings rendering. Icon (from vector-icons):", Icon);
 
   return (
     <View style={styles.container}>

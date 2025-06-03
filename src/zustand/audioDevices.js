@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { NativeModules, NativeEventEmitter, Platform } from "react-native";
 import { AUDIO_DEVICE_TYPES, AUDIO_DEVICE_TYPES_BY_KEY } from "../constants";
 import AudioBridge from "../services/AudioBridge";
+import { debug, info, warn, error } from "../services/logger";
+
+const NAMESPACE = 'AudioDevices';
 
 const eventEmitter = new NativeEventEmitter(AudioBridge.raw);
 let subscription = null;
@@ -58,14 +61,14 @@ const deviceInfoToOption =
 const useAudioDevicesStore = create((set, get) => ({
   selected: null,
   select: async (id) => {
-    console.log("[audioDevices js] select called with id:", id);
+    debug(NAMESPACE, "select called with id:", id);
     await AudioBridge.updateAudioDevices(id);
   },
   devices: [],
   initAudioDevices: () => {
-    console.log("[audioDevices js] initAudioDevices called");
+    info(NAMESPACE, "initAudioDevices called");
     if (subscription) {
-      console.log("[audioDevices js] Removing existing subscription");
+      debug(NAMESPACE, "Removing existing subscription");
       subscription.remove();
       subscription = null;
     }
@@ -74,7 +77,7 @@ const useAudioDevicesStore = create((set, get) => ({
       subscription = eventEmitter.addListener(
         "updateAudioDevice",
         async (data) => {
-          console.log("[audioDevices js] updateAudioDevice event received",data);
+          debug(NAMESPACE, "updateAudioDevice event received", data);
           const devices = Object.values(data)
             .map(deviceInfoToOption)
             .sort((a, b) => a.priority - b.priority);
@@ -87,11 +90,11 @@ const useAudioDevicesStore = create((set, get) => ({
 
       AudioBridge.initAudioDevices();
     } catch (error) {
-      console.error("[audioDevices js] Error in initAudioDevices:", error);
+      error(NAMESPACE, "Error in initAudioDevices:", error);
     }
   },
   abortAudioDevices: () => {
-    console.log("[audioDevices js] abortAudioDevices called");
+    info(NAMESPACE, "abortAudioDevices called");
     if (subscription) {
       AudioBridge.abandonAudioFocus();
       subscription.remove();

@@ -11,6 +11,7 @@ import { getFromStorage, setToStorage } from "../shared/tools";
 import { useUiActions } from "./uiActions";
 import { useInitsStore } from "./inits";
 import { setLanguage } from "../i18n/i18n";
+import { logger } from "../services/logger";
 
 // Держим референс на слушатель, чтобы можно было удалить его при необходимости
 let orientationListener = null;
@@ -83,4 +84,10 @@ export const useSettingsStore = create((set, get) => ({
   toggleShowGroups: () => set((state) => ({ showGroups: !state.showGroups })),
   hideSelf: false,
   toggleHideSelf: () => set((state) => ({ hideSelf: !state.hideSelf })),
+  debugMode: false,
+  toggleDebugMode: () => {
+    const debugMode = !get().debugMode;
+    logger.toggleDebugMode(debugMode);
+    set({ debugMode });
+  },
 }));

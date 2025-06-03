@@ -1,51 +1,36 @@
 import { create } from "zustand";
-import { NativeEventEmitter, NativeModules } from "react-native";
-import log from "loglevel";
+import { NativeModules, NativeEventEmitter } from "react-native";
+import { debug, info, error } from "../services/logger";
 
-const permissionsModule = NativeModules.PermissionsModule;
+const NAMESPACE = 'AndroidPermissions';
 
-let eventEmitter;
+let eventEmitter = null;
 try {
-  if (permissionsModule) {
-    eventEmitter = new NativeEventEmitter(permissionsModule);
+  if (NativeModules.PermissionsModule) {
+    eventEmitter = new NativeEventEmitter(NativeModules.PermissionsModule);
+  } else {
+    error(NAMESPACE, "Error creating permissions NativeEventEmitter:", error);
   }
 } catch (error) {
-  log.error("[inits] Error creating permissions NativeEventEmitter:", error);
+  debug(NAMESPACE, "Permissions module not found");
 }
 
-let subscription;
-
-// Export the store
-export const useAndroidPermissionsStore = create((set, get) => ({
+export const useAndroidPermissionsStore = create((set) => ({
   permissionsReady: false,
-  initAndroidPermissions: async () => {
-    if (!permissionsModule) {
-      log.debug("[inits] Permissions module not found");
-      return;
-    }
-
-    const permissionsReady = await permissionsModule.getPermissionStatus();
-    log.info("[inits] permissionsReady: ", permissionsReady);
-
-    if (permissionsReady) {
-      set({ permissionsReady: true });
-      return;
-    }
+  setPermissionsReady: (permissionsReady) => {
+    info(NAMESPACE, "permissionsReady: ", permissionsReady);
+    set({ permissionsReady });
+  },
+  initPermissions: () => {
+    if (!eventEmitter) return;
 
     try {
-      subscription = eventEmitter?.addListener("permissionsStatus", (event) => {
-        console.log("[RN render] initAndroidPermissions eventEmitter", event);
-        if (event && event.allGranted) {
-          log.info("[inits] All Android permissions granted!");
-          set({ permissionsReady: true });
-        }
+      eventEmitter.addListener("permissionsGranted", () => {
+        info(NAMESPACE, "All Android permissions granted!");
+        set({ permissionsReady: true });
       });
     } catch (error) {
-      log.error("[inits] Error setting up permissions event emitter:", error);
-      set({ permissionsReady: true });
+      error(NAMESPACE, "Error setting up permissions event emitter:", error);
     }
-  },
-  terminateAndroidPermissions: () => {
-    if (subscription) subscription.remove();
   },
 }));
