@@ -6,7 +6,7 @@ import useAudioDevicesStore from "../zustand/audioDevices";
 import { baseStyles } from "../constants";
 import ListInModal from "../components/ListInModal";
 import { useTranslation } from "react-i18next";
-import { debug, error } from '../services/logger'; 
+import logger from '../services/logger'; 
 
 const NAMESPACE = 'SelectDeviceBtn';
 
@@ -16,7 +16,7 @@ export const SelectDeviceBtn = () => {
   const { t } = useTranslation();
 
   if (!selected) {
-    debug(NAMESPACE, "SelectDeviceBtn no selected device");
+    logger.debug(NAMESPACE, "SelectDeviceBtn no selected device");
     return null;
   }
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import api from '../shared/Api';
-import { debug, error } from '../services/logger';
+import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../shared/tools';
 
 const NAMESPACE = 'FetchRooms';
@@ -22,14 +22,14 @@ const useRoomStore = create((set) => ({
         const id = await getFromStorage('room');
 
         const room = data.rooms.find(x => x.room === Number.parseInt(id));
-        debug(NAMESPACE, 'room from RNSecureStorage', id, room);
+        logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 
         set({ room });
         //const { autoEnterRoom }   = useSettingsStore.getState();
         //const { setReadyForJoin } = useInitsStore.getState();
         //autoEnterRoom && setReadyForJoin(!!room);
       } catch (err) {
-        error(NAMESPACE, 'saved room: ', err);
+        logger.error(NAMESPACE, 'saved room: ', err);
       }
 
       return data.rooms;
@@ -39,4 +39,5 @@ const useRoomStore = create((set) => ({
     }
   },
 }));
+
 export default useRoomStore;

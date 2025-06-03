@@ -7,9 +7,9 @@ import AudioSelect from "./AudioSelect";
 import VideoSelect from "./VideoSelect";
 import { baseStyles } from "../constants";
 import { topMenuBtns } from "../topBar/helper";
-import { debug } from '../services/logger';
+import logger from "../services/logger";
 
-const NAMESPACE = 'OptionsBtn';
+const NAMESPACE = "OptionsBtn";
 
 const items = [
   { value: "audio", text: "Audio" },
@@ -24,7 +24,7 @@ export const OptionsBtn = () => {
   };
 
   const renderItem = (item) => {
-    debug(NAMESPACE, "renderItem", item);
+    logger.debug(NAMESPACE, "renderItem", item);
 
     switch (item.value) {
       case "audio":

@@ -11,7 +11,7 @@ import { getFromStorage, setToStorage } from "../shared/tools";
 import { useUiActions } from "./uiActions";
 import { useInitsStore } from "./inits";
 import { setLanguage } from "../i18n/i18n";
-import { logger } from "../services/logger";
+import logger from "../services/logger";
 
 // Держим референс на слушатель, чтобы можно было удалить его при необходимости
 let orientationListener = null;

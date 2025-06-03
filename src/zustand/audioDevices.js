@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { NativeModules, NativeEventEmitter, Platform } from "react-native";
 import { AUDIO_DEVICE_TYPES, AUDIO_DEVICE_TYPES_BY_KEY } from "../constants";
 import AudioBridge from "../services/AudioBridge";
-import { debug, info, warn, error } from "../services/logger";
+import logger from "../services/logger";
 
 const NAMESPACE = 'AudioDevices';
 
@@ -61,14 +61,14 @@ const deviceInfoToOption =
 const useAudioDevicesStore = create((set, get) => ({
   selected: null,
   select: async (id) => {
-    debug(NAMESPACE, "select called with id:", id);
+    logger.debug(NAMESPACE, "select called with id:", id);
     await AudioBridge.updateAudioDevices(id);
   },
   devices: [],
   initAudioDevices: () => {
-    info(NAMESPACE, "initAudioDevices called");
+    logger.info(NAMESPACE, "initAudioDevices called");
     if (subscription) {
-      debug(NAMESPACE, "Removing existing subscription");
+      logger.debug(NAMESPACE, "Removing existing subscription");
       subscription.remove();
       subscription = null;
     }
@@ -77,7 +77,7 @@ const useAudioDevicesStore = create((set, get) => ({
       subscription = eventEmitter.addListener(
         "updateAudioDevice",
         async (data) => {
-          debug(NAMESPACE, "updateAudioDevice event received", data);
+          logger.debug(NAMESPACE, "updateAudioDevice event received", data);
           const devices = Object.values(data)
             .map(deviceInfoToOption)
             .sort((a, b) => a.priority - b.priority);
@@ -90,11 +90,11 @@ const useAudioDevicesStore = create((set, get) => ({
 
       AudioBridge.initAudioDevices();
     } catch (error) {
-      error(NAMESPACE, "Error in initAudioDevices:", error);
+      logger.error(NAMESPACE, "Error in initAudioDevices:", error);
     }
   },
   abortAudioDevices: () => {
-    info(NAMESPACE, "abortAudioDevices called");
+    logger.info(NAMESPACE, "abortAudioDevices called");
     if (subscription) {
       AudioBridge.abandonAudioFocus();
       subscription.remove();

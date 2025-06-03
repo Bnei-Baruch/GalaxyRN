@@ -1,4 +1,4 @@
-import { error } from '../services/logger';
+import logger from '../services/logger';
 
 const NAMESPACE = 'ConfigStore';
 
@@ -12,7 +12,7 @@ class ConfigStore {
       ConfigStore.globalConfig = config;
       ConfigStore.globalConfig.lastModified = new Date(config.last_modified);
     } catch (e) {
-      error(NAMESPACE, 'ConfigStore.setGlobalConfig', e);
+      logger.error(NAMESPACE, 'ConfigStore.setGlobalConfig', e);
     }
   };
 

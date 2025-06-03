@@ -1,5 +1,6 @@
 import RNFS from "react-native-fs";
-import { Linking } from "react-native";
+import { Linking, Platform, Dimensions } from "react-native";
+import { SUPPORT_EMAIL } from "@env";
 
 class Logger {
   constructor() {
@@ -35,22 +36,67 @@ class Logger {
     }
   }
 
-  async sendFile(email = "") {
+  async sendFile(email = SUPPORT_EMAIL) {
     try {
-      const fileContent = await RNFS.readFile(this.logFilePath, "utf8");
+      const logsBase64 = await RNFS.readFile(this.logFilePath, "base64");
+      const zustandStore = this.getZustandStore();
+
+      const storeFilePath = `${RNFS.DocumentDirectoryPath}/store_state.json`;
+      await RNFS.writeFile(storeFilePath, zustandStore, "utf8");
+      const storeBase64 = await RNFS.readFile(storeFilePath, "base64");
+
+      const deviceInfo = this.getDeviceInfo();
+      const deviceFilePath = `${RNFS.DocumentDirectoryPath}/device_info.json`;
+      await RNFS.writeFile(deviceFilePath, deviceInfo, "utf8");
+      const deviceBase64 = await RNFS.readFile(deviceFilePath, "base64");
+
       const subject = encodeURIComponent("Application Logs");
-      const body = encodeURIComponent(fileContent);
-      const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+      const mailtoUrl = `mailto:${email}?subject=${subject}&attachment=data:text/plain;base64,${logsBase64}&attachment=data:application/json;base64,${storeBase64}&attachment=data:application/json;base64,${deviceBase64}`;
 
       const canOpen = await Linking.canOpenURL(mailtoUrl);
       if (canOpen) {
         await Linking.openURL(mailtoUrl);
+        // Clean up temp files
+        await RNFS.unlink(storeFilePath);
+        await RNFS.unlink(deviceFilePath);
       } else {
         console.error("No email client found");
       }
     } catch (error) {
       console.error("Failed to send log file:", error);
     }
+  }
+
+  getZustandStore() {
+    const stores = {
+      user: require("../zustand/user").useUserStore.getState(),
+      room: require("../zustand/fetchRooms").default.getState(),
+      inRoom: require("../zustand/inRoom").useInRoomStore.getState(),
+      settings: require("../zustand/settings").useSettingsStore.getState(),
+      shidur: require("../zustand/shidur").useShidurStore.getState(),
+      inits: require("../zustand/inits").useInitsStore.getState(),
+      chat: require("../zustand/chat").useChatStore.getState(),
+      version: require("../zustand/version").useVersionStore.getState(),
+      subtitle: require("../zustand/subtitle").useSubtitleStore.getState(),
+      uiActions: require("../zustand/uiActions").useUiActions.getState(),
+      materials: require("../zustand/fetchMaterials").default.getState(),
+    };
+
+    return JSON.stringify(stores, null, 2);
+  }
+
+  getDeviceInfo() {
+    const window = Dimensions.get("window");
+    const screen = Dimensions.get("screen");
+
+    const deviceInfo = {
+      platform: Platform,
+      window: window,
+      screen: screen,
+      timestamp: new Date().toISOString(),
+    };
+
+    return JSON.stringify(deviceInfo, null, 2);
   }
 
   formatMessage(level, ...args) {
@@ -68,7 +114,7 @@ class Logger {
   }
 
   async log(level, ...args) {
-    if (__DEV__ || !this.debugMode) return;
+    if (!this.debugMode) return;
 
     const formattedMessage = this.formatMessage(level, ...args);
 
@@ -119,12 +165,6 @@ class Logger {
 
 // Create singleton instance
 const logger = new Logger();
-
-// Export the logger functions
-export const debug = (...args) => logger.debug(...args);
-export const info = (...args) => logger.info(...args);
-export const warn = (...args) => logger.warn(...args);
-export const error = (...args) => logger.error(...args);
 
 // Export the default logger for general use
 export default logger;

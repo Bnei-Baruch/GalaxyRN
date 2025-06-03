@@ -1,20 +1,18 @@
 import { create } from "zustand";
 import { NativeEventEmitter } from "react-native";
 import mqtt from "../shared/mqtt";
-import { debug, info, warn, error } from '../services/logger';
+import logger from '../services/logger';
 import { useUserStore } from "./user";
-import { getFromStorage } from "../shared/tools";
-import api from "../shared/Api";
-import ConfigStore from "../shared/ConfigStore";
-import GxyConfig from "../shared/janus-config";
-
-import { useInRoomStore } from "./inRoom";
-import { useSettingsStore } from "./settings";
 import { useMyStreamStore } from "./myStream";
 import { useShidurStore } from "./shidur";
-import kc from "../auth/keycloak";
-import BackgroundTimer from "react-native-background-timer";
+import { useSettingsStore } from "./settings";
+import { useInRoomStore } from "./inRoom";
 import { useUiActions } from "./uiActions";
+import ConfigStore from "../shared/ConfigStore";
+import GxyConfig from "../shared/janus-config";
+import BackgroundTimer from "react-native-background-timer";
+import { getFromStorage } from "../shared/tools";
+import kc from "../auth/keycloak";
 import CallsBridge from "../services/CallsBridge";
 
 const NAMESPACE = 'Inits';
@@ -25,13 +23,13 @@ try {
   if (CallsBridge && CallsBridge.raw) {
     eventEmitter = new NativeEventEmitter(CallsBridge.raw);
   } else {
-    warn(NAMESPACE, "CallsBridge.raw is undefined, event emitter not created");
+    logger.warn(NAMESPACE, "CallsBridge.raw is undefined, event emitter not created");
   }
 } catch (error) {
-  error(NAMESPACE, "Error creating NativeEventEmitter:", error);
+  logger.error(NAMESPACE, "Error creating NativeEventEmitter:", error);
 }
 
-let subscription;
+let subscription = null;
 
 // Export the store
 export const useInitsStore = create((set, get) => ({
@@ -50,59 +48,58 @@ export const useInitsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     mqtt.init(user, (reconnected, error) => {
       if (error) {
-        info(NAMESPACE, "MQTT disconnected");
+        logger.info(NAMESPACE, "MQTT disconnected");
         set(() => ({ mqttReady: false }));
         alert("- Lost Connection to Arvut System -");
       } else if (reconnected) {
         set(() => ({ mqttReady: true }));
-        info(NAMESPACE, "MQTT reconnected");
-      } else {
-        set(() => ({ mqttReady: true }));
-
-        mqtt.join("galaxy/users/notification");
-        mqtt.join("galaxy/users/broadcast");
-
-        const { user } = useUserStore.getState();
-        const { toggleCammute, toggleMute } = useMyStreamStore.getState();
-        const { streamGalaxy } = useShidurStore.getState();
-        const { toggleQuestion } = useSettingsStore.getState();
-        const { updateDisplayById } = useInRoomStore.getState();
-        const { restartRoom } = useInRoomStore.getState();
-
-        mqtt.watch((data) => {
-          const { type, id, bitrate } = data;
-
-          if (
-            user.id === id &&
-            ["client-reconnect", "client-reload", "client-disconnect"].includes(
-              type
-            )
-          ) {
-            restartRoom();
-          } else if (type === "client-kicked" && user.id === id) {
-            kc.logout();
-          } else if (type === "client-question" && user.id === id) {
-            toggleQuestion();
-          } else if (type === "client-mute" && user.id === id) {
-            toggleMute();
-          } else if (type === "video-mute" && user.id === id) {
-            toggleCammute();
-          } else if (type === "audio-out") {
-            debug(NAMESPACE, "call streamGalaxy bug: [mqtt] audio-out: ", data);
-            streamGalaxy(data.status);
-            if (data.status) {
-              // remove question mark when sndman unmute our room
-              toggleQuestion(false);
-            }
-          } else if (type === "reload-config") {
-            //this.reloadConfig();
-          } else if (type === "client-reload-all") {
-            restartRoom();
-          } else if (type === "client-state") {
-            updateDisplayById(data.user);
-          }
-        });
+        logger.info(NAMESPACE, "MQTT reconnected");
       }
+      set(() => ({ mqttReady: true }));
+
+      mqtt.join("galaxy/users/notification");
+      mqtt.join("galaxy/users/broadcast");
+
+      const { user } = useUserStore.getState();
+      const { toggleCammute, toggleMute } = useMyStreamStore.getState();
+      const { streamGalaxy } = useShidurStore.getState();
+      const { toggleQuestion } = useSettingsStore.getState();
+      const { updateDisplayById } = useInRoomStore.getState();
+      const { restartRoom } = useInRoomStore.getState();
+
+      mqtt.watch((data) => {
+        const { type, id, bitrate } = data;
+
+        if (
+          user.id === id &&
+          ["client-reconnect", "client-reload", "client-disconnect"].includes(
+            type
+          )
+        ) {
+          restartRoom();
+        } else if (type === "client-kicked" && user.id === id) {
+          kc.logout();
+        } else if (type === "client-question" && user.id === id) {
+          toggleQuestion();
+        } else if (type === "client-mute" && user.id === id) {
+          toggleMute();
+        } else if (type === "video-mute" && user.id === id) {
+          toggleCammute();
+        } else if (type === "audio-out") {
+          logger.debug(NAMESPACE, "call streamGalaxy bug: [mqtt] audio-out: ", data);
+          streamGalaxy(data.status);
+          if (data.status) {
+            // remove question mark when sndman unmute our room
+            toggleQuestion(false);
+          }
+        } else if (type === "reload-config") {
+          //this.reloadConfig();
+        } else if (type === "client-reload-all") {
+          restartRoom();
+        } else if (type === "client-state") {
+          updateDisplayById(data.user);
+        }
+      });
     });
   },
   endMqtt: async () => {
@@ -114,12 +111,12 @@ export const useInitsStore = create((set, get) => ({
 
     try {
       const configData = await api.fetchConfig();
-      debug(NAMESPACE, "got config: ", configData);
+      logger.debug(NAMESPACE, "got config: ", configData);
       ConfigStore.setGlobalConfig(configData);
       GxyConfig.setGlobalConfig(configData);
       set(() => ({ configReady: true }));
     } catch (err) {
-      error(NAMESPACE, "error initializing app", err);
+      logger.error(NAMESPACE, "error initializing app", err);
     }
   },
   initApp: async () => {

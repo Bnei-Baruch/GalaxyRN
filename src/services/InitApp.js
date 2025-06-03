@@ -14,7 +14,7 @@ import { useInitsStore } from "../zustand/inits";
 import { useMyStreamStore } from "../zustand/myStream";
 import { useSubtitleStore } from "../zustand/subtitle";
 import { useShidurStore } from "../zustand/shidur";
-import { info, error } from "./logger";
+import logger from "./logger";
 
 const NAMESPACE = 'InitApp';
 
@@ -26,10 +26,10 @@ const InitApp = () => {
   const { audio } = useShidurStore();
 
   useEffect(() => {
-    info(NAMESPACE, "Initializing with language");
+    logger.info(NAMESPACE, "Initializing with language");
     initSubtitle(audio);
     return () => {
-      info(NAMESPACE, "Component unmounting, exiting");
+      logger.info(NAMESPACE, "Component unmounting, exiting");
       exitSubtitle(audio);
     };
   }, [audio]);
@@ -39,52 +39,23 @@ const InitApp = () => {
   useForegroundListener();
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        addBreadcrumb("initialization", "Starting app initialization");
+    const { width, height } = Dimensions.get("window");
+    setIsPortrait(height > width);
 
-        setTag("app_version", require("../../package.json").version);
-        setTag("platform", "react-native");
-
-        await myInit();
-        addBreadcrumb("initialization", "myInit completed");
-
-        await initApp();
-        addBreadcrumb("initialization", "initApp completed");
-
-        initAudioDevices();
-        addBreadcrumb("initialization", "Audio devices initialized");
-
-        initSubtitle();
-        addBreadcrumb("initialization", "Subtitle initialized");
-      } catch (error) {
-        error(NAMESPACE, "Error during initialization:", error);
-        throw error;
-      }
-    };
-
-    init();
+    initApp();
+    initAudioDevices();
 
     return () => {
-      myAbort();
       terminateApp();
       abortAudioDevices();
     };
   }, []);
 
-  useEffect(() => {
-    const onChange = () => {
-      const dim = Dimensions.get("screen");
-      const _isPortrait = dim.height >= dim.width;
-      setIsPortrait(_isPortrait);
-    };
-    let subscription = Dimensions.addEventListener("change", onChange);
-    onChange();
+  if (!readyForJoin) {
+    return <SettingsNotJoined />;
+  }
 
-    return () => subscription && subscription.remove();
-  }, []);
-
-  return readyForJoin ? <PrepareRoom /> : <SettingsNotJoined />;
+  return <PrepareRoom />;
 };
 
 export default InitApp;

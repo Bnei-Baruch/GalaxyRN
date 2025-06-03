@@ -1,6 +1,6 @@
 import { randomString } from '../shared/tools';
 import { EventEmitter } from 'events';
-import { debug, info, warn, error } from '../services/logger';
+import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { MediaStream, RTCPeerConnection } from 'react-native-webrtc';
 import { STUN_SRV_GXY } from '@env';
@@ -41,22 +41,22 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   watch(id, restart = false) {
-    info(NAMESPACE, 'STUN SERVER', STUN_SRV_GXY);
+    logger.info(NAMESPACE, 'STUN SERVER', STUN_SRV_GXY);
     this.streamId = id;
     const body    = { request: 'watch', id, restart };
     return new Promise((resolve, reject) => {
       if (!this.janus) {
-        error(NAMESPACE, 'Cannot watch stream - janus connection is not initialized');
+        logger.error(NAMESPACE, 'Cannot watch stream - janus connection is not initialized');
         return reject(new Error('Janus connection not initialized'));
       }
       
       this.transaction('message', { body }, 'event').then((param) => {
         if (!param) {
-          error(NAMESPACE, 'Empty response from transaction');
+          logger.error(NAMESPACE, 'Empty response from transaction');
           return reject(new Error('Empty transaction response'));
         }
         
-        debug(NAMESPACE, 'watch: ', param);
+        logger.debug(NAMESPACE, 'watch: ', param);
         const { session_id, json } = param;
 
         let audioTransceiver = null, videoTransceiver = null;
@@ -79,15 +79,15 @@ export class StreamingPlugin extends EventEmitter {
         }
 
         if (json?.jsep) {
-          debug(NAMESPACE, 'sdp: ', json);
+          logger.debug(NAMESPACE, 'sdp: ', json);
           try {
             this.sdpExchange(json.jsep);
           } catch (error) {
-            error(NAMESPACE, 'Error in SDP exchange', error);
+            logger.error(NAMESPACE, 'Error in SDP exchange', error);
             return reject(error);
           }
         } else if (!restart) {
-          warn(NAMESPACE, 'No JSEP received');
+          logger.warn(NAMESPACE, 'No JSEP received');
         }
 
         if (restart) return;
@@ -95,8 +95,8 @@ export class StreamingPlugin extends EventEmitter {
         this.initPcEvents(resolve);
 
       }).catch((err) => {
-        error(NAMESPACE, 'StreamingJanusPlugin, cannot watch stream', err?.message || JSON.stringify(err) || 'undefined');
-        reject(err || new Error('Unknown streaming error'));
+        logger.error(NAMESPACE, 'Error watching stream', err);
+        reject(err);
       });
     });
   }
@@ -108,7 +108,7 @@ export class StreamingPlugin extends EventEmitter {
         'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n');
       this.pc.setLocalDescription(desc);
       this.start(desc);
-    }, error => error(NAMESPACE, 'SDP Exchange', error));
+    }, error => logger.error(NAMESPACE, 'SDP Exchange', error));
   }
 
   start(jsep) {
@@ -121,7 +121,7 @@ export class StreamingPlugin extends EventEmitter {
     return this.transaction('message', message, 'event').then(({ data, json }) => {
       return { data, json };
     }).catch((err) => {
-      error(NAMESPACE, 'StreamingJanusPlugin, cannot start stream', err);
+      logger.error(NAMESPACE, 'StreamingJanusPlugin, cannot start stream', err);
       throw err;
     });
   }
@@ -130,7 +130,7 @@ export class StreamingPlugin extends EventEmitter {
     const body = { request: 'switch', id };
 
     return this.transaction('message', { body }, 'event').catch((err) => {
-      error(NAMESPACE, 'StreamingJanusPlugin, cannot start stream', err);
+      logger.error(NAMESPACE, 'StreamingJanusPlugin, cannot start stream', err);
       throw err;
     });
   }
@@ -149,7 +149,7 @@ export class StreamingPlugin extends EventEmitter {
   initPcEvents(resolve) {
     this.pc.addEventListener('connectionstatechange', (e) => {
       
-      info(NAMESPACE, 'ICE State: ', e.target.connectionState);
+      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
       this.iceState = e.target.connectionState;
       if (this.iceState === 'disconnected') {
         this.iceRestart();
@@ -164,7 +164,7 @@ export class StreamingPlugin extends EventEmitter {
       return this.transaction('trickle', { candidate: e.candidate });
     });
     this.pc.addEventListener('track', (e) => {
-      info(NAMESPACE, 'Got track: ', e);
+      logger.info(NAMESPACE, 'Got track: ', e);
       let stream = new MediaStream([e.track]);
       resolve(stream);
     });
@@ -175,22 +175,22 @@ export class StreamingPlugin extends EventEmitter {
       BackgroundTimer.setTimeout(() => {
         if (attempt < 10 && this.iceState !== 'disconnected' ||
           !this.janus?.isConnected) {
-          debug(NAMESPACE, 'Current ice state:', this.iceState);
+          logger.debug(NAMESPACE, 'Current ice state:', this.iceState);
           return;
         } else if (mqtt.mq.connected) {
-          debug(NAMESPACE, '- Trigger ICE Restart -');
+          logger.debug(NAMESPACE, '- Trigger ICE Restart -');
           this.watch(this.streamId, true).catch(err => {
-            error(NAMESPACE, 'Error during ICE restart', err?.message || JSON.stringify(err) || 'undefined');
+            logger.error(NAMESPACE, 'Error during ICE restart', err?.message || JSON.stringify(err) || 'undefined');
           });
         } else if (attempt >= 10) {
-          error(NAMESPACE, '- ICE Restart failed -');
+          logger.error(NAMESPACE, '- ICE Restart failed -');
           return;
         }
-        debug(NAMESPACE, 'ICE Restart try: ' + attempt);
+        logger.debug(NAMESPACE, 'ICE Restart try: ' + attempt);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      error(NAMESPACE, 'Error in iceRestart', e?.message || JSON.stringify(e) || 'undefined');
+      logger.error(NAMESPACE, 'Error in iceRestart', e?.message || JSON.stringify(e) || 'undefined');
     }
   }
 
@@ -201,27 +201,27 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   error(cause) {
-    error(NAMESPACE, 'Error in streaming plugin:', cause);
+    logger.error(NAMESPACE, 'Error in streaming plugin:', cause);
   }
 
   onmessage(data) {
-    debug(NAMESPACE, 'Received message:', data);
+    logger.debug(NAMESPACE, 'Received message:', data);
   }
 
   oncleanup() {
-    debug(NAMESPACE, 'Cleanup called');
+    logger.debug(NAMESPACE, 'Cleanup called');
   }
 
   detached() {
-    debug(NAMESPACE, 'Detached from plugin');
+    logger.debug(NAMESPACE, 'Detached from plugin');
   }
 
   hangup() {
-    debug(NAMESPACE, 'Hangup called');
+    logger.debug(NAMESPACE, 'Hangup called');
   }
 
   slowLink(uplink, lost, mid) {
-    warn(NAMESPACE, 'SlowLink detected:', {
+    logger.warn(NAMESPACE, 'SlowLink detected:', {
       uplink,
       lost,
       mid
@@ -229,14 +229,14 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   mediaState(media, on) {
-    debug(NAMESPACE, 'Media state changed:', {
+    logger.debug(NAMESPACE, 'Media state changed:', {
       media,
       on
     });
   }
 
   webrtcState(isReady) {
-    debug(NAMESPACE, 'WebRTC state changed:', {
+    logger.debug(NAMESPACE, 'WebRTC state changed:', {
       isReady
     });
   }

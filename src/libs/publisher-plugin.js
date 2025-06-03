@@ -1,6 +1,6 @@
 import { randomString } from "../shared/tools";
 import { EventEmitter } from "events";
-import { debug, info, error } from '../services/logger';
+import logger from '../services/logger';
 import mqtt from "../shared/mqtt";
 import { STUN_SRV_GXY } from "@env";
 import { RTCPeerConnection } from "react-native-webrtc";
@@ -54,7 +54,7 @@ export class PublisherPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          info(NAMESPACE, "join: ", param);
+          logger.info(NAMESPACE, "join: ", param);
           const { data, json } = param;
 
           if (data) resolve(data);
@@ -383,7 +383,7 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   webrtcState(isReady) {
-    info(
+    logger.info(
       NAMESPACE,
       "webrtcState: RTCPeerConnection is: " +
         (isReady ? "up" : "down")

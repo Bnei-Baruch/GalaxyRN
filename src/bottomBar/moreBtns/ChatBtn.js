@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TouchableOpacity, View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
-import { debug } from '../../services/logger';
+import logger from '../../services/logger';
 
 import IconWithText from "../../settings/IconWithText";
 import { baseStyles } from "../../constants";
@@ -16,7 +16,7 @@ export const ChatBtn = () => {
   const { t } = useTranslation();
 
   const handlePress = () => {
-    debug(NAMESPACE, "handlePress chat");
+    logger.debug(NAMESPACE, "handlePress chat");
     setChatMode(modalModes.chat);
   };
 

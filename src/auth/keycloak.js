@@ -10,7 +10,7 @@ import BackgroundTimer from "react-native-background-timer";
 import { sendSentry, setUser as setSentryUser, clearUser as clearSentryUser, addBreadcrumb } from "../libs/sentry/sentryHelper";
 import { AUTH_CONFIG_ISSUER } from "@env";
 import { setToStorage, getFromStorage } from "../shared/tools";
-import { debug, error } from '../services/logger';
+import logger from '../services/logger';
 
 const NAMESPACE = 'Keycloak';
 
@@ -30,7 +30,7 @@ const decodeJWT = (token) =>{
   try {
     return JSON.parse(decode(token));
   } catch (err) {
-    error(NAMESPACE, "Error decoding JWT", err);
+    logger.error(NAMESPACE, "Error decoding JWT", err);
     return {};
   }
 }
@@ -58,7 +58,7 @@ class Keycloak {
         return this.fetchUser(session);
       })
       .catch((err) => {
-        error(NAMESPACE, "Login failed", err);
+        logger.error(NAMESPACE, "Login failed", err);
         this.logout();
       });
   };
@@ -80,7 +80,7 @@ class Keycloak {
           postLogoutRedirectUrl: AUTH_CONFIG.postLogoutRedirectUrl,
         });
       } catch (err) {
-        error(NAMESPACE, "Logout error", err);
+        logger.error(NAMESPACE, "Logout error", err);
       }
     }
 
@@ -93,12 +93,12 @@ class Keycloak {
    * Sets up a user session from auth tokens
    */
   setSession = (data) => {
-    debug(NAMESPACE, "Setting up session");
+    logger.debug(NAMESPACE, "Setting up session");
     
     try {
       const { accessToken, refreshToken, idToken } = data;
       if (!accessToken || !refreshToken) {
-        error(NAMESPACE, "Missing tokens in setSession", { 
+        logger.error(NAMESPACE, "Missing tokens in setSession", { 
           hasAccessToken: !!accessToken, 
           hasRefreshToken: !!refreshToken 
         });
@@ -119,11 +119,11 @@ class Keycloak {
       api.setAccessToken(accessToken);
 
       setToStorage("user_session", JSON.stringify(session));
-      debug(NAMESPACE, "Session set successfully");
+      logger.debug(NAMESPACE, "Session set successfully");
 
       return session;
     } catch (err) {
-      error(NAMESPACE, "Error in setSession:", err);
+      logger.error(NAMESPACE, "Error in setSession:", err);
       return null;
     }
   };
@@ -144,25 +144,25 @@ class Keycloak {
    */
   refreshToken = async () => {
     if (!this.session) {
-      debug(NAMESPACE, "No session to refresh");
+      logger.debug(NAMESPACE, "No session to refresh");
       return;
     }
     
-    debug(NAMESPACE, "Starting token refresh, expiry:", this.session.payload.exp);
+    logger.debug(NAMESPACE, "Starting token refresh, expiry:", this.session.payload.exp);
     
     try {
       // Check if session payload is valid
       if (!this.session.payload || !this.session.payload.exp) {
-        error(NAMESPACE, "Invalid session payload");
+        logger.error(NAMESPACE, "Invalid session payload");
         return this.logout();
       }
     
       const timeToRefresh = this.calculateTimeUntilRefresh();
-      debug(NAMESPACE, "Time until refresh:", timeToRefresh, "ms");
+      logger.debug(NAMESPACE, "Time until refresh:", timeToRefresh, "ms");
       this.clearTimeout();
 
       if (timeToRefresh > 0) {
-        debug(NAMESPACE, "Scheduling refresh in", Math.max(timeToRefresh, 1000), "ms");
+        logger.debug(NAMESPACE, "Scheduling refresh in", Math.max(timeToRefresh, 1000), "ms");
         this.timeout = BackgroundTimer.setTimeout(() => {
           sendSentry("check keycloak: refresh token");
           this.refreshToken();
@@ -170,15 +170,15 @@ class Keycloak {
         return;
       }
 
-      debug(NAMESPACE, "Refreshing token now...");
+      logger.debug(NAMESPACE, "Refreshing token now...");
       const refreshData = await refresh(AUTH_CONFIG, {
         refreshToken: this.session.refreshToken,
       });
-      debug(NAMESPACE, "Token refresh successful");
+      logger.debug(NAMESPACE, "Token refresh successful");
 
       const session = this.setSession(refreshData);
       if (!session) {
-        debug(NAMESPACE, "Failed to set session after refresh");
+        logger.debug(NAMESPACE, "Failed to set session after refresh");
         return this.logout();
       }
 
@@ -186,7 +186,7 @@ class Keycloak {
       // Schedule next refresh instead of recursively calling refreshToken
       this.scheduleNextRefresh();
     } catch (err) {
-      error(NAMESPACE, "Refresh Token failed", err);
+      logger.error(NAMESPACE, "Refresh Token failed", err);
       sendSentry("Refresh token failed: " + err.message);
       this.logout();
     }
@@ -211,47 +211,48 @@ class Keycloak {
   };
 
   startFromStorage = async () => {
-    debug(NAMESPACE, "Starting from storage...");
+    logger.debug(NAMESPACE, "Starting from storage...");
     const session = await getFromStorage("user_session")
       .then((s) => {
-        debug(NAMESPACE, "Retrieved session from storage:", s ? "Session exists" : "No session");
+        logger.debug(NAMESPACE, "Retrieved session from storage:", s ? "Session exists" : "No session");
         return !s ? null : JSON.parse(s);
       })
       .catch(err => {
-        error(NAMESPACE, "Error parsing stored session", err);
+        logger.error(NAMESPACE, "Error parsing stored session", err);
         return null;
       });
 
     if (!session) {
-      debug(NAMESPACE, "No valid session found, logging out");
+      logger.debug(NAMESPACE, "No valid session found, logging out");
       return this.logout();
     }
 
     // Set the session and ensure all necessary properties are available
     try {
-      debug(NAMESPACE, "Restoring session and fetching user");
+      logger.debug(NAMESPACE, "Restoring session and fetching user");
       this.setSession(session);
       this.fetchUser(session);
     } catch (err) {
-      error(NAMESPACE, "Error restoring session", err);
+      logger.error(NAMESPACE, "Error restoring session", err);
       this.logout();
     }
   };
+
   /**
    * Fetches and validates user information
    */
   fetchUser = async (session) => {
-    debug(NAMESPACE, "Fetching user info...");
+    logger.debug(NAMESPACE, "Fetching user info...");
     useUserStore.getState().setWIP(true);
 
     const roles = session?.payload?.realm_access?.roles;
     const role = getUserRole(roles);
     try {
       await this.refreshToken();
-      debug(NAMESPACE, "Checking permission for role:", role);
+      logger.debug(NAMESPACE, "Checking permission for role:", role);
       await this.checkPermission(role);
     } catch (err) {
-      error(NAMESPACE, "Error fetching VH info data", err?.message);
+      logger.error(NAMESPACE, "Error fetching VH info data", err?.message);
       return this.logout();
     }
     
@@ -264,7 +265,7 @@ class Keycloak {
   saveUser = (token) => {
     try {
       if (!token) {
-        error(NAMESPACE, "No token available");
+        logger.error(NAMESPACE, "No token available");
         return;
       }
 
@@ -301,11 +302,11 @@ class Keycloak {
         roles,
       };
 
-      debug(NAMESPACE, "Setting user in store and setting WIP to false");
+      logger.debug(NAMESPACE, "Setting user in store and setting WIP to false");
       useUserStore.getState().setUser(user);
       useUserStore.getState().setWIP(false);
     } catch (err) {
-      error(NAMESPACE, "Error saving user:", err);
+      logger.error(NAMESPACE, "Error saving user:", err);
       this.logout();
     }
   };
@@ -314,21 +315,21 @@ class Keycloak {
    * Checks if the user has required permissions
    */
   checkPermission = async (role) => {
-    debug(NAMESPACE, "Checking permission for role:", role);
+    logger.debug(NAMESPACE, "Checking permission for role:", role);
     if (!role) {
-      debug(NAMESPACE, "Permission check failed: No role provided");
+      logger.debug(NAMESPACE, "Permission check failed: No role provided");
       return false;
     }
 
     try {
-      debug(NAMESPACE, "Fetching VH info...");
+      logger.debug(NAMESPACE, "Fetching VH info...");
       const vhinfo = await api.fetchVHInfo();
-      debug(NAMESPACE, "VH info received:", JSON.stringify(vhinfo));
+      logger.debug(NAMESPACE, "VH info received:", JSON.stringify(vhinfo));
 
       useUserStore.getState().setVhinfo(vhinfo);
 
       const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
-      debug(NAMESPACE, "Authorization result:", isAuthorized, {
+      logger.debug(NAMESPACE, "Authorization result:", isAuthorized, {
         active: !!vhinfo.active,
         roleMatches: role === userRolesEnum.user,
         role,
@@ -337,7 +338,7 @@ class Keycloak {
 
       return isAuthorized;
     } catch (err) {
-      error(NAMESPACE, "Error in permission check:", err);
+      logger.error(NAMESPACE, "Error in permission check:", err);
       return false;
     }
   };

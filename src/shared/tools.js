@@ -1,6 +1,6 @@
 import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
 import BackgroundTimer from "react-native-background-timer";
-import { error } from '../services/logger';
+import logger from '../services/logger';
 
 const NAMESPACE = 'Tools';
 
@@ -21,7 +21,7 @@ export const setToStorage = async (key, val) => {
       accessible: ACCESSIBLE.ALWAYS,
     });
   } catch (err) {
-    error(NAMESPACE, "RNSecureStorage setToStorage error", err);
+    logger.error(NAMESPACE, "RNSecureStorage setToStorage error", err);
     return err;
   }
 };

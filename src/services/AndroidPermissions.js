@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import WIP from "../components/WIP";
 import { Platform } from "react-native";
 import { useAndroidPermissionsStore } from "../zustand/androidPermissions";
-import { debug } from './logger';
+import logger from './logger';
 
 const isAndroid = Platform.OS === "android";
 
@@ -15,7 +15,7 @@ const AndroidPermissions = ({ children }) => {
     terminateAndroidPermissions,
   } = useAndroidPermissionsStore();
 
-  debug(NAMESPACE, "AndroidPermissions permissionsReady: ", permissionsReady);
+  logger.debug(NAMESPACE, "AndroidPermissions permissionsReady: ", permissionsReady);
 
   useEffect(() => {
     if (!isAndroid) {

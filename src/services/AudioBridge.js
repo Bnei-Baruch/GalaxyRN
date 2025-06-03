@@ -1,5 +1,5 @@
 import { NativeModules, Platform } from "react-native";
-import { debug, info, warn, error } from "./logger";
+import logger from "./logger";
 
 const NAMESPACE = 'AudioBridge';
 
@@ -7,8 +7,8 @@ const NAMESPACE = 'AudioBridge';
 let NativeAudio = null;
 if (Platform.OS === "ios") {
   NativeAudio = NativeModules.AudioManager;
-  debug(NAMESPACE, "NativeModules.AudioManager on iOS:", NativeModules.AudioManager);
-  debug(NAMESPACE, "NativeAudio on iOS:", NativeAudio);
+  logger.debug(NAMESPACE, "NativeModules.AudioManager on iOS:", NativeModules.AudioManager);
+  logger.debug(NAMESPACE, "NativeAudio on iOS:", NativeAudio);
 } else if (Platform.OS === "android") {
   NativeAudio = NativeModules.AudioDeviceModule;
 }
@@ -52,11 +52,11 @@ const AudioBridge = {
   },
 
   switchAudioOutput: () => {
-    info(NAMESPACE, "Attempting to call switchAudioOutput");
+    logger.info(NAMESPACE, "Attempting to call switchAudioOutput");
     if (Platform.OS === "ios" && NativeAudio?.switchAudioOutput) {
-      debug(NAMESPACE, "Calling iOS native switchAudioOutput method");
+      logger.debug(NAMESPACE, "Calling iOS native switchAudioOutput method");
       NativeAudio.switchAudioOutput();
-      debug(NAMESPACE, "iOS native switchAudioOutput method called");
+      logger.debug(NAMESPACE, "iOS native switchAudioOutput method called");
     }
   },
 

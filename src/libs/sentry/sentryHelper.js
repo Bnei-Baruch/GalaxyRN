@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import { SENTRY_LEVEL } from '@env';
-import { error } from '../../services/logger';
+import logger from '../../services/logger';
 
 const NAMESPACE = 'SentryHelper';
   
@@ -26,7 +26,7 @@ export const captureException = (error, extraData = {}) => {
       Sentry.captureException(error);
     });
   } else {
-    error(NAMESPACE, "Error", error);
+    logger.error(NAMESPACE, "Error", error);
   }
 };
 

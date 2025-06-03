@@ -11,7 +11,7 @@ import { useUserStore } from "./user";
 import { useSettingsStore } from "./settings";
 import GxyConfig from "../shared/janus-config";
 import { JanusMqtt } from "../libs/janus-mqtt";
-import { debug, info, warn, error } from "../services/logger";
+import logger from "../services/logger";
 import { StreamingPlugin } from "../libs/streaming-plugin";
 import { getFromStorage, setToStorage } from "../shared/tools";
 import { HIDE_BARS_TIMEOUT_MS } from "./helper";
@@ -46,16 +46,16 @@ const initStream = async (_janus, media) => {
     const janusStream = new StreamingPlugin(config?.iceServers);
     janusStream.onStatus = async (srv, status) => {
       if (status !== "online") {
-        warn(NAMESPACE, "[shidur] janus status: ", status);
+        logger.warn(NAMESPACE, "[shidur] janus status: ", status);
         useInRoomStore.getState().restartRoom();
       }
     };
     const _data = await _janus.attach(janusStream);
-    debug(NAMESPACE, "[shidur] attach media", _data);
+    logger.debug(NAMESPACE, "[shidur] attach media", _data);
     const stream = await janusStream.watch(media);
     return [stream, janusStream];
   } catch (error) {
-    error(NAMESPACE, 
+    logger.error(NAMESPACE, 
       "[shidur] stream error",
       error?.message || JSON.stringify(error) || "undefined"
     );
@@ -124,7 +124,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       await audioJanus?.switch(audio);
     }
-    debug(NAMESPACE, "setAudio", audio, langtext);
+    logger.debug(NAMESPACE, "setAudio", audio, langtext);
     setToStorage("vrt_lang", audio);
     if (audio !== NOTRL_STREAM_ID) setToStorage("trl_lang", audio);
     setToStorage("vrt_langtext", langtext);
@@ -137,13 +137,13 @@ export const useShidurStore = create((set, get) => ({
     let srv = null;
     try {
       const _userState = useUserStore.getState().buildUserState();
-      debug(NAMESPACE, "initJanus fetchStrServer", _userState);
+      logger.debug(NAMESPACE, "initJanus fetchStrServer", _userState);
       srv = await api.fetchStrServer(_userState).then((res) => {
-        debug(NAMESPACE, "initJanus fetchStrServer", res);
+        logger.debug(NAMESPACE, "initJanus fetchStrServer", res);
         return res?.server;
       });
     } catch (error) {
-      error(NAMESPACE, "Error during fetchStrServer:", error);
+      logger.error(NAMESPACE, "Error during fetchStrServer:", error);
     }
 
     if (!srv) {
@@ -152,16 +152,16 @@ export const useShidurStore = create((set, get) => ({
 
       config = GxyConfig.instanceConfig(inst);
       srv = config.name;
-      debug(NAMESPACE, "init build janus", inst, config);
+      logger.debug(NAMESPACE, "init build janus", inst, config);
     } else {
       config = GxyConfig.instanceConfig(srv);
     }
 
-    debug(NAMESPACE, "new JanusMqtt", user, srv);
+    logger.debug(NAMESPACE, "new JanusMqtt", user, srv);
     janus = new JanusMqtt(user, srv);
 
     await janus.init(config.token);
-    debug(NAMESPACE, "init janus ready");
+    logger.debug(NAMESPACE, "init janus ready");
     set({ janusReady: true });
   },
   cleanJanus: async () => {
@@ -170,12 +170,12 @@ export const useShidurStore = create((set, get) => ({
     try {
       get().cleanShidur();
       get().cleanQuads();
-      debug(NAMESPACE, "cleanJanus", janus);
+      logger.debug(NAMESPACE, "cleanJanus", janus);
       await janus.destroy();
       janus = null;
       set({ janusReady: false });
     } catch (error) {
-      error(NAMESPACE, "Error during cleanJanus:", error);
+      logger.error(NAMESPACE, "Error during cleanJanus:", error);
     }
     cleanWIP = false;
   },
@@ -195,7 +195,7 @@ export const useShidurStore = create((set, get) => ({
       promises.push(initStream(janus, audio));
     }
 
-    debug(NAMESPACE, "wait for ready all streams", promises.length);
+    logger.debug(NAMESPACE, "wait for ready all streams", promises.length);
     const results = await Promise.all(promises);
 
     for (const [stream, janusStream] of results) {
@@ -208,7 +208,7 @@ export const useShidurStore = create((set, get) => ({
       }
     }
 
-    debug(NAMESPACE, "streams are ready", videoStream);
+    logger.debug(NAMESPACE, "streams are ready", videoStream);
     set({ videoStream, readyShidur: true });
   },
   cleanShidur: () => {
@@ -235,9 +235,9 @@ export const useShidurStore = create((set, get) => ({
     });
   },
   streamGalaxy: async (isOnAir) => {
-    debug(NAMESPACE, "call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
+    logger.debug(NAMESPACE, "call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
     if (!trlAudioJanus) {
-      debug(NAMESPACE, 
+      logger.debug(NAMESPACE, 
         "call streamGalaxy bug:[shidur] look like we got talk event before stream init finished"
       );
       setTimeout(() => {
@@ -249,7 +249,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
-      debug(NAMESPACE, 
+      logger.debug(NAMESPACE, 
         "call streamGalaxy bug:[shidur] Switch audio stream: ",
         gxycol[col]
       );
@@ -258,22 +258,22 @@ export const useShidurStore = create((set, get) => ({
       const id = trllang[_langtext];
       // Don't bring translation on toggle trl stream
       if (!id) {
-        debug(NAMESPACE, "[shidur] no id in local storage or client use togle stream");
+        logger.debug(NAMESPACE, "[shidur] no id in local storage or client use togle stream");
       } else {
-        debug(NAMESPACE, 
+        logger.debug(NAMESPACE, 
           `[shidur] Switch trl stream: langtext - ${_langtext}, id - ${id}`
         );
         await trlAudioJanus.switch(id);
       }
       audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.2));
-      debug(NAMESPACE, "[shidur] You now talking");
+      logger.debug(NAMESPACE, "[shidur] You now talking");
     } else {
-      debug(NAMESPACE, "[shidur] Stop talking");
+      logger.debug(NAMESPACE, "[shidur] Stop talking");
       // Bring back source if was choosen before
       const id = await getFromStorage("vrt_lang", 2).then((x) => Number(x));
-      debug(NAMESPACE, "[shidur] get stream back id: ", id);
+      logger.debug(NAMESPACE, "[shidur] get stream back id: ", id);
       await audioJanus.switch(id);
-      debug(NAMESPACE, "[shidur] Switch audio stream back");
+      logger.debug(NAMESPACE, "[shidur] Switch audio stream back");
       audioStream?.getAudioTracks().forEach((track) => track._setVolume(0.8));
     }
     trlAudioStream

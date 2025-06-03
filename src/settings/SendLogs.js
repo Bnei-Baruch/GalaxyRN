@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 import { useSettingsStore } from "../zustand/settings";
-import { logger } from "../services/logger";
+import logger from "../services/logger";
 
 const SendLogs = () => {
   const { debugMode, toggleDebugMode } = useSettingsStore();

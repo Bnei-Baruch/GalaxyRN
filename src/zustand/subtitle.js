@@ -4,7 +4,7 @@ import { useShidurStore } from "./shidur";
 import { SUBTITLES_TOPIC } from "@env";
 import { audio_options2, subtitle_options } from "../shared/consts";
 import { useSettingsStore } from "./settings";
-import { debug, info, warn, error } from "../services/logger";
+import logger from "../services/logger";
 
 const NAMESPACE = 'Subtitle';
 
@@ -37,44 +37,44 @@ export const useSubtitleStore = create((set, get) => ({
         return subOp?.value;
       })[0];
 
-    debug(NAMESPACE, `Subtitle language: ${subLang}`);
+    logger.debug(NAMESPACE, `Subtitle language: ${subLang}`);
 
     if (!subLang) {
       subLang = useSettingsStore.getState().uiLang;
     }
 
-    info(NAMESPACE, `Initializing with language: ${subLang}`);
+    logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
     mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    debug(NAMESPACE, 
+    logger.debug(NAMESPACE, 
       `Joined topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
     );
   },
   exit: () => {
     set({ lastMsg: null });
-    info(NAMESPACE, `Exiting and clearing messages`);
+    logger.info(NAMESPACE, `Exiting and clearing messages`);
     mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
     mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    debug(NAMESPACE, 
+    logger.debug(NAMESPACE, 
       `Left topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
     );
   },
   onMessage: async (data) => {
-    debug(NAMESPACE, `Message received:`, data);
+    logger.debug(NAMESPACE, `Message received:`, data);
     let msg = JSON.parse(data);
-    debug(NAMESPACE, `Parsed message:`, msg);
+    logger.debug(NAMESPACE, `Parsed message:`, msg);
 
     if (!msg.visible) {
-      debug(NAMESPACE, `Message is not visible - ignored`);
+      logger.debug(NAMESPACE, `Message is not visible - ignored`);
       return;
     }
     msg.display_status = "subtitles";
     if (!msg || msg.display_status === MSGS_NONE.display_status || !msg.slide) {
-      debug(NAMESPACE, `Clearing message - null or none display status`);
+      logger.debug(NAMESPACE, `Clearing message - null or none display status`);
       set({ lastMsg: null });
       return;
     }
-    debug(NAMESPACE, `Setting lastMsg:`, msg);
+    logger.debug(NAMESPACE, `Setting lastMsg:`, msg);
     set({ lastMsg: msg });
   },
 }));
