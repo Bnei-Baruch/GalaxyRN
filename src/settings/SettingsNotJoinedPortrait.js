@@ -10,6 +10,7 @@ import PageHeader from '../components/PageHeader';
 import { useTranslation } from 'react-i18next';
 import { baseStyles } from '../constants';
 import AccountSettings from '../auth/AccountSettings';
+import SendLogs from './SendLogs';
 
 export const SettingsNotJoinedPortrait = () => {
   const { t }                          = useTranslation();
@@ -24,6 +25,7 @@ export const SettingsNotJoinedPortrait = () => {
       <PageHeader page={t('settings.page')} />
       <AccountSettings />
       <SelectUiLanguage />
+      <SendLogs />
       <View style={baseStyles.full}>
         <MyVideo styles={{ aspectRatio: 9 / 16, height: '100%' }} />
       </View>

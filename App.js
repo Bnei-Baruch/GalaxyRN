@@ -3,7 +3,6 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import * as Sentry from "@sentry/react-native";
 import { register } from "@formatjs/intl-pluralrules";
-import log from "loglevel";
 
 import "react-native-url-polyfill";
 import "intl-pluralrules";
@@ -31,7 +30,6 @@ Sentry.init({
   autoInitializeNativeSdk: true,
 });
 if (!Intl.PluralRules) register();
-log.setLevel("info");
 
 const App = () => {
   return (

@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import logger from "../../services/logger";
+
+const NAMESPACE = 'SentryErrorBoundary';
 
 /**
  * A custom error boundary component that reports errors to Sentry
@@ -27,8 +30,8 @@ class SentryErrorBoundary extends React.Component {
     
     // Log the error in development
     if (__DEV__) {
-      console.error('Error caught by SentryErrorBoundary:', error);
-      console.error('Component stack:', errorInfo.componentStack);
+      logger.error(NAMESPACE, 'Error caught by SentryErrorBoundary:', error);
+      logger.error(NAMESPACE, 'Component stack:', errorInfo.componentStack);
     }
   }
 

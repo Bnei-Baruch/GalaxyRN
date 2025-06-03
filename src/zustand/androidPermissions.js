@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { NativeEventEmitter, NativeModules } from "react-native";
-import log from "loglevel";
+import logger from "../services/logger";
 
 const permissionsModule = NativeModules.PermissionsModule;
+
+const NAMESPACE = "androidPermissions zustand";
 
 let eventEmitter;
 try {
@@ -10,7 +12,7 @@ try {
     eventEmitter = new NativeEventEmitter(permissionsModule);
   }
 } catch (error) {
-  log.error("[inits] Error creating permissions NativeEventEmitter:", error);
+  logger.error(NAMESPACE, "Error creating permissions NativeEventEmitter:", error);
 }
 
 let subscription;
@@ -18,14 +20,14 @@ let subscription;
 // Export the store
 export const useAndroidPermissionsStore = create((set, get) => ({
   permissionsReady: false,
-  initAndroidPermissions: async () => {
+  initPermissions: async () => {
     if (!permissionsModule) {
-      log.debug("[inits] Permissions module not found");
+      logger.debug(NAMESPACE, "Permissions module not found");
       return;
     }
 
     const permissionsReady = await permissionsModule.getPermissionStatus();
-    log.info("[inits] permissionsReady: ", permissionsReady);
+    logger.info(NAMESPACE, "permissionsReady: ", permissionsReady);
 
     if (permissionsReady) {
       set({ permissionsReady: true });
@@ -36,16 +38,17 @@ export const useAndroidPermissionsStore = create((set, get) => ({
       subscription = eventEmitter?.addListener("permissionsStatus", (event) => {
         console.log("[RN render] initAndroidPermissions eventEmitter", event);
         if (event && event.allGranted) {
-          log.info("[inits] All Android permissions granted!");
+          logger.info(NAMESPACE, "All Android permissions granted!");
           set({ permissionsReady: true });
         }
       });
     } catch (error) {
-      log.error("[inits] Error setting up permissions event emitter:", error);
+      logger.error(NAMESPACE, "Error setting up permissions event emitter:", error);
       set({ permissionsReady: true });
     }
   },
-  terminateAndroidPermissions: () => {
+  terminatePermissions: () => {
+    logger.debug(NAMESPACE, "terminatePermissions");
     if (subscription) subscription.remove();
   },
 }));
