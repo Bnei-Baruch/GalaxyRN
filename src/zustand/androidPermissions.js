@@ -36,7 +36,7 @@ export const useAndroidPermissionsStore = create((set, get) => ({
 
     try {
       subscription = eventEmitter?.addListener("permissionsStatus", (event) => {
-        console.log("[RN render] initAndroidPermissions eventEmitter", event);
+        logger.debug(NAMESPACE, "[RN render] initAndroidPermissions eventEmitter", event);
         if (event && event.allGranted) {
           logger.info(NAMESPACE, "All Android permissions granted!");
           set({ permissionsReady: true });
