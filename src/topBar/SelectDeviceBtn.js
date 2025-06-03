@@ -1,14 +1,15 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TouchableOpacity, StyleSheet, Text, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+
 import useAudioDevicesStore from "../zustand/audioDevices";
 import { baseStyles } from "../constants";
 import ListInModal from "../components/ListInModal";
 import { useTranslation } from "react-i18next";
-import logger from '../services/logger'; 
+import logger from "../services/logger";
 
-const NAMESPACE = 'SelectDeviceBtn';
+const NAMESPACE = "SelectDeviceBtn";
 
 export const SelectDeviceBtn = () => {
   const [open, setOpen] = useState();
@@ -23,13 +24,13 @@ export const SelectDeviceBtn = () => {
   const toggleOpen = () => setOpen(!open);
 
   const handleSwitch = (id) => {
-    const index = devices.findIndex(device => device.id === id);
+    const index = devices.findIndex((device) => device.id === id);
     const nextIndex = (index + 1) % devices.length || 0;
     select(devices[nextIndex].id);
   };
 
   const handleSelect = (id) => {
-    debug(NAMESPACE, "SelectDeviceBtn handleSelect", id);
+    logger.debug(NAMESPACE, "SelectDeviceBtn handleSelect", id);
     setOpen(false);
     select(id);
   };
@@ -39,10 +40,10 @@ export const SelectDeviceBtn = () => {
 
     return (
       <TouchableOpacity
-          disabled={item.active}
-          key={item.id}
-          style={[styles.item, { opacity: item.active ? 0.5 : 1 }]}
-          onPress={() => handleSelect(item.id)}
+        disabled={item.active}
+        key={item.id}
+        style={[styles.item, { opacity: item.active ? 0.5 : 1 }]}
+        onPress={() => handleSelect(item.id)}
       >
         <Icon name={item.icon} size={30} color="white" />
         <Text style={baseStyles.text}>{t(`audioDeviceName.${item.name}`)}</Text>

@@ -60,7 +60,7 @@ export class PublisherPlugin extends EventEmitter {
           if (data) resolve(data);
         })
         .catch((err) => {
-          error(NAMESPACE, "error join room", err);
+          logger.error(NAMESPACE, "error join room", err);
           reject(err);
         });
     });
@@ -72,13 +72,13 @@ export class PublisherPlugin extends EventEmitter {
       return new Promise((resolve, reject) => {
         this.transaction("message", { body }, "event")
           .then((param) => {
-            info(NAMESPACE, "leave: ", param);
+            logger.info(NAMESPACE, "leave: ", param);
             const { data, json } = param;
 
             if (data) resolve(data);
           })
           .catch((err) => {
-            debug(NAMESPACE, "error leave room", err);
+            logger.debug(NAMESPACE, "error leave room", err);
             reject(err);
           });
       });
@@ -133,7 +133,7 @@ export class PublisherPlugin extends EventEmitter {
           .then((param) => {
             const { data, json } = param || {};
             const jsep = json.jsep;
-            debug(NAMESPACE, "Configure respond: ", param);
+            logger.debug(NAMESPACE, "Configure respond: ", param);
             resolve(data);
             this.pc.setRemoteDescription(jsep);
           })
@@ -172,13 +172,13 @@ export class PublisherPlugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.transaction("message", { body }, "event")
         .then((param) => {
-          info(NAMESPACE, "set bitrate: ", param);
+          logger.info(NAMESPACE, "set bitrate: ", param);
           const { data, json } = param;
 
           if (data) resolve(data);
         })
         .catch((err) => {
-          debug(NAMESPACE, "error set bitrate", err);
+          logger.debug(NAMESPACE, "error set bitrate", err);
           reject(err);
         });
     });
@@ -211,18 +211,18 @@ export class PublisherPlugin extends EventEmitter {
       this.pc
         .setLocalDescription(offer)
         .catch((error) =>
-          error(NAMESPACE, "setLocalDescription: ", error)
+          logger.error(NAMESPACE, "setLocalDescription: ", error)
         );
       const body = { request: "configure", restart };
       return this.transaction("message", { body, jsep: offer }, "event").then(
         (param) => {
           const { data, json } = param || {};
           const jsep = json.jsep;
-          debug(NAMESPACE, "Configure respond: ", param);
+          logger.debug(NAMESPACE, "Configure respond: ", param);
           this.pc
             .setRemoteDescription(jsep)
-            .then((e) => info(NAMESPACE, e))
-            .catch((e) => error(NAMESPACE, e));
+            .then((e) => logger.info(NAMESPACE, e))
+            .catch((e) => logger.error(NAMESPACE, e));
         }
       );
     });
@@ -230,7 +230,7 @@ export class PublisherPlugin extends EventEmitter {
 
   initPcEvents() {
     this.pc.addEventListener("connectionstatechange", (e) => {
-      info(NAMESPACE, "ICE State: ", e.target.connectionState);
+      logger.info(NAMESPACE, "ICE State: ", e.target.connectionState);
       this.iceState = e.target.connectionState;
 
       if (this.iceState === "disconnected") {
@@ -248,7 +248,7 @@ export class PublisherPlugin extends EventEmitter {
         !e.candidate ||
         e.candidate.candidate.indexOf("endOfCandidates") > 0
       ) {
-        debug(NAMESPACE, "End of candidates");
+        logger.debug(NAMESPACE, "End of candidates");
       } else {
         // JSON.stringify doesn't work on some WebRTC objects anymore
         // See https://code.google.com/p/chromium/issues/detail?id=467366
@@ -264,9 +264,9 @@ export class PublisherPlugin extends EventEmitter {
       }
     });
     this.pc.addEventListener("track", (e) => {
-      debug(NAMESPACE, "Got track: ", e);
+      logger.debug(NAMESPACE, "Got track: ", e);
       this.onTrack(e.track, e.streams[0], true);
-      info(NAMESPACE, "Got track: ", e);
+      logger.info(NAMESPACE, "Got track: ", e);
     });
   }
 
@@ -279,19 +279,19 @@ export class PublisherPlugin extends EventEmitter {
         ) {
           return;
         } else if (mqtt.mq.connected) {
-          debug(NAMESPACE, "- Trigger ICE Restart - ");
+          logger.debug(NAMESPACE, "- Trigger ICE Restart - ");
           this.pc.restartIce();
           this.configure(true);
         } else if (attempt >= 10) {
           (typeof this.iceFailed === "function") && this.iceFailed();
-          error(NAMESPACE, "- ICE Restart failed - ");
+          logger.error(NAMESPACE, "- ICE Restart failed - ");
           return;
         }
-        debug(NAMESPACE, "ICE Restart try: " + attempt);
+        logger.debug(NAMESPACE, "ICE Restart try: " + attempt);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      error(NAMESPACE, "Streaming plugin iceRestart", e);
+      logger.error(NAMESPACE, "Streaming plugin iceRestart", e);
     }
   }
 
@@ -307,14 +307,14 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   onmessage(data) {
-    debug(NAMESPACE, "onmessage: ", data);
+    logger.debug(NAMESPACE, "onmessage: ", data);
     if (data?.publishers) {
-      info(NAMESPACE, "New feed enter: ", data.publishers[0]);
+      logger.info(NAMESPACE, "New feed enter: ", data.publishers[0]);
       this.subTo(data.publishers);
     }
 
     if (data?.unpublished) {
-      info(NAMESPACE, "Feed leave: ", data.unpublished);
+      logger.info(NAMESPACE, "Feed leave: ", data.unpublished);
       if (data?.unpublished === "ok") {
         // That's us
         this.janus.detach(this);
@@ -324,41 +324,41 @@ export class PublisherPlugin extends EventEmitter {
     }
 
     if (data?.leaving) {
-      info(NAMESPACE, "Feed leave: ", data.leaving);
+      logger.info(NAMESPACE, "Feed leave: ", data.leaving);
       this.unsubFrom([data.leaving], false);
     }
 
     if (data?.videoroom === "talking") {
-      debug(NAMESPACE, "talking: ", data.id);
+      logger.debug(NAMESPACE, "talking: ", data.id);
       this.talkEvent(data.id, true);
     }
 
     if (data?.videoroom === "stopped-talking") {
-      debug(NAMESPACE, "stopped talking: ", data.id);
+      logger.debug(NAMESPACE, "stopped talking: ", data.id);
       this.talkEvent(data.id, false);
     }
   }
 
   oncleanup() {
-    info(NAMESPACE, "- oncleanup - ");
+    logger.info(NAMESPACE, "- oncleanup - ");
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
   }
 
   detached() {
-    info(NAMESPACE, "- detached - ");
+    logger.info(NAMESPACE, "- detached - ");
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
   }
 
   hangup() {
-    info(NAMESPACE, "- hangup - ", this.janus);
+    logger.info(NAMESPACE, "- hangup - ", this.janus);
     this.detach();
   }
 
   slowLink(uplink, lost, mid) {
     const direction = uplink ? "sending" : "receiving";
-    info(
+    logger.info(
       NAMESPACE,
       "slowLink on " +
         direction +
@@ -372,7 +372,7 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   mediaState(media, on) {
-    info(
+    logger.info(
       NAMESPACE,
       "mediaState: Janus " +
         (on ? "start" : "stop") +

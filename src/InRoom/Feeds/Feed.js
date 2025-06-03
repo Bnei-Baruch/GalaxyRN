@@ -10,9 +10,9 @@ import CammutedFeed from "./CammutedFeed";
 import FeedDisplay from "./FeedDisplay";
 import WIP from "../../components/WIP";
 import { RTCView } from "react-native-webrtc";
-import { debug } from '../../services/logger';
+import logger from "../../services/logger";
 
-const NAMESPACE = 'Feed';
+const NAMESPACE = "Feed";
 
 const Feed = ({ id }) => {
   const { feedById } = useInRoomStore();
@@ -20,7 +20,7 @@ const Feed = ({ id }) => {
 
   const feed = feedById[id];
   const { display: { display } = {}, url, talking, camera } = feed || {};
-  debug(NAMESPACE, "Feed", feed);
+  logger.debug(NAMESPACE, "Feed", feed);
 
   const ref = useRef();
 

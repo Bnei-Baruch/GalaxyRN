@@ -18,7 +18,7 @@ import { HIDE_BARS_TIMEOUT_MS } from "./helper";
 import { useInRoomStore } from "./inRoom";
 import api from "../shared/Api";
 
-const NAMESPACE = 'Shidur';
+const NAMESPACE = "Shidur";
 
 let janus = null;
 let cleanWIP = false;
@@ -55,7 +55,8 @@ const initStream = async (_janus, media) => {
     const stream = await janusStream.watch(media);
     return [stream, janusStream];
   } catch (error) {
-    logger.error(NAMESPACE, 
+    logger.error(
+      NAMESPACE,
       "[shidur] stream error",
       error?.message || JSON.stringify(error) || "undefined"
     );
@@ -194,6 +195,16 @@ export const useShidurStore = create((set, get) => ({
     if (!audioJanus) {
       promises.push(initStream(janus, audio));
     }
+    if (!trlAudioJanus) {
+      const _langTxt = await getFromStorage("vrt_langtext", "Original");
+      const id = trllang[_langTxt];
+      if (id) {
+        const [stream, janusStream] = await initStream(janus, id);
+        stream?.getAudioTracks()?.forEach((track) => (track.enabled = false));
+        trlAudioStream = stream;
+        trlAudioJanus = janusStream;
+      }
+    }
 
     logger.debug(NAMESPACE, "wait for ready all streams", promises.length);
     const results = await Promise.all(promises);
@@ -235,9 +246,14 @@ export const useShidurStore = create((set, get) => ({
     });
   },
   streamGalaxy: async (isOnAir) => {
-    logger.debug(NAMESPACE, "call streamGalaxy bug: [shidur] got talk event: ", isOnAir);
+    logger.debug(
+      NAMESPACE,
+      "call streamGalaxy bug: [shidur] got talk event: ",
+      isOnAir
+    );
     if (!trlAudioJanus) {
-      logger.debug(NAMESPACE, 
+      logger.debug(
+        NAMESPACE,
         "call streamGalaxy bug:[shidur] look like we got talk event before stream init finished"
       );
       setTimeout(() => {
@@ -249,7 +265,8 @@ export const useShidurStore = create((set, get) => ({
     if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
-      logger.debug(NAMESPACE, 
+      logger.debug(
+        NAMESPACE,
         "call streamGalaxy bug:[shidur] Switch audio stream: ",
         gxycol[col]
       );
@@ -258,9 +275,13 @@ export const useShidurStore = create((set, get) => ({
       const id = trllang[_langtext];
       // Don't bring translation on toggle trl stream
       if (!id) {
-        logger.debug(NAMESPACE, "[shidur] no id in local storage or client use togle stream");
+        logger.debug(
+          NAMESPACE,
+          "[shidur] no id in local storage or client use togle stream"
+        );
       } else {
-        logger.debug(NAMESPACE, 
+        logger.debug(
+          NAMESPACE,
           `[shidur] Switch trl stream: langtext - ${_langtext}, id - ${id}`
         );
         await trlAudioJanus.switch(id);
