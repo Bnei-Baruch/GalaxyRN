@@ -11,8 +11,8 @@ const NAMESPACE = 'AndroidPermissions';
 const AndroidPermissions = ({ children }) => {
   const {
     permissionsReady,
-    initAndroidPermissions,
-    terminateAndroidPermissions,
+    initPermissions,
+    terminatePermissions,
   } = useAndroidPermissionsStore();
 
   logger.debug(NAMESPACE, "AndroidPermissions permissionsReady: ", permissionsReady);
@@ -22,10 +22,10 @@ const AndroidPermissions = ({ children }) => {
       return;
     }
 
-    initAndroidPermissions();
+    initPermissions();
 
     return () => {
-      terminateAndroidPermissions();
+      terminatePermissions();
     };
   }, []);
 
