@@ -118,15 +118,15 @@ public class PermissionHelper {
 
     private void notifyClientAllPermissionsGranted() {
         try {
+            if (moduleInitializer != null) {
+                moduleInitializer.initializeModules();
+            }
+
             WritableMap params = Arguments.createMap();
             params.putBoolean("allGranted", true);
             SendEventToClient.sendEvent("permissionsStatus", params);
             Log.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
 
-            // Initialize modules after permissions are granted
-            if (moduleInitializer != null) {
-                moduleInitializer.initializeModules();
-            }
         } catch (Exception e) {
             Log.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
         }

@@ -13,7 +13,7 @@ try {
 
   // Log warning if native module is undefined
   if (!NativeCall) {
-    logger.warn(NAMESPACE, `Native module not found`, NativeModules);
+    logger.error(NAMESPACE, `Native module not found`, NativeModules);
   }
 } catch (error) {
   logger.error(NAMESPACE, "Error accessing native modules:", error);

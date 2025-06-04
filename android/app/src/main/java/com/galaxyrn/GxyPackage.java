@@ -18,6 +18,7 @@ import com.galaxyrn.audioManager.AudioDeviceModule;
 import com.galaxyrn.callManager.CallListenerModule;
 import com.galaxyrn.foreground.ForegroundModule;
 import com.galaxyrn.permissions.PermissionsModule;
+import com.galaxyrn.WakeLockModule;
 import com.galaxyrn.SendEventToClient;
 
 /**
