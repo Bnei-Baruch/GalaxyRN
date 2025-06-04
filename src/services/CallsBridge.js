@@ -9,6 +9,7 @@ try {
     NativeCall = NativeModules.CallManager;
   } else if (Platform.OS === "android") {
     NativeCall = NativeModules.CallListenerModule;
+    logger.debug(NAMESPACE, "NativeModules on Android:", NativeModules);
   }
 
   // Log warning if native module is undefined

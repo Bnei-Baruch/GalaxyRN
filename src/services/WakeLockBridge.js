@@ -8,6 +8,7 @@ if (Platform.OS === 'ios') {
   NativeAudio = NativeModules.KeepAwakeModule;
 } else if (Platform.OS === 'android') {
   NativeAudio = NativeModules.WakeLockModule;
+  logger.debug(NAMESPACE, "NativeAudio on Android:", NativeModules);
 }
 
 const WakeLockBridge = {

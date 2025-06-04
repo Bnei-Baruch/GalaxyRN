@@ -11,6 +11,7 @@ if (Platform.OS === "ios") {
   logger.debug(NAMESPACE, "NativeAudio on iOS:", NativeAudio);
 } else if (Platform.OS === "android") {
   NativeAudio = NativeModules.AudioDeviceModule;
+  logger.debug(NAMESPACE, "NativeModules on Android:", NativeModules);
 }
 
 const AudioBridge = {

@@ -1,10 +1,13 @@
-import { create } from "zustand";
 import { NativeEventEmitter, NativeModules } from "react-native";
+import { create } from "zustand";
 import logger from "../services/logger";
 
-const permissionsModule = NativeModules.PermissionsModule;
+
 
 const NAMESPACE = "androidPermissions zustand";
+
+logger.debug(NAMESPACE, "NativeModules on Android:", NativeModules);
+const permissionsModule = NativeModules.PermissionsModule;
 
 let eventEmitter;
 try {
