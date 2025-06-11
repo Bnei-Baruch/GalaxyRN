@@ -1,7 +1,14 @@
+// External libraries
 import { mediaDevices } from 'react-native-webrtc';
 import { create } from 'zustand';
+
+// Services
 import logger from '../services/logger';
+
+// Shared modules
 import { getFromStorage, setToStorage } from '../shared/tools';
+
+// Zustand stores
 import { useUserStore } from './user';
 
 const NAMESPACE = 'MyStream';
@@ -10,14 +17,17 @@ let stream = null;
 
 export const getStream = async () => {
   if (!stream) {
-    logger.warn(NAMESPACE, "[client] Stream is null, attempting to initialize...");
+    logger.warn(
+      NAMESPACE,
+      '[client] Stream is null, attempting to initialize...'
+    );
     try {
       await useMyStreamStore.getState().myInit();
     } catch (error) {
-      logger.error(NAMESPACE, "[client] Failed to initialize stream:", error);
+      logger.error(NAMESPACE, '[client] Failed to initialize stream:', error);
     }
   }
-  
+
   return stream;
 };
 
@@ -26,7 +36,7 @@ export const useMyStreamStore = create((set, get) => ({
   mute: true,
   cammute: false,
   timestamp: Date.now(),
-  
+
   myInit: async () => {
     const cammute = await getFromStorage('cammute').then(x => x === 'true');
     get().myAbort();
@@ -46,25 +56,25 @@ export const useMyStreamStore = create((set, get) => ({
     } catch (e) {
       logger.error(NAMESPACE, 'Error accessing media devices:', e);
     }
-    
+
     set(() => ({ stream, cammute }));
   },
-  
+
   myAbort: () => {
     if (!stream) return;
     stream.getTracks().forEach(t => t.stop());
     stream = null;
   },
-  
+
   toggleMute: (mute = !get().mute) => {
-    stream?.getAudioTracks().forEach(track => track.enabled = !mute);
+    stream?.getAudioTracks().forEach(track => (track.enabled = !mute));
     set(() => ({ mute }));
   },
-  
+
   toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {
     useUserStore.getState().sendUserState({ camera: !cammute });
-    stream?.getVideoTracks().forEach(track => track.enabled = !cammute);
+    stream?.getVideoTracks().forEach(track => (track.enabled = !cammute));
     set(() => ({ cammute }));
-    updateStorage && await setToStorage('cammute', cammute);
+    updateStorage && (await setToStorage('cammute', cammute));
   },
 }));

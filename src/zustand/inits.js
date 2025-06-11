@@ -1,11 +1,25 @@
-// Third-party packages
+// External libraries
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 
 // React Native modules
 import { NativeEventEmitter } from 'react-native';
 
-// Local modules - same directory (./)
+// Services
+import CallsBridge from '../services/CallsBridge';
+import logger from '../services/logger';
+
+// Auth
+import kc from '../auth/keycloak';
+
+// Shared modules
+import api from '../shared/Api';
+import ConfigStore from '../shared/ConfigStore';
+import GxyConfig from '../shared/janus-config';
+import mqtt from '../shared/mqtt';
+import { getFromStorage } from '../shared/tools';
+
+// Zustand stores
 import { useChatStore } from './chat';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
@@ -13,16 +27,6 @@ import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
-
-// Local modules - parent directories (../)
-import kc from '../auth/keycloak';
-import CallsBridge from '../services/CallsBridge';
-import logger from '../services/logger';
-import api from '../shared/Api';
-import ConfigStore from '../shared/ConfigStore';
-import GxyConfig from '../shared/janus-config';
-import mqtt from '../shared/mqtt';
-import { getFromStorage } from '../shared/tools';
 
 const NAMESPACE = 'Inits';
 const CLIENT_RECONNECT_TYPES = [
@@ -48,19 +52,21 @@ try {
 
 let subscription = null;
 
-// Export the store
 export const useInitsStore = create((set, get) => ({
   permissionsReady: false,
   setPermissionsReady: (permissionsReady = true) => set({ permissionsReady }),
+
   mqttReady: false,
   configReady: false,
   readyForJoin: false,
   setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
+
   isPortrait: true,
   setIsPortrait: isPortrait => {
     useUiActions.getState().updateWidth();
     set({ isPortrait });
   },
+
   initMQTT: () => {
     const { user } = useUserStore.getState();
     mqtt.init(user, (reconnected, error) => {
@@ -102,11 +108,11 @@ export const useInitsStore = create((set, get) => ({
           logger.debug(NAMESPACE, 'audio-out: ', data);
           streamGalaxy(data.status);
           if (data.status) {
-            // remove question mark when sndman unmute our room
+            // Remove question mark when sndman unmute our room
             toggleQuestion(false);
           }
         } else if (type === 'reload-config') {
-          //this.reloadConfig();
+          // this.reloadConfig();
         } else if (type === 'client-reload-all') {
           restartRoom();
         } else if (type === 'client-state') {
@@ -115,10 +121,12 @@ export const useInitsStore = create((set, get) => ({
       });
     });
   },
+
   endMqtt: async () => {
     await mqtt.end();
     set(() => ({ mqttReady: false, configReady: false }));
   },
+
   initConfig: async () => {
     useUserStore.getState().setGeoInfo();
 
@@ -132,6 +140,7 @@ export const useInitsStore = create((set, get) => ({
       logger.error(NAMESPACE, 'error initializing app', err);
     }
   },
+
   initApp: async () => {
     BackgroundTimer.start();
     let _isPlay = false;
@@ -156,6 +165,7 @@ export const useInitsStore = create((set, get) => ({
       );
     }
   },
+
   terminateApp: () => {
     BackgroundTimer.stop();
     useSettingsStore.getState().toggleIsFullscreen(false);

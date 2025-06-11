@@ -20,6 +20,7 @@ const Feeds = () => {
   const handleLayout = event => {
     setFeedsPos(event.nativeEvent.layout.y);
   };
+
   const renderMy = () => {
     if (hideSelf) return null;
     if (audioMode && cammute) return <MyAudioMode key="my" />;

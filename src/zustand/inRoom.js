@@ -1,16 +1,27 @@
+// External libraries
 import produce from 'immer';
 import { create } from 'zustand';
+
+// i18n
 import i18n from '../i18n/i18n';
+
+// Libs
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
+
+// Services
 import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import WakeLockBridge from '../services/WakeLockBridge';
+
+// Shared modules
 import { userRolesEnum } from '../shared/enums';
 import GxyConfig from '../shared/janus-config';
 import mqtt from '../shared/mqtt';
 import { deepClone, sleep } from '../shared/tools';
+
+// Zustand stores
 import useAudioDevicesStore from './audioDevices';
 import useRoomStore from './fetchRooms';
 import { useInitsStore } from './inits';
@@ -93,10 +104,12 @@ export const useInRoomStore = create((set, get) => ({
       alert('Could not connect to the server, please try again later');
       return;
     }
+
     if (janus) {
       await janus.destroy();
       janus = null;
     }
+
     const { user } = useUserStore.getState();
     const { room } = useRoomStore.getState();
     const { cammute } = useMyStreamStore.getState();
@@ -120,7 +133,7 @@ export const useInRoomStore = create((set, get) => ({
           continue;
         }
 
-        //sub audio streams
+        // Sub audio streams
         // TODO: if mid was changed
         pub.streams
           .filter(s => s.type === 'audio' && s.codec === 'opus')
@@ -129,7 +142,7 @@ export const useInRoomStore = create((set, get) => ({
             if (!feedById[id]) subs.push(_data);
           });
 
-        //sub video streams
+        // Sub video streams
         const vStream = pub.streams.find(
           s => s?.type === 'video' && s.codec === 'h264'
         );
@@ -150,7 +163,7 @@ export const useInRoomStore = create((set, get) => ({
           }
         }
 
-        // dont rewrite feedById[id] was get from mqtt
+        // Don't rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
           feedById[id] = {
             id,
@@ -168,7 +181,6 @@ export const useInRoomStore = create((set, get) => ({
         get().setFeedIds();
 
         if (subs.length > 0) await subscriber.sub(subs);
-
         if (unsubs.length > 0) await subscriber.unsub(subs);
 
         return;
@@ -187,6 +199,7 @@ export const useInRoomStore = create((set, get) => ({
     const config = GxyConfig.instanceConfig(room.janus);
     logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
+
     janus.onStatus = (srv, status) => {
       if (status === 'offline') {
         alert('Janus Server - ' + srv + ' - Offline');
@@ -201,7 +214,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     /**
-     * publish my video stream to the room
+     * Publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
     videoroom.subTo = async pubs => {
@@ -236,7 +249,8 @@ export const useInRoomStore = create((set, get) => ({
       videoroom.iceFailed = async () => {
         get().restartRoom();
       };
-      // Send an unsubscribe request.
+
+      // Send an unsubscribe request
       if (_subscriberJoined && params.length > 0) {
         await subscriber.unsub(params);
       }
@@ -251,6 +265,7 @@ export const useInRoomStore = create((set, get) => ({
 
       useUiActions.getState().updateWidth();
     };
+
     videoroom.talkEvent = (id, talking) => {
       set(
         produce(state => {
@@ -262,7 +277,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     /**
-     * subscribe to members of the room
+     * Subscribe to members of the room
      */
     subscriber = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack = (track, stream, on) => {
@@ -333,6 +348,7 @@ export const useInRoomStore = create((set, get) => ({
             NAMESPACE,
             `[client] Videoroom init: d - ${d} room - ${room.room}`
           );
+
           videoroom
             .join(room.room, d)
             .then(async data => {
@@ -399,6 +415,7 @@ export const useInRoomStore = create((set, get) => ({
     mqtt.join('galaxy/room/' + room.room);
     mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
+
   exitRoom: async () => {
     if (exitWIP) return;
     exitWIP = true;
@@ -424,11 +441,13 @@ export const useInRoomStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
+
     AudioBridge.abandonAudioFocus();
     WakeLockBridge.releaseScreenOn();
     useAudioDevicesStore.getState().abortAudioDevices();
     exitWIP = false;
   },
+
   restartRoom: async () => {
     logger.debug(
       NAMESPACE,
@@ -446,14 +465,17 @@ export const useInRoomStore = create((set, get) => ({
     useInitsStore.getState().setReadyForJoin(true);
     restartWIP = false;
   },
+
   enterBackground: async () => {
     useSettingsStore.getState().enterAudioMode();
   },
+
   enterForeground: async () => {
     if (!useSettingsStore.getState().audioMode) {
       useSettingsStore.getState().exitAudioMode();
     }
   },
+
   updateDisplayById: data => {
     const { camera, question, rfid } = data || {};
 

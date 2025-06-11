@@ -1,18 +1,25 @@
+// External libraries
 import { create } from 'zustand';
-import api from '../shared/Api';
+
+// Services
 import logger from '../services/logger';
+
+// Shared modules
+import api from '../shared/Api';
 import { getFromStorage, setToStorage } from '../shared/tools';
 
 const NAMESPACE = 'FetchRooms';
 
-const useRoomStore = create((set) => ({
-  room      : null,
-  setRoom   : (room) => {
+const useRoomStore = create(set => ({
+  room: null,
+  setRoom: room => {
     room && setToStorage('room', room.room.toString());
     set({ room });
   },
-  isLoading : false,
-  error     : null,
+
+  isLoading: false,
+  error: null,
+
   fetchRooms: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -25,9 +32,9 @@ const useRoomStore = create((set) => ({
         logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 
         set({ room });
-        //const { autoEnterRoom }   = useSettingsStore.getState();
-        //const { setReadyForJoin } = useInitsStore.getState();
-        //autoEnterRoom && setReadyForJoin(!!room);
+        // const { autoEnterRoom } = useSettingsStore.getState();
+        // const { setReadyForJoin } = useInitsStore.getState();
+        // autoEnterRoom && setReadyForJoin(!!room);
       } catch (err) {
         logger.error(NAMESPACE, 'saved room: ', err);
       }
