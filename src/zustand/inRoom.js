@@ -1,24 +1,24 @@
-import produce from "immer";
-import { create } from "zustand";
-import i18n from "../i18n/i18n";
-import { JanusMqtt } from "../libs/janus-mqtt";
-import { PublisherPlugin } from "../libs/publisher-plugin";
-import { SubscriberPlugin } from "../libs/subscriber-plugin";
-import AudioBridge from "../services/AudioBridge";
-import logger from "../services/logger";
-import WakeLockBridge from "../services/WakeLockBridge";
-import { userRolesEnum } from "../shared/enums";
-import GxyConfig from "../shared/janus-config";
-import mqtt from "../shared/mqtt";
-import { deepClone, sleep } from "../shared/tools";
-import useAudioDevicesStore from "./audioDevices";
-import useRoomStore from "./fetchRooms";
-import { useInitsStore } from "./inits";
-import { getStream, useMyStreamStore } from "./myStream";
-import { useSettingsStore } from "./settings";
-import { useShidurStore } from "./shidur";
-import { useUiActions } from "./uiActions";
-import { useUserStore } from "./user";
+import produce from 'immer';
+import { create } from 'zustand';
+import i18n from '../i18n/i18n';
+import { JanusMqtt } from '../libs/janus-mqtt';
+import { PublisherPlugin } from '../libs/publisher-plugin';
+import { SubscriberPlugin } from '../libs/subscriber-plugin';
+import AudioBridge from '../services/AudioBridge';
+import logger from '../services/logger';
+import WakeLockBridge from '../services/WakeLockBridge';
+import { userRolesEnum } from '../shared/enums';
+import GxyConfig from '../shared/janus-config';
+import mqtt from '../shared/mqtt';
+import { deepClone, sleep } from '../shared/tools';
+import useAudioDevicesStore from './audioDevices';
+import useRoomStore from './fetchRooms';
+import { useInitsStore } from './inits';
+import { getStream, useMyStreamStore } from './myStream';
+import { useSettingsStore } from './settings';
+import { useShidurStore } from './shidur';
+import { useUiActions } from './uiActions';
+import { useUserStore } from './user';
 
 const NAMESPACE = 'InRoom';
 
@@ -35,9 +35,8 @@ export const useInRoomStore = create((set, get) => ({
   feedIds: [],
   setFeedIds: () => {
     const { feedById } = get();
-    const { hideSelf } = useSettingsStore.getState();
     const { timestamp } = useMyStreamStore.getState();
-    logger.debug(NAMESPACE, "Feeds feedIds", timestamp);
+    logger.debug(NAMESPACE, 'Feeds feedIds', timestamp);
 
     const _ms = Object.values(feedById);
     _ms.sort((a, b) => {
@@ -50,16 +49,16 @@ export const useInRoomStore = create((set, get) => ({
       return a.display?.timestamp - b.display?.timestamp;
     });
 
-    let notAddMy = hideSelf;
+    let notAddMy = false;
     if (_ms.length === 0) {
-      return notAddMy ? [] : ["my"];
+      return notAddMy ? [] : ['my'];
     }
 
     const feedIds = _ms.reduce((acc, x, i) => {
       if (!x) return acc;
 
       if (!notAddMy && x.display?.timestamp > timestamp) {
-        acc.push("my");
+        acc.push('my');
         notAddMy = true;
       }
 
@@ -68,7 +67,7 @@ export const useInRoomStore = create((set, get) => ({
     }, []);
 
     if (!notAddMy) {
-      feedIds.push("my");
+      feedIds.push('my');
     }
 
     set({ feedIds });
@@ -80,14 +79,18 @@ export const useInRoomStore = create((set, get) => ({
       useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
     } catch (error) {
-      logger.error(NAMESPACE, "Error requesting audio focus or keeping screen on", error);
+      logger.error(
+        NAMESPACE,
+        'Error requesting audio focus or keeping screen on',
+        error
+      );
       return get().exitRoom();
     }
 
     attempts++;
     if (attempts > 5) {
       get().exitRoom();
-      alert("Could not connect to the server, please try again later");
+      alert('Could not connect to the server, please try again later');
       return;
     }
     if (janus) {
@@ -100,8 +103,8 @@ export const useInRoomStore = create((set, get) => ({
 
     let _subscriberJoined = false;
 
-    const makeSubscription = async (pubs) => {
-      logger.debug(NAMESPACE, "makeSubscription pubs", pubs);
+    const makeSubscription = async pubs => {
+      logger.debug(NAMESPACE, 'makeSubscription pubs', pubs);
       const { audioMode } = useSettingsStore.getState();
 
       const feedById = deepClone(get().feedById);
@@ -120,25 +123,29 @@ export const useInRoomStore = create((set, get) => ({
         //sub audio streams
         // TODO: if mid was changed
         pub.streams
-          .filter((s) => s.type === "audio" && s.codec === "opus")
-          .forEach((s) => {
+          .filter(s => s.type === 'audio' && s.codec === 'opus')
+          .forEach(s => {
             const _data = { feed: id, mid: s.mid };
             if (!feedById[id]) subs.push(_data);
           });
 
         //sub video streams
         const vStream = pub.streams.find(
-          (s) => s?.type === "video" && s.codec === "h264"
+          s => s?.type === 'video' && s.codec === 'h264'
         );
 
         if (vStream) {
-          logger.debug(NAMESPACE, "makeSubscription vStream", vStream);
+          logger.debug(NAMESPACE, 'makeSubscription vStream', vStream);
           const _data = { feed: id, mid: vStream.mid };
           if (!feedById[id] && !vStream.disabled && !audioMode) {
-            logger.debug(NAMESPACE, "makeSubscription subs.push(_data)", _data);
+            logger.debug(NAMESPACE, 'makeSubscription subs.push(_data)', _data);
             subs.push(_data);
           } else if (feedById[id] && (vStream.disabled || audioMode)) {
-            logger.debug(NAMESPACE, "makeSubscription unsubs.push(_data)", _data);
+            logger.debug(
+              NAMESPACE,
+              'makeSubscription unsubs.push(_data)',
+              _data
+            );
             unsubs.push(_data);
           }
         }
@@ -152,11 +159,11 @@ export const useInRoomStore = create((set, get) => ({
           };
         }
         feedById[id].vMid = vStream?.mid;
-        logger.debug(NAMESPACE, "makeSubscription feedById[id]", feedById[id]);
+        logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
       }
 
       if (_subscriberJoined) {
-        logger.debug(NAMESPACE, "makeSubscription when _subscriberJoined");
+        logger.debug(NAMESPACE, 'makeSubscription when _subscriberJoined');
         set({ feedById });
         get().setFeedIds();
 
@@ -173,22 +180,22 @@ export const useInRoomStore = create((set, get) => ({
       set({ feedById });
       get().setFeedIds();
       _subscriberJoined = true;
-      logger.debug(NAMESPACE, "makeSubscription end");
-      return subs.map((s) => s.feed);
+      logger.debug(NAMESPACE, 'makeSubscription end');
+      return subs.map(s => s.feed);
     };
 
     const config = GxyConfig.instanceConfig(room.janus);
-    logger.debug(NAMESPACE, "useInRoomStore joinRoom config", config);
+    logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
     janus.onStatus = (srv, status) => {
-      if (status === "offline") {
-        alert("Janus Server - " + srv + " - Offline");
+      if (status === 'offline') {
+        alert('Janus Server - ' + srv + ' - Offline');
         get().exitRoom();
         return;
       }
 
-      if (status === "error") {
-        logger.error(NAMESPACE, "Janus error, reconnecting...");
+      if (status === 'error') {
+        logger.error(NAMESPACE, 'Janus error, reconnecting...');
         get().restartRoom();
       }
     };
@@ -197,31 +204,32 @@ export const useInRoomStore = create((set, get) => ({
      * publish my video stream to the room
      */
     videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo = async (pubs) => {
-      logger.debug(NAMESPACE, "videoroom.subTo start");
+    videoroom.subTo = async pubs => {
+      logger.debug(NAMESPACE, 'videoroom.subTo start');
       try {
         await makeSubscription(pubs);
       } catch (error) {
-        logger.error(NAMESPACE, "Error subscribing to publishers", error);
+        logger.error(NAMESPACE, 'Error subscribing to publishers', error);
       }
-      logger.debug(NAMESPACE, "videoroom.subTo sendUserState");
+      logger.debug(NAMESPACE, 'videoroom.subTo sendUserState');
       useUserStore.getState().sendUserState();
       useUiActions.getState().updateWidth();
     };
 
-    videoroom.unsubFrom = async (ids) => {
+    videoroom.unsubFrom = async ids => {
       const params = [];
-      ids.forEach((id) => {
+      ids.forEach(id => {
         const feed = get().feedById[id];
         if (!feed) return;
 
         params.push({ feed: parseInt(feed.id) });
-        logger.info(NAMESPACE, 
-          "[client] Feed " +
+        logger.info(
+          NAMESPACE,
+          '[client] Feed ' +
             JSON.stringify(feed) +
-            " (" +
+            ' (' +
             feed.id +
-            ") has left the room, detaching"
+            ') has left the room, detaching'
         );
       });
 
@@ -234,8 +242,8 @@ export const useInRoomStore = create((set, get) => ({
       }
 
       set(
-        produce((state) => {
-          ids.forEach((id) => {
+        produce(state => {
+          ids.forEach(id => {
             state.feedById[id] && delete state.feedById[id];
           });
         })
@@ -245,7 +253,7 @@ export const useInRoomStore = create((set, get) => ({
     };
     videoroom.talkEvent = (id, talking) => {
       set(
-        produce((state) => {
+        produce(state => {
           if (state.feedById[id]) {
             state.feedById[id].talking = talking;
           }
@@ -259,16 +267,17 @@ export const useInRoomStore = create((set, get) => ({
     subscriber = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack = (track, stream, on) => {
       const { id } = stream;
-      logger.info(NAMESPACE, 
-        "[client] >> This track is coming from feed " + id + ":",
+      logger.info(
+        NAMESPACE,
+        '[client] >> This track is coming from feed ' + id + ':',
         track.id,
         track,
         stream
       );
       if (on) {
-        if (track.kind === "video") {
+        if (track.kind === 'video') {
           set(
-            produce((state) => {
+            produce(state => {
               state.feedById[id].url = stream.toURL();
             })
           );
@@ -276,17 +285,17 @@ export const useInRoomStore = create((set, get) => ({
       }
     };
 
-    subscriber.onUpdate = (streams) => {
+    subscriber.onUpdate = streams => {
       if (!streams) return;
 
       const _videosByFeed = {};
       for (const s of streams) {
-        if (s.type !== "video" || !s.active) continue;
+        if (s.type !== 'video' || !s.active) continue;
         _videosByFeed[s.feed_id] = s;
       }
-      logger.debug(NAMESPACE, "[client] Updated _videosByFeed", _videosByFeed);
+      logger.debug(NAMESPACE, '[client] Updated _videosByFeed', _videosByFeed);
       set(
-        produce((state) => {
+        produce(state => {
           for (const k in state.feedById) {
             const f = state.feedById[k];
             if (!_videosByFeed[f.id]) {
@@ -298,17 +307,17 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.iceFailed = async () => {
-      logger.warn(NAMESPACE, "[subscriber] iceFailed");
+      logger.warn(NAMESPACE, '[subscriber] iceFailed');
       get().restartRoom();
     };
 
     janus
       .init(config.token)
-      .then((data) => {
-        logger.info(NAMESPACE, "[client] joinRoom on janus.init", data);
-        janus.attach(videoroom).then((data) => {
+      .then(data => {
+        logger.info(NAMESPACE, '[client] joinRoom on janus.init', data);
+        janus.attach(videoroom).then(data => {
           AudioBridge.activateAudioOutput();
-          logger.info(NAMESPACE, "[client] Publisher Handle: ", data);
+          logger.info(NAMESPACE, '[client] Publisher Handle: ', data);
           const timestamp = new Date().getTime();
 
           const { id, role, username } = user;
@@ -320,11 +329,14 @@ export const useInRoomStore = create((set, get) => ({
             is_group: false,
             is_desktop: false,
           };
-          logger.info(NAMESPACE, `[client] Videoroom init: d - ${d} room - ${room.room}`);
+          logger.info(
+            NAMESPACE,
+            `[client] Videoroom init: d - ${d} room - ${room.room}`
+          );
           videoroom
             .join(room.room, d)
-            .then(async (data) => {
-              logger.info(NAMESPACE, "[client] Joined respond:", data);
+            .then(async data => {
+              logger.info(NAMESPACE, '[client] Joined respond:', data);
 
               useUserStore.getState().setJannusInfo({
                 session: janus.sessionId,
@@ -335,10 +347,10 @@ export const useInRoomStore = create((set, get) => ({
 
               // Feeds count with user role
               let feeds_count = data.publishers.filter(
-                (feed) => feed.display.role === userRolesEnum.user
+                feed => feed.display.role === userRolesEnum.user
               ).length;
               if (feeds_count > 25) {
-                alert(i18n.t("messages.maxUsersInRoom"));
+                alert(i18n.t('messages.maxUsersInRoom'));
                 get().restartRoom();
                 return;
               }
@@ -348,44 +360,44 @@ export const useInRoomStore = create((set, get) => ({
               attempts = 0;
               const stream = await getStream();
               if (!stream) {
-                logger.error(NAMESPACE, "[client] Stream is null");
+                logger.error(NAMESPACE, '[client] Stream is null');
                 get().restartRoom();
                 return;
               }
-              stream.getVideoTracks().forEach((track) => {
+              stream.getVideoTracks().forEach(track => {
                 track.enabled = !cammute;
               });
               return videoroom
                 .publish(stream)
-                .then((json) => {
+                .then(json => {
                   useUserStore.getState().setExtraInfo({
                     streams: json.streams,
                     isGroup: false,
                   });
-                  logger.debug(NAMESPACE, "[client] videoroom published", json);
+                  logger.debug(NAMESPACE, '[client] videoroom published', json);
                 })
-                .catch((err) => {
-                  logger.error(NAMESPACE, "[client] Publish error :", err);
+                .catch(err => {
+                  logger.error(NAMESPACE, '[client] Publish error :', err);
                   get().restartRoom();
                 });
             })
-            .catch((err) => {
-              logger.error(NAMESPACE, "[client] Join error:", err);
+            .catch(err => {
+              logger.error(NAMESPACE, '[client] Join error:', err);
               get().restartRoom();
             });
         });
 
-        janus.attach(subscriber).then((data) => {
-          logger.info(NAMESPACE, "[client] Subscriber Handle: ", data);
+        janus.attach(subscriber).then(data => {
+          logger.info(NAMESPACE, '[client] Subscriber Handle: ', data);
         });
       })
-      .catch((err) => {
-        logger.error(NAMESPACE, "[client] Janus init error", err);
+      .catch(err => {
+        logger.error(NAMESPACE, '[client] Janus init error', err);
         get().restartRoom();
       });
 
-    mqtt.join("galaxy/room/" + room.room);
-    mqtt.join("galaxy/room/" + room.room + "/chat", true);
+    mqtt.join('galaxy/room/' + room.room);
+    mqtt.join('galaxy/room/' + room.room + '/chat', true);
   },
   exitRoom: async () => {
     if (exitWIP) return;
@@ -397,7 +409,7 @@ export const useInRoomStore = create((set, get) => ({
     await useShidurStore.getState().cleanJanus();
 
     if (janus) {
-      logger.info(NAMESPACE, "useInRoomStore exitRoom janus", janus);
+      logger.info(NAMESPACE, 'useInRoomStore exitRoom janus', janus);
       await janus.destroy();
       janus = null;
     }
@@ -407,10 +419,10 @@ export const useInRoomStore = create((set, get) => ({
     useInitsStore.getState().setReadyForJoin(false);
 
     try {
-      await mqtt.exit("galaxy/room/" + room.room);
-      await mqtt.exit("galaxy/room/" + room.room + "/chat");
+      await mqtt.exit('galaxy/room/' + room.room);
+      await mqtt.exit('galaxy/room/' + room.room + '/chat');
     } catch (error) {
-      logger.error(NAMESPACE, "Error exiting mqtt rooms", error);
+      logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
     AudioBridge.abandonAudioFocus();
     WakeLockBridge.releaseScreenOn();
@@ -418,7 +430,11 @@ export const useInRoomStore = create((set, get) => ({
     exitWIP = false;
   },
   restartRoom: async () => {
-    logger.debug(NAMESPACE, "bug fixes: useInRoomStore restartRoom restartWIP", restartWIP);
+    logger.debug(
+      NAMESPACE,
+      'bug fixes: useInRoomStore restartRoom restartWIP',
+      restartWIP
+    );
 
     if (restartWIP || exitWIP) return;
 
@@ -438,11 +454,11 @@ export const useInRoomStore = create((set, get) => ({
       useSettingsStore.getState().exitAudioMode();
     }
   },
-  updateDisplayById: (data) => {
+  updateDisplayById: data => {
     const { camera, question, rfid } = data || {};
 
     set(
-      produce((state) => {
+      produce(state => {
         if (state.feedById?.[rfid]) {
           state.feedById[rfid].camera = camera;
           state.feedById[rfid].question = question;
@@ -453,10 +469,10 @@ export const useInRoomStore = create((set, get) => ({
   },
 }));
 
-export const activateFeedsVideos = (feeds) => {
+export const activateFeedsVideos = feeds => {
   const params = [];
   for (const f of feeds) {
-    logger.debug(NAMESPACE, "activateFeedsVideos f", f);
+    logger.debug(NAMESPACE, 'activateFeedsVideos f', f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 
@@ -465,10 +481,10 @@ export const activateFeedsVideos = (feeds) => {
   return subscriber.sub(params);
 };
 
-export const deactivateFeedsVideos = (feeds) => {
+export const deactivateFeedsVideos = feeds => {
   const params = [];
   for (const f of feeds) {
-    logger.debug(NAMESPACE, "deactivateFeedsVideos f", f);
+    logger.debug(NAMESPACE, 'deactivateFeedsVideos f', f);
     f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
   }
 

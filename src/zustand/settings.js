@@ -25,10 +25,8 @@ export const useSettingsStore = create((set, get) => ({
   },
   question: false,
   isFullscreen: false,
-  toggleIsFullscreen: () => {
-    const isFullscreen = !get().isFullscreen;
-    set({ isFullscreen });
-  },
+  toggleIsFullscreen: (isFullscreen = !get().isFullscreen) =>
+    set({ isFullscreen }),
   toggleQuestion: (question = !get().question) => {
     useUserStore.getState().sendUserState({ question });
     set({ question });
