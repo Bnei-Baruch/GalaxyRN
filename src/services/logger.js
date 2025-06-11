@@ -1,23 +1,23 @@
-import { Dimensions, NativeModules, Platform } from "react-native";
-import RNFS from "react-native-fs";
-import { useSettingsStore } from "../zustand/settings";
+import { Dimensions, NativeModules, Platform } from 'react-native';
+import RNFS from 'react-native-fs';
+import { useSettingsStore } from '../zustand/settings';
 
 class Logger {
   constructor() {
     this.appLogsDir = RNFS.DownloadDirectoryPath;
     this.logFilePath = `${this.appLogsDir}/app.log`;
-    console.log("Logger logFilePath", this.logFilePath);
+    console.log('Logger logFilePath', this.logFilePath);
     this.initializeLogFile();
-    
+
     this.logBuffer = [];
     this.bufferSize = 50; // Write every 50 logs
     this.isWriting = false;
-    
+
     // Conditional stack traces
     this.includeStackTrace = false;
   }
   hasTag(tag) {
-    return true//tag === "Mqtt" || tag === "Inits";
+    return true; //tag === "Mqtt" || tag === "Inits";
   }
 
   async initializeLogFile() {
@@ -30,30 +30,32 @@ class Logger {
 
       // Check directory size
       const dirSize = await this.checkDirectorySize();
-      console.log(`Logs directory size: ${(dirSize / 1024 / 1024).toFixed(2)} MB`);
-      
+      console.log(
+        `Logs directory size: ${(dirSize / 1024 / 1024).toFixed(2)} MB`
+      );
+
       if (dirSize > 50 * 1024 * 1024) {
-        console.log("Directory size exceeds 50MB, cleaning logs directory...");
+        console.log('Directory size exceeds 50MB, cleaning logs directory...');
         await this.cleanDirectory(this.appLogsDir);
       }
 
       // Create log file if it doesn't exist
       const fileExists = await RNFS.exists(this.logFilePath);
       if (!fileExists) {
-        await RNFS.writeFile(this.logFilePath, "", "utf8");
+        await RNFS.writeFile(this.logFilePath, '', 'utf8');
       } else {
         // Save previous log with timestamp
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const backupPath = `${this.appLogsDir}/app_${timestamp}.log`;
         await RNFS.copyFile(this.logFilePath, backupPath);
-        console.log("Previous log backed up to:", backupPath);
-        
+        console.log('Previous log backed up to:', backupPath);
+
         // Clean the current log file
-        await RNFS.writeFile(this.logFilePath, "", "utf8");
-        console.log("Current log file cleaned");
+        await RNFS.writeFile(this.logFilePath, '', 'utf8');
+        console.log('Current log file cleaned');
       }
     } catch (error) {
-      console.error("Failed to initialize log file:", error);
+      console.error('Failed to initialize log file:', error);
     }
   }
 
@@ -61,16 +63,16 @@ class Logger {
     try {
       const files = await RNFS.readDir(this.appLogsDir);
       let totalSize = 0;
-      
+
       for (const file of files) {
         if (file.isFile()) {
           totalSize += file.size;
         }
       }
-      
+
       return totalSize;
     } catch (error) {
-      console.error("Failed to check directory size:", error);
+      console.error('Failed to check directory size:', error);
       return 0;
     }
   }
@@ -78,7 +80,7 @@ class Logger {
   async cleanDirectory(dir) {
     try {
       const files = await RNFS.readDir(dir);
-      
+
       for (const file of files) {
         if (file.isFile() && file.name.endsWith('.log')) {
           const filePath = `${dir}/${file.name}`;
@@ -86,10 +88,10 @@ class Logger {
           console.log(`Deleted log file: ${file.name}`);
         }
       }
-      
-      console.log("Logs directory cleaned successfully");
+
+      console.log('Logs directory cleaned successfully');
     } catch (error) {
-      console.error("Failed to clean logs directory:", error);
+      console.error('Failed to clean logs directory:', error);
     }
   }
 
@@ -104,9 +106,9 @@ class Logger {
 
     try {
       const batchMessage = logsToWrite.join('\n') + '\n\n';
-      await RNFS.appendFile(this.logFilePath, batchMessage, "utf8");
+      await RNFS.appendFile(this.logFilePath, batchMessage, 'utf8');
     } catch (error) {
-      console.error("Failed to write batch to log file:", error);
+      console.error('Failed to write batch to log file:', error);
       // Re-add logs to buffer if write failed
       this.logBuffer.unshift(...logsToWrite);
     } finally {
@@ -127,13 +129,13 @@ class Logger {
       await this.flushBuffer();
 
       if (!NativeModules.LoggerModule) {
-        throw new Error("LoggerModule not available");
+        throw new Error('LoggerModule not available');
       }
 
       // Create temp logs directory and copy all log files
       const tempLogsDir = `${RNFS.TemporaryDirectoryPath}/appLogs`;
       await RNFS.mkdir(tempLogsDir);
-      
+
       // Copy all files from logs directory to temp directory
       const logFiles = await RNFS.readDir(this.appLogsDir);
       for (const file of logFiles) {
@@ -144,55 +146,55 @@ class Logger {
           console.log(`Copied log file: ${file.name}`);
         }
       }
-      
+
       const zustandStore = this.getZustandStore();
       const storeFilePath = `${tempLogsDir}/store_state.json`;
-      await RNFS.writeFile(storeFilePath, zustandStore, "utf8");
-      console.log("Zustand store written to file", storeFilePath);
+      await RNFS.writeFile(storeFilePath, zustandStore, 'utf8');
+      console.log('Zustand store written to file', storeFilePath);
 
       const deviceInfo = this.getDeviceInfo();
       const deviceFilePath = `${tempLogsDir}/device_info.json`;
-      await RNFS.writeFile(deviceFilePath, deviceInfo, "utf8");
-      console.log("Device info written to file", deviceFilePath);
+      await RNFS.writeFile(deviceFilePath, deviceInfo, 'utf8');
+      console.log('Device info written to file', deviceFilePath);
 
       // Use native LoggerModule to compress and send logs to Sentry
       const result = await NativeModules.LoggerModule.sendLog(tempLogsDir);
-      console.log("Logs sent successfully:", result);
-      
+      console.log('Logs sent successfully:', result);
+
       // Clean up temp files
       try {
         await this.cleanDirectory(tempLogsDir);
         this.initializeLogFile();
       } catch (cleanupError) {
-        console.warn("Failed to cleanup temp files:", cleanupError);
+        console.warn('Failed to cleanup temp files:', cleanupError);
       }
     } catch (error) {
-      console.error("Failed to send log file:", error);
+      console.error('Failed to send log file:', error);
       throw error; // Re-throw to allow caller to handle
     }
   }
 
   getZustandStore() {
     const stores = {
-      user: require("../zustand/user").useUserStore.getState(),
-      room: require("../zustand/fetchRooms").default.getState(),
-      inRoom: require("../zustand/inRoom").useInRoomStore.getState(),
-      settings: require("../zustand/settings").useSettingsStore.getState(),
-      shidur: require("../zustand/shidur").useShidurStore.getState(),
-      inits: require("../zustand/inits").useInitsStore.getState(),
-      chat: require("../zustand/chat").useChatStore.getState(),
-      version: require("../zustand/version").useVersionStore.getState(),
-      subtitle: require("../zustand/subtitle").useSubtitleStore.getState(),
-      uiActions: require("../zustand/uiActions").useUiActions.getState(),
-      materials: require("../zustand/fetchMaterials").default.getState(),
+      user: require('../zustand/user').useUserStore.getState(),
+      room: require('../zustand/fetchRooms').default.getState(),
+      inRoom: require('../zustand/inRoom').useInRoomStore.getState(),
+      settings: require('../zustand/settings').useSettingsStore.getState(),
+      shidur: require('../zustand/shidur').useShidurStore.getState(),
+      inits: require('../zustand/inits').useInitsStore.getState(),
+      chat: require('../zustand/chat').useChatStore.getState(),
+      version: require('../zustand/version').useVersionStore.getState(),
+      subtitle: require('../zustand/subtitle').useSubtitleStore.getState(),
+      uiActions: require('../zustand/uiActions').useUiActions.getState(),
+      materials: require('../zustand/fetchMaterials').default.getState(),
     };
 
     return JSON.stringify(stores, null, 2);
   }
 
   getDeviceInfo() {
-    const window = Dimensions.get("window");
-    const screen = Dimensions.get("screen");
+    const window = Dimensions.get('window');
+    const screen = Dimensions.get('screen');
 
     const deviceInfo = {
       platform: Platform,
@@ -206,19 +208,22 @@ class Logger {
 
   formatMessage(level, ...args) {
     const timestamp = new Date().toISOString();
-    
-    let formattedMessage = [`[${timestamp}] [${level}] [${args[0]}]`, ...args.slice(1)];
-    
+
+    let formattedMessage = [
+      `[${timestamp}] [${level}] [${args[0]}]`,
+      ...args.slice(1),
+    ];
+
     // Only generate stack trace when explicitly enabled (for debugging)
     if (this.includeStackTrace) {
       const stack = new Error().stack
-        .split("\n")
+        .split('\n')
         .slice(3)
-        .map((line) => line.trim())
-        .join("\n    ");
-      formattedMessage.push("\nStack Trace:\n    " + stack + "\n");
+        .map(line => line.trim())
+        .join('\n    ');
+      formattedMessage.push('\nStack Trace:\n    ' + stack + '\n');
     }
-    
+
     return formattedMessage;
   }
 
@@ -245,10 +250,10 @@ class Logger {
 
     const formattedMessage = this.formatMessage(level, ...args);
     const message = formattedMessage
-      .map((arg) =>
-        typeof arg === "object" ? this.safeStringify(arg) : String(arg)
+      .map(arg =>
+        typeof arg === 'object' ? this.safeStringify(arg) : String(arg)
       )
-      .join(" ");
+      .join(' ');
 
     this.writeToFile(message);
   }
@@ -257,35 +262,35 @@ class Logger {
     if (!this.hasTag(args[0])) return;
 
     console.trace(this.prepareConsoleMsg(args));
-    await this.log("TRACE", ...args);
+    await this.log('TRACE', ...args);
   }
 
   async debug(...args) {
     if (!this.hasTag(args[0])) return;
-    
+
     console.debug(this.prepareConsoleMsg(args));
-    await this.log("DEBUG", ...args);
+    await this.log('DEBUG', ...args);
   }
 
-  async info(...args) { 
+  async info(...args) {
     if (!this.hasTag(args[0])) return;
-    
+
     console.info(this.prepareConsoleMsg(args));
-    await this.log("INFO", ...args);
+    await this.log('INFO', ...args);
   }
 
-  async warn(...args) { 
+  async warn(...args) {
     if (!this.hasTag(args[0])) return;
-    
+
     console.warn(this.prepareConsoleMsg(args));
-    await this.log("WARN", ...args);
+    await this.log('WARN', ...args);
   }
 
-  async error(...args) {  
+  async error(...args) {
     if (!this.hasTag(args[0])) return;
-    
+
     console.error(this.prepareConsoleMsg(args));
-    await this.log("ERROR", ...args);
+    await this.log('ERROR', ...args);
   }
 
   prepareConsoleMsg(args) {
@@ -303,15 +308,11 @@ class Logger {
     await this.flushBuffer();
   }
 
-  // Cleanup method
   destroy() {
-    // Final flush
     this.flushBuffer();
   }
 }
 
-// Create singleton instance
 const logger = new Logger();
 
-// Export the default logger for general use
 export default logger;

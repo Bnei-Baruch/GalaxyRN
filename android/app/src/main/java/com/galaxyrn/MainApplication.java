@@ -63,28 +63,38 @@ public class MainApplication extends Application implements ReactApplication {
         super.onCreate();
 
         ReactContext reactContext = new ReactContext(this);
-        /*
-         * WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
-         * AudioAttributes audioAttributes = new AudioAttributes.Builder()
-         * .setUsage(AudioAttributes.USAGE_MEDIA)
-         * .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-         * .setLegacyStreamType(AudioManager.STREAM_MUSIC)
-         * .build();
-         * 
-         * options.audioDeviceModule = JavaAudioDeviceModule.builder(reactContext)
-         * .setEnableVolumeLogger(false)
-         * .setAudioAttributes(audioAttributes)
-         * .createAudioDeviceModule();
-         */
         SentryAndroid.init(this, sentryOpts -> {
             sentryOpts.setDsn(BuildConfig.SENTRY_DSN);
-            sentryOpts.setDebug(true);
-            sentryOpts.setTracesSampleRate(0.0);
+            sentryOpts.setDebug(BuildConfig.DEBUG);
+            sentryOpts.setTracesSampleRate(0.2);
+            sentryOpts.setProfilesSampleRate(0.1);
+            sentryOpts.setEnableAutoSessionTracking(true);
+            sentryOpts.setAttachScreenshot(true);
+            sentryOpts.setAttachViewHierarchy(true);
+            sentryOpts.setAttachStacktrace(true);
+            sentryOpts.setMaxBreadcrumbs(100);
+            sentryOpts.setSessionTrackingIntervalMillis(30000);
+
+            // Set environment based on build type
+            if (BuildConfig.DEBUG) {
+                sentryOpts.setEnvironment("development");
+            } else {
+                sentryOpts.setEnvironment("production");
+            }
+
+            sentryOpts.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME + "+" + BuildConfig.VERSION_CODE);
         });
         SoLoader.init(this, false);
 
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             DefaultNewArchitectureEntryPoint.load();
         }
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+
+        io.sentry.Sentry.flush(2000);
     }
 }
