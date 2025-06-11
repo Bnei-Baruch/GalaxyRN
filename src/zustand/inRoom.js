@@ -1,25 +1,24 @@
+import produce from "immer";
 import { create } from "zustand";
+import i18n from "../i18n/i18n";
 import { JanusMqtt } from "../libs/janus-mqtt";
-import GxyConfig from "../shared/janus-config";
 import { PublisherPlugin } from "../libs/publisher-plugin";
 import { SubscriberPlugin } from "../libs/subscriber-plugin";
-import logger from "../services/logger";
-import { userRolesEnum } from "../shared/enums";
-import produce from "immer";
-import { useUserStore } from "./user";
-import useRoomStore from "./fetchRooms";
-import { useSettingsStore } from "./settings";
-import mqtt from "../shared/mqtt";
-import { useMyStreamStore, getStream } from "./myStream";
-import i18n from "../i18n/i18n";
-import { useInitsStore } from "./inits";
-import { useShidurStore } from "./shidur";
-import { deepClone } from "../shared/tools";
-import { useUiActions } from "./uiActions";
-import { sleep } from "../shared/tools";
-import useAudioDevicesStore from "./audioDevices";
-import WakeLockBridge from "../services/WakeLockBridge";
 import AudioBridge from "../services/AudioBridge";
+import logger from "../services/logger";
+import WakeLockBridge from "../services/WakeLockBridge";
+import { userRolesEnum } from "../shared/enums";
+import GxyConfig from "../shared/janus-config";
+import mqtt from "../shared/mqtt";
+import { deepClone, sleep } from "../shared/tools";
+import useAudioDevicesStore from "./audioDevices";
+import useRoomStore from "./fetchRooms";
+import { useInitsStore } from "./inits";
+import { getStream, useMyStreamStore } from "./myStream";
+import { useSettingsStore } from "./settings";
+import { useShidurStore } from "./shidur";
+import { useUiActions } from "./uiActions";
+import { useUserStore } from "./user";
 
 const NAMESPACE = 'InRoom';
 
@@ -347,7 +346,12 @@ export const useInRoomStore = create((set, get) => ({
               await makeSubscription(data.publishers);
               useUserStore.getState().sendUserState();
               attempts = 0;
-              const stream = getStream();
+              const stream = await getStream();
+              if (!stream) {
+                logger.error(NAMESPACE, "[client] Stream is null");
+                get().restartRoom();
+                return;
+              }
               stream.getVideoTracks().forEach((track) => {
                 track.enabled = !cammute;
               });
