@@ -1,69 +1,178 @@
+import { Dimensions, NativeModules, Platform } from "react-native";
 import RNFS from "react-native-fs";
-import { Linking, Platform, Dimensions } from "react-native";
-import { SUPPORT_EMAIL } from "@env";
+import { useSettingsStore } from "../zustand/settings";
 
 class Logger {
   constructor() {
-    this.logFilePath = `${RNFS.DocumentDirectoryPath}/app.log`;
+    this.appLogsDir = RNFS.DownloadDirectoryPath;
+    this.logFilePath = `${this.appLogsDir}/app.log`;
+    console.log("Logger logFilePath", this.logFilePath);
     this.initializeLogFile();
-    this.debugMode = false;
+    
+    this.logBuffer = [];
+    this.bufferSize = 50; // Write every 50 logs
+    this.isWriting = false;
+    
+    // Conditional stack traces
+    this.includeStackTrace = false;
+  }
+  hasTag(tag) {
+    return true//tag === "Mqtt" || tag === "Inits";
   }
 
   async initializeLogFile() {
     try {
-      // Create log file if it doesn't exist
-      const exists = await RNFS.exists(this.logFilePath);
-      if (!exists) {
-        await RNFS.writeFile(this.logFilePath, "", "utf8");
+      // Create logs directory if it doesn't exist
+      const dirExists = await RNFS.exists(this.appLogsDir);
+      if (!dirExists) {
+        await RNFS.mkdir(this.appLogsDir);
       }
 
-      // Keep log file size in check (max 5MB)
-      const stats = await RNFS.stat(this.logFilePath);
-      if (stats.size > 5 * 1024 * 1024) {
-        // 5MB
+      // Check directory size
+      const dirSize = await this.checkDirectorySize();
+      console.log(`Logs directory size: ${(dirSize / 1024 / 1024).toFixed(2)} MB`);
+      
+      if (dirSize > 50 * 1024 * 1024) {
+        console.log("Directory size exceeds 50MB, cleaning logs directory...");
+        await this.cleanDirectory(this.appLogsDir);
+      }
+
+      // Create log file if it doesn't exist
+      const fileExists = await RNFS.exists(this.logFilePath);
+      if (!fileExists) {
         await RNFS.writeFile(this.logFilePath, "", "utf8");
+      } else {
+        // Save previous log with timestamp
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = `${this.appLogsDir}/app_${timestamp}.log`;
+        await RNFS.copyFile(this.logFilePath, backupPath);
+        console.log("Previous log backed up to:", backupPath);
+        
+        // Clean the current log file
+        await RNFS.writeFile(this.logFilePath, "", "utf8");
+        console.log("Current log file cleaned");
       }
     } catch (error) {
       console.error("Failed to initialize log file:", error);
     }
   }
 
-  async writeToFile(message) {
+  async checkDirectorySize() {
     try {
-      await RNFS.appendFile(this.logFilePath, message + "\n", "utf8");
+      const files = await RNFS.readDir(this.appLogsDir);
+      let totalSize = 0;
+      
+      for (const file of files) {
+        if (file.isFile()) {
+          totalSize += file.size;
+        }
+      }
+      
+      return totalSize;
     } catch (error) {
-      console.error("Failed to write to log file:", error);
+      console.error("Failed to check directory size:", error);
+      return 0;
     }
   }
 
-  async sendFile(email = SUPPORT_EMAIL) {
+  async cleanDirectory(dir) {
     try {
-      const logsBase64 = await RNFS.readFile(this.logFilePath, "base64");
-      const zustandStore = this.getZustandStore();
+      const files = await RNFS.readDir(dir);
+      
+      for (const file of files) {
+        if (file.isFile() && file.name.endsWith('.log')) {
+          const filePath = `${dir}/${file.name}`;
+          await RNFS.unlink(filePath);
+          console.log(`Deleted log file: ${file.name}`);
+        }
+      }
+      
+      console.log("Logs directory cleaned successfully");
+    } catch (error) {
+      console.error("Failed to clean logs directory:", error);
+    }
+  }
 
-      const storeFilePath = `${RNFS.DocumentDirectoryPath}/store_state.json`;
+  async flushBuffer() {
+    if (this.isWriting || this.logBuffer.length === 0) {
+      return;
+    }
+
+    this.isWriting = true;
+    const logsToWrite = [...this.logBuffer];
+    this.logBuffer = [];
+
+    try {
+      const batchMessage = logsToWrite.join('\n') + '\n\n';
+      await RNFS.appendFile(this.logFilePath, batchMessage, "utf8");
+    } catch (error) {
+      console.error("Failed to write batch to log file:", error);
+      // Re-add logs to buffer if write failed
+      this.logBuffer.unshift(...logsToWrite);
+    } finally {
+      this.isWriting = false;
+    }
+  }
+
+  async writeToFile(message) {
+    this.logBuffer.push(message);
+    if (this.logBuffer.length >= this.bufferSize) {
+      await this.flushBuffer();
+    }
+  }
+
+  async sendFile() {
+    try {
+      // First ensure all buffered logs are written to file
+      await this.flushBuffer();
+
+      if (Platform.OS !== 'android') {
+        throw new Error("Log sending is only supported on Android platform");
+      }
+
+      if (!NativeModules.LoggerModule) {
+        throw new Error("LoggerModule not available");
+      }
+
+      // Create temp logs directory and copy all log files
+      const tempLogsDir = `${RNFS.TemporaryDirectoryPath}/appLogs`;
+      await RNFS.mkdir(tempLogsDir);
+      
+      // Copy all files from logs directory to temp directory
+      const logFiles = await RNFS.readDir(this.appLogsDir);
+      for (const file of logFiles) {
+        if (file.isFile() && file.name.endsWith('.log')) {
+          const sourcePath = `${this.appLogsDir}/${file.name}`;
+          const destPath = `${tempLogsDir}/${file.name}`;
+          await RNFS.copyFile(sourcePath, destPath);
+          console.log(`Copied log file: ${file.name}`);
+        }
+      }
+      
+      const zustandStore = this.getZustandStore();
+      const storeFilePath = `${tempLogsDir}/store_state.json`;
       await RNFS.writeFile(storeFilePath, zustandStore, "utf8");
-      const storeBase64 = await RNFS.readFile(storeFilePath, "base64");
+      console.log("Zustand store written to file", storeFilePath);
 
       const deviceInfo = this.getDeviceInfo();
-      const deviceFilePath = `${RNFS.DocumentDirectoryPath}/device_info.json`;
+      const deviceFilePath = `${tempLogsDir}/device_info.json`;
       await RNFS.writeFile(deviceFilePath, deviceInfo, "utf8");
-      const deviceBase64 = await RNFS.readFile(deviceFilePath, "base64");
+      console.log("Device info written to file", deviceFilePath);
 
-      const subject = encodeURIComponent("Application Logs");
-      const mailtoUrl = `mailto:${email}?subject=${subject}&attachment=data:text/plain;base64,${logsBase64}&attachment=data:application/json;base64,${storeBase64}&attachment=data:application/json;base64,${deviceBase64}`;
-
-      const canOpen = await Linking.canOpenURL(mailtoUrl);
-      if (canOpen) {
-        await Linking.openURL(mailtoUrl);
-        // Clean up temp files
-        await RNFS.unlink(storeFilePath);
-        await RNFS.unlink(deviceFilePath);
-      } else {
-        console.error("No email client found");
+      // Use native LoggerModule to compress and send logs to Sentry
+      const result = await NativeModules.LoggerModule.sendLog(tempLogsDir);
+      console.log("Logs sent successfully:", result);
+      
+      // Clean up temp files
+      try {
+        await this.cleanDirectory(tempLogsDir);
+        this.initializeLogFile();
+      } catch (cleanupError) {
+        console.warn("Failed to cleanup temp files:", cleanupError);
       }
     } catch (error) {
       console.error("Failed to send log file:", error);
+      throw error; // Re-throw to allow caller to handle
     }
   }
 
@@ -101,65 +210,107 @@ class Logger {
 
   formatMessage(level, ...args) {
     const timestamp = new Date().toISOString();
-    const stack = new Error().stack
-      .split("\n")
-      .slice(3) // Skip Error and logger internal calls
-      .map((line) => line.trim())
-      .join("\n    "); // Indent stack lines for better readability
-    return [
-      `[${timestamp}] [${level}]`,
-      ...args,
-      "\nStack Trace:\n    " + stack,
-    ];
+    
+    let formattedMessage = [`[${timestamp}] [${level}] [${args[0]}]`, ...args.slice(1)];
+    
+    // Only generate stack trace when explicitly enabled (for debugging)
+    if (this.includeStackTrace) {
+      const stack = new Error().stack
+        .split("\n")
+        .slice(3)
+        .map((line) => line.trim())
+        .join("\n    ");
+      formattedMessage.push("\nStack Trace:\n    " + stack + "\n");
+    }
+    
+    return formattedMessage;
+  }
+
+  safeStringify(obj) {
+    const seen = new WeakSet();
+    try {
+      return JSON.stringify(obj, (key, value) => {
+        // Handle circular references by replacing them with a marker
+        if (typeof value === 'object' && value !== null) {
+          if (seen.has(value)) {
+            return '[Circular Reference]';
+          }
+          seen.add(value);
+        }
+        return value;
+      });
+    } catch (error) {
+      return '[Unable to stringify object: ' + error.message + ']';
+    }
   }
 
   async log(level, ...args) {
-    if (!this.debugMode) return;
+    if (!useSettingsStore.getState().debugMode) return;
 
     const formattedMessage = this.formatMessage(level, ...args);
-
     const message = formattedMessage
       .map((arg) =>
-        typeof arg === "object" ? JSON.stringify(arg) : String(arg)
+        typeof arg === "object" ? this.safeStringify(arg) : String(arg)
       )
       .join(" ");
 
-    await this.writeToFile(message);
-  }
-
-  toggleDebugMode(debugMode) {
-    if (!debugMode) {
-      this.info("Debug mode disabled");
-    }
-    this.debugMode = debugMode;
-    if (debugMode) {
-      this.info("Debug mode enabled");
-    }
+    this.writeToFile(message);
   }
 
   async trace(...args) {
-    console.trace(...args);
+    if (!this.hasTag(args[0])) return;
+
+    console.trace(this.prepareConsoleMsg(args));
     await this.log("TRACE", ...args);
   }
 
   async debug(...args) {
-    console.debug(...args);
+    if (!this.hasTag(args[0])) return;
+    
+    console.debug(this.prepareConsoleMsg(args));
     await this.log("DEBUG", ...args);
   }
 
-  async info(...args) {
-    console.info(...args);
+  async info(...args) { 
+    if (!this.hasTag(args[0])) return;
+    
+    console.info(this.prepareConsoleMsg(args));
     await this.log("INFO", ...args);
   }
 
-  async warn(...args) {
-    console.warn(...args);
+  async warn(...args) { 
+    if (!this.hasTag(args[0])) return;
+    
+    console.warn(this.prepareConsoleMsg(args));
     await this.log("WARN", ...args);
   }
 
-  async error(...args) {
-    console.error(...args);
+  async error(...args) {  
+    if (!this.hasTag(args[0])) return;
+    
+    console.error(this.prepareConsoleMsg(args));
     await this.log("ERROR", ...args);
+  }
+
+  prepareConsoleMsg(args) {
+    args[0] = `[${args[0]}]`;
+    return args;
+  }
+
+  // Enable stack traces for debugging
+  enableStackTraces(enabled = true) {
+    this.includeStackTrace = enabled;
+  }
+
+  // Force immediate flush (for critical logs)
+  async flush() {
+    await this.flushBuffer();
+  }
+
+  // Cleanup method
+  destroy() {
+    // Final flush
+    this.flushBuffer();
   }
 }
 

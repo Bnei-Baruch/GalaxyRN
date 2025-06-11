@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { setLanguage } from "../i18n/i18n";
-import logger from "../services/logger";
 import { getFromStorage, setToStorage } from "../shared/tools";
 import { useInitsStore } from "./inits";
 import {
@@ -76,9 +75,8 @@ export const useSettingsStore = create((set, get) => ({
   hideSelf: false,
   toggleHideSelf: () => set((state) => ({ hideSelf: !state.hideSelf })),
   debugMode: false,
-  toggleDebugMode: () => {
-    const debugMode = !get().debugMode;
-    logger.toggleDebugMode(debugMode);
+  toggleDebugMode: (debugMode = !get().debugMode) => {
+    setToStorage("debugMode", debugMode);
     set({ debugMode });
   },
 }));

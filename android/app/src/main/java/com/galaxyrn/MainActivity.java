@@ -17,6 +17,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.galaxyrn.foreground.ForegroundService;
 import com.galaxyrn.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
+import com.galaxyrn.logger.GxyLogger;
+import com.galaxyrn.logger.GxyLoggerUtils;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -44,13 +46,16 @@ public class MainActivity extends ReactActivity {
 
         permissionHelper = new PermissionHelper(this);
 
-        Log.d(TAG, "onCreate");
+        // Using custom logger instead of Log.d
+        GxyLogger.i("MainActivity", "onCreate");
+        GxyLoggerUtils.logDeviceInfo("MainActivity");
 
         getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
             @Override
             public void onReactContextInitialized(ReactContext context) {
-                Log.d(TAG, "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
-                        + permissionHelper.permissionsReady);
+                GxyLogger.i("ReactContext",
+                        "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
+                                + permissionHelper.permissionsReady);
                 if (!permissionHelper.permissionsReady) {
                     permissionHelper.initModules((ReactApplicationContext) context);
                 } else {
