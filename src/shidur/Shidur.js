@@ -3,27 +3,29 @@ import React from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 // Third-party libraries
-import { RTCView } from 'react-native-webrtc';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { RTCView } from 'react-native-webrtc';
 
 // Local imports
-import { useShidurStore } from '../zustand/shidur';
-import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { baseStyles } from '../constants';
-import { PlayPauseBtn } from './PlayPauseBtn';
-import { SubtitleBtn } from './SubtitleBtn';
-import { OptionsBtn } from './OptionsBtn';
-import { PlayPauseOverlay } from './PlayPauseOverlay';
-import { MuteBtn } from './MuteBtn';
+import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
+import { useShidurStore } from '../zustand/shidur';
+import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
+import { MuteBtn } from './MuteBtn';
+import { OptionsBtn } from './OptionsBtn';
+import { PlayPauseBtn } from './PlayPauseBtn';
+import { PlayPauseOverlay } from './PlayPauseOverlay';
+import { SubtitleBtn } from './SubtitleBtn';
 
 const Shidur = () => {
-  const { videoStream, isPlay, shidurBar, toggleShidurBar, video, isOnAir } = useShidurStore();
+  const { videoStream, isPlay, video, isOnAir } = useShidurStore();
+  const { toggleShowBars, showBars } = useUiActions();
 
   const { t } = useTranslation();
 
-  const toggleBar = () => toggleShidurBar();
+  const toggleBar = () => toggleShowBars();
 
   const streamURL = videoStream?.toURL();
   return (
@@ -57,7 +59,7 @@ const Shidur = () => {
       }
 
       {
-        (shidurBar || !isPlay) && (
+        (showBars || !isPlay) && (
           <View style={styles.toolbar}>
             <View style={styles.toolbarBtnsGroup}>
               <PlayPauseBtn />

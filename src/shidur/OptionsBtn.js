@@ -1,13 +1,13 @@
 import * as React from "react";
-import { useShidurStore } from "../zustand/shidur";
-import ListInModal from "../components/ListInModal";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { Text } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import ListInModal from "../components/ListInModal";
+import { baseStyles } from "../constants";
+import logger from "../services/logger";
+import { topMenuBtns } from "../topBar/helper";
+import { useUiActions } from "../zustand/uiActions";
 import AudioSelect from "./AudioSelect";
 import VideoSelect from "./VideoSelect";
-import { baseStyles } from "../constants";
-import { topMenuBtns } from "../topBar/helper";
-import logger from "../services/logger";
 
 const NAMESPACE = "OptionsBtn";
 
@@ -17,11 +17,10 @@ const items = [
 ];
 
 export const OptionsBtn = () => {
-  const { toggleShidurBar } = useShidurStore();
+  const { toggleShowBars } = useUiActions();
 
-  const handleOpen = () => {
-    toggleShidurBar(false, true);
-  };
+  const handleOpen = () => toggleShowBars(false, true);
+  const handleSelect = () => toggleShowBars();
 
   const renderItem = (item) => {
     logger.debug(NAMESPACE, "renderItem", item);
@@ -50,7 +49,7 @@ export const OptionsBtn = () => {
   return (
     <ListInModal
       items={items}
-      onSelect={toggleShidurBar}
+      onSelect={handleSelect}
       onOpen={handleOpen}
       renderItem={renderItem}
       trigger={

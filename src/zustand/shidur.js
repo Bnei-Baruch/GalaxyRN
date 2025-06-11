@@ -1,22 +1,21 @@
 import { create } from "zustand";
-import {
-  VIDEO_240P_OPTION_VALUE,
-  NO_VIDEO_OPTION_VALUE,
-  audio_options2,
-  trllang,
-  NOTRL_STREAM_ID,
-  gxycol,
-} from "../shared/consts";
-import { useUserStore } from "./user";
-import { useSettingsStore } from "./settings";
-import GxyConfig from "../shared/janus-config";
 import { JanusMqtt } from "../libs/janus-mqtt";
-import logger from "../services/logger";
 import { StreamingPlugin } from "../libs/streaming-plugin";
-import { getFromStorage, setToStorage } from "../shared/tools";
-import { HIDE_BARS_TIMEOUT_MS } from "./helper";
-import { useInRoomStore } from "./inRoom";
+import logger from "../services/logger";
 import api from "../shared/Api";
+import {
+  NOTRL_STREAM_ID,
+  NO_VIDEO_OPTION_VALUE,
+  VIDEO_240P_OPTION_VALUE,
+  audio_options2,
+  gxycol,
+  trllang,
+} from "../shared/consts";
+import GxyConfig from "../shared/janus-config";
+import { getFromStorage, setToStorage } from "../shared/tools";
+import { useInRoomStore } from "./inRoom";
+import { useSettingsStore } from "./settings";
+import { useUserStore } from "./user";
 
 const NAMESPACE = "Shidur";
 
@@ -246,16 +245,9 @@ export const useShidurStore = create((set, get) => ({
     });
   },
   streamGalaxy: async (isOnAir) => {
-    logger.debug(
-      NAMESPACE,
-      "call streamGalaxy bug: [shidur] got talk event: ",
-      isOnAir
-    );
+    logger.debug(NAMESPACE, "[shidur] got talk event: ", isOnAir);
     if (!trlAudioJanus) {
-      logger.debug(
-        NAMESPACE,
-        "call streamGalaxy bug:[shidur] look like we got talk event before stream init finished"
-      );
+      logger.debug(NAMESPACE, "[shidur] look like we got talk event before stream init finished");
       setTimeout(() => {
         get().streamGalaxy(isOnAir);
       }, 1000);
@@ -265,11 +257,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOnAir) {
       // Switch to -1 stream
       const col = 4;
-      logger.debug(
-        NAMESPACE,
-        "call streamGalaxy bug:[shidur] Switch audio stream: ",
-        gxycol[col]
-      );
+      logger.debug(NAMESPACE, "[shidur] Switch audio stream: ", gxycol[col]);
       audioJanus.switch(gxycol[col]);
       const _langtext = await getFromStorage("vrt_langtext");
       const id = trllang[_langtext];
@@ -342,6 +330,7 @@ export const useShidurStore = create((set, get) => ({
     }
     set({ videoStream, trlUrl: null });
   },
+  /*
   shidurBar: true,
   toggleShidurBar: (hideOnTimeout = true, shidurBar = !get().shidurBar) => {
     clearTimeout(shidurBarTimeout);
@@ -353,5 +342,6 @@ export const useShidurStore = create((set, get) => ({
     }
     set({ shidurBar });
   },
+  */
   setAutoPlay: (isAutoPlay) => set({ isAutoPlay }),
 }));

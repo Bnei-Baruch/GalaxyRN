@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import { useMyStreamStore } from "./myStream";
-import { useShidurStore } from "./shidur";
-import {
-  deactivateFeedsVideos,
-  useInRoomStore,
-  activateFeedsVideos,
-} from "./inRoom";
-import { useUserStore } from "./user";
-import { getFromStorage, setToStorage } from "../shared/tools";
-import { useUiActions } from "./uiActions";
-import { useInitsStore } from "./inits";
 import { setLanguage } from "../i18n/i18n";
 import logger from "../services/logger";
+import { getFromStorage, setToStorage } from "../shared/tools";
+import { useInitsStore } from "./inits";
+import {
+  activateFeedsVideos,
+  deactivateFeedsVideos,
+  useInRoomStore,
+} from "./inRoom";
+import { useMyStreamStore } from "./myStream";
+import { useShidurStore } from "./shidur";
+import { useUiActions } from "./uiActions";
+import { useUserStore } from "./user";
 
 // Держим референс на слушатель, чтобы можно было удалить его при необходимости
 let orientationListener = null;
@@ -28,15 +28,6 @@ export const useSettingsStore = create((set, get) => ({
   isFullscreen: false,
   toggleIsFullscreen: () => {
     const isFullscreen = !get().isFullscreen;
-
-    if (isFullscreen) {
-      useUiActions.getState().toggleShowBars(false, false);
-    } else {
-      useUiActions.getState().toggleShowBars(true);
-    }
-
-    useShidurStore.getState().toggleShidurBar(false, !isFullscreen);
-
     set({ isFullscreen });
   },
   toggleQuestion: (question = !get().question) => {
