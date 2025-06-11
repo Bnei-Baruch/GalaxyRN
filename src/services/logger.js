@@ -126,10 +126,6 @@ class Logger {
       // First ensure all buffered logs are written to file
       await this.flushBuffer();
 
-      if (Platform.OS !== 'android') {
-        throw new Error("Log sending is only supported on Android platform");
-      }
-
       if (!NativeModules.LoggerModule) {
         throw new Error("LoggerModule not available");
       }

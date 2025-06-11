@@ -1,27 +1,27 @@
-import { create } from "zustand";
-import { setLanguage } from "../i18n/i18n";
-import { getFromStorage, setToStorage } from "../shared/tools";
-import { useInitsStore } from "./inits";
+import { create } from 'zustand';
+import { setLanguage } from '../i18n/i18n';
+import { getFromStorage, setToStorage } from '../shared/tools';
+import { useInitsStore } from './inits';
 import {
   activateFeedsVideos,
   deactivateFeedsVideos,
   useInRoomStore,
-} from "./inRoom";
-import { useMyStreamStore } from "./myStream";
-import { useShidurStore } from "./shidur";
-import { useUiActions } from "./uiActions";
-import { useUserStore } from "./user";
+} from './inRoom';
+import { useMyStreamStore } from './myStream';
+import { useShidurStore } from './shidur';
+import { useUiActions } from './uiActions';
+import { useUserStore } from './user';
 
 // Держим референс на слушатель, чтобы можно было удалить его при необходимости
 let orientationListener = null;
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang: "en",
+  uiLang: 'en',
   autoEnterRoom: false,
-  setUiLang: (uiLang) => {
+  setUiLang: uiLang => {
     set({ uiLang });
     setLanguage(uiLang);
-    setToStorage("ui_lang", uiLang);
+    setToStorage('ui_lang', uiLang);
   },
   question: false,
   isFullscreen: false,
@@ -56,8 +56,8 @@ export const useSettingsStore = create((set, get) => ({
     cleanQuads(false);
   },
   exitAudioMode: async () => {
-    const cammute = await getFromStorage("cammute", false).then(
-      (x) => x === "true"
+    const cammute = await getFromStorage('cammute', false).then(
+      x => x === 'true'
     );
     useMyStreamStore.getState().toggleCammute(cammute);
 
@@ -71,12 +71,12 @@ export const useSettingsStore = create((set, get) => ({
     initQuad();
   },
   showGroups: false,
-  toggleShowGroups: () => set((state) => ({ showGroups: !state.showGroups })),
+  toggleShowGroups: () => set(state => ({ showGroups: !state.showGroups })),
   hideSelf: false,
-  toggleHideSelf: () => set((state) => ({ hideSelf: !state.hideSelf })),
+  toggleHideSelf: () => set(state => ({ hideSelf: !state.hideSelf })),
   debugMode: false,
   toggleDebugMode: (debugMode = !get().debugMode) => {
-    setToStorage("debugMode", debugMode);
+    setToStorage('debugMode', debugMode);
     set({ debugMode });
   },
 }));

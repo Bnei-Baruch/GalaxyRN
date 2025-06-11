@@ -4,11 +4,6 @@ import android.util.Log;
 import io.sentry.SentryLevel;
 import com.galaxyrn.BuildConfig;
 
-/**
- * Custom Logger for GalaxyRN Android Application
- * Provides structured logging with different levels and automatic filtering for
- * release builds
- */
 public class GxyLogger {
 
     // Log levels
