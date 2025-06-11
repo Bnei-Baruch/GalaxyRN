@@ -1,13 +1,13 @@
 import mqtt from "mqtt";
 //import GxyConfig from "./janus-utils";
-import logger from "../services/logger";
 import { MQTT_URL, MSG_URL } from "@env";
 import BackgroundTimer from "react-native-background-timer";
+import logger from "../services/logger";
 
-import { isServiceID, userRolesEnum } from "./enums";
-import { randomString } from "./tools";
 import { useChatStore } from "../zustand/chat";
 import { useSubtitleStore } from "../zustand/subtitle";
+import { isServiceID, userRolesEnum } from "./enums";
+import { randomString } from "./tools";
 
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
@@ -144,8 +144,8 @@ class MqttMsg {
     if (!this.mq) return;
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? " | transaction: " + correlationData : "";
-    logger.debug(
-      "[mqtt] --> send message" +
+    logger.debug(NAMESPACE,
+      "--> send message" +
         cd +
         " | topic: " +
         topic +
@@ -162,24 +162,24 @@ class MqttMsg {
 
     let options = { qos: 1, retain, properties };
     this.mq.publish(topic, message, { ...options }, (err) => {
-      err && logger.error("[mqtt] Error: ", err);
+      err && logger.error(NAMESPACE, "Error: ", err);
     });
   };
 
   watch = (callback) => {
     this.mq.on("message", (topic, data, packet) => {
-      logger.trace("[mqtt] <-- receive packet: ", packet);
+      logger.trace(NAMESPACE, "<-- receive packet: ", packet);
       let cd = packet?.properties?.correlationData
         ? " | transaction: " + packet?.properties?.correlationData?.toString()
         : "";
-      logger.debug("[mqtt] <-- receive message" + cd + " | topic : " + topic);
+      logger.debug(NAMESPACE, "<-- receive message" + cd + " | topic : " + topic);
       const t = topic.split("/");
       if (t[0] === "msg") t.shift();
       const [root, service, id, target] = t;
       logger.debug(NAMESPACE, "<-- receive msg  ", root, service, id, target);
       switch (root) {
         case "subtitles":
-          logger.debug("[mqtt] On subtitles msg from topic", topic);
+          logger.debug(NAMESPACE, "On subtitles msg from topic", topic);
           useSubtitleStore.getState().onMessage(data);
           break;
         case "galaxy":
@@ -201,8 +201,8 @@ class MqttMsg {
                 let msg = JSON.parse(str);
                 callback(msg, topic);
               } catch (e) {
-                logger.error(e);
-                logger.error("[mqtt] Not valid JSON, ", data.toString());
+                logger.error(NAMESPACE, e);
+                logger.error(NAMESPACE, "Not valid JSON, ", data.toString());
                 return;
               }
             }

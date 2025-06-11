@@ -1,24 +1,26 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import { useTranslation } from "react-i18next";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import ListInModal from "../components/ListInModal";
+import { baseStyles } from "../constants";
+import logger from "../services/logger";
 import { audio_options2 } from "../shared/consts";
 import { useShidurStore } from "../zustand/shidur";
-import { baseStyles } from "../constants";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { useTranslation } from "react-i18next";
-import logger from "../services/logger";
+import { useUiActions } from "../zustand/uiActions";
 
 const NAMESPACE = "AudioSelect";
 
 const AudioSelect = () => {
-  const { audio, setAudio, toggleShidurBar } = useShidurStore();
+  const { audio, setAudio } = useShidurStore();
+  const { toggleShowBars } = useUiActions();
   const { t } = useTranslation();
 
   const handleSetAudio = (item) => {
     logger.debug(NAMESPACE, "handleSetAudio", item);
     setAudio(item.value, item.eng_text);
-    toggleShidurBar(false, true);
+    toggleShowBars(false, true);
   };
 
   const renderItem = (item) => {

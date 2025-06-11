@@ -1,19 +1,18 @@
 import React, { useEffect } from "react";
 import { Dimensions } from "react-native";
 
-import "react-native-url-polyfill";
 import "intl-pluralrules";
+import "react-native-url-polyfill";
 
 import "../i18n/i18n";
 import PrepareRoom from "../InRoom/PrepareRoom";
 import useForegroundListener from "../InRoom/useForegroundListener";
-import { setTag, addBreadcrumb } from "../libs/sentry/sentryHelper";
 import { SettingsNotJoined } from "../settings/SettingsNotJoined";
 import useAudioDevicesStore from "../zustand/audioDevices";
 import { useInitsStore } from "../zustand/inits";
 import { useMyStreamStore } from "../zustand/myStream";
-import { useSubtitleStore } from "../zustand/subtitle";
 import { useShidurStore } from "../zustand/shidur";
+import { useSubtitleStore } from "../zustand/subtitle";
 import logger from "./logger";
 
 const NAMESPACE = 'InitApp';
@@ -44,10 +43,12 @@ const InitApp = () => {
 
     initApp();
     initAudioDevices();
+    myInit();
 
     return () => {
       terminateApp();
       abortAudioDevices();
+      myAbort();
     };
   }, []);
 

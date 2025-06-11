@@ -1,10 +1,10 @@
-import { randomString } from "../shared/tools";
+import { STUN_SRV_GXY } from "@env";
 import { EventEmitter } from "events";
+import BackgroundTimer from "react-native-background-timer";
+import { RTCPeerConnection } from "react-native-webrtc";
 import logger from '../services/logger';
 import mqtt from "../shared/mqtt";
-import { STUN_SRV_GXY } from "@env";
-import { RTCPeerConnection } from "react-native-webrtc";
-import BackgroundTimer from "react-native-background-timer";
+import { randomString } from "../shared/tools";
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -87,9 +87,19 @@ export class PublisherPlugin extends EventEmitter {
 
   publish(stream) {
     return new Promise((resolve, reject) => {
-      const videoTrack = stream.getVideoTracks()[0];
-      this.pc.addTrack(videoTrack, stream);
-      this.pc.addTrack(stream.getAudioTracks()[0], stream);
+      if (!stream) {
+        reject(new Error("Stream is null or undefined"));
+        return;
+      }
+      const videoTracks = stream.getVideoTracks();
+      const audioTracks = stream.getAudioTracks();
+      
+      if (videoTracks.length > 0) {
+        this.pc.addTrack(videoTracks[0], stream);
+      }
+      if (audioTracks.length > 0) {
+        this.pc.addTrack(audioTracks[0], stream);
+      }
 
       let videoTransceiver = null;
       let audioTransceiver = null;
@@ -162,8 +172,12 @@ export class PublisherPlugin extends EventEmitter {
       videoTransceiver.direction = d;
     }
 
-    if (!video)
-      videoTransceiver.sender.replaceTrack(stream.getVideoTracks()[0]);
+    if (!video && stream) {
+      const videoTracks = stream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        videoTransceiver.sender.replaceTrack(videoTracks[0]);
+      }
+    }
     if (stream) this.configure();
   }
 
@@ -202,7 +216,12 @@ export class PublisherPlugin extends EventEmitter {
       audioTransceiver.direction = "sendonly";
     }
 
-    audioTransceiver.sender.replaceTrack(stream.getAudioTracks()[0]);
+    if (stream) {
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        audioTransceiver.sender.replaceTrack(audioTracks[0]);
+      }
+    }
     this.configure();
   }
 

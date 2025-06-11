@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  Button,
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
+  View
 } from "react-native";
-import useRoomStore from "../zustand/fetchRooms";
-import { useSettingsStore } from "../zustand/settings";
-import { baseStyles } from "../constants";
-import { useTranslation } from "react-i18next";
-import { useInitsStore } from "../zustand/inits";
 import TextDisplayWithButton from "../components/TextDisplayWithButton";
+import { baseStyles } from "../constants";
+import useRoomStore from "../zustand/fetchRooms";
+import { useInitsStore } from "../zustand/inits";
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();
@@ -44,8 +42,9 @@ const RoomSelect = () => {
     const _room = filteredOptions.find(
       (o) => o.description.toLowerCase() === text.toLowerCase()
     );
-    _room ? setRoom(room) : setRoom(null);
+    _room ? setRoom(_room) : setRoom(null);
   };
+
   const handleSelect = (value) => {
     setRoom(value);
     Keyboard.dismiss();

@@ -1,6 +1,6 @@
 // Third-party packages
-import { create } from "zustand";
 import BackgroundTimer from "react-native-background-timer";
+import { create } from "zustand";
 
 // React Native modules
 import { NativeEventEmitter } from "react-native";
@@ -24,6 +24,7 @@ import mqtt from "../shared/mqtt";
 import { getFromStorage } from "../shared/tools";
 
 const NAMESPACE = "Inits";
+const CLIENT_RECONNECT_TYPES = ["client-reconnect", "client-reload", "client-disconnect"];
 
 // Safely create event emitter only if CallsBridge.raw is defined
 let eventEmitter;
@@ -80,13 +81,9 @@ export const useInitsStore = create((set, get) => ({
 
       mqtt.watch((data) => {
         const { type, id, bitrate } = data;
+        logger.debug(NAMESPACE, "got message: ", data);
 
-        if (
-          user.id === id &&
-          ["client-reconnect", "client-reload", "client-disconnect"].includes(
-            type
-          )
-        ) {
+        if (user.id === id && CLIENT_RECONNECT_TYPES.includes(type)) {
           restartRoom();
         } else if (type === "client-kicked" && user.id === id) {
           kc.logout();
@@ -97,11 +94,7 @@ export const useInitsStore = create((set, get) => ({
         } else if (type === "video-mute" && user.id === id) {
           toggleCammute();
         } else if (type === "audio-out") {
-          logger.debug(
-            NAMESPACE,
-            "call streamGalaxy bug: [mqtt] audio-out: ",
-            data
-          );
+          logger.debug(NAMESPACE,"audio-out: ",data);
           streamGalaxy(data.status);
           if (data.status) {
             // remove question mark when sndman unmute our room
