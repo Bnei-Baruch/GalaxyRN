@@ -5,14 +5,18 @@ import 'intl-pluralrules';
 import 'react-native-url-polyfill';
 
 import '../i18n/i18n';
+
 import PrepareRoom from '../InRoom/PrepareRoom';
 import useForegroundListener from '../InRoom/useForegroundListener';
+import useScreenRotationListener from '../InRoom/useScreenRotationListener';
 import { SettingsNotJoined } from '../settings/SettingsNotJoined';
+
 import useAudioDevicesStore from '../zustand/audioDevices';
 import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useShidurStore } from '../zustand/shidur';
 import { useSubtitleStore } from '../zustand/subtitle';
+
 import logger from './logger';
 
 const NAMESPACE = 'InitApp';
@@ -23,6 +27,7 @@ const InitApp = () => {
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
   const { audio } = useShidurStore();
+  const { readyForJoin } = useInitsStore();
 
   useEffect(() => {
     logger.info(NAMESPACE, 'Initializing with language');
@@ -33,9 +38,8 @@ const InitApp = () => {
     };
   }, [audio]);
 
-  const { readyForJoin } = useInitsStore();
-
   useForegroundListener();
+  useScreenRotationListener();
 
   useEffect(() => {
     const { width, height } = Dimensions.get('window');
