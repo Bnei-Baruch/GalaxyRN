@@ -21,6 +21,7 @@ import { getFromStorage } from '../shared/tools';
 
 // Zustand stores
 import { useChatStore } from './chat';
+import { modalModes } from './helper';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
@@ -169,7 +170,7 @@ export const useInitsStore = create((set, get) => ({
   terminateApp: () => {
     BackgroundTimer.stop();
     useSettingsStore.getState().toggleIsFullscreen(false);
-    useChatStore.getState().setChatVisible(false);
+    useChatStore.getState().setChatMode(modalModes.close);
     if (subscription) subscription.remove();
   },
 }));

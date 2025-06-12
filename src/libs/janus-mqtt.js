@@ -1,29 +1,29 @@
-import { randomString } from '../shared/tools';
-import mqtt from '../shared/mqtt';
-import logger from '../services/logger';
 import BackgroundTimer from 'react-native-background-timer';
+import logger from '../services/logger';
+import mqtt from '../shared/mqtt';
+import { randomString } from '../shared/tools';
 
 const NAMESPACE = 'JanusMqtt';
 
 export class JanusMqtt {
   constructor(user, srv, mit) {
-    this.user          = user;
-    this.srv           = srv;
-    this.mit           = mit;
-    this.rxTopic       = 'janus/' + srv + '/from-janus';
-    this.txTopic       = 'janus/' + srv + '/to-janus';
-    this.stTopic       = 'janus/' + srv + '/status';
-    this.isConnected   = false;
-    this.onStatus      = null;
-    this.sessionId     = undefined;
-    this.transactions  = {};
+    this.user = user;
+    this.srv = srv;
+    this.mit = mit;
+    this.rxTopic = 'janus/' + srv + '/from-janus';
+    this.txTopic = 'janus/' + srv + '/to-janus';
+    this.stTopic = 'janus/' + srv + '/status';
+    this.isConnected = false;
+    this.onStatus = null;
+    this.sessionId = undefined;
+    this.transactions = {};
     this.pluginHandles = {};
-    this.sendCreate    = true;
-    this.keeptry       = 0;
-    this.token         = null;
-    this.connect       = null;
-    this.disconnect    = null;
-    this.onMessage     = this.onMessage.bind(this);
+    this.sendCreate = true;
+    this.keeptry = 0;
+    this.token = null;
+    this.connect = null;
+    this.disconnect = null;
+    this.onMessage = this.onMessage.bind(this);
   }
 
   init(token) {
@@ -43,21 +43,25 @@ export class JanusMqtt {
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, '[janus] in Promise');
       const transaction = randomString(12);
-      const msg         = { janus: 'create', transaction, token };
+      const msg = { janus: 'create', transaction, token };
 
       this.transactions[transaction] = {
-        resolve  : (json) => {
+        resolve: json => {
           if (json.janus !== 'success') {
-            logger.error(NAMESPACE, '[janus] Cannot connect to Janus', json);
+            logger.error(NAMESPACE, 'Cannot connect to Janus', json);
             reject(json);
             return;
           }
 
-          this.sessionId   = json.data.id;
+          this.sessionId = json.data.id;
           this.isConnected = true;
           this.keepAlive(false);
 
-          logger.debug(NAMESPACE, '[janus] Janus connected, sessionId: ', this.sessionId);
+          logger.debug(
+            NAMESPACE,
+            'Janus connected, sessionId: ',
+            this.sessionId
+          );
 
           // this.user.mit - actually trigger once and after that we use
           // session id as emit. In case we not using multiple session on same server
@@ -67,11 +71,17 @@ export class JanusMqtt {
           resolve(this);
         },
         reject,
-        replyType: 'success'
+        replyType: 'success',
       };
 
       this.connect = function () {
-        mqtt.send(JSON.stringify(msg), false, this.txTopic, this.rxTopic + '/' + this.user.id, this.user);
+        mqtt.send(
+          JSON.stringify(msg),
+          false,
+          this.txTopic,
+          this.rxTopic + '/' + this.user.id,
+          this.user
+        );
       };
 
       this.disconnect = function (json) {
@@ -83,18 +93,21 @@ export class JanusMqtt {
 
   attach(plugin) {
     const name = plugin.getPluginName();
-    return this.transaction('attach', { plugin: name, opaque_id: this.user.id }, 'success')
-      .then((json) => {
-        if (json.janus !== 'success') {
-          logger.error(NAMESPACE, '[janus] Cannot add plugin', json);
-          plugin.error(json);
-          throw new Error(json);
-        }
+    return this.transaction(
+      'attach',
+      { plugin: name, opaque_id: this.user.id },
+      'success'
+    ).then(json => {
+      if (json.janus !== 'success') {
+        logger.error(NAMESPACE, 'Cannot add plugin', json);
+        plugin.error(json);
+        throw new Error(json);
+      }
 
-        this.pluginHandles[json.data.id] = plugin;
+      this.pluginHandles[json.data.id] = plugin;
 
-        return plugin.success(this, json.data.id);
-      });
+      return plugin.success(this, json.data.id);
+    });
   }
 
   destroy() {
@@ -104,15 +117,17 @@ export class JanusMqtt {
 
     return new Promise((resolve, reject) => {
       this._cleanupPlugins().then(() => {
-        return this.transaction('destroy', {}, 'success', 5000).then(data => {
-          logger.debug(NAMESPACE, '[janus] Janus destroyed: ', data);
-          this._cleanupTransactions();
-          resolve();
-        }).catch((err) => {
-          logger.debug(NAMESPACE, '[janus] destroy err', JSON.stringify(err));
-          this._cleanupTransactions();
-          resolve();
-        });
+        return this.transaction('destroy', {}, 'success', 5000)
+          .then(data => {
+            logger.debug(NAMESPACE, 'Janus destroyed: ', data);
+            this._cleanupTransactions();
+            resolve();
+          })
+          .catch(err => {
+            logger.debug(NAMESPACE, 'destroy err', JSON.stringify(err));
+            this._cleanupTransactions();
+            resolve();
+          });
       });
     });
   }
@@ -120,24 +135,31 @@ export class JanusMqtt {
   detach(plugin) {
     return new Promise((resolve, reject) => {
       if (!this.pluginHandles[plugin.janusHandleId]) {
-        reject(new Error('[janus] unknown plugin'));
+        reject(new Error('unknown plugin'));
         return;
       }
 
-      this.transaction('hangup', {
-        plugin   : plugin.pluginName,
-        handle_id: plugin.janusHandleId
-      }, 'success', 5000).then(() => {
-        delete this.pluginHandles[plugin.janusHandleId];
-        plugin.detach();
+      this.transaction(
+        'hangup',
+        {
+          plugin: plugin.pluginName,
+          handle_id: plugin.janusHandleId,
+        },
+        'success',
+        5000
+      )
+        .then(() => {
+          delete this.pluginHandles[plugin.janusHandleId];
+          plugin.detach();
 
-        resolve();
-      }).catch((err) => {
-        delete this.pluginHandles[plugin.janusHandleId];
-        plugin.detach();
+          resolve();
+        })
+        .catch(err => {
+          delete this.pluginHandles[plugin.janusHandleId];
+          plugin.detach();
 
-        reject(err);
-      });
+          reject(err);
+        });
     });
   }
 
@@ -153,46 +175,69 @@ export class JanusMqtt {
           // Clean up transaction on timeout
           if (this.transactions[transactionId]) {
             delete this.transactions[transactionId];
-            reject(new Error(`[janus] Transaction timed out after ${timeoutMs} ms`));
+            reject(new Error(`Transaction timed out after ${timeoutMs} ms`));
           }
         }, timeoutMs);
       }
 
       if (!this.isConnected) {
-        reject(new Error('[janus] Janus is not connected'));
+        reject(new Error('Janus is not connected'));
         return;
       }
 
       try {
         // Validate inputs
         if (!type) {
-          return reject(new Error('[janus] Missing transaction type'));
+          return reject(new Error('Missing transaction type'));
         }
-        
+
         const request = Object.assign({}, payload, {
-          token      : this.token,
-          janus      : type,
-          session_id : (payload && parseInt(payload.session_id, 10)) || this.sessionId,
-          transaction: transactionId
+          token: this.token,
+          janus: type,
+          session_id:
+            (payload && parseInt(payload.session_id, 10)) || this.sessionId,
+          transaction: transactionId,
         });
 
-        if (type === 'keepalive' && this.user.role === 'user' && this.txTopic.match('gxy')) {
+        if (
+          type === 'keepalive' &&
+          this.user.role === 'user' &&
+          this.txTopic.match('gxy')
+        ) {
           request.user = this.user;
         }
 
-        this.transactions[request.transaction] = { resolve, reject, replyType, request };
-        
+        this.transactions[request.transaction] = {
+          resolve,
+          reject,
+          replyType,
+          request,
+        };
+
         // Check MQTT connection
         if (!mqtt.mq || !mqtt.mq.connected) {
-          logger.warn(NAMESPACE, '[janus] MQTT not connected when trying to send transaction');
-          return reject(new Error('[janus] MQTT connection unavailable'));
+          logger.warn(
+            NAMESPACE,
+            'MQTT not connected when trying to send transaction'
+          );
+          return reject(new Error('MQTT connection unavailable'));
         }
-        
-        mqtt.send(JSON.stringify(request), false, this.txTopic, this.rxTopic + '/' + this.user.id, this.user);
+
+        mqtt.send(
+          JSON.stringify(request),
+          false,
+          this.txTopic,
+          this.rxTopic + '/' + this.user.id,
+          this.user
+        );
       } catch (error) {
-        logger.error(NAMESPACE, '[janus] Error in transaction method', error?.message || JSON.stringify(error) || 'undefined');
+        logger.error(
+          NAMESPACE,
+          'Error in transaction method',
+          error?.message || JSON.stringify(error) || 'undefined'
+        );
         delete this.transactions[transactionId];
-        reject(error || new Error('[janus] Unknown transaction error'));
+        reject(error || new Error('Unknown transaction error'));
       }
     });
   }
@@ -205,29 +250,41 @@ export class JanusMqtt {
     if (isScheduled) {
       BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
     } else {
-      logger.debug(NAMESPACE, '[janus] Sending keepalive to: ' + this.srv);
-      this.transaction('keepalive', null, null, 20 * 1000).then(() => {
-        this.keeptry = 0;
-        BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
-      }).catch(err => {
-        logger.debug(err, this.keeptry);
-        if (this.keeptry === 3) {
-          logger.error(NAMESPACE, '[janus] keepalive is not reached (' + this.srv + ') after: ' + this.keeptry + ' tries');
-          this.isConnected = false;
-          this.onStatus(this.srv, 'error');
-          return;
-        }
-        BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
-        this.keeptry++;
-      });
+      logger.debug(NAMESPACE, 'Sending keepalive to: ' + this.srv);
+      this.transaction('keepalive', null, null, 20 * 1000)
+        .then(() => {
+          this.keeptry = 0;
+          BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
+        })
+        .catch(err => {
+          logger.debug(err, this.keeptry);
+          if (this.keeptry === 3) {
+            logger.error(
+              NAMESPACE,
+              'keepalive is not reached (' +
+                this.srv +
+                ') after: ' +
+                this.keeptry +
+                ' tries'
+            );
+            this.isConnected = false;
+            this.onStatus(this.srv, 'error');
+            return;
+          }
+          BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
+          this.keeptry++;
+        });
     }
   }
 
   getTransaction(json, ignoreReplyType = false) {
-    const type          = json.janus;
+    const type = json.janus;
     const transactionId = json.transaction;
-    if (transactionId && Object.prototype.hasOwnProperty.call(this.transactions, transactionId) &&
-      (ignoreReplyType || this.transactions[transactionId].replyType === type)) {
+    if (
+      transactionId &&
+      Object.prototype.hasOwnProperty.call(this.transactions, transactionId) &&
+      (ignoreReplyType || this.transactions[transactionId].replyType === type)
+    ) {
       const ret = this.transactions[transactionId];
       delete this.transactions[transactionId];
       return ret;
@@ -245,61 +302,76 @@ export class JanusMqtt {
 
   _cleanupPlugins() {
     const arr = [];
-    Object.keys(this.pluginHandles).forEach((pluginId) => {
+    Object.keys(this.pluginHandles).forEach(pluginId => {
       const plugin = this.pluginHandles[pluginId];
       //delete this.pluginHandles[pluginId]
-      arr.push(new Promise((resolve, reject) => {
-        logger.debug(NAMESPACE, '[janus] _cleanupPlugins ', plugin.pluginName);
-        if (!this.pluginHandles[plugin.janusHandleId]) {
-          reject(new Error('[janus] unknown plugin'));
-          return;
-        }
+      arr.push(
+        new Promise((resolve, reject) => {
+          logger.debug(NAMESPACE, '_cleanupPlugins ', plugin.pluginName);
+          if (!this.pluginHandles[plugin.janusHandleId]) {
+            reject(new Error('unknown plugin'));
+            return;
+          }
 
-        this.transaction('hangup', {
-          plugin   : plugin.pluginName,
-          handle_id: plugin.janusHandleId
-        }, 'success', 1000).then(() => {
-          delete this.pluginHandles[plugin.janusHandleId];
-          plugin.detach();
+          this.transaction(
+            'hangup',
+            {
+              plugin: plugin.pluginName,
+              handle_id: plugin.janusHandleId,
+            },
+            'success',
+            1000
+          )
+            .then(() => {
+              delete this.pluginHandles[plugin.janusHandleId];
+              plugin.detach();
 
-          resolve();
-        }).catch((err) => {
-          logger.debug(NAMESPACE, '[janus] _cleanupPlugins err', plugin.pluginName, err);
-          delete this.pluginHandles[plugin.janusHandleId];
-          plugin.detach();
+              resolve();
+            })
+            .catch(err => {
+              logger.debug(
+                NAMESPACE,
+                '_cleanupPlugins err',
+                plugin.pluginName,
+                err
+              );
+              delete this.pluginHandles[plugin.janusHandleId];
+              plugin.detach();
 
-          reject(err);
-        });
-      }));
+              reject(err);
+            });
+        })
+      );
     });
     return Promise.allSettled(arr);
   }
 
   _cleanupTransactions() {
-    Object.keys(this.transactions).forEach((transactionId) => {
+    Object.keys(this.transactions).forEach(transactionId => {
       const transaction = this.transactions[transactionId];
       if (transaction.reject) {
         transaction.reject();
       }
     });
     this.transactions = {};
-    this.sessionId    = null;
-    this.isConnected  = false;
+    this.sessionId = null;
+    this.isConnected = false;
 
     try {
       mqtt.exit(this.rxTopic + '/' + this.user.id);
       mqtt.exit(this.rxTopic);
       mqtt.exit(this.stTopic);
     } catch (e) {
-      logger.error(NAMESPACE, '[janus] Error exiting MQTT topics:', e);
+      logger.error(NAMESPACE, 'Error exiting MQTT topics:', e);
     }
 
     try {
       mqtt.mq.removeListener(this.srv, this.onMessage);
       if (this.user.mit) mqtt.mq.removeListener(this.user.mit, this.onMessage);
-      if (this.sessionId) mqtt.mq.removeListener(this.sessionId, this.onMessage);
+      if (this.sessionId)
+        mqtt.mq.removeListener(this.sessionId, this.onMessage);
     } catch (e) {
-      logger.error(NAMESPACE, '[janus] Error removing MQTT listeners:', e);
+      logger.error(NAMESPACE, 'Error removing MQTT listeners:', e);
     }
   }
 
@@ -308,17 +380,21 @@ export class JanusMqtt {
     try {
       json = JSON.parse(message);
     } catch (err) {
-      logger.error(NAMESPACE, '[janus] Cannot parse message', message?.data || message || 'undefined', err);
+      logger.error(
+        NAMESPACE,
+        'Cannot parse message',
+        message?.data || message || 'undefined',
+        err
+      );
       return;
     }
 
-    logger.debug(NAMESPACE, '[janus] On message: ', json, tD);
+    logger.debug(NAMESPACE, 'On message: ', json, tD);
     const { session_id, janus, data, jsep } = json;
 
     if (tD === 'status' && json.online) {
-      logger.debug(NAMESPACE, '[janus] Janus Server - ' + this.srv + ' - Online');
-      if (typeof this.connect === 'function')
-        this.connect();
+      logger.debug(NAMESPACE, 'Janus Server - ' + this.srv + ' - Online');
+      if (typeof this.connect === 'function') this.connect();
       if (typeof this.onStatus === 'function')
         this.onStatus(this.srv, 'online');
       return;
@@ -326,19 +402,20 @@ export class JanusMqtt {
 
     if (tD === 'status' && !json.online) {
       this.isConnected = false;
-      logger.debug(NAMESPACE, '[janus] Janus Server - ' + this.srv + ' - Offline');
-      if (typeof this.disconnect === 'function')
-        this.disconnect(json);
+      logger.debug(NAMESPACE, 'Janus Server - ' + this.srv + ' - Offline');
+      if (typeof this.disconnect === 'function') this.disconnect(json);
       if (typeof this.onStatus === 'function')
         this.onStatus(this.srv, 'offline');
       return;
     }
 
-    if (janus === 'keepalive') { // Do nothing
+    if (janus === 'keepalive') {
+      // Do nothing
       return;
     }
 
-    if (janus === 'ack') { // Just an ack, we can probably ignore
+    if (janus === 'ack') {
+      // Just an ack, we can probably ignore
       const transaction = this.getTransaction(json);
       if (transaction && transaction.resolve) {
         transaction.resolve(json);
@@ -361,13 +438,17 @@ export class JanusMqtt {
       const sender = json.sender;
       if (!sender) {
         transaction.resolve(json);
-        logger.error(NAMESPACE, '[janus] Missing sender for plugindata', json);
+        logger.error(NAMESPACE, 'Missing sender for plugindata', json);
         return;
       }
 
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + json, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + json,
+          'color: darkgrey'
+        );
         return;
       }
 
@@ -376,34 +457,44 @@ export class JanusMqtt {
     }
 
     if (janus === 'timeout' && json.session_id !== this.sessionId) {
-      logger.debug(NAMESPACE, '[janus] Timeout from another session');
+      logger.debug(NAMESPACE, 'Timeout from another session');
       return;
     }
 
-    if (janus === 'webrtcup') { // The PeerConnection with the gateway is up! Notify this
+    if (janus === 'webrtcup') {
+      // The PeerConnection with the gateway is up! Notify this
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + sender, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + sender,
+          'color: darkgrey'
+        );
         return;
       }
       pluginHandle.webrtcState(true);
       return;
     }
 
-    if (janus === 'hangup') { // A plugin asked the core to hangup a PeerConnection on one of our handles
+    if (janus === 'hangup') {
+      // A plugin asked the core to hangup a PeerConnection on one of our handles
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + sender, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + sender,
+          'color: darkgrey'
+        );
         return;
       }
       pluginHandle.webrtcState(false, json.reason);
@@ -411,53 +502,73 @@ export class JanusMqtt {
       return;
     }
 
-    if (janus === 'detached') { // A plugin asked the core to detach one of our handles
+    if (janus === 'detached') {
+      // A plugin asked the core to detach one of our handles
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       return;
     }
 
-    if (janus === 'media') { // Media started/stopped flowing
+    if (janus === 'media') {
+      // Media started/stopped flowing
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + sender, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + sender,
+          'color: darkgrey'
+        );
         return;
       }
       pluginHandle.mediaState(json.type, json.receiving);
       return;
     }
 
-    if (janus === 'slowlink') { // Trouble uplink or downlink
-      logger.debug(NAMESPACE, '[janus] Got a slowlink event on session ' + this.sessionId);
+    if (janus === 'slowlink') {
+      // Trouble uplink or downlink
+      logger.debug(
+        NAMESPACE,
+        'Got a slowlink event on session ' + this.sessionId
+      );
       logger.debug(NAMESPACE, json);
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + sender, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + sender,
+          'color: darkgrey'
+        );
         return;
       }
       pluginHandle.slowLink(json.uplink, json.nacks);
       return;
     }
 
-    if (janus === 'error') { // Oops, something wrong happened
-      logger.error(NAMESPACE, '[janus] Janus error response' + json);
+    if (janus === 'error') {
+      // Oops, something wrong happened
+      logger.error(NAMESPACE, 'Janus error response' + json);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
         if (transaction.request) {
-          logger.debug(NAMESPACE, '[janus] rejecting transaction', transaction.request, json);
+          logger.debug(
+            NAMESPACE,
+            'rejecting transaction',
+            transaction.request,
+            json
+          );
         }
         transaction.reject(json);
       }
@@ -465,25 +576,29 @@ export class JanusMqtt {
     }
 
     if (janus === 'event') {
-      logger.debug(NAMESPACE, '[janus] Got event', json);
+      logger.debug(NAMESPACE, 'Got event', json);
       const sender = json.sender;
       if (!sender) {
-        logger.warn(NAMESPACE, '[janus] Missing sender...');
+        logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
       const pluginData = json.plugindata;
       if (pluginData === undefined || pluginData === null) {
-        logger.error(NAMESPACE, '[janus] Missing plugindata...');
+        logger.error(NAMESPACE, 'Missing plugindata...');
         return;
       }
 
       const pluginHandle = this.pluginHandles[sender];
       if (!pluginHandle) {
-        logger.debug(NAMESPACE, '%c[janus] This handle is not attached to this session' + sender, 'color: darkgrey');
+        logger.debug(
+          NAMESPACE,
+          '%cThis handle is not attached to this session' + sender,
+          'color: darkgrey'
+        );
         return;
       }
 
-      const data        = pluginData.data;
+      const data = pluginData.data;
       const transaction = this.getTransaction(json);
       if (transaction) {
         if (data.error_code) {
@@ -498,6 +613,9 @@ export class JanusMqtt {
       return;
     }
 
-    logger.warn(NAMESPACE, '[janus] Unknown message/event ' + janus + ' on session ' + this.sessionId);
+    logger.warn(
+      NAMESPACE,
+      'Unknown message/event ' + janus + ' on session ' + this.sessionId
+    );
   }
 }
