@@ -4,7 +4,12 @@ import { useSettingsStore } from '../zustand/settings';
 
 class Logger {
   constructor() {
-    this.appLogsDir = RNFS.DownloadDirectoryPath;
+    // Use DocumentDirectoryPath instead of DownloadDirectoryPath to avoid permission issues
+    // DocumentDirectoryPath is app-specific and doesn't require special permissions
+    this.appLogsDir =
+      Platform.OS === 'android'
+        ? RNFS.ExternalDirectoryPath + '/logs'
+        : RNFS.DocumentDirectoryPath + '/logs';
     this.logFilePath = `${this.appLogsDir}/app.log`;
     console.log('Logger logFilePath', this.logFilePath);
     this.initializeLogFile();
