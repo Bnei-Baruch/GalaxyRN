@@ -36,9 +36,7 @@ export class PublisherPlugin extends EventEmitter {
     });
 
     if (!this.janus) {
-      return Promise.reject(
-        new Error('[publisher] JanusPlugin is not connected')
-      );
+      return Promise.reject(new Error('JanusPlugin is not connected'));
     }
     return this.janus.transaction(message, payload, replyType);
   }
@@ -306,7 +304,7 @@ export class PublisherPlugin extends EventEmitter {
           logger.error(NAMESPACE, '- ICE Restart failed - ');
           return;
         }
-        logger.debug(NAMESPACE, 'ICE Restart try: ' + attempt);
+        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
@@ -379,13 +377,7 @@ export class PublisherPlugin extends EventEmitter {
     const direction = uplink ? 'sending' : 'receiving';
     logger.info(
       NAMESPACE,
-      'slowLink on ' +
-        direction +
-        ' packets on mid ' +
-        mid +
-        ' (' +
-        lost +
-        ' lost packets)'
+      `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
     //this.emit('slowlink')
   }
@@ -393,7 +385,7 @@ export class PublisherPlugin extends EventEmitter {
   mediaState(media, on) {
     logger.info(
       NAMESPACE,
-      'mediaState: Janus ' + (on ? 'start' : 'stop') + ' receiving our ' + media
+      `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
     //this.emit('mediaState', medium, on)
   }
@@ -401,7 +393,7 @@ export class PublisherPlugin extends EventEmitter {
   webrtcState(isReady) {
     logger.info(
       NAMESPACE,
-      'webrtcState: RTCPeerConnection is: ' + (isReady ? 'up' : 'down')
+      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
     if (this.pc && !isReady && typeof this.iceFailed === 'function')
       this.iceFailed();
@@ -415,6 +407,7 @@ export class PublisherPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
+      this.pc.removeAllEventListeners();
       this.pc.close();
       this.removeAllListeners();
       this.pc = null;

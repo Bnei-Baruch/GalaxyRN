@@ -254,7 +254,7 @@ export class SubscriberPlugin extends EventEmitter {
           }
           return;
         }
-        logger.debug(NAMESPACE, 'ICE Restart try: ' + attempt);
+        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
@@ -307,13 +307,7 @@ export class SubscriberPlugin extends EventEmitter {
     const direction = uplink ? 'sending' : 'receiving';
     logger.info(
       NAMESPACE,
-      'slowLink on ' +
-        direction +
-        ' packets on mid ' +
-        mid +
-        ' (' +
-        lost +
-        ' lost packets)'
+      `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
     //this.emit('slowlink')
   }
@@ -321,7 +315,7 @@ export class SubscriberPlugin extends EventEmitter {
   mediaState(media, on) {
     logger.info(
       NAMESPACE,
-      'mediaState: Janus ' + (on ? 'start' : 'stop') + ' receiving our ' + media
+      `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
     //this.emit('mediaState', medium, on)
   }
@@ -329,7 +323,7 @@ export class SubscriberPlugin extends EventEmitter {
   webrtcState(isReady) {
     logger.info(
       NAMESPACE,
-      'webrtcState: RTCPeerConnection is: ' + (isReady ? 'up' : 'down')
+      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
     if (this.pc && !isReady && typeof this.iceFailed === 'function') {
       this.iceFailed();
@@ -345,6 +339,8 @@ export class SubscriberPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
+
+      this.pc.removeAllEventListeners();
       this.removeAllListeners();
       this.pc.close();
       this.pc = null;
