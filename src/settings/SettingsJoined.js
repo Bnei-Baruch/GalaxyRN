@@ -1,15 +1,15 @@
-import * as React from "react";
-import { View, StyleSheet, Button } from "react-native";
-import { useTranslation } from "react-i18next";
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button, StyleSheet, View } from 'react-native';
 
-import { useMyStreamStore } from "../zustand/myStream";
-import { useSettingsStore } from "../zustand/settings";
-import PageHeader from "../components/PageHeader";
-import SelectUiLanguage from "./SelectUiLanguage";
-import LabeledSwitch from "./LabeledSwitch";
-import { baseStyles } from "../constants";
-import { useInitsStore } from "../zustand/inits";
-import AccountSettings from "../auth/AccountSettings";
+import AccountSettings from '../auth/AccountSettings';
+import PageHeader from '../components/PageHeader';
+import { baseStyles } from '../constants';
+import { useInitsStore } from '../zustand/inits';
+import { useMyStreamStore } from '../zustand/myStream';
+import { useSettingsStore } from '../zustand/settings';
+import LabeledSwitch from './LabeledSwitch';
+import SelectUiLanguage from './SelectUiLanguage';
 
 export const SettingsJoined = ({ toggleVisible }) => {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
 
   return (
     <View style={styles.container}>
-      <PageHeader page={t("settings.page")} />
+      <PageHeader page={t('settings.page')} />
       <View style={[styles.container, !isPortrait && styles.landscape]}>
         <View style={styles.row}>
           {/*user settings*/}
@@ -31,18 +31,19 @@ export const SettingsJoined = ({ toggleVisible }) => {
         </View>
         <View style={styles.row}>
           <LabeledSwitch
-            label={t("settings.cammute")}
+            label={t('settings.cammute')}
             value={cammute}
             onValueChange={handleCammute}
           />
           <LabeledSwitch
-            label={t("settings.audioMode")}
+            label={t('settings.audioMode')}
             value={audioMode}
             onValueChange={handleToggleAudioMode}
           />
+          <DebugMode />
           <View style={baseStyles.full} />
           <View style={styles.containerBack}>
-            <Button title={t("settings.backToTen")} onPress={toggleVisible} />
+            <Button title={t('settings.backToTen')} onPress={toggleVisible} />
           </View>
         </View>
       </View>
@@ -54,17 +55,17 @@ const styles = StyleSheet.create({
   container: {
     padding: 5,
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: 'black',
   },
   row: {
     flex: 1,
   },
   landscape: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   containerBack: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
     padding: 10,
   },
 });

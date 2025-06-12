@@ -9,8 +9,10 @@
     "isMuted": "Отключить звук трансляции",
     "search": "Search...",
     "join": "Войти в комнату",
-    "selectRoom": "Выбрать Ten",
-    "backToTen": "Назад к Ten"
+    "selectRoom": "Выбрать 10",
+    "backToTen": "Назад к 10",
+    "debugMode": "Режим отладки",
+    "sendLogs": "Отправить логи"
   },
   "user": {
     "title": "Пользовательские настройки",
@@ -29,7 +31,7 @@
     "vote": "Голосовать",
     "shidur": "Трансляция",
     "self": "Скрыть мое видео",
-    "quads": "Kli Olamy tens",  
+    "quads": "Kli Olamy tens",
     "leave": "Покинуть комнату",
     "chat": "Чат"
   },
@@ -84,5 +86,10 @@
     "currentVersion": "Текущая версия",
     "latestVersion": "Последняя версия",
     "updateNow": "Обновить сейчас"
+  },
+  "errorBoundary": {
+    "title": "Что-то пошло не так",
+    "message": "Приложение столкнулось с неожиданной ошибкой.",
+    "tryAgain": "Попробовать снова"
   }
 }

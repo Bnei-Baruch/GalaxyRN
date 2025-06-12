@@ -10,7 +10,9 @@
     "search": "Search...",
     "join": "כנס לחדר",
     "selectRoom": "בחר Ten",
-    "backToTen": "חזור ל-Ten"
+    "backToTen": "חזור ל-Ten",
+    "debugMode": "מצב מפתח",
+    "sendLogs": "שלח רישומים"
   },
   "user": {
     "title": "הגדרות משתמש",
@@ -84,5 +86,10 @@
     "currentVersion": "גרסה נוכחית",
     "latestVersion": "גרסה אחרונה",
     "updateNow": "עדכן עכשיו"
+  },
+  "errorBoundary": {
+    "title": "משהו השתבש",
+    "message": "האפליקציה נתקלה בשגיאה בלתי צפויה.",
+    "tryAgain": "נסה שוב"
   }
 }
