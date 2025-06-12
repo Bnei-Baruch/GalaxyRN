@@ -2,7 +2,14 @@
 import { Platform } from 'react-native';
 
 // External libraries
-import CrispSDK from 'react-native-crisp-chat-sdk';
+import {
+  configure,
+  resetSession,
+  setTokenId,
+  setUserEmail,
+  setUserNickname,
+  show,
+} from 'react-native-crisp-chat-sdk';
 import { create } from 'zustand';
 
 // Environment variables
@@ -22,12 +29,12 @@ export const useCrispStore = create((set, get) => ({
   start: () => {
     if (isInitialized) {
       try {
-        CrispSDK.resetSession();
+        resetSession();
         logger.info(
           NAMESPACE,
           'Crisp is already initialized, showing chat window'
         );
-        CrispSDK.show();
+        show();
       } catch (showError) {
         logger.error(NAMESPACE, 'Crisp show failed', showError);
       }
@@ -50,7 +57,7 @@ export const useCrispStore = create((set, get) => ({
       if (Platform.OS === 'android') {
         logger.info(NAMESPACE, 'Configuring Crisp SDK for Android');
         // First configure the SDK with the website ID
-        CrispSDK.configure(CRISP_WEBSITE_ID);
+        configure(CRISP_WEBSITE_ID);
       } else {
         logger.info(NAMESPACE, 'Using pre-configured Crisp SDK for iOS');
       }
@@ -59,19 +66,19 @@ export const useCrispStore = create((set, get) => ({
       try {
         if (email) {
           logger.debug(NAMESPACE, 'Setting user email:', email);
-          CrispSDK.setUserEmail(email);
+          setUserEmail(email);
         }
 
         if (display) {
           logger.debug(NAMESPACE, 'Setting user nickname:', display);
-          CrispSDK.setUserNickname(display);
+          setUserNickname(display);
         }
 
         if (id) {
           // Make sure user ID is also properly formatted
           const cleanId = id.toString().replace(/[";'\s]/g, '');
           logger.debug(NAMESPACE, 'Setting user token ID:', cleanId);
-          CrispSDK.setTokenId(cleanId);
+          setTokenId(cleanId);
         }
       } catch (userInfoError) {
         logger.error(NAMESPACE, 'Error setting user info:', userInfoError);
@@ -80,7 +87,7 @@ export const useCrispStore = create((set, get) => ({
 
       try {
         logger.info(NAMESPACE, 'Attempting to show Crisp chat');
-        CrispSDK.show();
+        show();
         isInitialized = true;
         logger.info(NAMESPACE, 'Crisp chat initialized successfully');
       } catch (showError) {
