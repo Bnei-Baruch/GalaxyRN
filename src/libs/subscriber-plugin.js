@@ -340,11 +340,18 @@ export class SubscriberPlugin extends EventEmitter {
         }
       });
 
-      this.pc.removeAllEventListeners();
-      this.removeAllListeners();
       this.pc.close();
+      this.removeAllListeners();
       this.pc = null;
       this.janus = null;
     }
+
+    // Clear additional properties
+    this.janusHandleId = undefined;
+    this.roomId = null;
+    this.onTrack = null;
+    this.onUpdate = null;
+    this.iceState = null;
+    this.iceFailed = null;
   }
 }

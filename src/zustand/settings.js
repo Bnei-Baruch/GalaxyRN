@@ -46,7 +46,7 @@ export const useSettingsStore = create((set, get) => ({
   isShidur: true,
   toggleIsShidur: () => {
     const isShidur = !get().isShidur;
-    !isShidur && useShidurStore.getState().cleanShidur();
+    !isShidur && useShidurStore.getState().cleanShidur(true);
     useUiActions.getState().updateWidth(isShidur);
     set({ isShidur });
   },

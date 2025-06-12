@@ -269,10 +269,27 @@ export class StreamingPlugin extends EventEmitter {
 
   detach() {
     if (this.janus) {
-      this.pc.removeAllEventListeners();
+      if (this.pc) {
+        this.pc.close();
+        this.pc = null;
+      }
       this.removeAllListeners();
-      this.pc.close();
-      return this.janus.detach(this);
+
+      // Store janus reference before clearing
+      const janusRef = this.janus;
+
+      // Clear additional properties
+      this.janusHandleId = undefined;
+      this.iceState = null;
+      this.streamId = null;
+      this.candidates = [];
+      this.onStatus = null;
+      this.janus = null;
+
+      return janusRef.detach(this).catch(err => {
+        logger.debug(NAMESPACE, 'Detach error:', err);
+        return Promise.resolve(); // Return resolved promise to avoid unhandled rejection
+      });
     }
     return Promise.resolve();
   }

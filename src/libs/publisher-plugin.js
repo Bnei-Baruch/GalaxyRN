@@ -334,7 +334,9 @@ export class PublisherPlugin extends EventEmitter {
       logger.info(NAMESPACE, 'Feed leave: ', data.unpublished);
       if (data?.unpublished === 'ok') {
         // That's us
-        this.janus.detach(this);
+        this.janus
+          .detach(this)
+          .catch(err => logger.debug(NAMESPACE, 'Detach error:', err));
         return;
       }
       this.unsubFrom([data.unpublished], false);
@@ -407,11 +409,19 @@ export class PublisherPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
-      this.pc.removeAllEventListeners();
       this.pc.close();
       this.removeAllListeners();
       this.pc = null;
       this.janus = null;
     }
+
+    // Clear additional properties
+    this.janusHandleId = undefined;
+    this.roomId = null;
+    this.iceState = null;
+    this.iceFailed = null;
+    this.subTo = null;
+    this.unsubFrom = null;
+    this.talkEvent = null;
   }
 }

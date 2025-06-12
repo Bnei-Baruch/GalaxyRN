@@ -237,32 +237,31 @@ export const useShidurStore = create((set, get) => ({
     set({ videoStream, readyShidur: true });
   },
 
-  cleanShidur: () => {
+  cleanShidur: (detach = false) => {
     cleanStream(videoStream);
+    if (detach) videoJanus?.detach();
     videoStream = null;
-    videoJanus?.detach();
     videoJanus = null;
 
     cleanStream(audioStream);
+    if (detach) audioJanus?.detach();
     audioStream = null;
-    audioJanus?.detach();
     audioJanus = null;
 
     cleanStream(trlAudioStream);
+    if (detach) trlAudioJanus?.detach();
     trlAudioStream = null;
-    trlAudioJanus?.detach();
     trlAudioJanus = null;
-
     set({
       readyShidur: false,
       isPlay: false,
       videoStream: null,
-      isOnAir: null,
+      isOnAir: false,
     });
   },
 
   streamGalaxy: async isOnAir => {
-    logger.debug(NAMESPACE, 'got talk event: ', isOnAir);
+    logger.debug(NAMESPACE, 'got talk event: ', isOnAir, get().isOnAir);
     if (isOnAir === get().isOnAir) {
       logger.debug(NAMESPACE, 'talk event is the same as current state');
       return;
@@ -341,7 +340,6 @@ export const useShidurStore = create((set, get) => ({
   cleanQuads: (updateState = true) => {
     cleanStream(quadStream);
     quadStream = null;
-    quadJanus?.detach();
     quadJanus = null;
 
     if (updateState) set({ quadUrl: null, isQuad: false });
@@ -353,7 +351,6 @@ export const useShidurStore = create((set, get) => ({
 
     if (trlAudioJanus) {
       cleanStream(trlAudioStream);
-      trlAudioJanus.detach();
       trlAudioJanus = null;
       trlAudioStream = null;
     }

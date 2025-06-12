@@ -214,8 +214,11 @@ class Logger {
   formatMessage(level, ...args) {
     const timestamp = new Date().toISOString();
 
+    // Handle arrays in the first argument by joining them with spaces
+    const firstArg = Array.isArray(args[0]) ? args[0].join(' ') : args[0];
+
     let formattedMessage = [
-      `[${timestamp}] [${level}] [${args[0]}]`,
+      `[${timestamp}] [${level}] ${firstArg}`,
       ...args.slice(1),
     ];
 
@@ -266,41 +269,42 @@ class Logger {
   async trace(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.trace(this.prepareConsoleMsg(args));
+    console.trace(...this.prepareConsoleMsg(args));
     await this.log('TRACE', ...args);
   }
 
   async debug(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.debug(this.prepareConsoleMsg(args));
+    console.debug(...this.prepareConsoleMsg(args));
     await this.log('DEBUG', ...args);
   }
 
   async info(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.info(this.prepareConsoleMsg(args));
+    console.info(...this.prepareConsoleMsg(args));
     await this.log('INFO', ...args);
   }
 
   async warn(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.warn(this.prepareConsoleMsg(args));
+    console.warn(...this.prepareConsoleMsg(args));
     await this.log('WARN', ...args);
   }
 
   async error(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.error(this.prepareConsoleMsg(args));
+    console.error(...this.prepareConsoleMsg(args));
     await this.log('ERROR', ...args);
   }
 
   prepareConsoleMsg(args) {
-    args[0] = `[${args[0]}]`;
-    return args;
+    // Handle arrays in the first argument by joining them with spaces
+    const firstArg = Array.isArray(args[0]) ? args[0].join(' ') : args[0];
+    return [`[${firstArg}]`, ...args.slice(1)];
   }
 
   // Enable stack traces for debugging
