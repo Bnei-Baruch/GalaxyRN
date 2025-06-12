@@ -1,24 +1,19 @@
-import * as React from "react";
-import { TouchableOpacity, View, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
-import logger from '../../services/logger';
+import * as React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import IconWithText from "../../settings/IconWithText";
-import { baseStyles } from "../../constants";
-import { useChatStore } from "../../zustand/chat";
-import { modalModes } from "../../zustand/helper";
-import { ChatCounter } from "../../chat/ChatCounter";
+import { ChatCounter } from '../../chat/ChatCounter';
+import { baseStyles } from '../../constants';
+import IconWithText from '../../settings/IconWithText';
+import { useChatStore } from '../../zustand/chat';
+import { modalModes } from '../../zustand/helper';
 
 const NAMESPACE = 'ChatBtn';
 
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
   const { t } = useTranslation();
-
-  const handlePress = () => {
-    logger.debug(NAMESPACE, "handlePress chat");
-    setChatMode(modalModes.chat);
-  };
+  const handlePress = () => setChatMode(modalModes.chat);
 
   return (
     <TouchableOpacity
@@ -27,7 +22,7 @@ export const ChatBtn = () => {
     >
       <View style={styles.leftBlock}>
         <ChatCounter />
-        <IconWithText iconName="forum" text={t("bottomBar.chat")} />
+        <IconWithText iconName="forum" text={t('bottomBar.chat')} />
       </View>
       <View style={styles.divider}></View>
     </TouchableOpacity>
@@ -39,7 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   leftBlock: {
     paddingRight: 15,

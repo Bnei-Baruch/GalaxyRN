@@ -1,45 +1,45 @@
-import { create } from "zustand";
-import produce from "immer";
-import { getDateString } from "../shared/tools";
-import { modalModes } from "./helper";
-import Api from "../shared/Api";
-import { isRTLString } from "../chat/helper";
-import { useUserStore } from "./user";
-import logger from "../services/logger";
+import produce from 'immer';
+import { create } from 'zustand';
+import { isRTLString } from '../chat/helper';
+import logger from '../services/logger';
+import Api from '../shared/Api';
+import { getDateString } from '../shared/tools';
+import { modalModes } from './helper';
+import { useUserStore } from './user';
 
 const NAMESPACE = 'Chat';
 
-const buildMsg = (msg) => ({ ...msg, time: getDateString() });
+const buildMsg = msg => ({ ...msg, time: getDateString() });
 
 export const useChatStore = create((set, get) => ({
   mode: modalModes.close,
-  setChatMode: (mode) => set(() => ({ mode })),
+  setChatMode: mode => set({ mode }),
   supportCount: 0,
   chatNewMsgs: 0,
   supportMsgs: [],
   roomMsgs: [],
   questions: [],
   resetChatNewMsgs: () => set(() => ({ chatNewMsgs: 0 })),
-  addRoomMsg: (data) => {
+  addRoomMsg: data => {
     let json = JSON.parse(data);
-    if (json?.type === "client-chat") {
+    if (json?.type === 'client-chat') {
       const msg = buildMsg(json);
-      logger.debug(NAMESPACE, "Adding room message:", msg);
+      logger.debug(NAMESPACE, 'Adding room message:', msg);
       set(
-        produce((state) => {
+        produce(state => {
           state.chatNewMsgs++;
           state.roomMsgs.push(msg);
         })
       );
     }
   },
-  addSupportMsg: (data) => {
+  addSupportMsg: data => {
     let json = JSON.parse(data);
-    if (json?.type === "client-chat") {
+    if (json?.type === 'client-chat') {
       const msg = buildMsg(json);
-      logger.debug(NAMESPACE, "Adding support message:", msg);
+      logger.debug(NAMESPACE, 'Adding support message:', msg);
       set(
-        produce((state) => {
+        produce(state => {
           state.supportCount++;
           state.supportMsgs.push(msg);
         })
@@ -47,8 +47,9 @@ export const useChatStore = create((set, get) => ({
     }
   },
   cleanChat: () => {
+    logger.debug(NAMESPACE, 'Cleaning chat');
     set(
-      produce((state) => {
+      produce(state => {
         state.supportCount = 0;
         state.supportMsgs = [];
         state.chatNewMsgs = 0;
@@ -56,49 +57,52 @@ export const useChatStore = create((set, get) => ({
       })
     );
   },
-  sendQuestion: async (data) => {
+  sendQuestion: async data => {
     try {
-      logger.info(NAMESPACE, "Sending question with data:", data);
+      logger.info(NAMESPACE, 'Sending question with data:', data);
       await Api.sendQuestion(data);
 
       try {
         const { user } = useUserStore.getState();
         if (user && user.id) {
-          logger.debug(NAMESPACE, "User ID for fetching questions:", user.id);
+          logger.debug(NAMESPACE, 'User ID for fetching questions:', user.id);
           get().fetchQuestions();
         } else {
-          logger.error(NAMESPACE, "User ID is undefined, cannot fetch questions");
+          logger.error(
+            NAMESPACE,
+            'User ID is undefined, cannot fetch questions'
+          );
         }
       } catch (error) {
-        logger.error(NAMESPACE, "Error getting user ID:", error);
+        logger.error(NAMESPACE, 'Error getting user ID:', error);
       }
     } catch (error) {
-      logger.error(NAMESPACE, "Error sending question:", error);
+      logger.error(NAMESPACE, 'Error sending question:', error);
     }
   },
   fetchQuestions: async () => {
     const { user } = useUserStore.getState();
     if (!user?.id) {
-      logger.error(NAMESPACE, "User ID for fetching questions:", user?.id);
+      logger.error(NAMESPACE, 'User ID for fetching questions:', user?.id);
       return;
     }
     const data = { serialUserId: useUserStore.getState().user.id };
 
     try {
       const { feed } = await Api.fetchQuestions(data);
-      logger.debug(NAMESPACE, "Fetched questions:", feed);
+      logger.debug(NAMESPACE, 'Fetched questions:', feed);
 
       if (!feed || !Array.isArray(feed)) {
-        logger.error(NAMESPACE, "Invalid feed data:", feed);
+        logger.error(NAMESPACE, 'Invalid feed data:', feed);
         set({ questions: [] });
         return;
       }
 
       const formattedQuestions = feed
-        .map((q) => {
+        .map(q => {
           try {
             if (!q || !q.question || !q.user) {
-              logger.error(NAMESPACE, "Invalid question object:", q);
+              logger.error(NAMESPACE, 'Invalid question object:', q);
               return null;
             }
 
@@ -109,20 +113,20 @@ export const useChatStore = create((set, get) => ({
             } = q;
 
             // Make sure content is a string
-            const textContent = content ? String(content) : "";
+            const textContent = content ? String(content) : '';
 
             return {
               text: textContent,
               user: {
-                display: name || "Unknown",
-                room: room || "Unknown",
+                display: name || 'Unknown',
+                room: room || 'Unknown',
               },
               time: getDateString(new Date(timestamp || Date.now())),
-              direction: isRTLString(textContent) ? "rtl" : "ltr",
-              textAlign: isRTLString(textContent) ? "right" : "left",
+              direction: isRTLString(textContent) ? 'rtl' : 'ltr',
+              textAlign: isRTLString(textContent) ? 'right' : 'left',
             };
           } catch (error) {
-            logger.error(NAMESPACE, "Error processing question:", q, error);
+            logger.error(NAMESPACE, 'Error processing question:', q, error);
             return null;
           }
         })
@@ -130,7 +134,7 @@ export const useChatStore = create((set, get) => ({
 
       set({ questions: formattedQuestions });
     } catch (error) {
-      logger.error(NAMESPACE, "Error fetching questions:", error);
+      logger.error(NAMESPACE, 'Error fetching questions:', error);
       set({ questions: [] });
     }
   },
