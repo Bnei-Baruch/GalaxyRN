@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomBar } from '../bottomBar/BottomBar';
-import { ChatModal } from '../chat/ChatModal';
 import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
 import RoomLayout from './Layout/RoomLayout';
 
 const Room = () => {
   const { joinRoom, exitRoom } = useInRoomStore();
+
   useEffect(() => {
     joinRoom();
     return () => {
@@ -20,7 +20,6 @@ const Room = () => {
       <TopBar />
       <RoomLayout />
       <BottomBar />
-      <ChatModal />
     </View>
   );
 };

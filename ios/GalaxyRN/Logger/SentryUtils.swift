@@ -13,6 +13,19 @@ enum SentryLevel: String, CaseIterable {
     case debug = "debug"
 }
 
+// Add extension to map to Sentry.SentryLevel
+extension SentryLevel {
+    var sentrySDKLevel: Sentry.SentryLevel {
+        switch self {
+        case .fatal: return .fatal
+        case .error: return .error
+        case .warning: return .warning
+        case .info: return .info
+        case .debug: return .debug
+        }
+    }
+}
+
 /**
  * Utility class for Sentry integration
  * Centralizes all Sentry-related functionality for the GalaxyRN application
@@ -25,50 +38,29 @@ class SentryUtils {
         os_log("reportToSentry: level=%@, tag=%@, message=%@", log: OSLog.default, type: .debug, 
                String(describing: level), tag, message)
         
-        do {
-            // Create a formatted message with tag
-            let sentryMessage = "[\(tag)] \(message)"
-            os_log("Created formatted message for Sentry: %@", log: OSLog.default, type: .debug, sentryMessage)
-            
-            // Convert our custom SentryLevel to Sentry's SentryLevel
-            let sentrySDKLevel: SentrySDK.Level = {
-                switch level {
-                case .fatal:
-                    return .fatal
-                case .error:  
-                    return .error
-                case .warning:
-                    return .warning
-                case .info:
-                    return .info
-                case .debug:
-                    return .debug
-                }
-            }()
-            
-            if let error = error {
-                os_log("Reporting exception to Sentry with message", log: OSLog.default, type: .debug)
-                // Report exception with message
-                SentrySDK.configureScope { scope in
-                    scope.setTag(value: tag, key: "logger_tag")
-                    scope.setLevel(sentrySDKLevel)
-                    scope.setExtra(value: sentryMessage, key: "formatted_message")
-                }
-                SentrySDK.capture(error: error)
-                os_log("Successfully reported exception to Sentry", log: OSLog.default, type: .info)
-            } else {
-                os_log("Reporting message-only to Sentry", log: OSLog.default, type: .debug)
-                // Report message only
-                SentrySDK.configureScope { scope in
-                    scope.setTag(value: tag, key: "logger_tag")
-                    scope.setLevel(sentrySDKLevel)
-                }
-                SentrySDK.capture(message: sentryMessage)
-                os_log("Successfully reported message to Sentry", log: OSLog.default, type: .info)
+        // Create a formatted message with tag
+        let sentryMessage = "[\(tag)] \(message)"
+        os_log("Created formatted message for Sentry: %@", log: OSLog.default, type: .debug, sentryMessage)
+        
+        if let error = error {
+            os_log("Reporting exception to Sentry with message", log: OSLog.default, type: .debug)
+            // Report exception with message
+            SentrySDK.configureScope { scope in
+                scope.setTag(value: tag, key: "logger_tag")
+                scope.setLevel(level.sentrySDKLevel)
+                scope.setExtra(value: sentryMessage, key: "formatted_message")
             }
-        } catch {
-            // Don't let Sentry errors break the logging
-            os_log("Failed to report to Sentry: %@", log: OSLog.default, type: .error, error.localizedDescription)
+            SentrySDK.capture(error: error)
+            os_log("Successfully reported exception to Sentry", log: OSLog.default, type: .info)
+        } else {
+            os_log("Reporting message-only to Sentry", log: OSLog.default, type: .debug)
+            // Report message only
+            SentrySDK.configureScope { scope in
+                scope.setTag(value: tag, key: "logger_tag")
+                scope.setLevel(level.sentrySDKLevel)
+            }
+            SentrySDK.capture(message: sentryMessage)
+            os_log("Successfully reported message to Sentry", log: OSLog.default, type: .info)
         }
     }
     
@@ -336,7 +328,7 @@ class SentryUtils {
             let attachment = Attachment(path: compressedFile.path, filename: compressedFile.lastPathComponent)
             
             SentrySDK.configureScope { scope in
-                scope.add(attachment)
+                scope.addAttachment(attachment)
             }
             
             SentrySDK.capture(message: "Log files sent to Sentry") { scope in

@@ -1,15 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from 'react';
 import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  Text,
-  TouchableWithoutFeedback,
-  ScrollView,
   Dimensions,
-} from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const ListInModal = ({
   items,
@@ -28,12 +28,12 @@ const ListInModal = ({
     onOpen && onOpen(!visible);
   };
 
-  const handleSelect = (item) => {
+  const handleSelect = item => {
     onSelect && onSelect(item);
     toggleModal();
   };
 
-  const _renderItem = (item) => {
+  const _renderItem = item => {
     const key = item.key ?? item.value ?? item.text ?? item.id;
     if (!key) return;
 
@@ -63,7 +63,7 @@ const ListInModal = ({
         transparent={true}
         visible={visible}
         onRequestClose={toggleModal}
-        supportedOrientations={["portrait", "landscape"]}
+        supportedOrientations={['portrait', 'landscape']}
       >
         <TouchableWithoutFeedback onPress={toggleModal}>
           <View style={styles.modalContainer}>
@@ -82,34 +82,34 @@ const ListInModal = ({
 
 export const styles = StyleSheet.create({
   container: {
-    position: "relative",
+    position: 'relative',
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   tooltip: {
-    width: "70%",
-    maxHeight: Dimensions.get("window").height * 0.8,
+    width: '70%',
+    maxHeight: Dimensions.get('window').height * 0.8,
     bottom: 0,
     borderRadius: 5,
     elevation: 5,
-    shadowColor: "#FFF",
+    shadowColor: '#FFF',
     shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 2,
-    alignSelf: "center",
-    backgroundColor: "#1c1c1c",
-    color: "white",
+    alignSelf: 'center',
+    backgroundColor: '#1c1c1c',
+    color: 'white',
     paddingTop: 15,
   },
   selected: {
-    backgroundColor: "#222222",
+    backgroundColor: '#222222',
   },
   close: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     right: 0,
     zIndex: 1,

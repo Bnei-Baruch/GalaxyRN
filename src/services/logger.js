@@ -22,7 +22,7 @@ class Logger {
     this.includeStackTrace = false;
   }
   hasTag(tag) {
-    return true; //tag === "Mqtt" || tag === "Inits";
+    return true; //tag === 'ChatModal';
   }
 
   async initializeLogFile() {
