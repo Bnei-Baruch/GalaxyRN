@@ -1,12 +1,12 @@
 import {
   API_BACKEND,
-  STUDY_MATERIALS,
+  GEO_IP_INFO,
   QST_BACKEND,
   STRDB_BACKEND,
-  GEO_IP_INFO,
-} from "@env";
-import mqtt from "../shared/mqtt";
+  STUDY_MATERIALS,
+} from '@env';
 import logger from '../services/logger';
+import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Api';
 
@@ -19,39 +19,39 @@ class Api {
     this.password = null;
   }
 
-  static makeParams = (params) =>
+  static makeParams = params =>
     `${Object.entries(params)
       .filter(([_, v]) => v !== undefined && v !== null)
-      .map((pair) => {
+      .map(pair => {
         const key = pair[0];
         const value = pair[1];
         if (Array.isArray(value)) {
-          return value.map((val) => `${key}=${Api.encode(val)}`).join("&");
+          return value.map(val => `${key}=${Api.encode(val)}`).join('&');
         }
         return `${key}=${Api.encode(value)}`;
       })
       //can happen if parameter value is empty array
-      .filter((p) => p !== "")
-      .join("&")}`;
+      .filter(p => p !== '')
+      .join('&')}`;
 
   // Galaxy API
 
   fetchConfig = () =>
     this.logAndParse(
-      "fetch config",
-      fetch(this.urlFor("/v2/config"), this.defaultOptions())
+      'fetch config',
+      fetch(this.urlFor('/v2/config'), this.defaultOptions())
     );
 
   fetchAvailableRooms = (params = {}) =>
     this.logAndParse(
-      "fetch available rooms",
+      'fetch available rooms',
       fetch(
-        `${this.urlFor("/groups")}?${Api.makeParams(params)}`,
+        `${this.urlFor('/groups')}?${Api.makeParams(params)}`,
         this.defaultOptions()
       )
     );
 
-  urlFor = (path) => API_BACKEND + path;
+  urlFor = path => API_BACKEND + path;
 
   defaultOptions = () => {
     const auth = this.accessToken
@@ -67,7 +67,7 @@ class Api {
 
   logAndParse = (action, fetchPromise) => {
     return fetchPromise
-      .then((response) => {
+      .then(response => {
         if (!response.ok) {
           logger.error(
             NAMESPACE,
@@ -76,7 +76,7 @@ class Api {
             response.statusText
           );
           // Try to extract more detailed error information if possible
-          return response.text().then((errorText) => {
+          return response.text().then(errorText => {
             let errorMessage;
             try {
               // Try to parse as JSON to get structured error details
@@ -86,64 +86,72 @@ class Api {
             } catch (e) {
               // If not valid JSON, use as raw text
               errorMessage = errorText;
-              logger.error(NAMESPACE, `${action} error response text:`, errorText);
+              logger.error(
+                NAMESPACE,
+                `${action} error response text:`,
+                errorText
+              );
             }
             throw new Error(errorMessage || response.statusText);
           });
         }
         return response.json();
       })
-      .catch((err) => {
+      .catch(err => {
         logger.error(NAMESPACE, `${action} error`, err);
         logger.error(NAMESPACE, `${action} error details:`, err.message);
         return Promise.reject(err);
       });
   };
 
-  setAccessToken = (token) => {
+  setAccessToken = token => {
     this.accessToken = token;
     mqtt.setToken(token);
   };
   fetchMaterials = async () => {
     try {
-      const res = await fetch(STUDY_MATERIALS, { method: "GET" });
+      const res = await fetch(STUDY_MATERIALS, { method: 'GET' });
+      logger.debug(NAMESPACE, 'fetchMaterials', res);
       return res.json();
     } catch (e) {
       return null;
     }
   };
 
-  makeOptions = (payload) => {
+  makeOptions = payload => {
     const options = {
       ...this.defaultOptions(),
-      method: "POST",
+      method: 'POST',
     };
     if (payload) {
       options.body = JSON.stringify(payload);
-      options.headers["Content-Type"] = "application/json";
+      options.headers['Content-Type'] = 'application/json';
     }
     return options;
   };
-  sendQuestion = (data) => {
+  sendQuestion = data => {
     const options = this.makeOptions(data);
     return this.logAndParse(
       `send question`,
       fetch(`${QST_BACKEND}/ask`, options)
     );
   };
-  fetchQuestions = (data) => {
+  fetchQuestions = data => {
     try {
-      logger.debug(NAMESPACE, `fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`);
-      logger.debug(NAMESPACE, "fetchQuestions - request data:", data);
+      logger.debug(
+        NAMESPACE,
+        `fetchQuestions - endpoint URL: ${QST_BACKEND}/feed`
+      );
+      logger.debug(NAMESPACE, 'fetchQuestions - request data:', data);
 
       // Validate that serialUserId is present and valid
       if (!data || !data.serialUserId) {
         logger.error(
           NAMESPACE,
-          "fetchQuestions - Missing required field: serialUserId"
+          'fetchQuestions - Missing required field: serialUserId'
         );
         return Promise.reject(
-          new Error("Missing required field: serialUserId")
+          new Error('Missing required field: serialUserId')
         );
       }
 
@@ -153,13 +161,13 @@ class Api {
         fetch(`${QST_BACKEND}/feed`, options)
       );
     } catch (error) {
-      logger.error(NAMESPACE, "fetchQuestions preparation error:", error);
+      logger.error(NAMESPACE, 'fetchQuestions preparation error:', error);
       return Promise.reject(error);
     }
   };
 
-  fetchStrServer = (data) => {
-    logger.debug(NAMESPACE, "fetchStrServer - request data:", data);
+  fetchStrServer = data => {
+    logger.debug(NAMESPACE, 'fetchStrServer - request data:', data);
     const options = this.makeOptions(data);
     const url = `${STRDB_BACKEND}/server`;
     return this.logAndParse(
@@ -171,13 +179,13 @@ class Api {
   fetchVHInfo = () =>
     this.logAndParse(
       `fetch vh info`,
-      fetch(this.urlFor("/v2/vhinfo"), this.defaultOptions())
+      fetch(this.urlFor('/v2/vhinfo'), this.defaultOptions())
     );
 
   fetchGeoInfo = async () => {
     const defaultInfo = {
-      ip: "127.0.0.1",
-      country: "XX",
+      ip: '127.0.0.1',
+      country: 'XX',
     };
     try {
       const response = await fetch(GEO_IP_INFO);

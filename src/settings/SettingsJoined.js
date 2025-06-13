@@ -8,6 +8,7 @@ import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
+import DebugMode from './DebugMode';
 import LabeledSwitch from './LabeledSwitch';
 import SelectUiLanguage from './SelectUiLanguage';
 
