@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomBar } from '../bottomBar/BottomBar';
-import { TestModal as ChatModal } from '../chat/TestModal';
+import { ChatModal } from '../chat/ChatModal';
 import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
 import RoomLayout from './Layout/RoomLayout';
-
-const NAMESPACE = 'Room';
 
 const Room = () => {
   const { joinRoom, exitRoom } = useInRoomStore();
