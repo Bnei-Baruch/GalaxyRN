@@ -20,6 +20,8 @@ const DebugMode = () => {
     initDebugMode();
   }, [toggleDebugMode]);
 
+  return null;
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{t('settings.debugMode')}</Text>

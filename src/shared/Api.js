@@ -114,6 +114,7 @@ class Api {
       logger.debug(NAMESPACE, 'fetchMaterials', res);
       return res.json();
     } catch (e) {
+      logger.error(NAMESPACE, 'fetchMaterials error:', e);
       return null;
     }
   };

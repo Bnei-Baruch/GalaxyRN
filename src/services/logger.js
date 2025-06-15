@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { Dimensions, NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import { useSettingsStore } from '../zustand/settings';
@@ -22,7 +23,7 @@ class Logger {
     this.includeStackTrace = false;
   }
   hasTag(tag) {
-    return true; //tag === 'ChatModal';
+    return tag === 'Api';
   }
 
   async initializeLogFile() {
@@ -299,6 +300,7 @@ class Logger {
 
     console.error(...this.prepareConsoleMsg(args));
     await this.log('ERROR', ...args);
+    Sentry.captureException(new Error(args.join(', ')));
   }
 
   prepareConsoleMsg(args) {

@@ -8,8 +8,10 @@ import PageHeader from '../components/PageHeader';
 import { baseStyles } from '../constants';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
+import DebugMode from './DebugMode';
 import LabeledSwitch from './LabeledSwitch';
 import RoomSelect from './RoomSelect';
+
 import SelectUiLanguage from './SelectUiLanguage';
 
 export const SettingsNotJoinedLandscape = () => {
