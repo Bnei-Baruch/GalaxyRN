@@ -1,18 +1,21 @@
-import RNSecureStorage, { ACCESSIBLE } from "rn-secure-storage";
-import BackgroundTimer from "react-native-background-timer";
+import BackgroundTimer from 'react-native-background-timer';
+import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import logger from '../services/logger';
 
 const NAMESPACE = 'Tools';
 
-export const sleep = (time) =>
-  new Promise((resolve) => BackgroundTimer.setTimeout(resolve, time));
+export const sleep = time =>
+  new Promise(resolve => BackgroundTimer.setTimeout(resolve, time));
 
 export const getFromStorage = async (key, def) => {
+  let res;
   try {
-    return await RNSecureStorage.getItem(key);
+    res = await RNSecureStorage.getItem(key);
   } catch (err) {
-    return def;
+    res = def;
+    logger.log(NAMESPACE, 'RNSecureStorage getFromStorage', err);
   }
+  return res;
 };
 
 export const setToStorage = async (key, val) => {
@@ -21,18 +24,19 @@ export const setToStorage = async (key, val) => {
       accessible: ACCESSIBLE.ALWAYS,
     });
   } catch (err) {
-    logger.error(NAMESPACE, "RNSecureStorage setToStorage error", err);
+    logger.error(NAMESPACE, 'RNSecureStorage setToStorage error', err);
     return err;
   }
 };
 
-export const deepClone = (obj) => {
+export const deepClone = obj => {
   return JSON.parse(JSON.stringify(obj));
 };
 
-export const randomString = (len) => {
-  let charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let randomVal = "";
+export const randomString = len => {
+  let charSet =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomVal = '';
   for (let i = 0; i < len; i++) {
     let randomPoz = Math.floor(Math.random() * charSet.length);
     randomVal += charSet.substring(randomPoz, randomPoz + 1);
@@ -40,7 +44,7 @@ export const randomString = (len) => {
   return randomVal;
 };
 
-export const getDateString = (jsonDate) => {
+export const getDateString = jsonDate => {
   var when = new Date();
   if (jsonDate) {
     when = new Date(Date.parse(jsonDate));
@@ -53,10 +57,10 @@ export const getDateString = (jsonDate) => {
     }
   }
   var dateString =
-    ("0" + when.getHours()).slice(-2) +
-    ":" +
-    ("0" + when.getMinutes()).slice(-2) +
-    ":" +
-    ("0" + when.getSeconds()).slice(-2);
+    ('0' + when.getHours()).slice(-2) +
+    ':' +
+    ('0' + when.getMinutes()).slice(-2) +
+    ':' +
+    ('0' + when.getSeconds()).slice(-2);
   return dateString;
 };
