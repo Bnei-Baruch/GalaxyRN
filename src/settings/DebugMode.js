@@ -11,11 +11,11 @@ import {
 
 import logger from '../services/logger';
 import { getFromStorage } from '../shared/tools';
-import { useSettingsStore } from '../zustand/settings';
+import { useDebugStore } from '../zustand/debug';
 
 const DebugMode = () => {
   const { t } = useTranslation();
-  const { debugMode, toggleDebugMode } = useSettingsStore();
+  const { debugMode, toggleDebugMode } = useDebugStore();
 
   useEffect(() => {
     const initDebugMode = async () => {

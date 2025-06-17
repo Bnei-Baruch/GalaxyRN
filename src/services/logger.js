@@ -195,7 +195,7 @@ class Logger {
       materials: require('../zustand/fetchMaterials').default.getState(),
     };
 
-    return JSON.stringify(stores, null, 2);
+    return this.safeStringify(stores);
   }
 
   getDeviceInfo() {

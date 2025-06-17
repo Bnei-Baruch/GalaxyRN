@@ -26,7 +26,7 @@ public class SendEventToClient {
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit(eventName, params);
             } else {
-                GxyLogger.e(SendEventToClient.TAG,
+                GxyLogger.w(SendEventToClient.TAG,
                         "sendEvent(): reactContext is null or not having CatalystInstance yet.");
             }
         } catch (RuntimeException e) {

@@ -1,26 +1,33 @@
-import { StyleSheet, View } from "react-native";
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { RTCView } from 'react-native-webrtc';
+import WIP from '../../components/WIP';
+import logger from '../../services/logger';
 import {
-  useInRoomStore,
   activateFeedsVideos,
   deactivateFeedsVideos,
-} from "../../zustand/inRoom";
-import { useUiActions } from "../../zustand/uiActions";
-import CammutedFeed from "./CammutedFeed";
-import FeedDisplay from "./FeedDisplay";
-import WIP from "../../components/WIP";
-import { RTCView } from "react-native-webrtc";
-import logger from "../../services/logger";
+  useInRoomStore,
+} from '../../zustand/inRoom';
+import { useUiActions } from '../../zustand/uiActions';
+import CammutedFeed from './CammutedFeed';
+import FeedDisplay from './FeedDisplay';
+import QuestionOverlay from './QuestionOverlay';
 
-const NAMESPACE = "Feed";
+const NAMESPACE = 'Feed';
 
 const Feed = ({ id }) => {
   const { feedById } = useInRoomStore();
   const { borders, width } = useUiActions();
 
   const feed = feedById[id];
-  const { display: { display } = {}, url, talking, camera } = feed || {};
-  logger.debug(NAMESPACE, "Feed", feed);
+  const {
+    display: { display } = {},
+    url,
+    talking,
+    camera,
+    question,
+  } = feed || {};
+  logger.debug(NAMESPACE, 'Feed', feed);
 
   const ref = useRef();
 
@@ -46,7 +53,7 @@ const Feed = ({ id }) => {
 
   if (!feed) return null;
 
-  const handleLayout = (event) => {
+  const handleLayout = event => {
     const { y, height } = event.nativeEvent.layout;
     let isOn = !!feed.url;
     ref.current = { y, height, isOn };
@@ -72,6 +79,7 @@ const Feed = ({ id }) => {
       onLayout={handleLayout}
       style={[styles.container, talking && styles.talking, { width }]}
     >
+      {question && <QuestionOverlay />}
       {renderContent()}
     </View>
   );
@@ -81,20 +89,20 @@ export default Feed;
 const styles = StyleSheet.create({
   container: {
     aspectRatio: 16 / 9,
-    backgroundColor: "rgba(255,255,255,.1)",
+    backgroundColor: 'rgba(255,255,255,.1)',
   },
   talking: {
     borderWidth: 2,
-    borderColor: "yellow",
+    borderColor: 'yellow',
   },
   viewer: {
     flex: 1,
-    backgroundColor: "rgba(255,255,255,.1)",
-    justifyContent: "space-between",
+    backgroundColor: 'rgba(255,255,255,.1)',
+    justifyContent: 'space-between',
   },
   select: {
     padding: 24,
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });

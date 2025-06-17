@@ -39,6 +39,7 @@ public class GxyLoggerUtils {
     private static final int BUFFER_SIZE = 50; // Write every 50 logs
     private static boolean isWriting = false;
 
+    // Debug mode defined from javascript
     private static boolean isDebugMode = false;
 
     public static void setDebugMode(boolean debugMode) {
