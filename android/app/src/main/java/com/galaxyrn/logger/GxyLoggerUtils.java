@@ -39,6 +39,11 @@ public class GxyLoggerUtils {
     private static final int BUFFER_SIZE = 50; // Write every 50 logs
     private static boolean isWriting = false;
 
+    private static boolean isDebugMode = false;
+
+    public static void setDebugMode(boolean debugMode) {
+        isDebugMode = debugMode;
+    }
     // ========================================
     // PUBLIC UTILITY METHODS
     // ========================================
@@ -184,6 +189,10 @@ public class GxyLoggerUtils {
      * Save log message to buffer
      */
     public static void saveToFile(String level, String tag, String message, Throwable throwable) {
+        if (!isDebugMode) {
+            return;
+        }
+
         if (logDir == null || logDir.isEmpty()) {
             return;
         }

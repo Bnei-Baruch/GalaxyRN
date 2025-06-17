@@ -90,10 +90,4 @@ export const useSettingsStore = create((set, get) => ({
 
   hideSelf: false,
   toggleHideSelf: () => set(state => ({ hideSelf: !state.hideSelf })),
-
-  debugMode: false,
-  toggleDebugMode: (debugMode = !get().debugMode) => {
-    setToStorage('debugMode', debugMode);
-    set({ debugMode });
-  },
 }));

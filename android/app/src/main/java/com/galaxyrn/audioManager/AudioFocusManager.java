@@ -6,7 +6,7 @@ import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Build;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -27,7 +27,7 @@ public class AudioFocusManager {
     public AudioFocusManager(@NonNull ReactContext context) {
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
-            Log.e(TAG, "Failed to get AudioManager service");
+            GxyLogger.e(TAG, "Failed to get AudioManager service");
         }
     }
 
@@ -38,7 +38,7 @@ public class AudioFocusManager {
      */
     public boolean requestAudioFocus() {
         if (audioManager == null) {
-            Log.e(TAG, "Cannot request audio focus: AudioManager is null");
+            GxyLogger.e(TAG, "Cannot request audio focus: AudioManager is null");
             return false;
         }
         
@@ -58,12 +58,12 @@ public class AudioFocusManager {
 
             int result = audioManager.requestAudioFocus(audioFocusRequest);
             String resultStr = getAudioFocusResultString(result);
-            Log.d(TAG, "requestAudioFocus(): result = " + resultStr);
+            GxyLogger.d(TAG, "requestAudioFocus(): result = " + resultStr);
             
             hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
             return hasAudioFocus;
         } catch (Exception e) {
-            Log.e(TAG, "Error requesting audio focus", e);
+            GxyLogger.e(TAG, "Error requesting audio focus", e);
             return false;
         }
     }
@@ -75,7 +75,7 @@ public class AudioFocusManager {
      */
     public boolean abandonAudioFocus() {
         if (audioManager == null || audioFocusRequest == null) {
-            Log.e(TAG, "Cannot abandon audio focus: AudioManager or AudioFocusRequest is null");
+            GxyLogger.e(TAG, "Cannot abandon audio focus: AudioManager or AudioFocusRequest is null");
             return false;
         }
         
@@ -84,12 +84,12 @@ public class AudioFocusManager {
             String resultStr = getAudioFocusResultString(result);
             
             audioManager.setMode(AudioManager.MODE_NORMAL);
-            Log.d(TAG, "abandonAudioFocus(): result = " + resultStr);
+            GxyLogger.d(TAG, "abandonAudioFocus(): result = " + resultStr);
             
             hasAudioFocus = false;
             return (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
         } catch (Exception e) {
-            Log.e(TAG, "Error abandoning audio focus", e);
+            GxyLogger.e(TAG, "Error abandoning audio focus", e);
             return false;
         }
     }

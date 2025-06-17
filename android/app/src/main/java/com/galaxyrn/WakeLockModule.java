@@ -3,6 +3,7 @@ package com.galaxyrn;
 import android.app.Activity;
 import android.util.Log;
 import android.view.WindowManager;
+import com.galaxyrn.logger.GxyLogger;
 
 import androidx.annotation.NonNull;
 
@@ -36,16 +37,16 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
                 activity.runOnUiThread(() -> {
                     try {
                         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                        Log.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added)");
+                        GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added)");
                     } catch (Exception e) {
-                        Log.e(TAG, "Error keeping screen on: " + e.getMessage());
+                        GxyLogger.e(TAG, "Error keeping screen on: " + e.getMessage());
                     }
                 });
             } else {
-                Log.w(TAG, "Could not get current activity to keep screen on");
+                GxyLogger.w(TAG, "Could not get current activity to keep screen on");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error in keepScreenOn: " + e.getMessage());
+            GxyLogger.e(TAG, "Error in keepScreenOn: " + e.getMessage());
         }
     }
 
@@ -57,16 +58,16 @@ public class WakeLockModule extends ReactContextBaseJavaModule {
                 activity.runOnUiThread(() -> {
                     try {
                         activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                        Log.d(TAG, "Screen can turn off normally (FLAG_KEEP_SCREEN_ON cleared)");
+                        GxyLogger.d(TAG, "Screen can turn off normally (FLAG_KEEP_SCREEN_ON cleared)");
                     } catch (Exception e) {
-                        Log.e(TAG, "Error releasing screen lock: " + e.getMessage());
+                        GxyLogger.e(TAG, "Error releasing screen lock: " + e.getMessage());
                     }
                 });
             } else {
-                Log.w(TAG, "Could not get current activity to release screen lock");
+                GxyLogger.w(TAG, "Could not get current activity to release screen lock");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error in releaseScreenOn: " + e.getMessage());
+            GxyLogger.e(TAG, "Error in releaseScreenOn: " + e.getMessage());
         }
     }
 }

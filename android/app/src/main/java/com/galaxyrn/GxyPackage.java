@@ -2,6 +2,7 @@ package com.galaxyrn;
 
 import android.os.Build;
 import android.util.Log;
+import com.galaxyrn.logger.GxyLogger;
 
 import androidx.annotation.RequiresApi;
 
@@ -38,12 +39,12 @@ public class GxyPackage implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        Log.i(TAG, "Creating Galaxy native modules");
+        GxyLogger.i(TAG, "Creating Galaxy native modules");
 
         SendEventToClient.init(reactContext);
         // Add modules
         try {
-            Log.i(TAG, "Adding standard modules");
+            GxyLogger.i(TAG, "Adding standard modules");
             modules.add(new LoggerModule(reactContext));
 
             modules.add(new PermissionsModule(reactContext));
@@ -52,7 +53,7 @@ public class GxyPackage implements ReactPackage {
             modules.add(new AudioDeviceModule(reactContext));
             modules.add(new CallListenerModule(reactContext));
         } catch (Exception e) {
-            Log.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
         }
 
         return modules;

@@ -1,7 +1,7 @@
 package com.galaxyrn.callManager;
 
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
@@ -26,9 +26,9 @@ public class CallEventManager {
             WritableMap data = Arguments.createMap();
             data.putString("state", state.name());
             SendEventToClient.sendEvent("onCallStateChanged", data);
-            Log.d(TAG, "Dispatched call state event: " + state.name());
+            GxyLogger.d(TAG, "Dispatched call state event: " + state.name());
         } catch (Exception e) {
-            Log.e(TAG, "Error sending event: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error sending event: " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }
@@ -41,12 +41,12 @@ public class CallEventManager {
         try {
             if (context != null) {
                 ForegroundService.moveAppToForeground(context);
-                Log.d(TAG, "App brought to foreground after call");
+                GxyLogger.d(TAG, "App brought to foreground after call");
             } else {
-                Log.w(TAG, "Cannot bring app to foreground: context is null");
+                GxyLogger.w(TAG, "Cannot bring app to foreground: context is null");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error bringing app to foreground: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error bringing app to foreground: " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }

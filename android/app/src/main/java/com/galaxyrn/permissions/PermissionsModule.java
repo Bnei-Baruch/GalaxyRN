@@ -11,6 +11,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import android.util.Log;
+import com.galaxyrn.logger.GxyLogger;
 import com.galaxyrn.SendEventToClient;
 
 /**
@@ -26,28 +27,28 @@ public class PermissionsModule extends ReactContextBaseJavaModule {
 
     public PermissionsModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.d(TAG, "Creating PermissionsModule");
+        GxyLogger.d(TAG, "Creating PermissionsModule");
         this.reactContext = reactContext;
     }
 
     public void initializeAfterPermissions() {
-        Log.d(TAG, "Initializing PermissionsModule after permissions granted");
+        GxyLogger.d(TAG, "Initializing PermissionsModule after permissions granted");
         PermissionsModule.isInitialized = true;
-        Log.d(TAG, "PermissionsModule initialized: " + PermissionsModule.isInitialized);
-        
+        GxyLogger.d(TAG, "PermissionsModule initialized: " + PermissionsModule.isInitialized);
+
         // Send event to React Native that permissions are ready
         try {
             WritableMap params = Arguments.createMap();
             params.putBoolean("allGranted", true);
             SendEventToClient.sendEvent("permissionsStatus", params);
         } catch (Exception e) {
-            Log.e(TAG, "Error sending permissions status event: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error sending permissions status event: " + e.getMessage(), e);
         }
     }
 
     @ReactMethod
     public void getPermissionStatus(Promise promise) {
-        Log.d(TAG, "Getting permission status: " + PermissionsModule.isInitialized);
+        GxyLogger.d(TAG, "Getting permission status: " + PermissionsModule.isInitialized);
         promise.resolve(PermissionsModule.isInitialized);
     }
 

@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import logger from '../services/logger';
 import { getFromStorage } from '../shared/tools';
@@ -20,7 +27,9 @@ const DebugMode = () => {
     initDebugMode();
   }, [toggleDebugMode]);
 
-  return null;
+  if (Platform.OS !== 'android') {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

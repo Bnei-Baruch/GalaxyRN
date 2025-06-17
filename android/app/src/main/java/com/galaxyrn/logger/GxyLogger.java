@@ -15,16 +15,8 @@ public class GxyLogger {
 
     // Default configuration
     private static final String DEFAULT_TAG = "GalaxyRN";
-    private static boolean isDebugMode = BuildConfig.DEBUG;
+    private static boolean isDebugMode = false;
     private static int minLogLevel = isDebugMode ? VERBOSE : ERROR;
-
-    /**
-     * Configure logger settings
-     */
-    public static void configure(boolean debugMode, int minimumLogLevel) {
-        isDebugMode = debugMode;
-        minLogLevel = minimumLogLevel;
-    }
 
     // VERBOSE level logging
     public static void v(String message) {
@@ -32,17 +24,13 @@ public class GxyLogger {
     }
 
     public static void v(String tag, String message) {
-        if (shouldLog(VERBOSE)) {
-            Log.v(tag, GxyLoggerUtils.formatMessage(message));
-            GxyLoggerUtils.saveToFile("V", tag, message, null);
-        }
+        Log.v(tag, GxyLoggerUtils.formatMessage(message));
+        GxyLoggerUtils.saveToFile("V", tag, message, null);
     }
 
     public static void v(String tag, String message, Throwable throwable) {
-        if (shouldLog(VERBOSE)) {
-            Log.v(tag, GxyLoggerUtils.formatMessage(message), throwable);
-            GxyLoggerUtils.saveToFile("V", tag, message, throwable);
-        }
+        Log.v(tag, GxyLoggerUtils.formatMessage(message), throwable);
+        GxyLoggerUtils.saveToFile("V", tag, message, throwable);
     }
 
     // DEBUG level logging
@@ -51,17 +39,13 @@ public class GxyLogger {
     }
 
     public static void d(String tag, String message) {
-        if (shouldLog(DEBUG)) {
-            Log.d(tag, GxyLoggerUtils.formatMessage(message));
-            GxyLoggerUtils.saveToFile("D", tag, message, null);
-        }
+        Log.d(tag, GxyLoggerUtils.formatMessage(message));
+        GxyLoggerUtils.saveToFile("D", tag, message, null);
     }
 
     public static void d(String tag, String message, Throwable throwable) {
-        if (shouldLog(DEBUG)) {
-            Log.d(tag, GxyLoggerUtils.formatMessage(message), throwable);
-            GxyLoggerUtils.saveToFile("D", tag, message, throwable);
-        }
+        Log.d(tag, GxyLoggerUtils.formatMessage(message), throwable);
+        GxyLoggerUtils.saveToFile("D", tag, message, throwable);
     }
 
     // INFO level logging
@@ -70,17 +54,13 @@ public class GxyLogger {
     }
 
     public static void i(String tag, String message) {
-        if (shouldLog(INFO)) {
-            Log.i(tag, GxyLoggerUtils.formatMessage(message));
-            GxyLoggerUtils.saveToFile("I", tag, message, null);
-        }
+        Log.i(tag, GxyLoggerUtils.formatMessage(message));
+        GxyLoggerUtils.saveToFile("I", tag, message, null);
     }
 
     public static void i(String tag, String message, Throwable throwable) {
-        if (shouldLog(INFO)) {
-            Log.i(tag, GxyLoggerUtils.formatMessage(message), throwable);
-            GxyLoggerUtils.saveToFile("I", tag, message, throwable);
-        }
+        Log.i(tag, GxyLoggerUtils.formatMessage(message), throwable);
+        GxyLoggerUtils.saveToFile("I", tag, message, throwable);
     }
 
     // WARN level logging
@@ -89,19 +69,15 @@ public class GxyLogger {
     }
 
     public static void w(String tag, String message) {
-        if (shouldLog(WARN)) {
-            Log.w(tag, GxyLoggerUtils.formatMessage(message));
-            GxyLoggerUtils.saveToFile("W", tag, message, null);
-            GxyLoggerUtils.reportToSentry(SentryLevel.WARNING, tag, message, null);
-        }
+        Log.w(tag, GxyLoggerUtils.formatMessage(message));
+        GxyLoggerUtils.saveToFile("W", tag, message, null);
+        GxyLoggerUtils.reportToSentry(SentryLevel.WARNING, tag, message, null);
     }
 
     public static void w(String tag, String message, Throwable throwable) {
-        if (shouldLog(WARN)) {
-            Log.w(tag, GxyLoggerUtils.formatMessage(message), throwable);
-            GxyLoggerUtils.saveToFile("W", tag, message, throwable);
-            GxyLoggerUtils.reportToSentry(SentryLevel.WARNING, tag, message, throwable);
-        }
+        Log.w(tag, GxyLoggerUtils.formatMessage(message), throwable);
+        GxyLoggerUtils.saveToFile("W", tag, message, throwable);
+        GxyLoggerUtils.reportToSentry(SentryLevel.WARNING, tag, message, throwable);
     }
 
     // ERROR level logging
@@ -110,27 +86,14 @@ public class GxyLogger {
     }
 
     public static void e(String tag, String message) {
-        if (shouldLog(ERROR)) {
-            Log.e(tag, GxyLoggerUtils.formatMessage(message));
-            GxyLoggerUtils.saveToFile("E", tag, message, null);
-            GxyLoggerUtils.reportToSentry(SentryLevel.ERROR, tag, message, null);
-        }
+        Log.e(tag, GxyLoggerUtils.formatMessage(message));
+        GxyLoggerUtils.saveToFile("E", tag, message, null);
+        GxyLoggerUtils.reportToSentry(SentryLevel.ERROR, tag, message, null);
     }
 
     public static void e(String tag, String message, Throwable throwable) {
-        if (shouldLog(ERROR)) {
-            Log.e(tag, GxyLoggerUtils.formatMessage(message), throwable);
-            GxyLoggerUtils.saveToFile("E", tag, message, throwable);
-            GxyLoggerUtils.reportToSentry(SentryLevel.ERROR, tag, message, throwable);
-        }
-    }
-
-    // Core utility methods
-
-    /**
-     * Check if logging should occur for given level
-     */
-    private static boolean shouldLog(int level) {
-        return isDebugMode || level >= minLogLevel;
+        Log.e(tag, GxyLoggerUtils.formatMessage(message), throwable);
+        GxyLoggerUtils.saveToFile("E", tag, message, throwable);
+        GxyLoggerUtils.reportToSentry(SentryLevel.ERROR, tag, message, throwable);
     }
 }

@@ -1,6 +1,7 @@
 package com.galaxyrn;
 
 import android.util.Log;
+import com.galaxyrn.logger.GxyLogger;
 
 import androidx.annotation.Nullable;
 
@@ -25,10 +26,12 @@ public class SendEventToClient {
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit(eventName, params);
             } else {
-                Log.e(SendEventToClient.TAG, "sendEvent(): reactContext is null or not having CatalystInstance yet.");
+                GxyLogger.e(SendEventToClient.TAG,
+                        "sendEvent(): reactContext is null or not having CatalystInstance yet.");
             }
         } catch (RuntimeException e) {
-            Log.e(SendEventToClient.TAG, "sendEvent(): java.lang.RuntimeException: Trying to invoke JS before CatalystInstance has been set!");
+            GxyLogger.e(SendEventToClient.TAG,
+                    "sendEvent(): java.lang.RuntimeException: Trying to invoke JS before CatalystInstance has been set!");
         }
     }
 }

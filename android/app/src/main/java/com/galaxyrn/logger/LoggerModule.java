@@ -65,4 +65,10 @@ public class LoggerModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void setDebugMode(boolean debugMode) {
+        GxyLogger.i(TAG, "Setting debug mode to: " + debugMode);
+        GxyLoggerUtils.setDebugMode(debugMode);
+    }
+
 }

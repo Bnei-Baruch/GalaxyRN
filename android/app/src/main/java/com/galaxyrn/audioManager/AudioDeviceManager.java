@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ public class AudioDeviceManager {
         // Initialize audio manager
         this.audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
         if (this.audioManager == null) {
-            Log.e(TAG, "Failed to get AudioManager service");
+            GxyLogger.e(TAG, "Failed to get AudioManager service");
             this.receiver = null;
             this.audioCallback = null;
             return;
@@ -58,13 +58,13 @@ public class AudioDeviceManager {
         return new AudioDeviceCallback() {
             @Override
             public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                Log.d(TAG, "onAudioDevicesAdded() addedDevices: " + Arrays.toString(addedDevices));
+                GxyLogger.d(TAG, "onAudioDevicesAdded() addedDevices: " + Arrays.toString(addedDevices));
                 notifyDeviceStateChanged();
             }
 
             @Override
             public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                Log.d(TAG, "onAudioDevicesRemoved() removedDevices: " + Arrays.toString(removedDevices));
+                GxyLogger.d(TAG, "onAudioDevicesRemoved() removedDevices: " + Arrays.toString(removedDevices));
                 notifyDeviceStateChanged();
             }
         };
@@ -76,7 +76,7 @@ public class AudioDeviceManager {
                 audioManager.registerAudioDeviceCallback(audioCallback, handler);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to register audio device callback", e);
+            GxyLogger.e(TAG, "Failed to register audio device callback", e);
         }
     }
 
@@ -86,7 +86,7 @@ public class AudioDeviceManager {
             public void onReceive(Context context, Intent intent) {
                 try {
                     String action = intent.getAction();
-                    Log.d(TAG, "onReceive() action: " + action);
+                    GxyLogger.d(TAG, "onReceive() action: " + action);
 
                     if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                         handleBluetoothStateChange(intent);
@@ -96,7 +96,7 @@ public class AudioDeviceManager {
 
                     notifyDeviceStateChanged();
                 } catch (Exception e) {
-                    Log.e(TAG, "Exception in onReceive", e);
+                    GxyLogger.e(TAG, "Exception in onReceive", e);
                 }
             }
         };
@@ -139,12 +139,12 @@ public class AudioDeviceManager {
                             audioManager.startBluetoothSco();
                         }
                     } catch (Exception e) {
-                        Log.e(TAG, "Failed in delayed SCO check", e);
+                        GxyLogger.e(TAG, "Failed in delayed SCO check", e);
                     }
                 }, BLUETOOTH_SCO_TIMEOUT_MS);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to start Bluetooth SCO", e);
+            GxyLogger.e(TAG, "Failed to start Bluetooth SCO", e);
         }
     }
 
@@ -155,13 +155,13 @@ public class AudioDeviceManager {
                 audioManager.setBluetoothScoOn(false);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to stop Bluetooth SCO", e);
+            GxyLogger.e(TAG, "Failed to stop Bluetooth SCO", e);
         }
     }
 
     private void registerBroadcastReceiver() {
         if (reactContext == null || receiver == null) {
-            Log.d(TAG, "Cannot register receiver - context or receiver is null");
+            GxyLogger.d(TAG, "Cannot register receiver - context or receiver is null");
             return;
         }
 
@@ -173,7 +173,7 @@ public class AudioDeviceManager {
                 reactContext.registerReceiver(receiver, filter);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to register receiver", e);
+            GxyLogger.e(TAG, "Failed to register receiver", e);
         }
     }
 
@@ -200,7 +200,7 @@ public class AudioDeviceManager {
                 reactContext.unregisterReceiver(receiver);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to unregister receiver", e);
+            GxyLogger.e(TAG, "Failed to unregister receiver", e);
         }
     }
 
@@ -210,7 +210,7 @@ public class AudioDeviceManager {
                 audioManager.unregisterAudioDeviceCallback(audioCallback);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to unregister audio device callback", e);
+            GxyLogger.e(TAG, "Failed to unregister audio device callback", e);
         }
     }
 }

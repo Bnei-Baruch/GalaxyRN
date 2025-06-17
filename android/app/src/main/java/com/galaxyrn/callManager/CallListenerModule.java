@@ -2,7 +2,7 @@ package com.galaxyrn.callManager;
 
 import android.os.Build;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -39,12 +39,12 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     public CallListenerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         context = reactContext;
-        Log.d(TAG, "CallListenerModule constructor called - context: " + context);
+        GxyLogger.d(TAG, "CallListenerModule constructor called - context: " + context);
         try {
             reactContext.addLifecycleEventListener(this);
-            Log.d(TAG, "CallListenerModule constructor completed safely - auto-initialization disabled");
+            GxyLogger.d(TAG, "CallListenerModule constructor completed safely - auto-initialization disabled");
         } catch (Exception e) {
-            Log.e(TAG, "Error in constructor: " + e.getMessage());
+            GxyLogger.e(TAG, "Error in constructor: " + e.getMessage());
             Sentry.captureException(e);
         }
     }
@@ -55,7 +55,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     @NonNull
     @Override
     public String getName() {
-        Log.d(TAG, "getName() called - returning: " + NAME);
+        GxyLogger.d(TAG, "getName() called - returning: " + NAME);
         return NAME;
     }
 
@@ -66,7 +66,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
             return;
         }
 
-        Log.d(TAG, "Auto-initialization enabled - proceeding with initialization");
+        GxyLogger.d(TAG, "Auto-initialization enabled - proceeding with initialization");
         initializeCallListener();
     }
 
@@ -74,55 +74,55 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      * Initialize the call listener - called after permissions are granted
      */
     private void initializeCallListener() {
-        Log.d(TAG, "initializeCallListener() called - isInitialized: " + isInitialized + ", autoInitializeDisabled: "
+        GxyLogger.d(TAG, "initializeCallListener() called - isInitialized: " + isInitialized + ", autoInitializeDisabled: "
                 + autoInitializeDisabled);
         try {
             // If we're already initialized, don't do it again
             if (isInitialized) {
-                Log.d(TAG, "CallListenerModule already initialized - skipping");
+                GxyLogger.d(TAG, "CallListenerModule already initialized - skipping");
                 return;
             }
 
-            Log.d(TAG, "Starting CallListenerModule initialization for context: " + context);
+            GxyLogger.d(TAG, "Starting CallListenerModule initialization for context: " + context);
 
             try {
-                Log.d(TAG, "Checking callListener instance - callListener null: " + (callListener == null));
+                GxyLogger.d(TAG, "Checking callListener instance - callListener null: " + (callListener == null));
                 if (callListener == null) {
                     callListener = PhoneCallListener.getInstance();
-                    Log.d(TAG, "PhoneCallListener instance created successfully");
+                    GxyLogger.d(TAG, "PhoneCallListener instance created successfully");
                 } else {
-                    Log.d(TAG, "Using existing PhoneCallListener instance");
+                    GxyLogger.d(TAG, "Using existing PhoneCallListener instance");
                 }
 
                 if (callListener != null) {
-                    Log.d(TAG, "CallListener is available, checking initialization status: "
+                    GxyLogger.d(TAG, "CallListener is available, checking initialization status: "
                             + callListener.isInitialized());
                     if (!callListener.isInitialized()) {
-                        Log.d(TAG, "Calling PhoneCallListener.initialize() with context" + context);
+                        GxyLogger.d(TAG, "Calling PhoneCallListener.initialize() with context" + context);
                         boolean success = callListener.initialize(context);
-                        Log.d(TAG, "PhoneCallListener.initialize() returned: " + success);
+                        GxyLogger.d(TAG, "PhoneCallListener.initialize() returned: " + success);
                         if (success) {
                             isInitialized = true;
                             autoInitializeDisabled = false; // Enable for future lifecycle events
-                            Log.d(TAG, "CallListenerModule initialized successfully - isInitialized: " + isInitialized);
+                            GxyLogger.d(TAG, "CallListenerModule initialized successfully - isInitialized: " + isInitialized);
                         } else {
-                            Log.e(TAG,
+                            GxyLogger.e(TAG,
                                     "Failed to initialize CallListenerModule - PhoneCallListener.initialize() returned false");
                         }
                     } else {
-                        Log.d(TAG, "PhoneCallListener already initialized, setting module as initialized");
+                        GxyLogger.d(TAG, "PhoneCallListener already initialized, setting module as initialized");
                         isInitialized = true;
                         autoInitializeDisabled = false;
                     }
                 } else {
-                    Log.e(TAG, "CallListener is null after getInstance() call");
+                    GxyLogger.e(TAG, "CallListener is null after getInstance() call");
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error initializing: " + e.getMessage(), e);
+                GxyLogger.e(TAG, "Error initializing: " + e.getMessage(), e);
                 Sentry.captureException(e);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error in initializeCallListener(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in initializeCallListener(): " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }
@@ -132,7 +132,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      */
     @ReactMethod
     public void isInitialized(Promise promise) {
-        Log.d(TAG, "isInitialized() called from JavaScript - returning: " + isInitialized);
+        GxyLogger.d(TAG, "isInitialized() called from JavaScript - returning: " + isInitialized);
         promise.resolve(isInitialized);
     }
 
@@ -143,7 +143,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
     public void initializeAfterPermissions() {
         autoInitializeDisabled = false;
         initializeCallListener();
-        Log.d(TAG, "initializeAfterPermissions() completed");
+        GxyLogger.d(TAG, "initializeAfterPermissions() completed");
     }
 
     /**
@@ -151,7 +151,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      */
     @Override
     public void onHostResume() {
-        Log.d(TAG, "onHostResume() - current state: isInitialized=" + isInitialized + ", autoInitializeDisabled="
+        GxyLogger.d(TAG, "onHostResume() - current state: isInitialized=" + isInitialized + ", autoInitializeDisabled="
                 + autoInitializeDisabled);
         if (!isInitialized && !autoInitializeDisabled) {
             initializeCallListener();
@@ -163,7 +163,7 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      */
     @Override
     public void onHostPause() {
-        Log.d(TAG, "onHostPause() - current state: isInitialized=" + isInitialized + ", autoInitializeDisabled="
+        GxyLogger.d(TAG, "onHostPause() - current state: isInitialized=" + isInitialized + ", autoInitializeDisabled="
                 + autoInitializeDisabled);
     }
 
@@ -173,23 +173,23 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      */
     @Override
     public void onHostDestroy() {
-        Log.d(TAG, "onHostDestroy() - current state: isInitialized=" + isInitialized + ", callListener null="
+        GxyLogger.d(TAG, "onHostDestroy() - current state: isInitialized=" + isInitialized + ", callListener null="
                 + (callListener == null));
 
         try {
             if (callListener != null && callListener.isInitialized()) {
-                Log.d(TAG, "onHostDestroy() - cleaning up callListener");
+                GxyLogger.d(TAG, "onHostDestroy() - cleaning up callListener");
                 callListener.cleanup();
                 isInitialized = false;
-                Log.d(TAG, "CallListenerModule cleanup completed - isInitialized set to: " + isInitialized);
+                GxyLogger.d(TAG, "CallListenerModule cleanup completed - isInitialized set to: " + isInitialized);
             } else {
-                Log.d(TAG, "onHostDestroy() - no cleanup needed: callListener null=" + (callListener == null)
+                GxyLogger.d(TAG, "onHostDestroy() - no cleanup needed: callListener null=" + (callListener == null)
                         + ", callListener initialized="
                         + (callListener != null ? callListener.isInitialized() : "N/A"));
             }
-            Log.d(TAG, "CallListenerModule onHostDestroy() completed successfully");
+            GxyLogger.d(TAG, "CallListenerModule onHostDestroy() completed successfully");
         } catch (Exception e) {
-            Log.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in onHostDestroy(): " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }

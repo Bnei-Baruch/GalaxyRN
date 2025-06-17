@@ -5,7 +5,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.WindowManager;
+import com.galaxyrn.logger.GxyLogger;import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -45,7 +45,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         // Also use ProcessLifecycleOwner for more reliable app state detection
         initLifecycleObserver(reactContext);
 
-        Log.d(TAG, "ForegroundModule initialized");
+        GxyLogger.d(TAG, "ForegroundModule initialized");
     }
 
     @NonNull
@@ -63,13 +63,13 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         mainHandler.post(() -> {
             ProcessLifecycleOwner.get().getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
                 if (event == Lifecycle.Event.ON_STOP) {
-                    Log.d(TAG, "App entered background (ProcessLifecycleOwner)");
+                    GxyLogger.d(TAG, "App entered background (ProcessLifecycleOwner)");
                     handleAppBackgrounded(reactContext);
                 } else if (event == Lifecycle.Event.ON_START) {
-                    Log.d(TAG, "App entered foreground (ProcessLifecycleOwner)");
+                    GxyLogger.d(TAG, "App entered foreground (ProcessLifecycleOwner)");
                     handleAppForegrounded(reactContext);
                 } else if (event == Lifecycle.Event.ON_DESTROY) {
-                    Log.d(TAG, "App is being destroyed (ProcessLifecycleOwner)");
+                    GxyLogger.d(TAG, "App is being destroyed (ProcessLifecycleOwner)");
                     ensureServiceStopped(reactContext);
                 }
             });
@@ -83,7 +83,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         long now = System.currentTimeMillis();
 
         if (now - lastForegroundTime < DEBOUNCE_TIME_MS) {
-            Log.d(TAG, "Debouncing background transition - too soon after foreground");
+            GxyLogger.d(TAG, "Debouncing background transition - too soon after foreground");
             return true;
         }
         lastBackgroundTime = now;
@@ -97,7 +97,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         long now = System.currentTimeMillis();
 
         if (now - lastBackgroundTime < DEBOUNCE_TIME_MS) {
-            Log.d(TAG, "Debouncing foreground transition - too soon after background");
+            GxyLogger.d(TAG, "Debouncing foreground transition - too soon after background");
             return true;
         }
         lastForegroundTime = now;
@@ -120,7 +120,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
                 if (!isServiceRunning) {
                     foregroundService.start(context);
                     isServiceRunning = true;
-                    Log.d(TAG, "Started foreground service, service running: " + isServiceRunning);
+                    GxyLogger.d(TAG, "Started foreground service, service running: " + isServiceRunning);
                 }
             }, 250); // Small delay to avoid race conditions
         }
@@ -138,7 +138,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
                 if (isServiceRunning) {
                     foregroundService.stop(context);
                     isServiceRunning = false;
-                    Log.d(TAG, "Stopped foreground service, service running: " + isServiceRunning);
+                    GxyLogger.d(TAG, "Stopped foreground service, service running: " + isServiceRunning);
                 }
             }, 250); // Small delay to avoid race conditions
         }
@@ -147,7 +147,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
 
     private void ensureServiceStopped(ReactApplicationContext context) {
         if (context != null && isServiceRunning) {
-            Log.d(TAG, "Ensuring foreground service is stopped during cleanup");
+            GxyLogger.d(TAG, "Ensuring foreground service is stopped during cleanup");
             foregroundService.stop(context);
             isServiceRunning = false;
         }
@@ -155,7 +155,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
 
     @Override
     public void invalidate() {
-        Log.d(TAG, "Module invalidate() called - cleaning up resources");
+        GxyLogger.d(TAG, "Module invalidate() called - cleaning up resources");
 
         // Get context before calling super which might null it
         ReactApplicationContext context = getReactApplicationContext();
@@ -167,7 +167,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
 
             // Stop the service if it's running
             if (context != null && isServiceRunning) {
-                Log.d(TAG, "Stopping foreground service during module invalidation");
+                GxyLogger.d(TAG, "Stopping foreground service during module invalidation");
                 foregroundService.stop(context);
                 isServiceRunning = false;
             }
@@ -177,21 +177,21 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     // React Native Lifecycle Event Listener methods
     @Override
     public void onHostResume() {
-        Log.d(TAG, "onHostResume");
+        GxyLogger.d(TAG, "onHostResume");
         // App is in foreground
         handleAppForegrounded(getReactApplicationContext());
     }
 
     @Override
     public void onHostPause() {
-        Log.d(TAG, "onHostPause");
+        GxyLogger.d(TAG, "onHostPause");
         // App is in background
         handleAppBackgrounded(getReactApplicationContext());
     }
 
     @Override
     public void onHostDestroy() {
-        Log.d(TAG, "onHostDestroy - Cleanup resources");
+        GxyLogger.d(TAG, "onHostDestroy - Cleanup resources");
         // App is being destroyed
         ensureServiceStopped(getReactApplicationContext());
     }
@@ -203,7 +203,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     public void stopForegroundService() {
         ReactApplicationContext context = getReactApplicationContext();
         if (context != null && isServiceRunning) {
-            Log.d(TAG, "Manually stopping foreground service from JS");
+            GxyLogger.d(TAG, "Manually stopping foreground service from JS");
             foregroundService.stop(context);
             isServiceRunning = false;
         }
@@ -215,7 +215,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     private void enableKeepScreenOn() {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            Log.d(TAG, "Cannot keep screen on: no current activity");
+            GxyLogger.d(TAG, "Cannot keep screen on: no current activity");
             return;
         }
 
@@ -228,7 +228,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     private void disableKeepScreenOn() {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            Log.d(TAG, "Cannot modify screen flags: no current activity");
+            GxyLogger.d(TAG, "Cannot modify screen flags: no current activity");
             return;
         }
 

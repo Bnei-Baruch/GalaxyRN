@@ -5,7 +5,7 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -52,10 +52,10 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     @Override
     public void initialize() {
         super.initialize();
-        Log.d(TAG, "initialize");
+        GxyLogger.d(TAG, "initialize");
         
         if (autoInitializeDisabled) {
-            Log.d(TAG, "Auto-initialization disabled - waiting for permissions");
+            GxyLogger.d(TAG, "Auto-initialization disabled - waiting for permissions");
             return;
         }
         
@@ -67,7 +67,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
      * This is called from the ModuleInitializer
      */
     public void initializeAfterPermissions() {
-        Log.d(TAG, "initializeAfterPermissions() called");
+        GxyLogger.d(TAG, "initializeAfterPermissions() called");
         autoInitializeDisabled = false;
         initializeAudioManagersInternal();
     }
@@ -76,7 +76,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         try {
             initializeAudioManagers();
         } catch (Exception e) {
-            Log.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);
         }
     }
     
@@ -88,7 +88,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 isInitialized = true;
                 autoInitializeDisabled = false; // Enable for future lifecycle events
             } catch (Exception e) {
-                Log.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
+                GxyLogger.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
             }
         });
         
@@ -97,17 +97,17 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @Override
     public void onHostResume() {
-        Log.d(TAG, "onHostResume()");
+        GxyLogger.d(TAG, "onHostResume()");
     }
 
     @Override
     public void onHostPause() {
-        Log.d(TAG, "onHostPause()");
+        GxyLogger.d(TAG, "onHostPause()");
     }
 
     @Override
     public void onHostDestroy() {
-        Log.d(TAG, "onHostDestroy()");
+        GxyLogger.d(TAG, "onHostDestroy()");
         cleanupResources();
     }
     
@@ -124,59 +124,59 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                         audioDeviceManager = null;
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "Error stopping AudioDeviceManager: " + e.getMessage(), e);
+                    GxyLogger.e(TAG, "Error stopping AudioDeviceManager: " + e.getMessage(), e);
                 }
             });
         } catch (Exception e) {
-            Log.e(TAG, "Error in cleanupResources(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in cleanupResources(): " + e.getMessage(), e);
         }
     }
 
     @ReactMethod
     public void requestAudioFocus() {
-        Log.d(TAG, "requestAudioFocus()");
+        GxyLogger.d(TAG, "requestAudioFocus()");
         try {
             if (audioFocusManager != null) {
                 audioFocusManager.requestAudioFocus();
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
         }
     }
 
     @ReactMethod
     public void abandonAudioFocus() {
-        Log.d(TAG, "abandonAudioFocus()");
+        GxyLogger.d(TAG, "abandonAudioFocus()");
         try {
             if (audioFocusManager != null) {
                 audioFocusManager.abandonAudioFocus();
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error abandoning audio focus: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error abandoning audio focus: " + e.getMessage(), e);
         }
     }
 
     @ReactMethod
     public void initAudioDevices() {
-        Log.d(TAG, "initAudioDevices()");
+        GxyLogger.d(TAG, "initAudioDevices()");
         UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(null, true));
     }
 
     @ReactMethod
     public void handleDevicesChange(Integer deviceId) {
-        Log.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
+        GxyLogger.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
         UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId, false));
     }
     
     private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialized) {
-        Log.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
+        GxyLogger.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
         try {
             AudioManager audioManager = getAudioManager();
             if (audioManager == null) return;
 
             AudioDeviceInfo[] devices = getAvailableAudioDevices(audioManager);
             if (devices == null || devices.length == 0) {
-                Log.w(TAG, "No audio devices found");
+                GxyLogger.w(TAG, "No audio devices found");
                 return;
             }
 
@@ -194,16 +194,16 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                         selectedDevice = speaker;
                     }
                 }
-                Log.d(TAG, "Selected default device: " + selectedDevice);
+                GxyLogger.d(TAG, "Selected default device: " + selectedDevice);
             } else {
-                Log.d(TAG, "Selected device by id: " + selectedDevice); 
+                GxyLogger.d(TAG, "Selected device by id: " + selectedDevice); 
             }
             
             // Map all devices to the response
             WritableMap data = Arguments.createMap();
             for (AudioDeviceInfo device : devices) {
                 data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
-                Log.d(TAG, "Device type: " + device.getType());
+                GxyLogger.d(TAG, "Device type: " + device.getType());
             }
             
             if (selectedDevice != null) {
@@ -216,14 +216,14 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 sendDeviceUpdateToClient(data);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
         }
     }
     
     private AudioManager getAudioManager() {
         AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
-            Log.e(TAG, "Could not get AudioManager service");
+            GxyLogger.e(TAG, "Could not get AudioManager service");
         }
         return audioManager;
     }
@@ -238,11 +238,11 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     
     
     private void sendDeviceUpdateToClient(WritableMap data) {
-        Log.d(TAG, "sendDeviceUpdateToClient() result: " + data);
+        GxyLogger.d(TAG, "sendDeviceUpdateToClient() result: " + data);
         try {
             SendEventToClient.sendEvent(EVENT_UPDATE_AUDIO_DEVICE, data);
         } catch (Exception e) {
-            Log.e(TAG, "Error sending event to client: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
         }
     }
 
@@ -253,7 +253,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             map.putInt("id", deviceInfo.getId());
             return map;
         } catch (Exception e) {
-            Log.e(TAG, "Error creating device info response: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error creating device info response: " + e.getMessage(), e);
             return Arguments.createMap();
         }
     }
@@ -269,7 +269,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             });
             return devices[0];
         } catch (Exception e) {
-            Log.e(TAG, "Error selecting default device: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error selecting default device: " + e.getMessage(), e);
             return devices.length > 0 ? devices[0] : null;
         }
     }
@@ -300,9 +300,9 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     private void setAudioDevice(AudioDeviceInfo device) {
         try {
-            Log.d(TAG, "setAudioDevice() device: " + device);
+            GxyLogger.d(TAG, "setAudioDevice() device: " + device);
             if (device == null) {
-                Log.e(TAG, "Cannot set null audio device");
+                GxyLogger.e(TAG, "Cannot set null audio device");
                 return;
             }
 
@@ -316,9 +316,9 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             } else {
                 setAudioDeviceOld(audioManager);
             }
-            Log.d(TAG, "setAudioDevice() after setCommunicationDevice()");
+            GxyLogger.d(TAG, "setAudioDevice() after setCommunicationDevice()");
         } catch (Exception e) {
-            Log.e(TAG, "Error setting audio device: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error setting audio device: " + e.getMessage(), e);
         }
     }
     
@@ -346,7 +346,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             audioManager.setBluetoothScoOn(true);
             audioManager.setSpeakerphoneOn(false);
         } catch (Exception e) {
-            Log.e(TAG, "Error in setAudioDeviceOld: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in setAudioDeviceOld: " + e.getMessage(), e);
         }
     }
 }
