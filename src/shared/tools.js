@@ -13,7 +13,7 @@ export const getFromStorage = async (key, def) => {
     res = await RNSecureStorage.getItem(key);
   } catch (err) {
     res = def;
-    logger.log(NAMESPACE, 'RNSecureStorage getFromStorage', err);
+    logger.warn(NAMESPACE, 'RNSecureStorage getFromStorage', err);
   }
   return res;
 };
