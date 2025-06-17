@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import { Dimensions, NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-import { useSettingsStore } from '../zustand/settings';
+import { useDebugStore } from '../zustand/debug';
 
 class Logger {
   constructor() {
@@ -103,6 +103,7 @@ class Logger {
 
   async flushBuffer() {
     if (this.isWriting || this.logBuffer.length === 0) {
+      console.log('Logger Buffer is empty or already writing');
       return;
     }
 
@@ -254,8 +255,8 @@ class Logger {
     }
   }
 
-  async log(level, ...args) {
-    if (!useSettingsStore.getState().debugMode) return;
+  async customLog(level, ...args) {
+    if (!useDebugStore?.getState()?.debugMode) return;
 
     const formattedMessage = this.formatMessage(level, ...args);
     const message = formattedMessage
@@ -271,40 +272,39 @@ class Logger {
     if (!this.hasTag(args[0])) return;
 
     console.trace(...this.prepareConsoleMsg(args));
-    await this.log('TRACE', ...args);
+    await this.customLog('TRACE', ...args);
   }
 
   async debug(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.debug(...this.prepareConsoleMsg(args));
-    await this.log('DEBUG', ...args);
+    await this.customLog('DEBUG', ...args);
   }
 
   async info(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.info(...this.prepareConsoleMsg(args));
-    await this.log('INFO', ...args);
+    await this.customLog('INFO', ...args);
   }
 
   async warn(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.warn(...this.prepareConsoleMsg(args));
-    await this.log('WARN', ...args);
+    await this.customLog('WARN', ...args);
   }
 
   async error(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.error(...this.prepareConsoleMsg(args));
-    await this.log('ERROR', ...args);
+    await this.customLog('ERROR', ...args);
     Sentry.captureException(new Error(args.join(', ')));
   }
 
   prepareConsoleMsg(args) {
-    // Handle arrays in the first argument by joining them with spaces
     const firstArg = Array.isArray(args[0]) ? args[0].join(' ') : args[0];
     return [`[${firstArg}]`, ...args.slice(1)];
   }
