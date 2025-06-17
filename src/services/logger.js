@@ -23,7 +23,7 @@ class Logger {
     this.includeStackTrace = false;
   }
   hasTag(tag) {
-    return tag === 'Api';
+    return true; //tag === 'Api';
   }
 
   async initializeLogFile() {
