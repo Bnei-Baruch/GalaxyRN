@@ -1,17 +1,21 @@
 import * as React from 'react';
-import { StyleSheet, View, Text, TouchableWithoutFeedback } from 'react-native';
-import { TopMenuBtn } from './TopMenuBtn';
-import { AudioDevicesBtn } from './AudioDevicesBtn';
-import useRoomStore from '../zustand/fetchRooms';
-import { LeaveBtn } from './LeaveBtn';
+import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+
 import { baseStyles } from '../constants';
+import useRoomStore from '../zustand/fetchRooms';
+import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
+
+import { AudioDevicesBtn } from './AudioDevicesBtn';
+import { LeaveBtn } from './LeaveBtn';
+import { TopMenuBtn } from './TopMenuBtn';
 
 export const TopBar = () => {
   const { room }                     = useRoomStore();
   const { toggleShowBars, showBars } = useUiActions();
+  const { isFullscreen } = useSettingsStore();
 
-  if (!showBars) return null;
+  if (!showBars || isFullscreen) return null;
 
   const handleAnyPress = () => toggleShowBars(false, true);
 

@@ -1,19 +1,25 @@
-import React, { useEffect } from "react";
-import { Dimensions } from "react-native";
+import React, { useEffect } from 'react';
+import { Dimensions } from 'react-native';
 
-import "react-native-url-polyfill";
-import "intl-pluralrules";
+import 'intl-pluralrules';
+import 'react-native-url-polyfill';
 
-import "../i18n/i18n";
-import PrepareRoom from "../InRoom/PrepareRoom";
-import useForegroundListener from "../InRoom/useForegroundListener";
-import { setTag, addBreadcrumb } from "../libs/sentry/sentryHelper";
-import { SettingsNotJoined } from "../settings/SettingsNotJoined";
-import useAudioDevicesStore from "../zustand/audioDevices";
-import { useInitsStore } from "../zustand/inits";
-import { useMyStreamStore } from "../zustand/myStream";
-import { useSubtitleStore } from "../zustand/subtitle";
-import { useShidurStore } from "../zustand/shidur";
+import '../i18n/i18n';
+
+import PrepareRoom from '../InRoom/PrepareRoom';
+import useForegroundListener from '../InRoom/useForegroundListener';
+import useScreenRotationListener from '../InRoom/useScreenRotationListener';
+import { SettingsNotJoined } from '../settings/SettingsNotJoined';
+
+import useAudioDevicesStore from '../zustand/audioDevices';
+import { useInitsStore } from '../zustand/inits';
+import { useMyStreamStore } from '../zustand/myStream';
+import { useShidurStore } from '../zustand/shidur';
+import { useSubtitleStore } from '../zustand/subtitle';
+
+import logger from './logger';
+
+const NAMESPACE = 'InitApp';
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
@@ -21,67 +27,40 @@ const InitApp = () => {
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
   const { audio } = useShidurStore();
+  const { readyForJoin } = useInitsStore();
 
   useEffect(() => {
-    console.log("[SubtitleBtn] Initializing with language");
+    logger.info(NAMESPACE, 'Initializing with language');
     initSubtitle(audio);
     return () => {
-      console.log("[SubtitleBtn] Component unmounting, exiting");
+      logger.info(NAMESPACE, 'Component unmounting, exiting');
       exitSubtitle(audio);
     };
   }, [audio]);
 
-  const { readyForJoin } = useInitsStore();
-
   useForegroundListener();
+  useScreenRotationListener();
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        addBreadcrumb("initialization", "Starting app initialization");
+    const { width, height } = Dimensions.get('window');
+    setIsPortrait(height > width);
 
-        setTag("app_version", require("../../package.json").version);
-        setTag("platform", "react-native");
-
-        await myInit();
-        addBreadcrumb("initialization", "myInit completed");
-
-        await initApp();
-        addBreadcrumb("initialization", "initApp completed");
-
-        initAudioDevices();
-        addBreadcrumb("initialization", "Audio devices initialized");
-
-        initSubtitle();
-        addBreadcrumb("initialization", "Subtitle initialized");
-      } catch (error) {
-        console.error("Error during initialization:", error);
-        throw error;
-      }
-    };
-
-    init();
+    initApp();
+    initAudioDevices();
+    myInit();
 
     return () => {
-      myAbort();
       terminateApp();
       abortAudioDevices();
+      myAbort();
     };
   }, []);
 
-  useEffect(() => {
-    const onChange = () => {
-      const dim = Dimensions.get("screen");
-      const _isPortrait = dim.height >= dim.width;
-      setIsPortrait(_isPortrait);
-    };
-    let subscription = Dimensions.addEventListener("change", onChange);
-    onChange();
+  if (!readyForJoin) {
+    return <SettingsNotJoined />;
+  }
 
-    return () => subscription && subscription.remove();
-  }, []);
-
-  return readyForJoin ? <PrepareRoom /> : <SettingsNotJoined />;
+  return <PrepareRoom />;
 };
 
 export default InitApp;

@@ -1,6 +1,11 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
 import * as Sentry from '@sentry/react-native';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import logger from '../../services/logger';
+import DebugMode from '../../settings/DebugMode';
+
+const NAMESPACE = 'SentryErrorBoundary';
 
 /**
  * A custom error boundary component that reports errors to Sentry
@@ -18,17 +23,17 @@ class SentryErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     // Report the error to Sentry
-    Sentry.captureException(error, { 
-      extra: { 
+    Sentry.captureException(error, {
+      extra: {
         componentStack: errorInfo.componentStack,
-        ...this.props.extraData
-      } 
+        ...this.props.extraData,
+      },
     });
-    
+
     // Log the error in development
     if (__DEV__) {
-      console.error('Error caught by SentryErrorBoundary:', error);
-      console.error('Component stack:', errorInfo.componentStack);
+      logger.error(NAMESPACE, 'Error caught by SentryErrorBoundary:', error);
+      logger.error(NAMESPACE, 'Component stack:', errorInfo.componentStack);
     }
   }
 
@@ -49,26 +54,30 @@ class SentryErrorBoundary extends React.Component {
         return fallback;
       }
 
-      // Default fallback UI
-      return (
-        <View style={styles.container}>
-          <Text style={styles.title}>Something went wrong</Text>
-          <Text style={styles.message}>
-            The application has encountered an unexpected error.
-          </Text>
-          {__DEV__ && error && (
-            <Text style={styles.errorDetails}>
-              {error.toString()}
-            </Text>
-          )}
-          <Button title="Try Again" onPress={this.resetError} />
-        </View>
-      );
+      // Default fallback UI with translations
+      return <ErrorFallback error={error} resetError={this.resetError} />;
     }
 
     return children;
   }
 }
+
+// Functional component to use hooks for translations
+const ErrorFallback = ({ error, resetError }) => {
+  const { t } = useTranslation();
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{t('errorBoundary.title')}</Text>
+      <Text style={styles.message}>{t('errorBoundary.message')}</Text>
+      <DebugMode />
+      {__DEV__ && error && (
+        <Text style={styles.errorDetails}>{error.toString()}</Text>
+      )}
+      <Button title={t('errorBoundary.tryAgain')} onPress={resetError} />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -76,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'black',
   },
   title: {
     fontSize: 18,
@@ -99,4 +108,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SentryErrorBoundary; 
+export default SentryErrorBoundary;

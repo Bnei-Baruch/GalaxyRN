@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
-import { Modal } from "react-native";
-import { useSettingsStore } from "../../zustand/settings";
-import { View, StyleSheet } from "react-native";
-import Orientation from "react-native-orientation-locker";
+import React, { useEffect } from 'react';
+import { Modal, StyleSheet, View } from 'react-native';
+import Orientation from 'react-native-orientation-locker';
+import { useSettingsStore } from '../../zustand/settings';
 
 const RoomFullscreen = ({ shidur }) => {
   const { toggleIsFullscreen } = useSettingsStore();
@@ -15,14 +14,19 @@ const RoomFullscreen = ({ shidur }) => {
     };
   }, []);
 
+  const handleClose = () => {
+    toggleIsFullscreen();
+    Orientation.unlockAllOrientations();
+  };
+
   return (
     <Modal
       visible={true}
-      onRequestClose={toggleIsFullscreen}
+      onRequestClose={handleClose}
       animationType="none"
       presentationStyle="fullScreen"
       statusBarTranslucent={true}
-      supportedOrientations={["landscape"]}
+      supportedOrientations={['landscape']}
     >
       <View style={styles.container}>
         <View style={styles.shidur}>{shidur}</View>
@@ -34,13 +38,13 @@ export default RoomFullscreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "black",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
   },
   shidur: {
     flex: 1,
-    height: "100%",
+    height: '100%',
     aspectRatio: 16 / 9,
   },
 });

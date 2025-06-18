@@ -1,10 +1,12 @@
-import { randomString } from "../shared/tools";
-import { EventEmitter } from "events";
-import log from "loglevel";
-import mqtt from "../shared/mqtt";
-import { STUN_SRV_GXY } from "@env";
-import { RTCPeerConnection } from "react-native-webrtc";
-import BackgroundTimer from "react-native-background-timer";
+import { STUN_SRV_GXY } from '@env';
+import { EventEmitter } from 'events';
+import BackgroundTimer from 'react-native-background-timer';
+import { RTCPeerConnection } from 'react-native-webrtc';
+import logger from '../services/logger';
+import mqtt from '../shared/mqtt';
+import { randomString } from '../shared/tools';
+
+const NAMESPACE = 'PublisherPlugin';
 
 export class PublisherPlugin extends EventEmitter {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
@@ -12,7 +14,7 @@ export class PublisherPlugin extends EventEmitter {
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
-    this.pluginName = "janus.plugin.videoroom";
+    this.pluginName = 'janus.plugin.videoroom';
     this.roomId = null;
     this.subTo = null;
     this.unsubFrom = null;
@@ -34,9 +36,7 @@ export class PublisherPlugin extends EventEmitter {
     });
 
     if (!this.janus) {
-      return Promise.reject(
-        new Error("[publisher] JanusPlugin is not connected")
-      );
+      return Promise.reject(new Error('JanusPlugin is not connected'));
     }
     return this.janus.transaction(message, payload, replyType);
   }
@@ -44,21 +44,21 @@ export class PublisherPlugin extends EventEmitter {
   join(roomId, user) {
     this.roomId = roomId;
     const body = {
-      request: "join",
+      request: 'join',
       room: roomId,
-      ptype: "publisher",
+      ptype: 'publisher',
       display: JSON.stringify(user),
     };
     return new Promise((resolve, reject) => {
-      this.transaction("message", { body }, "event")
-        .then((param) => {
-          log.info("[publisher] join: ", param);
+      this.transaction('message', { body }, 'event')
+        .then(param => {
+          logger.info(NAMESPACE, 'join: ', param);
           const { data, json } = param;
 
           if (data) resolve(data);
         })
-        .catch((err) => {
-          log.error("[publisher] error join room", err);
+        .catch(err => {
+          logger.error(NAMESPACE, 'error join room', err);
           reject(err);
         });
     });
@@ -66,17 +66,17 @@ export class PublisherPlugin extends EventEmitter {
 
   leave() {
     if (this.roomId) {
-      const body = { request: "leave", room: this.roomId };
+      const body = { request: 'leave', room: this.roomId };
       return new Promise((resolve, reject) => {
-        this.transaction("message", { body }, "event")
-          .then((param) => {
-            log.info("[publisher] leave: ", param);
+        this.transaction('message', { body }, 'event')
+          .then(param => {
+            logger.info(NAMESPACE, 'leave: ', param);
             const { data, json } = param;
 
             if (data) resolve(data);
           })
-          .catch((err) => {
-            log.debug("[publisher] error leave room", err);
+          .catch(err => {
+            logger.debug(NAMESPACE, 'error leave room', err);
             reject(err);
           });
       });
@@ -85,9 +85,19 @@ export class PublisherPlugin extends EventEmitter {
 
   publish(stream) {
     return new Promise((resolve, reject) => {
-      const videoTrack = stream.getVideoTracks()[0];
-      this.pc.addTrack(videoTrack, stream);
-      this.pc.addTrack(stream.getAudioTracks()[0], stream);
+      if (!stream) {
+        reject(new Error('Stream is null or undefined'));
+        return;
+      }
+      const videoTracks = stream.getVideoTracks();
+      const audioTracks = stream.getAudioTracks();
+
+      if (videoTracks.length > 0) {
+        this.pc.addTrack(videoTracks[0], stream);
+      }
+      if (audioTracks.length > 0) {
+        this.pc.addTrack(audioTracks[0], stream);
+      }
 
       let videoTransceiver = null;
       let audioTransceiver = null;
@@ -95,21 +105,21 @@ export class PublisherPlugin extends EventEmitter {
       let tr = this.pc.getTransceivers();
       if (tr && tr.length > 0) {
         for (let t of tr) {
-          if (t.sender && t.sender.track && t.sender.track.kind === "video") {
+          if (t.sender && t.sender.track && t.sender.track.kind === 'video') {
             videoTransceiver = t;
             if (videoTransceiver.setDirection) {
-              videoTransceiver.setDirection("sendonly");
+              videoTransceiver.setDirection('sendonly');
             } else {
-              videoTransceiver.direction = "sendonly";
+              videoTransceiver.direction = 'sendonly';
             }
             break;
           }
-          if (t.sender && t.sender.track && t.sender.track.kind === "audio") {
+          if (t.sender && t.sender.track && t.sender.track.kind === 'audio') {
             audioTransceiver = t;
             if (audioTransceiver.setDirection) {
-              audioTransceiver.setDirection("sendonly");
+              audioTransceiver.setDirection('sendonly');
             } else {
-              audioTransceiver.direction = "sendonly";
+              audioTransceiver.direction = 'sendonly';
             }
             break;
           }
@@ -118,24 +128,24 @@ export class PublisherPlugin extends EventEmitter {
 
       this.initPcEvents();
 
-      this.pc.createOffer().then((offer) => {
+      this.pc.createOffer().then(offer => {
         this.pc.setLocalDescription(offer);
         const sdp = offer.sdp.replace(
           /profile-level-id=[a-f0-9]{6}/g,
-          "profile-level-id=42e01f"
+          'profile-level-id=42e01f'
         );
 
         const jsep = { type: offer.type, sdp };
-        const body = { request: "configure", video: true, audio: true };
-        return this.transaction("message", { body, jsep }, "event")
-          .then((param) => {
+        const body = { request: 'configure', video: true, audio: true };
+        return this.transaction('message', { body, jsep }, 'event')
+          .then(param => {
             const { data, json } = param || {};
             const jsep = json.jsep;
-            log.debug("[publisher] Configure respond: ", param);
+            logger.debug(NAMESPACE, 'Configure respond: ', param);
             resolve(data);
             this.pc.setRemoteDescription(jsep);
           })
-          .catch((error) => reject(error));
+          .catch(error => reject(error));
       });
     });
   }
@@ -145,14 +155,14 @@ export class PublisherPlugin extends EventEmitter {
     let tr = this.pc.getTransceivers();
     if (tr && tr.length > 0) {
       for (let t of tr) {
-        if (t?.sender?.track?.kind === "video") {
+        if (t?.sender?.track?.kind === 'video') {
           videoTransceiver = t;
           break;
         }
       }
     }
 
-    let d = video ? "inactive" : "sendonly";
+    let d = video ? 'inactive' : 'sendonly';
 
     if (videoTransceiver?.setDirection) {
       videoTransceiver.setDirection(d);
@@ -160,23 +170,27 @@ export class PublisherPlugin extends EventEmitter {
       videoTransceiver.direction = d;
     }
 
-    if (!video)
-      videoTransceiver.sender.replaceTrack(stream.getVideoTracks()[0]);
+    if (!video && stream) {
+      const videoTracks = stream.getVideoTracks();
+      if (videoTracks.length > 0) {
+        videoTransceiver.sender.replaceTrack(videoTracks[0]);
+      }
+    }
     if (stream) this.configure();
   }
 
   setBitrate(bitrate) {
-    const body = { request: "configure", bitrate };
+    const body = { request: 'configure', bitrate };
     return new Promise((resolve, reject) => {
-      this.transaction("message", { body }, "event")
-        .then((param) => {
-          log.info("[publisher] set bitrate: ", param);
+      this.transaction('message', { body }, 'event')
+        .then(param => {
+          logger.info(NAMESPACE, 'set bitrate: ', param);
           const { data, json } = param;
 
           if (data) resolve(data);
         })
-        .catch((err) => {
-          log.debug("[publisher] error set bitrate", err);
+        .catch(err => {
+          logger.debug(NAMESPACE, 'error set bitrate', err);
           reject(err);
         });
     });
@@ -187,7 +201,7 @@ export class PublisherPlugin extends EventEmitter {
     let tr = this.pc.getTransceivers();
     if (tr && tr.length > 0) {
       for (let t of tr) {
-        if (t?.sender?.track?.kind === "audio") {
+        if (t?.sender?.track?.kind === 'audio') {
           audioTransceiver = t;
           break;
         }
@@ -195,58 +209,63 @@ export class PublisherPlugin extends EventEmitter {
     }
 
     if (audioTransceiver?.setDirection) {
-      audioTransceiver.setDirection("sendonly");
+      audioTransceiver.setDirection('sendonly');
     } else {
-      audioTransceiver.direction = "sendonly";
+      audioTransceiver.direction = 'sendonly';
     }
 
-    audioTransceiver.sender.replaceTrack(stream.getAudioTracks()[0]);
+    if (stream) {
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        audioTransceiver.sender.replaceTrack(audioTracks[0]);
+      }
+    }
     this.configure();
   }
 
   configure(restart) {
-    this.pc.createOffer().then((offer) => {
+    this.pc.createOffer().then(offer => {
       this.pc
         .setLocalDescription(offer)
-        .catch((error) =>
-          log.error("[publisher] setLocalDescription: ", error)
+        .catch(error =>
+          logger.error(NAMESPACE, 'setLocalDescription: ', error)
         );
-      const body = { request: "configure", restart };
-      return this.transaction("message", { body, jsep: offer }, "event").then(
-        (param) => {
+      const body = { request: 'configure', restart };
+      return this.transaction('message', { body, jsep: offer }, 'event').then(
+        param => {
           const { data, json } = param || {};
           const jsep = json.jsep;
-          log.debug("[publisher] Configure respond: ", param);
+          logger.debug(NAMESPACE, 'Configure respond: ', param);
           this.pc
             .setRemoteDescription(jsep)
-            .then((e) => log.info(e))
-            .catch((e) => log.error(e));
+            .then(e => logger.info(NAMESPACE, e))
+            .catch(e => logger.error(NAMESPACE, e));
         }
       );
     });
   }
 
   initPcEvents() {
-    this.pc.addEventListener("connectionstatechange", (e) => {
-      log.info("[publisher] ICE State: ", e.target.connectionState);
+    this.pc.addEventListener('connectionstatechange', e => {
+      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
       this.iceState = e.target.connectionState;
 
-      if (this.iceState === "disconnected") {
+      if (this.iceState === 'disconnected') {
         this.iceRestart();
       }
 
       // ICE restart does not help here, peer connection will be down
-      if (this.iceState === "failed") {
+      if (this.iceState === 'failed') {
         //this.iceFailed("publisher")
       }
     });
-    this.pc.addEventListener("icecandidate", (e) => {
+    this.pc.addEventListener('icecandidate', e => {
       let candidate = { completed: true };
       if (
         !e.candidate ||
-        e.candidate.candidate.indexOf("endOfCandidates") > 0
+        e.candidate.candidate.indexOf('endOfCandidates') > 0
       ) {
-        log.debug("[publisher] End of candidates");
+        logger.debug(NAMESPACE, 'End of candidates');
       } else {
         // JSON.stringify doesn't work on some WebRTC objects anymore
         // See https://code.google.com/p/chromium/issues/detail?id=467366
@@ -258,13 +277,13 @@ export class PublisherPlugin extends EventEmitter {
       }
 
       if (candidate) {
-        return this.transaction("trickle", { candidate });
+        return this.transaction('trickle', { candidate });
       }
     });
-    this.pc.addEventListener("track", (e) => {
-      log.debug("[subscriber] Got track: ", e);
+    this.pc.addEventListener('track', e => {
+      logger.debug(NAMESPACE, 'Got track: ', e);
       this.onTrack(e.track, e.streams[0], true);
-      log.info("[publisher] Got track: ", e);
+      logger.info(NAMESPACE, 'Got track: ', e);
     });
   }
 
@@ -272,24 +291,24 @@ export class PublisherPlugin extends EventEmitter {
     try {
       BackgroundTimer.setTimeout(() => {
         if (
-          (attempt < 10 && this.iceState !== "disconnected") ||
+          (attempt < 10 && this.iceState !== 'disconnected') ||
           !this.janus?.isConnected
         ) {
           return;
         } else if (mqtt.mq.connected) {
-          log.debug("[publisher] - Trigger ICE Restart - ");
+          logger.debug(NAMESPACE, '- Trigger ICE Restart - ');
           this.pc.restartIce();
           this.configure(true);
         } else if (attempt >= 10) {
-          (typeof this.iceFailed === "function") && this.iceFailed();
-          log.error("[streaming] - ICE Restart failed - ");
+          typeof this.iceFailed === 'function' && this.iceFailed();
+          logger.error(NAMESPACE, '- ICE Restart failed - ');
           return;
         }
-        log.debug("[streaming] ICE Restart try: " + attempt);
+        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
         return this.iceRestart(attempt + 1);
       }, 1000);
     } catch (e) {
-      console.error("Streaming plugin iceRestart", e);
+      logger.error(NAMESPACE, 'Streaming plugin iceRestart', e);
     }
   }
 
@@ -305,91 +324,86 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   onmessage(data) {
-    log.debug("[publisher] onmessage: ", data);
+    logger.debug(NAMESPACE, 'onmessage: ', data);
     if (data?.publishers) {
-      log.info("[publisher] New feed enter: ", data.publishers[0]);
+      logger.info(NAMESPACE, 'New feed enter: ', data.publishers[0]);
       this.subTo(data.publishers);
     }
 
     if (data?.unpublished) {
-      log.info("[publisher] Feed leave: ", data.unpublished);
-      if (data?.unpublished === "ok") {
+      logger.info(NAMESPACE, 'Feed leave: ', data.unpublished);
+      if (data?.unpublished === 'ok') {
         // That's us
-        this.janus.detach(this);
+        this.janus
+          .detach(this)
+          .catch(err => logger.debug(NAMESPACE, 'Detach error:', err));
         return;
       }
       this.unsubFrom([data.unpublished], false);
     }
 
     if (data?.leaving) {
-      log.info("[publisher] Feed leave: ", data.leaving);
+      logger.info(NAMESPACE, 'Feed leave: ', data.leaving);
       this.unsubFrom([data.leaving], false);
     }
 
-    if (data?.videoroom === "talking") {
-      log.debug("[publisher] talking: ", data.id);
+    if (data?.videoroom === 'talking') {
+      logger.debug(NAMESPACE, 'talking: ', data.id);
       this.talkEvent(data.id, true);
     }
 
-    if (data?.videoroom === "stopped-talking") {
-      log.debug("[publisher] stopped talking: ", data.id);
+    if (data?.videoroom === 'stopped-talking') {
+      logger.debug(NAMESPACE, 'stopped talking: ', data.id);
       this.talkEvent(data.id, false);
     }
   }
 
   oncleanup() {
-    log.info("[publisher] - oncleanup - ");
+    logger.info(NAMESPACE, '- oncleanup - ');
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
   }
 
   detached() {
-    log.info("[publisher] - detached - ");
+    logger.info(NAMESPACE, '- detached - ');
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
   }
 
   hangup() {
-    log.info("[publisher] - hangup - ", this.janus);
+    logger.info(NAMESPACE, '- hangup - ', this.janus);
     this.detach();
   }
 
   slowLink(uplink, lost, mid) {
-    const direction = uplink ? "sending" : "receiving";
-    log.info(
-      "[publisher] slowLink on " +
-        direction +
-        " packets on mid " +
-        mid +
-        " (" +
-        lost +
-        " lost packets)"
+    const direction = uplink ? 'sending' : 'receiving';
+    logger.info(
+      NAMESPACE,
+      `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
     //this.emit('slowlink')
   }
 
   mediaState(media, on) {
-    log.info(
-      "[publisher] mediaState: Janus " +
-        (on ? "start" : "stop") +
-        " receiving our " +
-        media
+    logger.info(
+      NAMESPACE,
+      `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
     //this.emit('mediaState', medium, on)
   }
 
   webrtcState(isReady) {
-    log.info(
-      "[publisher] webrtcState: RTCPeerConnection is: " +
-        (isReady ? "up" : "down")
+    logger.info(
+      NAMESPACE,
+      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (!isReady && typeof this.iceFailed === "function")
+    if (this.pc && !isReady && typeof this.iceFailed === 'function')
       this.iceFailed();
   }
 
   detach() {
     if (this.pc) {
-      this.pc.getTransceivers().forEach((transceiver) => {
+      this.pc.getTransceivers().forEach(transceiver => {
         if (transceiver) {
           this.pc.removeTrack(transceiver.sender);
           transceiver.stop();
@@ -400,5 +414,14 @@ export class PublisherPlugin extends EventEmitter {
       this.pc = null;
       this.janus = null;
     }
+
+    // Clear additional properties
+    this.janusHandleId = undefined;
+    this.roomId = null;
+    this.iceState = null;
+    this.iceFailed = null;
+    this.subTo = null;
+    this.unsubFrom = null;
+    this.talkEvent = null;
   }
 }

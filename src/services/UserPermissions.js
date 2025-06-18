@@ -1,16 +1,17 @@
-import React from "react";
+import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Linking,
-} from "react-native";
-import AccountSettings from "../auth/AccountSettings";
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import AccountSettings from '../auth/AccountSettings';
+import DebugMode from '../settings/DebugMode';
 
 const UserPermissions = () => {
   const handleContactSupport = () => {
-    Linking.openURL("mailto:help@kli.one");
+    Linking.openURL('mailto:help@kli.one');
   };
 
   return (
@@ -24,6 +25,7 @@ const UserPermissions = () => {
         <TouchableOpacity style={styles.sendBtn} onPress={handleContactSupport}>
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
+        <DebugMode />
       </View>
     </View>
   );
@@ -31,41 +33,41 @@ const UserPermissions = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "black",
+    backgroundColor: 'black',
     flex: 1,
   },
   top: {
-    alignItems: "center",
-    width: "100%",
+    alignItems: 'center',
+    width: '100%',
   },
   content: {
-    alignItems: "center",
+    alignItems: 'center',
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 15,
-    textAlign: "center",
-    color: "#fff",
+    textAlign: 'center',
+    color: '#fff',
   },
   text: {
     marginBottom: 15,
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 16,
-    color: "#fff",
+    color: '#fff',
   },
   sendBtn: {
-    backgroundColor: "#4b7bec",
+    backgroundColor: '#4b7bec',
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
   sendText: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

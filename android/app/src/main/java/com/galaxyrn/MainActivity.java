@@ -17,6 +17,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.galaxyrn.foreground.ForegroundService;
 import com.galaxyrn.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
+import com.galaxyrn.logger.GxyLogger;
+import com.galaxyrn.logger.GxyLoggerUtils;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -44,13 +46,16 @@ public class MainActivity extends ReactActivity {
 
         permissionHelper = new PermissionHelper(this);
 
-        Log.d(TAG, "onCreate");
+        // Using custom logger instead of Log.d
+        GxyLogger.i("MainActivity", "onCreate");
+        GxyLoggerUtils.logDeviceInfo("MainActivity");
 
         getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
             @Override
             public void onReactContextInitialized(ReactContext context) {
-                Log.d(TAG, "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
-                        + permissionHelper.permissionsReady);
+                GxyLogger.i("ReactContext",
+                        "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
+                                + permissionHelper.permissionsReady);
                 if (!permissionHelper.permissionsReady) {
                     permissionHelper.initModules((ReactApplicationContext) context);
                 } else {
@@ -63,30 +68,30 @@ public class MainActivity extends ReactActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume");
+        GxyLogger.d(TAG, "onResume");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause");
+        GxyLogger.d(TAG, "onPause");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop");
+        GxyLogger.d(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy - ensuring all services are stopped");
+        GxyLogger.d(TAG, "onDestroy - ensuring all services are stopped");
         try {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
             AudioManager audioManager = (AudioManager) getSystemService(reactContext.AUDIO_SERVICE);
             audioManager.abandonAudioFocus(null);
         } catch (Exception e) {
-            Log.e(TAG, "Error stopping audio session", e);
+            GxyLogger.e(TAG, "Error stopping audio session", e);
         }
         // Stop any foreground services that might be running
         stopForegroundServices();
@@ -108,15 +113,15 @@ public class MainActivity extends ReactActivity {
      */
     private void stopForegroundServices() {
         try {
-            Log.d(TAG, "Manually stopping foreground services");
+            GxyLogger.d(TAG, "Manually stopping foreground services");
 
             // Stop the foreground service
             Intent serviceIntent = new Intent(this, ForegroundService.class);
             boolean stopped = stopService(serviceIntent);
-            Log.d(TAG, "ForegroundService stopped: " + stopped);
+            GxyLogger.d(TAG, "ForegroundService stopped: " + stopped);
 
         } catch (Exception e) {
-            Log.e(TAG, "Error stopping foreground services", e);
+            GxyLogger.e(TAG, "Error stopping foreground services", e);
         }
     }
 

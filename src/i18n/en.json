@@ -10,7 +10,9 @@
     "search": "Search...",
     "join": "Join Room",
     "selectRoom": "Select Ten",
-    "backToTen": "Back To Ten"
+    "backToTen": "Back To Ten",
+    "debugMode": "Debug Mode",
+    "sendLogs": "Send Logs"
   },
   "user": {
     "title": "User settings",
@@ -85,5 +87,10 @@
     "currentVersion": "Current version",
     "latestVersion": "Latest version",
     "updateNow": "Update Now"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "The application has encountered an unexpected error.",
+    "tryAgain": "Try Again"
   }
 }

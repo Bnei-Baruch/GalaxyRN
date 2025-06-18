@@ -1,11 +1,14 @@
 import React, { useEffect } from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
+import logger from "../services/logger";
 
 import kc from "./keycloak";
 import WIP from "../components/WIP";
 import UserPermissions from "../services/UserPermissions";
 import { useUserStore } from "../zustand/user";
+
+const NAMESPACE = "CheckAuthentication";
 
 const CheckAuthentication = ({ children }) => {
   const { user, wip, vhinfo } = useUserStore();
@@ -17,7 +20,7 @@ const CheckAuthentication = ({ children }) => {
   }, []);
 
   const handleLogin = () => {
-    console.log("Membership validation: login");
+    logger.debug(NAMESPACE, "Membership validation: login");
     kc.login();
   };
 

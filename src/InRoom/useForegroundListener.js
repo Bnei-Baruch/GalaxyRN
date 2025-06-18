@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useInRoomStore } from '../zustand/inRoom';
-import { useInitsStore } from '../zustand/inits';
 
 const useForegroundListener = () => {
   const { enterBackground, enterForeground } = useInRoomStore();
 
   useEffect(() => {
-    const handleAppStateChange = (nextAppState) => {
+    const handleAppStateChange = nextAppState => {
       if (nextAppState === 'background') {
         enterBackground();
       } else if (nextAppState === 'active') {
@@ -15,7 +14,10 @@ const useForegroundListener = () => {
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
 
     return () => {
       subscription.remove();

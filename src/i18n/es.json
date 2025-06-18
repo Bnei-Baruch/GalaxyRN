@@ -10,7 +10,9 @@
     "search": "Search...",
     "join": "Unirse a la sala",
     "selectRoom": "Seleccionar Ten",
-    "backToTen": "Volver a Ten"
+    "backToTen": "Volver a Ten",
+    "debugMode": "Modo de depuración",
+    "sendLogs": "Enviar logs"
   },
   "user": {
     "title": "Material de estudio",
@@ -84,5 +86,10 @@
     "currentVersion": "Versión actual",
     "latestVersion": "Última versión",
     "updateNow": "Actualizar Ahora"
+  },
+  "errorBoundary": {
+    "title": "Algo salió mal",
+    "message": "La aplicación ha encontrado un error inesperado.",
+    "tryAgain": "Intentar de nuevo"
   }
 }

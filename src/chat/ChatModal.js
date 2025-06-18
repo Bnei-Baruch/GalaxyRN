@@ -1,14 +1,14 @@
-import { useEffect } from "react";
-import { View, Modal, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { modalModes } from "../zustand/helper";
-import { useTranslation } from "react-i18next";
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { modalModes } from '../zustand/helper';
 
-import { useChatStore } from "../zustand/chat";
-import { RoomChat } from "./RoomChat";
-import ScreenTitle from "../components/ScreenTitle";
-import { Questions } from "./Questions";
-import { useCrispStore } from "../zustand/crisp";
-import { ChatCounter } from "./ChatCounter";
+import ScreenTitle from '../components/ScreenTitle';
+import { useChatStore } from '../zustand/chat';
+import { useCrispStore } from '../zustand/crisp';
+import { ChatCounter } from './ChatCounter';
+import { Questions } from './Questions';
+import { RoomChat } from './RoomChat';
 
 export const ChatModal = () => {
   const { mode, setChatMode, cleanChat, chatNewMsgs } = useChatStore();
@@ -28,10 +28,12 @@ export const ChatModal = () => {
       visible={mode !== modalModes.close}
       onRequestClose={closeModal}
       animationType="none"
-      presentationStyle="pageSheet"
+      presentationStyle="formSheet"
+      statusBarTranslucent={true}
+      supportedOrientations={['portrait', 'landscape']}
     >
       <View style={styles.modalContainer}>
-        <ScreenTitle text={t("topBar.communicationTitle")} close={closeModal} />
+        <ScreenTitle text={t('topBar.communicationTitle')} close={closeModal} />
         <View style={styles.tabs}>
           <TouchableOpacity
             style={[
@@ -40,11 +42,11 @@ export const ChatModal = () => {
             ]}
             onPress={() => setChatMode(modalModes.chat)}
           >
-            <Text style={styles.tabText}>{t("chat.tab.chat")}</Text>
+            <Text style={styles.tabText}>{t('chat.tab.chat')}</Text>
             <ChatCounter />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.tabContainer]} onPress={openSupport}>
-            <Text style={styles.tabText}>{t("chat.tab.support")}</Text>
+            <Text style={styles.tabText}>{t('chat.tab.support')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -53,7 +55,7 @@ export const ChatModal = () => {
             ]}
             onPress={() => setChatMode(modalModes.question)}
           >
-            <Text style={styles.tabText}>{t("chat.tab.question")}</Text>
+            <Text style={styles.tabText}>{t('chat.tab.question')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.container}>
@@ -68,37 +70,37 @@ export const ChatModal = () => {
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: 'black',
     paddingVertical: 10,
   },
   container: {
     flex: 1,
   },
   tabs: {
-    flexDirection: "row",
-    width: "100%",
+    flexDirection: 'row',
+    width: '100%',
   },
   tabContainer: {
     flex: 1,
     borderBottomWidth: 1,
-    borderBottomColor: "white",
+    borderBottomColor: 'white',
     padding: 10,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   selectedTab: {
     borderBottomWidth: 5,
   },
   tabText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
   },
   newMsgs: {
-    color: "red",
+    color: 'red',
     fontSize: 16,
   },
   text: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
   },
 });

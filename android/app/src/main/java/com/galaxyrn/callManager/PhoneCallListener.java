@@ -6,7 +6,7 @@ import android.content.pm.PackageManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import androidx.core.content.ContextCompat;
 import com.facebook.react.bridge.ReactApplicationContext;
 import io.sentry.Sentry;
@@ -55,40 +55,40 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
     @Override
     public synchronized boolean initialize(ReactApplicationContext context) {
         if (isInitialized) {
-            Log.d(TAG, "PhoneCallListener already initialized");
+            GxyLogger.d(TAG, "PhoneCallListener already initialized");
             return true;
         }
 
         try {
             if (context == null) {
-                Log.e(TAG, "Context is null during initialization");
+                GxyLogger.e(TAG, "Context is null during initialization");
                 return false;
             }
 
             telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             if (telephonyManager == null) {
-                Log.e(TAG, "TelephonyManager is null");
+                GxyLogger.e(TAG, "TelephonyManager is null");
                 return false;
             }
 
             // Check if READ_PHONE_STATE permission is granted
             int permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE);
-            Log.d(TAG, "READ_PHONE_STATE permission check result: " + permissionCheck + " (GRANTED=" + PackageManager.PERMISSION_GRANTED + ")");
+            GxyLogger.d(TAG, "READ_PHONE_STATE permission check result: " + permissionCheck + " (GRANTED=" + PackageManager.PERMISSION_GRANTED + ")");
             
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "READ_PHONE_STATE permission not granted. Cannot register phone state listener.");
+                GxyLogger.e(TAG, "READ_PHONE_STATE permission not granted. Cannot register phone state listener.");
                 return false;
             }
             
-            Log.d(TAG, "READ_PHONE_STATE permission granted, proceeding with listener registration");
+            GxyLogger.d(TAG, "READ_PHONE_STATE permission granted, proceeding with listener registration");
 
             this.context = context;
             telephonyManager.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
             isInitialized = true;
-            Log.d(TAG, "PhoneCallListener initialized successfully");
+            GxyLogger.d(TAG, "PhoneCallListener initialized successfully");
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "Error initializing PhoneCallListener: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error initializing PhoneCallListener: " + e.getMessage(), e);
             Sentry.captureException(e);
             return false;
         }
@@ -97,12 +97,12 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
     @Override
     public void onCallStateChanged(int state, String phoneNumber) {
         if (!isInitialized) {
-            Log.w(TAG, "PhoneCallListener not initialized, ignoring call state change");
+            GxyLogger.w(TAG, "PhoneCallListener not initialized, ignoring call state change");
             return;
         }
 
         try {
-            Log.d(TAG, "Call state changed to: " + getStateString(state));
+            GxyLogger.d(TAG, "Call state changed to: " + getStateString(state));
 
             switch (state) {
                 case TelephonyManager.CALL_STATE_RINGING:
@@ -127,7 +127,7 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
                     break;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error in onCallStateChanged: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in onCallStateChanged: " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }
@@ -154,13 +154,13 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
     @Override
     public synchronized void cleanup() {
         if (!isInitialized || context == null) {
-            Log.d(TAG, "PhoneCallListener not initialized or context is null, skipping cleanup");
+            GxyLogger.d(TAG, "PhoneCallListener not initialized or context is null, skipping cleanup");
             return;
         }
 
         try {
             if (telephonyManager == null) {
-                Log.e(TAG, "TelephonyManager is null during cleanup");
+                GxyLogger.e(TAG, "TelephonyManager is null during cleanup");
                 return;
             }
 
@@ -168,9 +168,9 @@ public class PhoneCallListener extends PhoneStateListener implements ICallListen
             isInitialized = false;
             telephonyManager = null;
             context = null;
-            Log.d(TAG, "PhoneCallListener cleaned up successfully");
+            GxyLogger.d(TAG, "PhoneCallListener cleaned up successfully");
         } catch (Exception e) {
-            Log.e(TAG, "Error while cleaning call listener: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error while cleaning call listener: " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }

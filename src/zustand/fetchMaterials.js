@@ -1,20 +1,30 @@
+// External libraries
 import { create } from 'zustand';
+
+// Services
+import logger from '../services/logger';
+
+// Shared modules
 import api from '../shared/Api';
 
-const useMaterials = create((set) => ({
-  materials      : [],
-  fetchMaterials : async () => {
+const NAMESPACE = 'Materials';
+
+const useMaterials = create(set => ({
+  materials: [],
+
+  fetchMaterials: async () => {
     set({ isLoading: true, error: null });
     try {
-      console.log("[fetchMaterials] fetchMaterials");
+      logger.debug(NAMESPACE, 'Fetching materials');
       const materials = await api.fetchMaterials();
-      console.log("[fetchMaterials] materials", materials);
+      logger.debug(NAMESPACE, 'Materials fetched successfully', materials);
       set({ isLoading: false, materials });
     } catch (error) {
-      console.log("[fetchMaterials] error", error);
+      logger.error(NAMESPACE, 'Error fetching materials', error);
       set({ error: error.message, isLoading: false });
       return [];
     }
   },
 }));
+
 export default useMaterials;

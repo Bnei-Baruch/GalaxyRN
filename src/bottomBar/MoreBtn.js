@@ -1,18 +1,20 @@
 import * as React from 'react';
+import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ListInModal from '../components/ListInModal';
-import { GroupsBtn } from './moreBtns/GroupsBtn';
-import { bottomBar } from './helper';
-import { View, StyleSheet } from 'react-native';
-import { ChatBtn } from './moreBtns/ChatBtn';
-import { ShidurBtn } from './moreBtns/ShidurBtn';
-import { HideSelfBtn } from './moreBtns/HideSelfBtn';
-import { VoteBtn } from './moreBtns/VoteBtn';
-import { useUiActions } from '../zustand/uiActions';
 import { ChatCounter } from '../chat/ChatCounter';
+import ListInModal from '../components/ListInModal';
+import { useChatStore } from '../zustand/chat';
+import { useUiActions } from '../zustand/uiActions';
+import { bottomBar } from './helper';
+import { ChatBtn } from './moreBtns/ChatBtn';
+import { GroupsBtn } from './moreBtns/GroupsBtn';
+import { HideSelfBtn } from './moreBtns/HideSelfBtn';
+import { ShidurBtn } from './moreBtns/ShidurBtn';
+import { VoteBtn } from './moreBtns/VoteBtn';
 
 export const MoreBtn = () => {
   const { toggleShowBars } = useUiActions();
+  const { setChatMode } = useChatStore();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
@@ -24,7 +26,7 @@ export const MoreBtn = () => {
 
   const handlePress = () => toggleShowBars(false, true);
 
-  const renderItem = (item) => item.component;
+  const renderItem = item => item.component;
 
   return (
     <ListInModal
@@ -44,11 +46,11 @@ export const MoreBtn = () => {
 
 export const styles = StyleSheet.create({
   btn: {
-    display         : 'flex',
-    textAlign       : 'center',
-    alignItems      : 'center',
-    justifyContent  : 'center',
-    height          : 75,
+    display: 'flex',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 75,
     marginHorizontal: 2,
   },
 });

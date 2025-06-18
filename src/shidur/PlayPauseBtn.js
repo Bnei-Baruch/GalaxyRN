@@ -1,15 +1,17 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useShidurStore } from '../zustand/shidur';
 import { topMenuBtns } from '../topBar/helper';
+import { useShidurStore } from '../zustand/shidur';
+import { useUiActions } from '../zustand/uiActions';
 
 export const PlayPauseBtn = () => {
-  const { isPlay, toggleIsPlay, toggleShidurBar } = useShidurStore();
+  const { isPlay, toggleIsPlay } = useShidurStore();
+  const { toggleShowBars } = useUiActions();
 
   const toggle = () => {
     toggleIsPlay();
-    toggleShidurBar(false);
+    toggleShowBars(false);
   };
 
   return (

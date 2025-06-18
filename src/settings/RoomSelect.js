@@ -1,22 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Button,
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import useRoomStore from "../zustand/fetchRooms";
-import { useSettingsStore } from "../zustand/settings";
-import { baseStyles } from "../constants";
-import { useTranslation } from "react-i18next";
-import { useInitsStore } from "../zustand/inits";
-import TextDisplayWithButton from "../components/TextDisplayWithButton";
+} from 'react-native';
+import TextDisplayWithButton from '../components/TextDisplayWithButton';
+import { baseStyles } from '../constants';
+import useRoomStore from '../zustand/fetchRooms';
+import { useInitsStore } from '../zustand/inits';
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();
@@ -28,54 +26,55 @@ const RoomSelect = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchRooms().then((rooms) => setRooms(rooms));
+    fetchRooms().then(rooms => setRooms(rooms));
   }, []);
 
   useEffect(() => {
     room && setSearchText(room.description);
   }, [room]);
 
-  const filteredOptions = rooms?.filter((o) =>
+  const filteredOptions = rooms?.filter(o =>
     o.description.toLowerCase().includes(searchText?.toLowerCase())
   );
 
-  const handleSearch = (text) => {
+  const handleSearch = text => {
     setSearchText(text);
     const _room = filteredOptions.find(
-      (o) => o.description.toLowerCase() === text.toLowerCase()
+      o => o.description.toLowerCase() === text.toLowerCase()
     );
-    _room ? setRoom(room) : setRoom(null);
+    _room ? setRoom(_room) : setRoom(null);
   };
-  const handleSelect = (value) => {
+
+  const handleSelect = value => {
     setRoom(value);
     Keyboard.dismiss();
     toggleOpen(false);
   };
-  
+
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "position" : "height"}
+      behavior={Platform.OS === 'ios' ? 'position' : 'height'}
       keyboardVerticalOffset={45}
     >
       <View style={styles.container}>
         <TextDisplayWithButton
-          label={t("settings.selectRoom")}
+          label={t('settings.selectRoom')}
           value={room?.description}
           button={
             <TouchableOpacity
               onPress={setReadyForJoin}
               disabled={!room}
-              style={styles.button}
+              style={[styles.button, !room && styles.buttonDisabled]}
             >
-              <Text style={styles.buttonText}>{t("settings.join")}</Text>
+              <Text style={styles.buttonText}>{t('settings.join')}</Text>
             </TouchableOpacity>
           }
           input={
             <TextInput
               style={[styles.searchInput, baseStyles.text]}
-              placeholder={t("settings.search")}
+              placeholder={t('settings.search')}
               value={searchText}
               onChangeText={handleSearch}
               onFocus={() => toggleOpen(true)}
@@ -88,10 +87,10 @@ const RoomSelect = () => {
           filteredOptions.length > 0 &&
           (filteredOptions.length > 1 || !room) && (
             <FlatList
-              keyboardShouldPersistTaps={"handled"}
+              keyboardShouldPersistTaps={'handled'}
               style={styles.list}
               data={filteredOptions}
-              keyExtractor={(item) => item.room}
+              keyExtractor={item => item.room}
               renderItem={({ item }) => (
                 <TouchableOpacity onPress={() => handleSelect(item)}>
                   <Text style={[styles.itemText, baseStyles.text]}>
@@ -108,25 +107,25 @@ const RoomSelect = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "black",
+    backgroundColor: 'black',
     paddingTop: 10,
   },
   searchInput: {
     flex: 1,
     paddingHorizontal: 10,
-    border: "none",
-    color: "white",
+    border: 'none',
+    color: 'white',
     paddingVertical: 0,
     marginVertical: 0,
   },
   list: {
     borderWidth: 1,
-    borderColor: "#9e9e9e",
+    borderColor: '#9e9e9e',
     borderRadius: 5,
     bottom: 70,
-    position: "absolute",
-    width: "100%",
-    backgroundColor: "black",
+    position: 'absolute',
+    width: '100%',
+    backgroundColor: 'black',
     maxHeight: 200,
   },
   itemText: {
@@ -135,17 +134,20 @@ const styles = StyleSheet.create({
   button: {
     borderTopEndRadius: 5,
     borderBottomEndRadius: 5,
-    backgroundColor: "#03A9F4",
+    backgroundColor: '#03A9F4',
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 10,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#9e9e9e",
+    borderColor: '#9e9e9e',
+  },
+  buttonDisabled: {
+    backgroundColor: '#9e9e9e',
   },
   buttonText: {
-    color: "white",
+    color: 'white',
   },
 });
 

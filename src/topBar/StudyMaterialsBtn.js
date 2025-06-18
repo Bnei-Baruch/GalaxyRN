@@ -26,8 +26,6 @@ export const StudyMaterialsBtn = () => {
     setOpen(!open);
   };
 
-  //console.log("[StudyMaterialsBtn] open", materials);
-
   return (
     <View>
       <TouchableOpacity onPress={toggleModal} style={topMenuBtns.btn}>

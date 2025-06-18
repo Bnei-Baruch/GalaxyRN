@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
-
+import com.galaxyrn.logger.GxyLogger;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -44,30 +44,29 @@ public class PermissionHelper {
     };
 
     public PermissionHelper(Activity activity) {
-        Log.d(TAG, "Creating PermissionHelper");
+        GxyLogger.d(TAG, "Creating PermissionHelper");
         this.activity = activity;
     }
 
     public void initModules(ReactApplicationContext reactContext) {
-        Log.d(TAG, "Initializing modules with reactContext");
+        GxyLogger.d(TAG, "Initializing modules with reactContext");
         this.reactContext = reactContext;
-        SendEventToClient.init(reactContext);
         this.moduleInitializer = new ModuleInitializer(reactContext);
         checkPermissions();
     }
 
     private String[] getUngrantedPermissions() {
         List<String> request = new ArrayList<>();
-        Log.d(TAG, "Checking for ungranted permissions...");
+        GxyLogger.d(TAG, "Checking for ungranted permissions...");
         for (String permission : permissionsByVersion()) {
             if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
                 request.add(permission);
-                Log.d(TAG, "Permission not granted: " + permission);
+                GxyLogger.d(TAG, "Permission not granted: " + permission);
             } else {
-                Log.d(TAG, "Permission already granted: " + permission);
+                GxyLogger.d(TAG, "Permission already granted: " + permission);
             }
         }
-        Log.d(TAG, "Total ungranted permissions: " + request.size());
+        GxyLogger.d(TAG, "Total ungranted permissions: " + request.size());
         return request.toArray(new String[0]);
     }
 
@@ -102,10 +101,10 @@ public class PermissionHelper {
         String[] ungrantedPermissions = getUngrantedPermissions();
         if (ungrantedPermissions.length > 0) {
             String permission = ungrantedPermissions[0];
-            Log.d(TAG, "Checking permission: " + permission);
+            GxyLogger.d(TAG, "Checking permission: " + permission);
             requestPermission(permission);
         } else {
-            Log.d(TAG, "All permissions already granted.");
+            GxyLogger.d(TAG, "All permissions already granted.");
             permissionsReady = true;
             notifyClientAllPermissionsGranted();
         }
@@ -119,30 +118,30 @@ public class PermissionHelper {
 
     private void notifyClientAllPermissionsGranted() {
         try {
-            WritableMap params = Arguments.createMap();
-            params.putBoolean("allGranted", true);
-            SendEventToClient.sendEvent("permissionsStatus", params);
-            Log.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
-
-            // Initialize modules after permissions are granted
             if (moduleInitializer != null) {
                 moduleInitializer.initializeModules();
             }
+
+            WritableMap params = Arguments.createMap();
+            params.putBoolean("allGranted", true);
+            SendEventToClient.sendEvent("permissionsStatus", params);
+            GxyLogger.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
+
         } catch (Exception e) {
-            Log.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
         }
     }
 
     private void requestPermission(String permission) {
-        Log.d(TAG, "Requesting permission via ActivityCompat: " + permission);
+        GxyLogger.d(TAG, "Requesting permission via ActivityCompat: " + permission);
 
         ActivityCompat.requestPermissions(activity, new String[] { permission }, PERMISSIONS_REQUEST_CODE);
-        Log.d(TAG, "Permission request sent for: " + permission);
+        GxyLogger.d(TAG, "Permission request sent for: " + permission);
 
     }
 
     private void showPermissionPermanentlyDeniedDialog(String permission) {
-        Log.d(TAG, "Showing permanently denied dialog for: " + permission);
+        GxyLogger.d(TAG, "Showing permanently denied dialog for: " + permission);
         String title = getLocalizedString("permissions_required", permission);
         String message = getLocalizedString("permissions_permanently_denied", permission);
         String settingsButton = getLocalizedString("go_to_settings", permission);
@@ -158,7 +157,7 @@ public class PermissionHelper {
                 .create();
 
         dialog.setCanceledOnTouchOutside(false);
-        Log.d(TAG, "Showing permanently denied dialog for: " + permission);
+        GxyLogger.d(TAG, "Showing permanently denied dialog for: " + permission);
         dialog.show();
     }
 
@@ -169,26 +168,26 @@ public class PermissionHelper {
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         activity.startActivityForResult(intent, SETTINGS_REQUEST_CODE);
-        Log.d(TAG, "Opened app settings with SETTINGS_REQUEST_CODE");
+        GxyLogger.d(TAG, "Opened app settings with SETTINGS_REQUEST_CODE");
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "Returned from settings, checking permissions requestCode=" + requestCode + " resultCode="
+        GxyLogger.d(TAG, "Returned from settings, checking permissions requestCode=" + requestCode + " resultCode="
                 + resultCode + " data=" + data);
         if (requestCode == SETTINGS_REQUEST_CODE) {
-            Log.d(TAG, "Returned from settings, checking permissions");
+            GxyLogger.d(TAG, "Returned from settings, checking permissions");
             checkPermissions();
         }
     }
 
     public void handlePermissionResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.d(TAG, "handlePermissionResult: requestCode=" + requestCode + ", permissions="
+        GxyLogger.d(TAG, "handlePermissionResult: requestCode=" + requestCode + ", permissions="
                 + java.util.Arrays.toString(permissions) + ", grantResults=" + java.util.Arrays.toString(grantResults));
 
         String currentPermission = permissions[0];
         if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-            Log.d(TAG, "Permission denied: " + currentPermission);
-            Log.d(TAG, "Will show permission denied dialog for: " + currentPermission);
+            GxyLogger.d(TAG, "Permission denied: " + currentPermission);
+            GxyLogger.d(TAG, "Will show permission denied dialog for: " + currentPermission);
             boolean shouldShow = ActivityCompat.shouldShowRequestPermissionRationale(activity, currentPermission);
             if (!shouldShow) {
                 showPermissionPermanentlyDeniedDialog(currentPermission);
@@ -197,15 +196,15 @@ public class PermissionHelper {
             }
 
         } else {
-            Log.d(TAG, "Permission granted: " + currentPermission);
-            Log.d(TAG, "Continuing to check next permissions");
+            GxyLogger.d(TAG, "Permission granted: " + currentPermission);
+            GxyLogger.d(TAG, "Continuing to check next permissions");
             // Continue checking the next permissions from scratch
             checkPermissions();
         }
     }
 
     private void showPermissionDeniedDialog(String permission) {
-        Log.d(TAG, "Showing permission denied dialog for: " + permission);
+        GxyLogger.d(TAG, "Showing permission denied dialog for: " + permission);
         String title = getLocalizedString("permissions_required", permission);
         String message = getLocalizedString("permissions_denied_explanation", permission);
         String requestAgainButton = getLocalizedString("request_again", permission);
@@ -217,14 +216,14 @@ public class PermissionHelper {
                 .setMessage(message)
                 .setCancelable(false)
                 .setPositiveButton(requestAgainButton, (dialogInterface, which) -> {
-                    Log.d(TAG, "User clicked request again for permission: " + permissionToRequest);
+                    GxyLogger.d(TAG, "User clicked request again for permission: " + permissionToRequest);
                     requestPermission(permissionToRequest);
                     dialogInterface.dismiss();
                 })
                 .create();
 
         dialog.setCanceledOnTouchOutside(false);
-        Log.d(TAG, "Showing permission dialog for: " + permission);
+        GxyLogger.d(TAG, "Showing permission dialog for: " + permission);
         dialog.show();
     }
 
