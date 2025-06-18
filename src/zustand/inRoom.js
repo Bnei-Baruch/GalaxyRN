@@ -150,10 +150,10 @@ export const useInRoomStore = create((set, get) => ({
         if (vStream) {
           logger.debug(NAMESPACE, 'makeSubscription vStream', vStream);
           const _data = { feed: id, mid: vStream.mid };
-          if (!feedById[id] && !vStream.disabled && !audioMode) {
+          if (!feedById[id]?.url && !vStream.disabled && !audioMode) {
             logger.debug(NAMESPACE, 'makeSubscription subs.push(_data)', _data);
             subs.push(_data);
-          } else if (feedById[id] && (vStream.disabled || audioMode)) {
+          } else if (feedById[id]?.url && (vStream.disabled || audioMode)) {
             logger.debug(
               NAMESPACE,
               'makeSubscription unsubs.push(_data)',
