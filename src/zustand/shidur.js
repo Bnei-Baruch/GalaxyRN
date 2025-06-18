@@ -184,7 +184,7 @@ export const useShidurStore = create((set, get) => ({
     try {
       get().cleanShidur();
       get().cleanQuads();
-      logger.debug(NAMESPACE, 'cleanJanus', janus);
+      logger.debug(NAMESPACE, 'cleanJanus');
       await janus.destroy();
       janus = null;
       set({ janusReady: false });
