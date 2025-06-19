@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Linking,
   StyleSheet,
@@ -10,6 +11,8 @@ import AccountSettings from '../auth/AccountSettings';
 import DebugMode from '../settings/DebugMode';
 
 const UserPermissions = () => {
+  const { t } = useTranslation();
+
   const handleContactSupport = () => {
     Linking.openURL('mailto:help@kli.one');
   };
@@ -20,10 +23,10 @@ const UserPermissions = () => {
         <AccountSettings withTitle={false} />
       </View>
       <View style={styles.content}>
-        <Text style={styles.title}>User Permission</Text>
-        <Text style={styles.text}>Please contact help@kli.one</Text>
+        <Text style={styles.title}>{t('permissions.title')}</Text>
+        <Text style={styles.text}>{t('permissions.contactMessage')}</Text>
         <TouchableOpacity style={styles.sendBtn} onPress={handleContactSupport}>
-          <Text style={styles.sendText}>Send</Text>
+          <Text style={styles.sendText}>{t('permissions.sendButton')}</Text>
         </TouchableOpacity>
         <DebugMode />
       </View>

@@ -12,7 +12,7 @@
     "selectRoom": "Seleccionar Ten",
     "backToTen": "Volver a Ten",
     "debugMode": "Modo de depuración",
-    "sendLogs": "Enviar logs"
+    "sendLogs": "Enviar registros"
   },
   "user": {
     "title": "Material de estudio",
@@ -92,5 +92,10 @@
     "title": "Algo salió mal",
     "message": "La aplicación ha encontrado un error inesperado.",
     "tryAgain": "Intentar de nuevo"
+  },
+  "permissions": {
+    "title": "Permiso de usuario",
+    "contactMessage": "Por favor contacta a help@kli.one",
+    "sendButton": "Enviar"
   }
 }
