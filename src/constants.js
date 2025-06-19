@@ -1,12 +1,12 @@
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from 'react-native';
 
-export const win = Dimensions.get("window");
+export const win = Dimensions.get('window');
 export const w = win.width;
 export const h = win.height;
 
 export const baseStyles = StyleSheet.create({
   text: {
-    color: "white",
+    color: 'white',
   },
   full: {
     flex: 1,
@@ -16,22 +16,11 @@ export const baseStyles = StyleSheet.create({
   },
   videoOverlay: {
     flex: 1,
-    backgroundColor: "black",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'black',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
-
-export const renderHtmlStyles = (isLtr = false) => {
-  return {
-    body: {
-      color: "black",
-      backgroundColor: "white",
-      padding: 8,
-      dir: isLtr ? "ltr" : "rtl",
-    },
-  };
-};
 
 export const AUDIO_DEVICE_TYPES = {
   TYPE_WIRED_HEADSET: 3,
@@ -58,3 +47,6 @@ export const AUDIO_DEVICE_TYPES_BY_KEY = Object.keys(AUDIO_DEVICE_TYPES).reduce(
   },
   {}
 );
+
+export const SHIDUR_SUBTITLE_ZINDEX = 1;
+export const SHIDUR_BAR_ZINDEX = 2;

@@ -1,15 +1,13 @@
-import * as React from "react";
-import { useState } from "react";
+import * as React from 'react';
+import { useState } from 'react';
 import {
-  Text,
-  View,
   StyleSheet,
-  useWindowDimensions,
+  Text,
   TouchableOpacity,
-} from "react-native";
-import RenderHtml from "react-native-render-html";
-import { renderHtmlStyles } from "../constants";
-
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import RenderHtml from 'react-native-render-html';
 
 export const StudyMaterialItem = ({ msg }) => {
   const [open, setOpen] = useState(false);
@@ -26,14 +24,21 @@ export const StudyMaterialItem = ({ msg }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={toggleOpen} style={styles.title}>
-        <Text style={{ color: "white" }}>{Title}</Text>
+        <Text style={{ color: 'white' }}>{Title}</Text>
       </TouchableOpacity>
 
       {open && (
         <RenderHtml
           contentWidth={contentWidth}
           source={source}
-          tagsStyles={renderHtmlStyles}
+          tagsStyles={{
+            body: {
+              color: 'black',
+              backgroundColor: 'white',
+              padding: 8,
+              dir: isLtr ? 'ltr' : 'rtl',
+            },
+          }}
         />
       )}
     </View>
@@ -42,11 +47,11 @@ export const StudyMaterialItem = ({ msg }) => {
 
 const styles = StyleSheet.create({
   container: {
-    borderBottomColor: "#EEE",
+    borderBottomColor: '#EEE',
     borderBottomWidth: 1,
   },
   title: {
-    backgroundColor: "#555",
+    backgroundColor: '#555',
     paddingVertical: 10,
     paddingHorizontal: 5,
   },
