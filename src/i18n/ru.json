@@ -36,6 +36,7 @@
     "chat": "Чат"
   },
   "shidur": {
+    "onAir": "В ЭФИРЕ",
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",
     "streamForWorkshopDescription": "(фокус-группа отключена)",
     "sourceStream": "ПОТОК ОРИГИНАЛА",

@@ -36,6 +36,7 @@
     "chat": "צ'אט"
   },
   "shidur": {
+    "onAir": "בשידור",
     "streamForWorkshop": "ערוץ לסדנה",
     "streamForWorkshopDescription": "(קבוצת המיקוד מושתקת)",
     "sourceStream": "ערוץ מקור",
