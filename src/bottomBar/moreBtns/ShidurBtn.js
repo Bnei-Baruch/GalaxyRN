@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity } from 'react-native';
+
 import { baseStyles } from '../../constants';
 import IconWithText from '../../settings/IconWithText';
 import { useSettingsStore } from '../../zustand/settings';
+import { useSubtitleStore } from '../../zustand/subtitle';
 import { bottomBar } from '../helper';
 
 export const ShidurBtn = () => {
