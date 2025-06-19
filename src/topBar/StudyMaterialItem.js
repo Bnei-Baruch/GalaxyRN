@@ -20,7 +20,6 @@ export const StudyMaterialItem = ({ msg }) => {
     html: Description.toString(),
   };
   const toggleOpen = () => setOpen(!open);
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={toggleOpen} style={styles.title}>
@@ -28,18 +27,23 @@ export const StudyMaterialItem = ({ msg }) => {
       </TouchableOpacity>
 
       {open && (
-        <RenderHtml
-          contentWidth={contentWidth}
-          source={source}
-          tagsStyles={{
-            body: {
-              color: 'black',
-              backgroundColor: 'white',
-              padding: 8,
-              dir: isLtr ? 'ltr' : 'rtl',
-            },
-          }}
-        />
+        <View style={styles.content}>
+          <RenderHtml
+            contentWidth={contentWidth}
+            source={source}
+            baseStyle={{
+              color: 'white',
+            }}
+            tagsStyles={{
+              a: {
+                color: '#3498db',
+              },
+              '*': {
+                color: 'white',
+              },
+            }}
+          />
+        </View>
       )}
     </View>
   );
@@ -52,6 +56,10 @@ const styles = StyleSheet.create({
   },
   title: {
     backgroundColor: '#555',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+  },
+  content: {
     paddingVertical: 10,
     paddingHorizontal: 5,
   },
