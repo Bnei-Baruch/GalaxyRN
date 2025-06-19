@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -39,29 +37,30 @@ export const RoomChatForm = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'position' : 'height'}
-      keyboardVerticalOffset={45}
+    <View
+      style={[
+        styles.inputContainer,
+        { paddingBottom: Platform.OS === 'ios' ? 30 : 20 },
+      ]}
     >
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder={t('chat.newMsg')}
-          value={value}
-          onChangeText={setValue}
-          onSubmitEditing={forceSubmit}
-          returnKeyType="send"
-        />
-        <TouchableOpacity
-          style={[styles.button, !value.trim() && styles.buttonDisabled]}
-          onPress={forceSubmit}
-          disabled={!value.trim()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.buttonText}>{t('chat.send')}</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      <TextInput
+        style={styles.input}
+        placeholder={t('chat.newMsg')}
+        placeholderTextColor="rgba(255, 255, 255, 0.7)"
+        value={value}
+        onChangeText={setValue}
+        onSubmitEditing={forceSubmit}
+        returnKeyType="send"
+      />
+      <TouchableOpacity
+        style={[styles.button, !value.trim() && styles.buttonDisabled]}
+        onPress={forceSubmit}
+        disabled={!value.trim()}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.buttonText}>{t('chat.send')}</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
