@@ -27,12 +27,37 @@ const AUTH_CONFIG = {
   postLogoutRedirectUrl: 'com.galaxy://callback',
 };
 
-// JWT Helpers
+// Base64URL decoding helper
+const base64UrlDecode = str => {
+  // Convert base64url to base64
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+
+  // Add padding if needed
+  const pad = base64.length % 4;
+  const paddedBase64 = pad ? base64 + '='.repeat(4 - pad) : base64;
+
+  return decode(paddedBase64);
+};
+
+const isBase64Url = str => {
+  const base64UrlRegex = /^[A-Za-z0-9_-]*={0,2}$/;
+  return base64UrlRegex.test(str);
+};
+
 const decodeJWT = token => {
   if (!token) return {};
 
   try {
-    return JSON.parse(decode(token));
+    let decoded;
+    logger.debug(NAMESPACE, 'Checking token encoding format');
+    if (isBase64Url(token)) {
+      logger.debug(NAMESPACE, 'Token is in base64url format');
+      decoded = base64UrlDecode(token);
+    } else {
+      logger.debug(NAMESPACE, 'Using default base64 decoding');
+      decoded = decode(token);
+    }
+    return JSON.parse(decoded);
   } catch (err) {
     logger.error(NAMESPACE, 'Error decoding JWT', err);
     return {};
