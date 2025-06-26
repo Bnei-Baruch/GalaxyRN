@@ -73,10 +73,10 @@ class Keycloak {
   /**
    * Initiates the login process
    */
-  login = () => {
+  login = async () => {
     useUserStore.getState().setWIP(true);
 
-    authorize(AUTH_CONFIG)
+    await authorize(AUTH_CONFIG)
       .then(authData => {
         const session = this.setSession(authData);
 
@@ -202,7 +202,6 @@ class Keycloak {
           'ms'
         );
         this.timeout = BackgroundTimer.setTimeout(() => {
-          sendSentry('check keycloak: refresh token');
           this.refreshToken();
         }, Math.max(timeToRefresh, 1000));
         return;
@@ -273,7 +272,7 @@ class Keycloak {
     try {
       logger.debug(NAMESPACE, 'Restoring session and fetching user');
       this.setSession(session);
-      this.fetchUser(session);
+      await this.fetchUser(session);
     } catch (err) {
       logger.error(NAMESPACE, 'Error restoring session', err);
       this.logout();

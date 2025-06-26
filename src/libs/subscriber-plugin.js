@@ -44,6 +44,7 @@ export class SubscriberPlugin extends EventEmitter {
   sub(subscription) {
     const body = { request: 'subscribe', streams: subscription };
     return new Promise((resolve, reject) => {
+      logger.debug(NAMESPACE, 'sub: ', body);
       this.transaction('message', { body }, 'event')
         .then(param => {
           logger.info(NAMESPACE, 'Subscribe to: ', param);
@@ -51,7 +52,7 @@ export class SubscriberPlugin extends EventEmitter {
 
           if (data?.videoroom === 'updated') {
             logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate(data.streams);
+            this.onUpdate && this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
@@ -59,7 +60,7 @@ export class SubscriberPlugin extends EventEmitter {
             this.handleJsep(json.jsep);
           }
 
-          if (data) resolve(data);
+          resolve(data);
         })
         .catch(err => {
           logger.error(NAMESPACE, 'Subscribe to: ', err);
@@ -79,7 +80,7 @@ export class SubscriberPlugin extends EventEmitter {
 
           if (data?.videoroom === 'updated') {
             logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate(data.streams);
+            this.onUpdate && this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
@@ -87,7 +88,7 @@ export class SubscriberPlugin extends EventEmitter {
             this.handleJsep(json.jsep);
           }
 
-          if (data) resolve(data);
+          resolve(data);
         })
         .catch(err => {
           logger.error(NAMESPACE, 'Unsubscribe from: ', err);
@@ -182,6 +183,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   initPcEvents() {
+    logger.debug(NAMESPACE, 'initPcEvents');
     if (this.pc) {
       this.pc.addEventListener('connectionstatechange', e => {
         logger.debug(NAMESPACE, 'ICE State: ', e.target.connectionState);
@@ -219,7 +221,7 @@ export class SubscriberPlugin extends EventEmitter {
       });
       this.pc.addEventListener('track', e => {
         logger.debug(NAMESPACE, 'Got track: ', e);
-        this.onTrack(e.track, e.streams[0], true);
+        this.onTrack && this.onTrack(e.track, e.streams[0], true);
 
         e.track.onmute = ev => {
           logger.debug(NAMESPACE, 'onmute event: ', ev);
@@ -277,7 +279,7 @@ export class SubscriberPlugin extends EventEmitter {
     logger.info(NAMESPACE, 'onmessage: ', data, json);
     if (data?.videoroom === 'updated') {
       logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-      this.onUpdate(data.streams);
+      this.onUpdate && this.onUpdate(data.streams);
     }
 
     if (json?.jsep) {

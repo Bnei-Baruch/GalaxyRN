@@ -173,7 +173,7 @@ export class StreamingPlugin extends EventEmitter {
 
       // ICE restart does not help here, peer connection will be down
       if (this.iceState === 'failed') {
-        this.onStatus(this.iceState);
+        this.onStatus && this.onStatus(this.iceState);
       }
     });
     this.pc.addEventListener('icecandidate', e => {

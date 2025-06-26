@@ -8,19 +8,15 @@ import { setLanguage } from '../i18n/i18n';
 import { getFromStorage, setToStorage } from '../shared/tools';
 
 // Zustand stores
+import logger from '../services/logger';
 import { useInitsStore } from './inits';
-import {
-  activateFeedsVideos,
-  deactivateFeedsVideos,
-  useInRoomStore,
-} from './inRoom';
+import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
-// Keep reference to listener so we can remove it when needed
-let orientationListener = null;
+const NAMESPACE = 'Settings';
 
 export const useSettingsStore = create((set, get) => ({
   uiLang: 'en',
@@ -58,31 +54,39 @@ export const useSettingsStore = create((set, get) => ({
   },
 
   enterAudioMode: async () => {
-    useMyStreamStore.getState().toggleCammute(true, false);
-    if (!useInitsStore.getState().readyForJoin) return;
+    logger.debug(NAMESPACE, 'enterAudioMode');
+    try {
+      useMyStreamStore.getState().toggleCammute(true, false);
+      if (!useInitsStore.getState().readyForJoin) return;
 
-    const feeds = Object.values(useInRoomStore.getState().feedById);
-    deactivateFeedsVideos(feeds);
+      const { enterAudioMode, cleanQuads } = useShidurStore.getState();
+      enterAudioMode();
+      cleanQuads(false);
 
-    const { enterAudioMode, cleanQuads } = useShidurStore.getState();
-    enterAudioMode();
-    cleanQuads(false);
+      const ids = Object.keys(useInRoomStore.getState().feedById);
+      await useInRoomStore.getState().deactivateFeedsVideos(ids);
+    } catch (error) {
+      logger.error(NAMESPACE, 'enterAudioMode error', error);
+    }
   },
 
   exitAudioMode: async () => {
-    const cammute = await getFromStorage('cammute', false).then(
-      x => x === 'true'
-    );
-    useMyStreamStore.getState().toggleCammute(cammute);
+    logger.debug(NAMESPACE, 'exitAudioMode');
 
-    if (!useInitsStore.getState().readyForJoin) return;
+    try {
+      const cammute = await getFromStorage('cammute', false).then(
+        x => x === 'true'
+      );
+      useMyStreamStore.getState().toggleCammute(cammute);
 
-    const feeds = Object.values(useInRoomStore.getState().feedById);
-    activateFeedsVideos(feeds);
+      if (!useInitsStore.getState().readyForJoin) return;
 
-    const { initShidur, initQuad } = useShidurStore.getState();
-    initShidur();
-    initQuad();
+      const { initShidur, initQuad } = useShidurStore.getState();
+      initShidur();
+      initQuad();
+    } catch (error) {
+      logger.error(NAMESPACE, 'exitAudioMode error', error);
+    }
   },
 
   showGroups: false,

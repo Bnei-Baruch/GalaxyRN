@@ -17,14 +17,11 @@ let stream = null;
 
 export const getStream = async () => {
   if (!stream) {
-    logger.warn(
-      NAMESPACE,
-      '[client] Stream is null, attempting to initialize...'
-    );
+    logger.warn(NAMESPACE, 'Stream is null, attempting to initialize...');
     try {
       await useMyStreamStore.getState().myInit();
     } catch (error) {
-      logger.error(NAMESPACE, '[client] Failed to initialize stream:', error);
+      logger.error(NAMESPACE, 'Failed to initialize stream:', error);
     }
   }
 

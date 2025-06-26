@@ -41,9 +41,16 @@ let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
 
+// URL buffer queue
+let urlBuffer = [];
+let isProcessingBuffer = false;
+
 export const useInRoomStore = create((set, get) => ({
+  // State
   feedById: {},
   feedIds: [],
+
+  // Feed management
   setFeedIds: () => {
     const { feedById } = get();
     const { timestamp } = useMyStreamStore.getState();
@@ -83,9 +90,44 @@ export const useInRoomStore = create((set, get) => ({
 
     set({ feedIds });
   },
+
+  setFeedUrlWithDelay: async (id, stream) => {
+    if (get().feedById[id]?.stream) return;
+
+    urlBuffer.push({ id, stream });
+    if (isProcessingBuffer) return;
+
+    isProcessingBuffer = true;
+    while (urlBuffer.length > 0) {
+      const { id, stream } = urlBuffer.shift();
+      set(
+        produce(state => {
+          state.feedById[id].stream = stream;
+        })
+      );
+      await sleep(100);
+    }
+    isProcessingBuffer = false;
+  },
+
+  updateDisplayById: data => {
+    const { camera, question, rfid } = data || {};
+
+    set(
+      produce(state => {
+        if (state.feedById?.[rfid]) {
+          state.feedById[rfid].camera = camera;
+          state.feedById[rfid].question = question;
+        }
+        state.isRoomQuestion = !!question;
+      })
+    );
+  },
+
+  // Room lifecycle
   joinRoom: async () => {
     try {
-      await AudioBridge.requestAudioFocus();
+      AudioBridge.requestAudioFocus();
       await WakeLockBridge.keepScreenOn();
       useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
@@ -118,7 +160,6 @@ export const useInRoomStore = create((set, get) => ({
 
     const makeSubscription = async pubs => {
       logger.debug(NAMESPACE, 'makeSubscription pubs', pubs);
-      const { audioMode } = useSettingsStore.getState();
 
       const feedById = deepClone(get().feedById);
       const subs = [];
@@ -133,8 +174,6 @@ export const useInRoomStore = create((set, get) => ({
           continue;
         }
 
-        // Sub audio streams
-        // TODO: if mid was changed
         pub.streams
           .filter(s => s.type === 'audio' && s.codec === 'opus')
           .forEach(s => {
@@ -147,33 +186,22 @@ export const useInRoomStore = create((set, get) => ({
           s => s?.type === 'video' && s.codec === 'h264'
         );
 
-        if (vStream) {
-          logger.debug(NAMESPACE, 'makeSubscription vStream', vStream);
-          const _data = { feed: id, mid: vStream.mid };
-          if (!feedById[id]?.url && !vStream.disabled && !audioMode) {
-            logger.debug(NAMESPACE, 'makeSubscription subs.push(_data)', _data);
-            subs.push(_data);
-          } else if (feedById[id]?.url && (vStream.disabled || audioMode)) {
-            logger.debug(
-              NAMESPACE,
-              'makeSubscription unsubs.push(_data)',
-              _data
-            );
-            unsubs.push(_data);
-          }
-        }
-
-        // Don't rewrite feedById[id] was get from mqtt
         if (!feedById[id]) {
+          logger.debug(NAMESPACE, `makeSubscription new feed ${id}`);
+          const camera = !!vStream && !vStream.disabled;
           feedById[id] = {
             id,
             display: JSON.parse(display),
-            camera: !!vStream && !vStream.disabled,
+            camera,
           };
         }
+
         feedById[id].vMid = vStream?.mid;
         logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
       }
+
+      logger.debug(NAMESPACE, 'makeSubscription subs', subs);
+      logger.debug(NAMESPACE, 'makeSubscription unsubs', unsubs);
 
       if (_subscriberJoined) {
         logger.debug(NAMESPACE, 'makeSubscription when _subscriberJoined');
@@ -238,17 +266,9 @@ export const useInRoomStore = create((set, get) => ({
         params.push({ feed: parseInt(feed.id) });
         logger.info(
           NAMESPACE,
-          '[client] Feed ' +
-            JSON.stringify(feed) +
-            ' (' +
-            feed.id +
-            ') has left the room, detaching'
+          `Feed ${feed.id} ${JSON.stringify(feed)} has left the room, detaching`
         );
       });
-
-      videoroom.iceFailed = async () => {
-        get().restartRoom();
-      };
 
       // Send an unsubscribe request
       if (_subscriberJoined && params.length > 0) {
@@ -264,6 +284,10 @@ export const useInRoomStore = create((set, get) => ({
       );
 
       useUiActions.getState().updateWidth();
+    };
+
+    videoroom.iceFailed = async () => {
+      get().restartRoom();
     };
 
     videoroom.talkEvent = (id, talking) => {
@@ -284,18 +308,11 @@ export const useInRoomStore = create((set, get) => ({
       const { id } = stream;
       logger.info(
         NAMESPACE,
-        '[client] >> This track is coming from feed ' + id + ':',
-        track.id,
-        track,
-        stream
+        `>> This track is coming from feed ${id}: ${JSON.stringify(track)}`
       );
       if (on) {
         if (track.kind === 'video') {
-          set(
-            produce(state => {
-              state.feedById[id].url = stream.toURL();
-            })
-          );
+          get().setFeedUrlWithDelay(id, stream);
         }
       }
     };
@@ -308,13 +325,13 @@ export const useInRoomStore = create((set, get) => ({
         if (s.type !== 'video' || !s.active) continue;
         _videosByFeed[s.feed_id] = s;
       }
-      logger.debug(NAMESPACE, '[client] Updated _videosByFeed', _videosByFeed);
+      logger.debug(NAMESPACE, 'Updated _videosByFeed', _videosByFeed);
       set(
         produce(state => {
           for (const k in state.feedById) {
             const f = state.feedById[k];
             if (!_videosByFeed[f.id]) {
-              f.url = undefined;
+              f.stream = null;
             }
           }
         })
@@ -329,10 +346,10 @@ export const useInRoomStore = create((set, get) => ({
     janus
       .init(config.token)
       .then(data => {
-        logger.info(NAMESPACE, '[client] joinRoom on janus.init', data);
+        logger.info(NAMESPACE, 'joinRoom on janus.init', data);
         janus.attach(videoroom).then(data => {
           AudioBridge.activateAudioOutput();
-          logger.info(NAMESPACE, '[client] Publisher Handle: ', data);
+          logger.info(NAMESPACE, 'Publisher Handle: ', data);
           const timestamp = new Date().getTime();
 
           const { id, role, username } = user;
@@ -346,13 +363,13 @@ export const useInRoomStore = create((set, get) => ({
           };
           logger.info(
             NAMESPACE,
-            `[client] Videoroom init: d - ${d} room - ${room.room}`
+            `Videoroom init: d - ${d} room - ${room.room}`
           );
 
           videoroom
             .join(room.room, d)
             .then(async data => {
-              logger.info(NAMESPACE, '[client] Joined respond:', data);
+              logger.info(NAMESPACE, 'Joined respond:', data);
 
               useUserStore.getState().setJannusInfo({
                 session: janus.sessionId,
@@ -371,12 +388,14 @@ export const useInRoomStore = create((set, get) => ({
                 return;
               }
 
-              await makeSubscription(data.publishers);
+              await makeSubscription(
+                data.publishers.filter(p => p.id !== data.id)
+              );
               useUserStore.getState().sendUserState();
               attempts = 0;
               const stream = await getStream();
               if (!stream) {
-                logger.error(NAMESPACE, '[client] Stream is null');
+                logger.error(NAMESPACE, 'Stream is null');
                 get().restartRoom();
                 return;
               }
@@ -390,30 +409,30 @@ export const useInRoomStore = create((set, get) => ({
                     streams: json.streams,
                     isGroup: false,
                   });
-                  logger.debug(NAMESPACE, '[client] videoroom published', json);
+                  logger.debug(NAMESPACE, 'videoroom published', json);
                 })
                 .catch(err => {
-                  logger.error(NAMESPACE, '[client] Publish error :', err);
+                  logger.error(NAMESPACE, 'Publish error :', err);
                   get().restartRoom();
                 });
             })
             .catch(err => {
-              logger.error(NAMESPACE, '[client] Join error:', err);
+              logger.error(NAMESPACE, 'Join error:', err);
               get().restartRoom();
             });
         });
 
         janus.attach(subscriber).then(data => {
-          logger.info(NAMESPACE, '[client] Subscriber Handle: ', data);
+          logger.info(NAMESPACE, 'Subscriber Handle: ', data);
         });
       })
       .catch(err => {
-        logger.error(NAMESPACE, '[client] Janus init error', err);
+        logger.error(NAMESPACE, 'Janus init error', err);
         get().restartRoom();
       });
 
-    mqtt.join('galaxy/room/' + room.room);
-    mqtt.join('galaxy/room/' + room.room + '/chat', true);
+    mqtt.join(`galaxy/room/${room.room}`);
+    mqtt.join(`galaxy/room/${room.room}/chat`, true);
   },
 
   exitRoom: async () => {
@@ -436,8 +455,8 @@ export const useInRoomStore = create((set, get) => ({
     useInitsStore.getState().setReadyForJoin(false);
 
     try {
-      await mqtt.exit('galaxy/room/' + room.room);
-      await mqtt.exit('galaxy/room/' + room.room + '/chat');
+      await mqtt.exit(`galaxy/room/${room.room}`);
+      await mqtt.exit(`galaxy/room/${room.room}/chat`);
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
@@ -466,6 +485,7 @@ export const useInRoomStore = create((set, get) => ({
     restartWIP = false;
   },
 
+  // App lifecycle
   enterBackground: async () => {
     useSettingsStore.getState().enterAudioMode();
   },
@@ -475,42 +495,33 @@ export const useInRoomStore = create((set, get) => ({
       useSettingsStore.getState().exitAudioMode();
     }
   },
+  activateFeedsVideos: ids => {
+    const { feedById } = get();
+    const params = [];
+    for (const id of ids) {
+      const f = feedById[id];
+      logger.debug(NAMESPACE, 'activateFeedsVideos f', f);
+      if (f.vMid && !f.stream) {
+        params.push({ feed: parseInt(id), mid: f.vMid });
+      }
+    }
 
-  updateDisplayById: data => {
-    const { camera, question, rfid } = data || {};
+    if (params.length === 0) return Promise.resolve();
 
-    set(
-      produce(state => {
-        if (state.feedById?.[rfid]) {
-          state.feedById[rfid].camera = camera;
-          state.feedById[rfid].question = question;
-        }
-        state.isRoomQuestion = !!question;
-      })
-    );
+    return subscriber.sub(params);
+  },
+  deactivateFeedsVideos: ids => {
+    const params = [];
+    for (const id of ids) {
+      const f = feedById[id];
+      logger.debug(NAMESPACE, 'deactivateFeedsVideos f', f);
+      if (f.vMid && f.stream) {
+        params.push({ feed: parseInt(id), mid: f.vMid });
+      }
+    }
+
+    if (params.length === 0) return Promise.resolve();
+
+    return subscriber.unsub(params);
   },
 }));
-
-export const activateFeedsVideos = feeds => {
-  const params = [];
-  for (const f of feeds) {
-    logger.debug(NAMESPACE, 'activateFeedsVideos f', f);
-    f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
-  }
-
-  if (params.length === 0) return Promise.resolve();
-
-  return subscriber.sub(params);
-};
-
-export const deactivateFeedsVideos = feeds => {
-  const params = [];
-  for (const f of feeds) {
-    logger.debug(NAMESPACE, 'deactivateFeedsVideos f', f);
-    f.vMid && params.push({ feed: parseInt(f.id), mid: f.vMid });
-  }
-
-  if (params.length === 0) return Promise.resolve();
-
-  return subscriber.unsub(params);
-};
