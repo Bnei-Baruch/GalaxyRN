@@ -280,11 +280,6 @@ export class PublisherPlugin extends EventEmitter {
         return this.transaction('trickle', { candidate });
       }
     });
-    this.pc.addEventListener('track', e => {
-      logger.debug(NAMESPACE, 'Got track: ', e);
-      this.onTrack(e.track, e.streams[0], true);
-      logger.info(NAMESPACE, 'Got track: ', e);
-    });
   }
 
   async iceRestart(attempt = 0) {

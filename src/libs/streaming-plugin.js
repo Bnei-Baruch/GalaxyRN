@@ -181,7 +181,8 @@ export class StreamingPlugin extends EventEmitter {
     });
     this.pc.addEventListener('track', e => {
       logger.info(NAMESPACE, 'Got track: ', e);
-      let stream = new MediaStream([e.track]);
+      const stream = new MediaStream([e.track]);
+      logger.debug(NAMESPACE, 'StreamingPlugin stream from track', stream);
       resolve(stream);
     });
   }

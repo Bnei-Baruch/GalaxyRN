@@ -1,6 +1,8 @@
+import isFunction from 'lodash/isFunction';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
+
 import WIP from '../../components/WIP';
 import logger from '../../services/logger';
 import { useInRoomStore } from '../../zustand/inRoom';
@@ -20,7 +22,13 @@ const Feed = ({ id }) => {
 
   const feed = feedById[id];
 
-  const { display: { display } = {}, talking, camera, question } = feed || {};
+  const {
+    display: { display } = {},
+    talking,
+    camera,
+    question,
+    vOn,
+  } = feed || {};
 
   const activateDeactivate = (top = 0, bottom = 0, feedId) => {
     if (!ref.current) return;
@@ -42,8 +50,14 @@ const Feed = ({ id }) => {
 
   let url;
   try {
-    if (feed.stream) {
+    if (isFunction(feed?.stream?.toURL)) {
       url = feed.stream.toURL();
+    } else {
+      logger.debug(
+        NAMESPACE,
+        'Feed stream toURL is not a function',
+        JSON.stringify(feed?.stream)
+      );
     }
   } catch (e) {
     logger.error(NAMESPACE, 'Feed url error', e);
@@ -59,7 +73,7 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    if (!url) return <WIP isReady={false} />;
+    if (!vOn) return <WIP isReady={false} />;
 
     return (
       <>

@@ -100,8 +100,15 @@ export const useInRoomStore = create((set, get) => ({
     isProcessingBuffer = true;
     while (urlBuffer.length > 0) {
       const { id, stream } = urlBuffer.shift();
+
       set(
         produce(state => {
+          logger.debug(
+            NAMESPACE,
+            'setFeedUrlWithDelay feedById[id]',
+            state.feedById[id]
+          );
+          state.feedById[id].vOn = true;
           state.feedById[id].stream = stream;
         })
       );
@@ -159,7 +166,7 @@ export const useInRoomStore = create((set, get) => ({
     let _subscriberJoined = false;
 
     const makeSubscription = async pubs => {
-      logger.debug(NAMESPACE, 'makeSubscription pubs', pubs);
+      logger.debug('NAMESPACE', 'makeSubscription pubs', pubs);
 
       const feedById = deepClone(get().feedById);
       const subs = [];
@@ -200,8 +207,12 @@ export const useInRoomStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
       }
 
-      logger.debug(NAMESPACE, 'makeSubscription subs', subs);
-      logger.debug(NAMESPACE, 'makeSubscription unsubs', unsubs);
+      logger.debug(NAMESPACE, 'makeSubscription subs', JSON.stringify(subs));
+      logger.debug(
+        NAMESPACE,
+        'makeSubscription unsubs',
+        JSON.stringify(unsubs)
+      );
 
       if (_subscriberJoined) {
         logger.debug(NAMESPACE, 'makeSubscription when _subscriberJoined');
@@ -308,7 +319,7 @@ export const useInRoomStore = create((set, get) => ({
       const { id } = stream;
       logger.info(
         NAMESPACE,
-        `>> This track is coming from feed ${id}: ${JSON.stringify(track)}`
+        `>> This track is coming from feed ${id}: ${track}`
       );
       if (on) {
         if (track.kind === 'video') {
@@ -318,6 +329,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.onUpdate = streams => {
+      logger.debug('NAMESPACE', 'subscriber.onUpdate streams', streams);
       if (!streams) return;
 
       const _videosByFeed = {};
@@ -330,8 +342,10 @@ export const useInRoomStore = create((set, get) => ({
         produce(state => {
           for (const k in state.feedById) {
             const f = state.feedById[k];
-            if (!_videosByFeed[f.id]) {
-              f.stream = null;
+            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[k]', f);
+            if (f && !_videosByFeed[f.id]) {
+              //f.stream = null;
+              f.vOn = false;
             }
           }
         })
@@ -346,7 +360,7 @@ export const useInRoomStore = create((set, get) => ({
     janus
       .init(config.token)
       .then(data => {
-        logger.info(NAMESPACE, 'joinRoom on janus.init', data);
+        logger.info('NAMESPACE', 'joinRoom on janus.init', data);
         janus.attach(videoroom).then(data => {
           AudioBridge.activateAudioOutput();
           logger.info(NAMESPACE, 'Publisher Handle: ', data);
@@ -369,7 +383,7 @@ export const useInRoomStore = create((set, get) => ({
           videoroom
             .join(room.room, d)
             .then(async data => {
-              logger.info(NAMESPACE, 'Joined respond:', data);
+              logger.info('NAMESPACE', 'Joined respond:', data);
 
               useUserStore.getState().setJannusInfo({
                 session: janus.sessionId,
@@ -423,7 +437,7 @@ export const useInRoomStore = create((set, get) => ({
         });
 
         janus.attach(subscriber).then(data => {
-          logger.info(NAMESPACE, 'Subscriber Handle: ', data);
+          logger.info('NAMESPACE', 'Subscriber Handle: ', data);
         });
       })
       .catch(err => {
@@ -452,6 +466,7 @@ export const useInRoomStore = create((set, get) => ({
 
     videoroom = null;
     subscriber = null;
+    _subscriberJoined = false;
     useInitsStore.getState().setReadyForJoin(false);
 
     try {
@@ -496,12 +511,13 @@ export const useInRoomStore = create((set, get) => ({
     }
   },
   activateFeedsVideos: ids => {
+    logger.debug(NAMESPACE, 'activateFeedsVideos ids', ids);
     const { feedById } = get();
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
-      logger.debug(NAMESPACE, 'activateFeedsVideos f', f);
-      if (f.vMid && !f.stream) {
+      logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
+      if (f?.vMid && !f.stream) {
         params.push({ feed: parseInt(id), mid: f.vMid });
       }
     }
@@ -511,11 +527,12 @@ export const useInRoomStore = create((set, get) => ({
     return subscriber.sub(params);
   },
   deactivateFeedsVideos: ids => {
+    const { feedById } = get();
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
-      logger.debug(NAMESPACE, 'deactivateFeedsVideos f', f);
-      if (f.vMid && f.stream) {
+      logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
+      if (f?.vMid && f.stream) {
         params.push({ feed: parseInt(id), mid: f.vMid });
       }
     }

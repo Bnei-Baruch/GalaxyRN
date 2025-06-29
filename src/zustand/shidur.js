@@ -145,7 +145,7 @@ export const useShidurStore = create((set, get) => ({
 
   initJanus: async () => {
     const { user } = useUserStore.getState();
-    if (janus) get().cleanShidur();
+    if (janus) get().cleanShidur(true);
 
     let srv = null;
     try {

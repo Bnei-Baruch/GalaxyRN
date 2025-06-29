@@ -31,7 +31,7 @@ Sentry.init({
   autoInitializeNativeSdk: true,
   beforeSend: event => {
     console.log('Sentry beforeSend', event);
-    //logger.sendFile();
+    logger.sendFile();
     return event;
   },
 });
