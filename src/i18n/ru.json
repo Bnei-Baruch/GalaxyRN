@@ -36,6 +36,7 @@
     "chat": "Чат"
   },
   "shidur": {
+    "onAir": "В ЭФИРЕ",
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",
     "streamForWorkshopDescription": "(фокус-группа отключена)",
     "sourceStream": "ПОТОК ОРИГИНАЛА",
@@ -91,5 +92,10 @@
     "title": "Что-то пошло не так",
     "message": "Приложение столкнулось с неожиданной ошибкой.",
     "tryAgain": "Попробовать снова"
+  },
+  "permissions": {
+    "title": "Разрешение пользователя",
+    "contactMessage": "Пожалуйста, свяжитесь с help@kli.one",
+    "sendButton": "Отправить"
   }
 }

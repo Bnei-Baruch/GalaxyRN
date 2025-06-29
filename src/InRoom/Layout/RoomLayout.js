@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
+import { Quads } from '../../shidur/Quads';
+import Shidur from '../../shidur/Shidur';
 import { useInitsStore } from '../../zustand/inits';
 import { useSettingsStore } from '../../zustand/settings';
+import { useShidurStore } from '../../zustand/shidur';
+import Feeds from '../Feeds/Feeds';
 import RoomFullscreen from './RoomFullscreen';
 import RoomLandscape from './RoomLandscape';
 import RoomPortrait from './RoomPortrait';
-import Subtitle from '../../shidur/Subtitle';
-import { useShidurStore } from '../../zustand/shidur';
-import Feeds from '../Feeds/Feeds';
-import { Quads } from '../../shidur/Quads';
-import Shidur from '../../shidur/Shidur';
 
 const RoomLayout = () => {
-  const { isPortrait }                         = useInitsStore();
+  const { isPortrait } = useInitsStore();
   const { isShidur, showGroups, isFullscreen } = useSettingsStore();
-  const { cleanJanus, initJanus }              = useShidurStore();
+  const { cleanJanus, initJanus } = useShidurStore();
 
   useEffect(() => {
     initJanus();
@@ -22,16 +21,15 @@ const RoomLayout = () => {
     };
   }, []);
 
-  const shidur  = isShidur && <Shidur />;
-  const quads   = showGroups && <Quads />;
-  const subtitle = <Subtitle />;
+  const shidur = isShidur && <Shidur />;
+  const quads = showGroups && <Quads />;
   const members = <Feeds key="members" />;
-  
+
   if (isFullscreen)
-    return <RoomFullscreen shidur={shidur} quads={quads} members={members} subtitle={subtitle} />;
+    return <RoomFullscreen shidur={shidur} quads={quads} members={members} />;
 
   if (isPortrait)
-    return <RoomPortrait shidur={shidur} quads={quads} members={members} subtitle={subtitle} />;
+    return <RoomPortrait shidur={shidur} quads={quads} members={members} />;
 
   return <RoomLandscape shidur={shidur} quads={quads} members={members} />;
 };

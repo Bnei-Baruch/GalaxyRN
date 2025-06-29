@@ -1,13 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import WIP from '../../components/WIP';
 import logger from '../../services/logger';
-import {
-  activateFeedsVideos,
-  deactivateFeedsVideos,
-  useInRoomStore,
-} from '../../zustand/inRoom';
+
+import WIP from '../../components/WIP';
+import { useInRoomStore } from '../../zustand/inRoom';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
 import FeedDisplay from './FeedDisplay';
@@ -16,62 +13,60 @@ import QuestionOverlay from './QuestionOverlay';
 const NAMESPACE = 'Feed';
 
 const Feed = ({ id }) => {
-  const { feedById } = useInRoomStore();
+  const { feedById, activateFeedsVideos, deactivateFeedsVideos } =
+    useInRoomStore();
   const { borders, width } = useUiActions();
 
   const feed = feedById[id];
+  logger.debug(NAMESPACE, 'Feed render', feed);
+
   const {
     display: { display } = {},
-    url,
     talking,
     camera,
     question,
+    vOn,
+    url,
   } = feed || {};
-  logger.debug(NAMESPACE, 'Feed', feed);
 
   const ref = useRef();
 
-  const activateDeactivate = (top = 0, bottom = 0, feed) => {
-    if (!ref.current || !feed) return;
+  const activateDeactivate = (top = 0, bottom = 0, feedId) => {
+    if (!ref.current) return;
 
-    const { height, y, isOn } = ref.current;
+    const { height, y } = ref.current;
     if (y + height - 10 > top && y - 10 < bottom) {
-      if (isOn) return;
-      activateFeedsVideos([feed]);
-      ref.current.isOn = true;
+      activateFeedsVideos([feedId]);
     } else {
-      if (!isOn) return;
-      deactivateFeedsVideos([feed]);
-      ref.current.isOn = false;
+      deactivateFeedsVideos([feedId]);
     }
   };
 
   useEffect(() => {
     const { top, bottom } = borders;
-    activateDeactivate(top, bottom, feed);
-  }, [borders, feed]);
+    activateDeactivate(top, bottom, id);
+  }, [borders, id]);
 
   if (!feed) return null;
 
   const handleLayout = event => {
     const { y, height } = event.nativeEvent.layout;
-    let isOn = !!feed.url;
-    ref.current = { y, height, isOn };
-    activateDeactivate(borders.top, borders.bottom, feed);
+    ref.current = { y, height };
+    activateDeactivate(borders.top, borders.bottom, id);
   };
 
   const renderContent = () => {
-    if (camera) {
-      return (
-        <>
-          <FeedDisplay display={display} talking={talking} />
-          <WIP isReady={!(ref.current?.isOn && !feed.url)}>
-            <RTCView streamURL={url} style={styles.viewer} />
-          </WIP>
-        </>
-      );
+    if (!camera) {
+      return <CammutedFeed display={display} />;
     }
-    return <CammutedFeed display={display} />;
+    if (!vOn || !url) return <WIP isReady={false} />;
+
+    return (
+      <View style={styles.viewer}>
+        <FeedDisplay display={display} talking={talking} />
+        <RTCView streamURL={url} style={styles.rtcView} />
+      </View>
+    );
   };
 
   return (
@@ -98,7 +93,9 @@ const styles = StyleSheet.create({
   viewer: {
     flex: 1,
     backgroundColor: 'rgba(255,255,255,.1)',
-    justifyContent: 'space-between',
+  },
+  rtcView: {
+    flex: 1,
   },
   select: {
     padding: 24,

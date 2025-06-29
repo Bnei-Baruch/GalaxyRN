@@ -64,3 +64,5 @@ export const getDateString = jsonDate => {
     ('0' + when.getSeconds()).slice(-2);
   return dateString;
 };
+
+export const noop = () => {};

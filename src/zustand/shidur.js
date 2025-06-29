@@ -145,14 +145,14 @@ export const useShidurStore = create((set, get) => ({
 
   initJanus: async () => {
     const { user } = useUserStore.getState();
-    if (janus) get().cleanShidur();
+    if (janus) get().cleanShidur(true);
 
     let srv = null;
     try {
       const _userState = useUserStore.getState().buildUserState();
       logger.debug(NAMESPACE, 'init janus fetchStrServer', _userState);
       srv = await api.fetchStrServer(_userState).then(res => {
-        logger.debug(NAMESPACE, 'init janus fetchStrServer', res);
+        logger.debug(NAMESPACE, 'init janus fetchStrServer result', res);
         return res?.server;
       });
     } catch (error) {

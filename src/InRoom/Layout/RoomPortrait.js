@@ -1,26 +1,26 @@
-import React from "react";
+import React from 'react';
 import {
-  StyleSheet,
-  ScrollView,
-  View,
-  TouchableWithoutFeedback,
   Dimensions,
-} from "react-native";
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 
-import { useShidurStore } from "../../zustand/shidur";
-import { useUiActions } from "../../zustand/uiActions";
-import { baseStyles } from "../../constants";
-import WIP from "../../components/WIP";
+import WIP from '../../components/WIP';
+import { baseStyles } from '../../constants';
+import { useShidurStore } from '../../zustand/shidur';
+import { useUiActions } from '../../zustand/uiActions';
 
-const RoomPortrait = ({ shidur, quads, members, subtitle }) => {
+const RoomPortrait = ({ shidur, quads, members }) => {
   const { janusReady } = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
   const handleAnyPress = () => toggleShowBars(true);
 
-  const handleScroll = (e) => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+  const handleScroll = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
 
-  const { width } = Dimensions.get("window");
+  const { width } = Dimensions.get('window');
 
   return (
     <View style={styles.container}>
@@ -34,7 +34,6 @@ const RoomPortrait = ({ shidur, quads, members, subtitle }) => {
             <WIP isReady={janusReady}>
               <View style={[baseStyles.full, { width }]}>
                 {shidur}
-                {subtitle}
                 {quads}
               </View>
             </WIP>
@@ -50,11 +49,11 @@ export default RoomPortrait;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative",
-    flexDirection: "column",
+    position: 'relative',
+    flexDirection: 'column',
   },
   scrollContent: {
     flex: 1,
-    minHeight: "100%",
+    minHeight: '100%',
   },
 });

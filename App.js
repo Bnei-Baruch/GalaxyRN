@@ -1,21 +1,22 @@
-import React from "react";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import React from 'react';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { register } from "@formatjs/intl-pluralrules";
-import * as Sentry from "@sentry/react-native";
+import { register } from '@formatjs/intl-pluralrules';
+import * as Sentry from '@sentry/react-native';
 
-import "intl-pluralrules";
-import "react-native-url-polyfill";
+import 'intl-pluralrules';
+import 'react-native-url-polyfill';
 
-import { SENTRY_DSN } from "@env";
+import { SENTRY_DSN } from '@env';
 
-import "./src/i18n/i18n";
+import './src/i18n/i18n';
 
-import CheckAuthentication from "./src/auth/CheckAuthentication";
-import SentryErrorBoundary from "./src/libs/sentry/SentryErrorBoundary";
-import AndroidPermissions from "./src/services/AndroidPermissions";
-import InitApp from "./src/services/InitApp";
-import VersionCheck from "./src/services/VersionCheck";
+import CheckAuthentication from './src/auth/CheckAuthentication';
+import SentryErrorBoundary from './src/libs/sentry/SentryErrorBoundary';
+import AndroidPermissions from './src/services/AndroidPermissions';
+import InitApp from './src/services/InitApp';
+import VersionCheck from './src/services/VersionCheck';
+//import logger from './src/services/logger';
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -23,11 +24,16 @@ Sentry.init({
   profilesSampleRate: 0.1,
   environment: process.env.NODE_ENV,
   attachStacktrace: true,
-  release: `GalaxyRN@${require("./package.json").version}`,
+  release: `GalaxyRN@${require('./package.json').version}`,
   enableAutoSessionTracking: true,
   sessionTrackingIntervalMillis: 30000,
   maxBreadcrumbs: 100,
   autoInitializeNativeSdk: true,
+  beforeSend: event => {
+    console.log('Sentry beforeSend', event);
+    logger.sendFile();
+    return event;
+  },
 });
 if (!Intl.PluralRules) register();
 

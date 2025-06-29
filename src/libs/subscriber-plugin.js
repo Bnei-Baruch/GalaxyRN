@@ -41,9 +41,10 @@ export class SubscriberPlugin extends EventEmitter {
     return this.janus.transaction(message, payload, replyType);
   }
 
-  sub(subscription) {
+  async sub(subscription) {
     const body = { request: 'subscribe', streams: subscription };
     return new Promise((resolve, reject) => {
+      logger.debug(NAMESPACE, 'sub: ', body);
       this.transaction('message', { body }, 'event')
         .then(param => {
           logger.info(NAMESPACE, 'Subscribe to: ', param);
@@ -51,7 +52,7 @@ export class SubscriberPlugin extends EventEmitter {
 
           if (data?.videoroom === 'updated') {
             logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate(data.streams);
+            this.onUpdate && this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
@@ -59,7 +60,7 @@ export class SubscriberPlugin extends EventEmitter {
             this.handleJsep(json.jsep);
           }
 
-          if (data) resolve(data);
+          resolve(data);
         })
         .catch(err => {
           logger.error(NAMESPACE, 'Subscribe to: ', err);
@@ -68,7 +69,7 @@ export class SubscriberPlugin extends EventEmitter {
     });
   }
 
-  unsub(streams) {
+  async unsub(streams) {
     logger.info(NAMESPACE, 'Unsubscribe from streams: ', streams);
     const body = { request: 'unsubscribe', streams };
     return new Promise((resolve, reject) => {
@@ -79,7 +80,7 @@ export class SubscriberPlugin extends EventEmitter {
 
           if (data?.videoroom === 'updated') {
             logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate(data.streams);
+            this.onUpdate && this.onUpdate(data.streams);
           }
 
           if (json?.jsep) {
@@ -87,7 +88,7 @@ export class SubscriberPlugin extends EventEmitter {
             this.handleJsep(json.jsep);
           }
 
-          if (data) resolve(data);
+          resolve(data);
         })
         .catch(err => {
           logger.error(NAMESPACE, 'Unsubscribe from: ', err);
@@ -105,10 +106,11 @@ export class SubscriberPlugin extends EventEmitter {
       ptype: 'subscriber',
       streams: subscription,
     };
+    logger.debug('NAMESPACE', 'join: ', body);
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
-          logger.debug(NAMESPACE, 'join: ', param);
+          logger.debug('NAMESPACE', 'joined: ', param);
           const { data, json } = param;
 
           if (data) {
@@ -161,7 +163,8 @@ export class SubscriberPlugin extends EventEmitter {
           })
           .catch(error => logger.error(NAMESPACE, error, answer));
         this.start(answer);
-      });
+      })
+      .catch(error => logger.error(NAMESPACE, error, jsep));
   }
 
   start(answer) {
@@ -182,6 +185,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   initPcEvents() {
+    logger.debug(NAMESPACE, 'initPcEvents');
     if (this.pc) {
       this.pc.addEventListener('connectionstatechange', e => {
         logger.debug(NAMESPACE, 'ICE State: ', e.target.connectionState);
@@ -218,20 +222,9 @@ export class SubscriberPlugin extends EventEmitter {
         }
       });
       this.pc.addEventListener('track', e => {
-        logger.debug(NAMESPACE, 'Got track: ', e);
-        this.onTrack(e.track, e.streams[0], true);
+        if (!e.streams[0]) return;
 
-        e.track.onmute = ev => {
-          logger.debug(NAMESPACE, 'onmute event: ', ev);
-        };
-
-        e.track.onunmute = ev => {
-          logger.debug(NAMESPACE, 'onunmute event: ', ev);
-        };
-
-        e.track.onended = ev => {
-          logger.debug(NAMESPACE, 'onended event: ', ev);
-        };
+        this.onTrack && this.onTrack(e.track, e.streams[0], true);
       });
     }
   }
@@ -270,14 +263,14 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   error(cause) {
-    // Couldn't attach to the plugin
+    logger.error(NAMESPACE, 'Subscriber plugin error', cause);
   }
 
   onmessage(data, json) {
     logger.info(NAMESPACE, 'onmessage: ', data, json);
     if (data?.videoroom === 'updated') {
       logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-      this.onUpdate(data.streams);
+      this.onUpdate && this.onUpdate(data.streams);
     }
 
     if (json?.jsep) {

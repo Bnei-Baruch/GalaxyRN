@@ -23,7 +23,17 @@ class Logger {
     this.includeStackTrace = false;
   }
   hasTag(tag) {
-    return true; //tag === 'Api';
+    //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
+
+    return (
+      //tag === 'NAMESPACE'
+      //tag === 'SubscriberPlugin' ||
+      //tag === 'PublisherPlugin' ||
+      //tag === 'InRoom'
+      // ||tag === 'Settings'
+      // || tag === 'Api'
+      true
+    ); //true;
   }
 
   async initializeLogFile() {
@@ -299,7 +309,7 @@ class Logger {
   async error(...args) {
     if (!this.hasTag(args[0])) return;
 
-    console.error(...this.prepareConsoleMsg(args));
+    console.error(args);
     await this.customLog('ERROR', ...args);
     Sentry.captureException(new Error(args.join(', ')));
   }

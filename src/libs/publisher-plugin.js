@@ -280,11 +280,6 @@ export class PublisherPlugin extends EventEmitter {
         return this.transaction('trickle', { candidate });
       }
     });
-    this.pc.addEventListener('track', e => {
-      logger.debug(NAMESPACE, 'Got track: ', e);
-      this.onTrack(e.track, e.streams[0], true);
-      logger.info(NAMESPACE, 'Got track: ', e);
-    });
   }
 
   async iceRestart(attempt = 0) {
@@ -339,12 +334,12 @@ export class PublisherPlugin extends EventEmitter {
           .catch(err => logger.debug(NAMESPACE, 'Detach error:', err));
         return;
       }
-      this.unsubFrom([data.unpublished], false);
+      this.unsubFrom && this.unsubFrom([data.unpublished], false);
     }
 
     if (data?.leaving) {
       logger.info(NAMESPACE, 'Feed leave: ', data.leaving);
-      this.unsubFrom([data.leaving], false);
+      this.unsubFrom && this.unsubFrom([data.leaving], false);
     }
 
     if (data?.videoroom === 'talking') {

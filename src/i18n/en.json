@@ -14,6 +14,11 @@
     "debugMode": "Debug Mode",
     "sendLogs": "Send Logs"
   },
+  "permissions": {
+    "title": "User Permission",
+    "contactMessage": "Please contact help@kli.one",
+    "sendButton": "Send"
+  },
   "user": {
     "title": "User settings",
     "name": "Screen name",
@@ -51,7 +56,8 @@
     "medium": "Medium",
     "high": "High",
     "noVideo": "No Video",
-    "audioOnly": "Audio only"
+    "audioOnly": "Audio only",
+    "onAir": "ON AIR"
   },
   "chat": {
     "send": "Send",

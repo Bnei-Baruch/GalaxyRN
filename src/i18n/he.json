@@ -12,7 +12,7 @@
     "selectRoom": "בחר Ten",
     "backToTen": "חזור ל-Ten",
     "debugMode": "מצב מפתח",
-    "sendLogs": "שלח רישומים"
+    "sendLogs": "שלח לוגים"
   },
   "user": {
     "title": "הגדרות משתמש",
@@ -28,7 +28,7 @@
     "materialsTitle": "חומר לימוד"
   },
   "bottomBar": {
-    "vote": "הצב",
+    "vote": "הצבעה",
     "shidur": "שידור",
     "self": "להסתיר את הווידאו שלי",
     "quads": "Kli Olamy tens",
@@ -36,6 +36,7 @@
     "chat": "צ'אט"
   },
   "shidur": {
+    "onAir": "בשידור",
     "streamForWorkshop": "ערוץ לסדנה",
     "streamForWorkshopDescription": "(קבוצת המיקוד מושתקת)",
     "sourceStream": "ערוץ מקור",
@@ -91,5 +92,10 @@
     "title": "משהו השתבש",
     "message": "האפליקציה נתקלה בשגיאה בלתי צפויה.",
     "tryAgain": "נסה שוב"
+  },
+  "permissions": {
+    "title": "הרשאת משתמש",
+    "contactMessage": "אנא צור קשר עם help@kli.one",
+    "sendButton": "שלח"
   }
 }

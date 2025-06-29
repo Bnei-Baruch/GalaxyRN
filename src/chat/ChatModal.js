@@ -1,6 +1,14 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { modalModes } from '../zustand/helper';
 
 import ScreenTitle from '../components/ScreenTitle';
@@ -32,7 +40,11 @@ export const ChatModal = () => {
       statusBarTranslucent={true}
       supportedOrientations={['portrait', 'landscape']}
     >
-      <View style={styles.modalContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modalContainer}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
+      >
         <ScreenTitle text={t('topBar.communicationTitle')} close={closeModal} />
         <View style={styles.tabs}>
           <TouchableOpacity
@@ -62,7 +74,7 @@ export const ChatModal = () => {
           {mode === modalModes.chat && <RoomChat />}
           {mode === modalModes.question && <Questions />}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -71,7 +83,6 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: 'black',
-    paddingVertical: 10,
   },
   container: {
     flex: 1,

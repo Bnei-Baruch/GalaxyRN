@@ -1,14 +1,14 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { useTranslation } from "react-i18next";
-import logger from "../services/logger";
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import logger from '../services/logger';
 
-import kc from "./keycloak";
-import WIP from "../components/WIP";
-import UserPermissions from "../services/UserPermissions";
-import { useUserStore } from "../zustand/user";
+import WIP from '../components/WIP';
+import UserPermissions from '../services/UserPermissions';
+import { useUserStore } from '../zustand/user';
+import kc from './keycloak';
 
-const NAMESPACE = "CheckAuthentication";
+const NAMESPACE = 'CheckAuthentication';
 
 const CheckAuthentication = ({ children }) => {
   const { user, wip, vhinfo } = useUserStore();
@@ -20,7 +20,7 @@ const CheckAuthentication = ({ children }) => {
   }, []);
 
   const handleLogin = () => {
-    logger.debug(NAMESPACE, "Membership validation: login");
+    logger.debug(NAMESPACE, 'Membership validation: login');
     kc.login();
   };
 
@@ -29,14 +29,18 @@ const CheckAuthentication = ({ children }) => {
       <WIP isReady={!wip}>
         <View style={[styles.loginContainer, styles.container]}>
           <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-            <Text style={styles.loginTxt}>{t("login")}</Text>
+            <Text style={styles.loginTxt}>{t('login')}</Text>
           </TouchableOpacity>
         </View>
       </WIP>
     );
   }
 
-  if (vhinfo && !vhinfo.active) {
+  if (!vhinfo) {
+    return <WIP isReady={true}></WIP>;
+  }
+
+  if (!vhinfo.active) {
     return <UserPermissions />;
   }
 
@@ -46,22 +50,22 @@ const CheckAuthentication = ({ children }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: '#000',
   },
   loginContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loginBtn: {
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: "blue",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'blue',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loginTxt: {
-    color: "white",
+    color: 'white',
     fontSize: 30,
   },
 });
