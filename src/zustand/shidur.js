@@ -145,7 +145,9 @@ export const useShidurStore = create((set, get) => ({
 
   initJanus: async () => {
     const { user } = useUserStore.getState();
-    if (janus) get().cleanShidur(true);
+    if (janus) {
+      get().cleanJanus();
+    }
 
     let srv = null;
     try {
@@ -184,9 +186,13 @@ export const useShidurStore = create((set, get) => ({
     try {
       get().cleanShidur();
       get().cleanQuads();
+
       logger.debug(NAMESPACE, 'cleanJanus');
       await janus.destroy();
       janus = null;
+      videoJanus = null;
+      audioJanus = null;
+      trlAudioJanus = null;
       set({ janusReady: false });
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanJanus:', error);
@@ -237,21 +243,17 @@ export const useShidurStore = create((set, get) => ({
     set({ videoStream, readyShidur: true });
   },
 
-  cleanShidur: (detach = false) => {
+  cleanShidur: () => {
+    logger.debug(NAMESPACE, 'cleanShidur');
     cleanStream(videoStream);
-    if (detach) videoJanus?.detach();
     videoStream = null;
-    videoJanus = null;
 
     cleanStream(audioStream);
-    if (detach) audioJanus?.detach();
     audioStream = null;
-    audioJanus = null;
 
     cleanStream(trlAudioStream);
-    if (detach) trlAudioJanus?.detach();
     trlAudioStream = null;
-    trlAudioJanus = null;
+
     set({
       readyShidur: false,
       isPlay: false,
@@ -340,6 +342,7 @@ export const useShidurStore = create((set, get) => ({
   cleanQuads: (updateState = true) => {
     cleanStream(quadStream);
     quadStream = null;
+    quadJanus?.detach();
     quadJanus = null;
 
     if (updateState) set({ quadUrl: null, isQuad: false });
@@ -348,12 +351,6 @@ export const useShidurStore = create((set, get) => ({
 
   enterAudioMode: () => {
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
-
-    if (trlAudioJanus) {
-      cleanStream(trlAudioStream);
-      trlAudioJanus = null;
-      trlAudioStream = null;
-    }
     set({ videoStream, trlUrl: null });
   },
 

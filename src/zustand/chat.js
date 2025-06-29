@@ -46,14 +46,21 @@ export const useChatStore = create((set, get) => ({
       );
     }
   },
-  cleanChat: () => {
+  cleanMessages: () => {
     logger.debug(NAMESPACE, 'Cleaning chat');
     set(
       produce(state => {
-        state.supportCount = 0;
         state.supportMsgs = [];
-        state.chatNewMsgs = 0;
         state.roomMsgs = [];
+      })
+    );
+  },
+  cleanCounters: () => {
+    logger.debug(NAMESPACE, 'Cleaning counters');
+    set(
+      produce(state => {
+        state.supportCount = 0;
+        state.chatNewMsgs = 0;
       })
     );
   },

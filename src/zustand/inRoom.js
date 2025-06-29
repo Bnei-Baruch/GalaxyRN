@@ -369,7 +369,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.iceFailed = async () => {
-      logger.warn(NAMESPACE, '[subscriber] iceFailed');
+      logger.warn(NAMESPACE, 'subscriber iceFailed');
       get().restartRoom();
     };
 
@@ -466,13 +466,17 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   exitRoom: async () => {
+    logger.debug(NAMESPACE, 'exitRoom exitWIP', exitWIP);
     if (exitWIP) return;
     exitWIP = true;
 
     const { room } = useRoomStore.getState();
     set({ feedById: {}, feedIds: [] });
-
-    await useShidurStore.getState().cleanJanus();
+    try {
+      await useShidurStore.getState().cleanJanus();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error cleaning shidur janus', error);
+    }
 
     if (janus) {
       logger.info(NAMESPACE, 'useInRoomStore exitRoom janus', janus);
@@ -486,6 +490,8 @@ export const useInRoomStore = create((set, get) => ({
     useInitsStore.getState().setReadyForJoin(false);
 
     try {
+      useChatStore.getState().cleanCounters();
+      useChatStore.getState().cleanMessages();
       await mqtt.exit(`galaxy/room/${room.room}`);
       await mqtt.exit(`galaxy/room/${room.room}/chat`);
     } catch (error) {
