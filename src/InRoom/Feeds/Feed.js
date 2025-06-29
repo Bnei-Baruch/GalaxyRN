@@ -1,10 +1,9 @@
-import isFunction from 'lodash/isFunction';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
+import logger from '../../services/logger';
 
 import WIP from '../../components/WIP';
-import logger from '../../services/logger';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
@@ -18,9 +17,8 @@ const Feed = ({ id }) => {
     useInRoomStore();
   const { borders, width } = useUiActions();
 
-  const ref = useRef();
-
   const feed = feedById[id];
+  logger.debug(NAMESPACE, 'Feed render', feed);
 
   const {
     display: { display } = {},
@@ -28,7 +26,10 @@ const Feed = ({ id }) => {
     camera,
     question,
     vOn,
+    url,
   } = feed || {};
+
+  const ref = useRef();
 
   const activateDeactivate = (top = 0, bottom = 0, feedId) => {
     if (!ref.current) return;
@@ -48,21 +49,6 @@ const Feed = ({ id }) => {
 
   if (!feed) return null;
 
-  let url;
-  try {
-    if (isFunction(feed?.stream?.toURL)) {
-      url = feed.stream.toURL();
-    } else {
-      logger.debug(
-        NAMESPACE,
-        'Feed stream toURL is not a function',
-        JSON.stringify(feed?.stream)
-      );
-    }
-  } catch (e) {
-    logger.error(NAMESPACE, 'Feed url error', e);
-  }
-
   const handleLayout = event => {
     const { y, height } = event.nativeEvent.layout;
     ref.current = { y, height };
@@ -73,13 +59,13 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    if (!vOn) return <WIP isReady={false} />;
+    if (!vOn || !url) return <WIP isReady={false} />;
 
     return (
-      <>
+      <View style={styles.viewer}>
         <FeedDisplay display={display} talking={talking} />
-        <RTCView streamURL={url} style={styles.viewer} />
-      </>
+        <RTCView streamURL={url} style={styles.rtcView} />
+      </View>
     );
   };
 
@@ -107,7 +93,9 @@ const styles = StyleSheet.create({
   viewer: {
     flex: 1,
     backgroundColor: 'rgba(255,255,255,.1)',
-    justifyContent: 'space-between',
+  },
+  rtcView: {
+    flex: 1,
   },
   select: {
     padding: 24,

@@ -92,7 +92,7 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   setFeedUrlWithDelay: async (id, stream) => {
-    if (get().feedById[id]?.stream) return;
+    if (get().feedById[id]?.url) return;
 
     urlBuffer.push({ id, stream });
     if (isProcessingBuffer) return;
@@ -100,7 +100,13 @@ export const useInRoomStore = create((set, get) => ({
     isProcessingBuffer = true;
     while (urlBuffer.length > 0) {
       const { id, stream } = urlBuffer.shift();
-
+      let url;
+      try {
+        url = stream.toURL();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error setting feed url', error);
+        url = null;
+      }
       set(
         produce(state => {
           logger.debug(
@@ -109,7 +115,8 @@ export const useInRoomStore = create((set, get) => ({
             state.feedById[id]
           );
           state.feedById[id].vOn = true;
-          state.feedById[id].stream = stream;
+          state.feedById[id].vWIP = false;
+          state.feedById[id].url = url;
         })
       );
       await sleep(100);
@@ -181,11 +188,15 @@ export const useInRoomStore = create((set, get) => ({
           continue;
         }
 
+        let _isSubscribed = false;
         pub.streams
           .filter(s => s.type === 'audio' && s.codec === 'opus')
           .forEach(s => {
             const _data = { feed: id, mid: s.mid };
-            if (!feedById[id]) subs.push(_data);
+            if (!feedById[id]) {
+              subs.push(_data);
+              _isSubscribed = true;
+            }
           });
 
         // Sub video streams
@@ -202,8 +213,12 @@ export const useInRoomStore = create((set, get) => ({
             camera,
           };
         }
+        if (!_isSubscribed && vStream) {
+          subs.push({ feed: id });
+        }
 
         feedById[id].vMid = vStream?.mid;
+        feedById[id].vWIP = true;
         logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
       }
 
@@ -344,8 +359,9 @@ export const useInRoomStore = create((set, get) => ({
             const f = state.feedById[k];
             logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[k]', f);
             if (f && !_videosByFeed[f.id]) {
-              //f.stream = null;
+              f.url = null;
               f.vOn = false;
+              f.vWIP = false;
             }
           }
         })
@@ -517,7 +533,7 @@ export const useInRoomStore = create((set, get) => ({
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
-      if (f?.vMid && !f.stream) {
+      if (f?.vMid && !f.url && !f.vWIP) {
         params.push({ feed: parseInt(id), mid: f.vMid });
       }
     }
@@ -532,7 +548,7 @@ export const useInRoomStore = create((set, get) => ({
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
-      if (f?.vMid && f.stream) {
+      if (f?.vMid && f.url) {
         params.push({ feed: parseInt(id), mid: f.vMid });
       }
     }
