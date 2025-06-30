@@ -114,7 +114,17 @@ class Keycloak {
     }
 
     this.session = null;
-    RNSecureStorage.removeItem('user_session');
+
+    try {
+      await RNSecureStorage.removeItem('user_session');
+    } catch (err) {
+      logger.debug(
+        NAMESPACE,
+        'Failed to remove user_session from secure storage',
+        err
+      );
+    }
+
     useUserStore.getState().setUser(null);
   };
 
