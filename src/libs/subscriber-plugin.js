@@ -232,6 +232,7 @@ export class SubscriberPlugin extends EventEmitter {
   async iceRestart(attempt = 0) {
     try {
       BackgroundTimer.setTimeout(() => {
+        logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
         if (
           (attempt < 10 && this.iceState !== 'disconnected') ||
           !this.janus?.isConnected

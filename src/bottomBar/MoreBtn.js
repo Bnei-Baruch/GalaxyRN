@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+
 import { ChatCounter } from '../chat/ChatCounter';
 import ListInModal from '../components/ListInModal';
-import { useChatStore } from '../zustand/chat';
 import { useUiActions } from '../zustand/uiActions';
 import { bottomBar } from './helper';
 import { ChatBtn } from './moreBtns/ChatBtn';
@@ -14,7 +14,6 @@ import { VoteBtn } from './moreBtns/VoteBtn';
 
 export const MoreBtn = () => {
   const { toggleShowBars } = useUiActions();
-  const { setChatMode } = useChatStore();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
