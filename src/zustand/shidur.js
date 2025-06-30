@@ -89,6 +89,7 @@ export const useShidurStore = create((set, get) => ({
   janusReady: false,
   isMuted: false,
   isAutoPlay: false,
+  shidurWIP: false,
 
   setIsMuted: (isMuted = !get().isMuted) => {
     [
@@ -144,6 +145,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initJanus: async () => {
+    set({ shidurWIP: true });
     const { user } = useUserStore.getState();
     if (janus) {
       get().cleanJanus();
@@ -157,27 +159,33 @@ export const useShidurStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'init janus fetchStrServer result', res);
         return res?.server;
       });
+
+      if (!srv) {
+        const gw_list = GxyConfig.gatewayNames('streaming');
+        let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
+
+        config = GxyConfig.instanceConfig(inst);
+        srv = config.name;
+        logger.debug(NAMESPACE, 'init janus build', inst, config);
+      } else {
+        config = GxyConfig.instanceConfig(srv);
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);
     }
 
-    if (!srv) {
-      const gw_list = GxyConfig.gatewayNames('streaming');
-      let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
+    let janusReady = false;
+    try {
+      logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
+      janus = new JanusMqtt(user, srv);
 
-      config = GxyConfig.instanceConfig(inst);
-      srv = config.name;
-      logger.debug(NAMESPACE, 'init janus build', inst, config);
-    } else {
-      config = GxyConfig.instanceConfig(srv);
+      await janus.init(config.token);
+      logger.debug(NAMESPACE, 'init janus ready');
+      janusReady = true;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during init janus:', error);
     }
-
-    logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
-    janus = new JanusMqtt(user, srv);
-
-    await janus.init(config.token);
-    logger.debug(NAMESPACE, 'init janus ready');
-    set({ janusReady: true });
+    set({ janusReady, shidurWIP: false });
   },
 
   cleanJanus: async () => {
@@ -201,6 +209,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initShidur: async (isPlay = get().isPlay) => {
+    set({ shidurWIP: true });
     if (!useSettingsStore.getState().isShidur || !isPlay) return;
 
     const video = await getFromStorage('vrt_video', 1).then(x => Number(x));
@@ -209,23 +218,26 @@ export const useShidurStore = create((set, get) => ({
     set({ video, audio });
 
     const promises = [];
-    if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
-      promises.push(initStream(janus, video));
-    }
-    if (!audioJanus) {
-      promises.push(initStream(janus, audio));
-    }
-    if (!trlAudioJanus) {
-      const _langTxt = await getFromStorage('vrt_langtext', 'Original');
-      const id = trllang[_langTxt];
-      if (id) {
-        const [stream, janusStream] = await initStream(janus, id);
-        stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
-        trlAudioStream = stream;
-        trlAudioJanus = janusStream;
+    try {
+      if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
+        promises.push(initStream(janus, video));
       }
+      if (!audioJanus) {
+        promises.push(initStream(janus, audio));
+      }
+      if (!trlAudioJanus) {
+        const _langTxt = await getFromStorage('vrt_langtext', 'Original');
+        const id = trllang[_langTxt];
+        if (id) {
+          const [stream, janusStream] = await initStream(janus, id);
+          stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
+          trlAudioStream = stream;
+          trlAudioJanus = janusStream;
+        }
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during initShidur:', error);
     }
-
     logger.debug(NAMESPACE, 'wait for streams ready', promises.length);
     const results = await Promise.all(promises);
 
@@ -240,7 +252,7 @@ export const useShidurStore = create((set, get) => ({
     }
 
     logger.debug(NAMESPACE, 'streams are ready', videoStream);
-    set({ videoStream, readyShidur: true });
+    set({ videoStream, readyShidur: true, shidurWIP: false });
   },
 
   cleanShidur: () => {
