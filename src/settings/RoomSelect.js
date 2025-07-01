@@ -86,6 +86,8 @@ const RoomSelect = () => {
               onChangeText={handleSearch}
               onFocus={() => toggleOpen(true)}
               onBlur={() => toggleOpen(false)}
+              autoCorrect={false}
+              autoComplete="off"
             />
           }
         />

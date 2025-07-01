@@ -23,6 +23,7 @@ import { deepClone, sleep } from '../shared/tools';
 
 // Zustand stores
 import useAudioDevicesStore from './audioDevices';
+import { useChatStore } from './chat';
 import useRoomStore from './fetchRooms';
 import { useInitsStore } from './inits';
 import { getStream, useMyStreamStore } from './myStream';
@@ -529,7 +530,7 @@ export const useInRoomStore = create((set, get) => ({
   restartRoom: async () => {
     logger.debug(
       NAMESPACE,
-      'bug fixes: useInRoomStore restartRoom restartWIP',
+      'useInRoomStore restartRoom restartWIP',
       restartWIP
     );
 
