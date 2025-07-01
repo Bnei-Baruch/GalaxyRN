@@ -13,8 +13,11 @@ import {
 } from 'react-native';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
+import logger from '../services/logger';
 import useRoomStore from '../zustand/fetchRooms';
 import { useInitsStore } from '../zustand/inits';
+
+const NAMESPACE = 'RoomSelect';
 
 const RoomSelect = () => {
   const [searchText, setSearchText] = useState();
@@ -33,9 +36,13 @@ const RoomSelect = () => {
     room && setSearchText(room.description);
   }, [room]);
 
-  const filteredOptions = rooms?.filter(o =>
-    o.description.toLowerCase().includes(searchText?.toLowerCase())
-  );
+  const filteredOptions = rooms?.filter(o => {
+    const _sText = searchText?.toLowerCase().trim();
+    if (!_sText) return true;
+    return o.description.toLowerCase().includes(_sText);
+  });
+
+  logger.debug(NAMESPACE, 'rooms rendered', filteredOptions[0]);
 
   const handleSearch = text => {
     setSearchText(text);

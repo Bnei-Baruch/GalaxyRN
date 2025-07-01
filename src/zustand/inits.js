@@ -8,6 +8,7 @@ import { NativeEventEmitter } from 'react-native';
 // Services
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
+import { sleep } from '../shared/tools';
 
 // Auth
 import kc from '../auth/keycloak';
@@ -71,6 +72,7 @@ export const useInitsStore = create((set, get) => ({
   initMQTT: () => {
     const { user } = useUserStore.getState();
     mqtt.init(user, (reconnected, error) => {
+      logger.debug(NAMESPACE, 'initMQTT', reconnected, error);
       if (error) {
         logger.info(NAMESPACE, 'MQTT disconnected');
         set(() => ({ mqttReady: false }));
@@ -123,9 +125,42 @@ export const useInitsStore = create((set, get) => ({
     });
   },
 
-  endMqtt: async () => {
-    await mqtt.end();
+  abortMqtt: async () => {
+    logger.debug(NAMESPACE, 'abortMqtt');
+
+    try {
+      // First unsubscribe from topics
+      if (mqtt.mq && mqtt.mq.connected) {
+        await mqtt
+          .exit('galaxy/users/notification')
+          .catch(err =>
+            logger.error(NAMESPACE, 'Error exiting notification topic:', err)
+          );
+        await mqtt
+          .exit('galaxy/users/broadcast')
+          .catch(err =>
+            logger.error(NAMESPACE, 'Error exiting broadcast topic:', err)
+          );
+      }
+
+      // Small delay to ensure unsubscribe messages are processed
+      await sleep(100);
+
+      // Then end the connection
+      if (mqtt.mq) {
+        mqtt.mq.removeAllListeners();
+        await mqtt
+          .end()
+          .catch(err =>
+            logger.error(NAMESPACE, 'Error ending MQTT connection:', err)
+          );
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error in MQTT cleanup:', error);
+    }
+
     set(() => ({ mqttReady: false, configReady: false }));
+    logger.debug(NAMESPACE, 'abortMqtt done');
   },
 
   initConfig: async () => {

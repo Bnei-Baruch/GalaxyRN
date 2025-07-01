@@ -46,7 +46,6 @@ let trlAudioJanus = null;
 let trlAudioStream = null;
 
 let config = null;
-let shidurBarTimeout;
 
 const initStream = async (_janus, media) => {
   if (!_janus) return [];
@@ -210,6 +209,7 @@ export const useShidurStore = create((set, get) => ({
 
   initShidur: async (isPlay = get().isPlay) => {
     set({ shidurWIP: true });
+    logger.debug(NAMESPACE, 'initShidur');
     if (!useSettingsStore.getState().isShidur || !isPlay) return;
 
     const video = await getFromStorage('vrt_video', 1).then(x => Number(x));
@@ -226,6 +226,7 @@ export const useShidurStore = create((set, get) => ({
         promises.push(initStream(janus, audio));
       }
       if (!trlAudioJanus) {
+        logger.debug(NAMESPACE, 'init trlAudioJanus');
         const _langTxt = await getFromStorage('vrt_langtext', 'Original');
         const id = trllang[_langTxt];
         if (id) {
@@ -253,6 +254,10 @@ export const useShidurStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'streams are ready', videoStream);
     set({ videoStream, readyShidur: true, shidurWIP: false });
+
+    if (get().isOnAir) {
+      get().streamGalaxy(true, true);
+    }
   },
 
   cleanShidur: () => {
@@ -274,10 +279,16 @@ export const useShidurStore = create((set, get) => ({
     });
   },
 
-  streamGalaxy: async isOnAir => {
+  streamGalaxy: async (isOnAir, onPlay = false) => {
     logger.debug(NAMESPACE, 'got talk event: ', isOnAir, get().isOnAir);
-    if (isOnAir === get().isOnAir) {
+    if (isOnAir === get().isOnAir && !onPlay) {
       logger.debug(NAMESPACE, 'talk event is the same as current state');
+      return;
+    }
+
+    if (!get().isPlay && !onPlay) {
+      logger.debug(NAMESPACE, 'start streamGalaxy after isPlay is true');
+      set({ isOnAir });
       return;
     }
 
@@ -331,15 +342,16 @@ export const useShidurStore = create((set, get) => ({
 
   toggleIsPlay: async (isPlay = !get().isPlay) => {
     const { initShidur, readyShidur, isMuted } = get();
+    logger.debug(NAMESPACE, 'toggleIsPlay', isPlay, readyShidur);
     if (!readyShidur) {
       await initShidur(isPlay);
     }
 
     videoStream?.getVideoTracks().forEach(t => (t.enabled = isPlay));
-    [
-      ...audioStream?.getAudioTracks(),
-      ...trlAudioStream?.getAudioTracks(),
-    ].forEach(t => (t.enabled = isPlay && !isMuted));
+    audioStream
+      ?.getAudioTracks()
+      .forEach(t => (t.enabled = isPlay && !isMuted));
+    logger.debug(NAMESPACE, 'toggleIsPlay done', isPlay);
     set({ isPlay });
   },
 
