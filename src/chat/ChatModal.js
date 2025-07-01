@@ -19,13 +19,13 @@ import { Questions } from './Questions';
 import { RoomChat } from './RoomChat';
 
 export const ChatModal = () => {
-  const { mode, setChatMode, cleanChat, chatNewMsgs } = useChatStore();
+  const { mode, setChatMode, cleanCounters } = useChatStore();
   const { start: openSupport } = useCrispStore();
   const { t } = useTranslation();
 
   useEffect(() => {
     return () => {
-      cleanChat();
+      cleanCounters();
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import logger from '../../services/logger';
@@ -11,6 +11,13 @@ import FeedDisplay from './FeedDisplay';
 import QuestionOverlay from './QuestionOverlay';
 
 const NAMESPACE = 'Feed';
+
+const RTCViewWrapper = memo(
+  ({ streamURL, style }) => <RTCView streamURL={streamURL} style={style} />,
+  (prevProps, nextProps) => {
+    return prevProps.streamURL === nextProps.streamURL;
+  }
+);
 
 const Feed = ({ id }) => {
   const { feedById, activateFeedsVideos, deactivateFeedsVideos } =
@@ -64,7 +71,7 @@ const Feed = ({ id }) => {
     return (
       <View style={styles.viewer}>
         <FeedDisplay display={display} talking={talking} />
-        <RTCView streamURL={url} style={styles.rtcView} />
+        <RTCViewWrapper streamURL={url} style={styles.rtcView} />
       </View>
     );
   };

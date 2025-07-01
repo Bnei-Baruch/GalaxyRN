@@ -133,6 +133,12 @@ export class JanusMqtt {
   }
 
   detach(plugin) {
+    logger.debug(
+      NAMESPACE,
+      'detach plugin',
+      plugin,
+      Object.keys(this.pluginHandles)
+    );
     return new Promise((resolve, reject) => {
       if (!this.pluginHandles[plugin.janusHandleId]) {
         reject(new Error('unknown plugin'));
@@ -305,9 +311,9 @@ export class JanusMqtt {
     Object.keys(this.pluginHandles).forEach(pluginId => {
       const plugin = this.pluginHandles[pluginId];
       //delete this.pluginHandles[pluginId]
+      logger.debug(NAMESPACE, '_cleanupPlugins ', plugin, pluginId);
       arr.push(
         new Promise((resolve, reject) => {
-          logger.debug(NAMESPACE, '_cleanupPlugins ', plugin.pluginName);
           if (!this.pluginHandles[plugin.janusHandleId]) {
             reject(new Error('unknown plugin'));
             return;

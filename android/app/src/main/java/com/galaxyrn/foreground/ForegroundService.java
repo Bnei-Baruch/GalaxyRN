@@ -153,7 +153,7 @@ public class ForegroundService extends Service {
             super.onDestroy();
         }
     }
-    
+
     private void cleanup() {
         try {
             mIsServiceStarted = false;
@@ -165,7 +165,6 @@ public class ForegroundService extends Service {
                 stopForeground(true);
             }
 
-            // Clear any pending handler callbacks to prevent memory leaks
             if (mHandler != null) {
                 mHandler.removeCallbacksAndMessages(null);
             }

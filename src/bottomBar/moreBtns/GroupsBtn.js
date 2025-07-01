@@ -1,14 +1,15 @@
 import * as React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { useSettingsStore } from '../../zustand/settings';
-import IconWithText from '../../settings/IconWithText';
-import { baseStyles } from '../../constants';
-import { bottomBar } from '../helper';
 import { useTranslation } from 'react-i18next';
+import { TouchableOpacity } from 'react-native';
+
+import { baseStyles } from '../../constants';
+import IconWithText from '../../settings/IconWithText';
+import { useSettingsStore } from '../../zustand/settings';
+import { bottomBar } from '../helper';
 
 export const GroupsBtn = () => {
   const { showGroups, toggleShowGroups } = useSettingsStore();
-  const { t }                                = useTranslation();
+  const { t } = useTranslation();
 
   const handlePress = () => toggleShowGroups();
 

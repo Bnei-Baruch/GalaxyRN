@@ -286,11 +286,6 @@ export class StreamingPlugin extends EventEmitter {
       this.candidates = [];
       this.onStatus = null;
       this.janus = null;
-
-      return janusRef.detach(this).catch(err => {
-        logger.debug(NAMESPACE, 'Detach error:', err);
-        return Promise.resolve(); // Return resolved promise to avoid unhandled rejection
-      });
     }
     return Promise.resolve();
   }

@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
 
 // Local imports
+import WIP from '../components/WIP';
 import { baseStyles, SHIDUR_BAR_ZINDEX } from '../constants';
 import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
@@ -21,7 +22,7 @@ import Subtitle from './Subtitle';
 import { SubtitleBtn } from './SubtitleBtn';
 
 const Shidur = () => {
-  const { videoStream, isPlay, video, isOnAir } = useShidurStore();
+  const { videoStream, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
   const { toggleShowBars, showBars } = useUiActions();
 
   const { t } = useTranslation();
@@ -30,44 +31,46 @@ const Shidur = () => {
 
   const streamURL = videoStream?.toURL();
   return (
-    <View>
-      {isPlay ? (
-        <View>
-          {isOnAir && (
-            <Text style={[baseStyles.text, styles.onAir]}>
-              {t('shidur.onAir')}
-            </Text>
-          )}
-          <TouchableWithoutFeedback onPress={toggleBar}>
-            {video !== NO_VIDEO_OPTION_VALUE && streamURL ? (
-              <RTCView streamURL={streamURL} style={styles.viewer} />
-            ) : (
-              <View style={styles.noVideo}>
-                <Icon name="graphic-eq" color="white" size={70} />
-              </View>
+    <WIP isReady={!shidurWIP}>
+      <View>
+        {isPlay ? (
+          <View>
+            {isOnAir && (
+              <Text style={[baseStyles.text, styles.onAir]}>
+                {t('shidur.onAir')}
+              </Text>
             )}
-          </TouchableWithoutFeedback>
-          <Subtitle />
-        </View>
-      ) : (
-        <PlayPauseOverlay />
-      )}
-
-      {(showBars || !isPlay) && (
-        <View style={styles.toolbar}>
-          <View style={styles.toolbarBtnsGroup}>
-            <PlayPauseBtn />
-            <MuteBtn />
+            <TouchableWithoutFeedback onPress={toggleBar}>
+              {video !== NO_VIDEO_OPTION_VALUE && streamURL ? (
+                <RTCView streamURL={streamURL} style={styles.viewer} />
+              ) : (
+                <View style={styles.noVideo}>
+                  <Icon name="graphic-eq" color="white" size={70} />
+                </View>
+              )}
+            </TouchableWithoutFeedback>
+            <Subtitle />
           </View>
+        ) : (
+          <PlayPauseOverlay />
+        )}
 
-          <View style={styles.toolbarBtnsGroup}>
-            <SubtitleBtn />
-            <OptionsBtn />
-            <FullscreenBtn />
+        {(showBars || !isPlay) && (
+          <View style={styles.toolbar}>
+            <View style={styles.toolbarBtnsGroup}>
+              <PlayPauseBtn />
+              <MuteBtn />
+            </View>
+
+            <View style={styles.toolbarBtnsGroup}>
+              <SubtitleBtn />
+              <OptionsBtn />
+              <FullscreenBtn />
+            </View>
           </View>
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </WIP>
   );
 };
 

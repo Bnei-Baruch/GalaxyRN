@@ -23,6 +23,7 @@ import { deepClone, sleep } from '../shared/tools';
 
 // Zustand stores
 import useAudioDevicesStore from './audioDevices';
+import { useChatStore } from './chat';
 import useRoomStore from './fetchRooms';
 import { useInitsStore } from './inits';
 import { getStream, useMyStreamStore } from './myStream';
@@ -369,7 +370,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.iceFailed = async () => {
-      logger.warn(NAMESPACE, '[subscriber] iceFailed');
+      logger.warn(NAMESPACE, 'subscriber iceFailed');
       get().restartRoom();
     };
 
@@ -466,42 +467,70 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   exitRoom: async () => {
+    logger.debug(NAMESPACE, 'exitRoom exitWIP', exitWIP);
     if (exitWIP) return;
     exitWIP = true;
 
     const { room } = useRoomStore.getState();
+
+    // First, clear the UI state to prevent any new animations
     set({ feedById: {}, feedIds: [] });
 
-    await useShidurStore.getState().cleanJanus();
+    // Wait for any pending animations to complete
+    await new Promise(resolve => requestAnimationFrame(resolve));
 
+    try {
+      // Clean up shidur first
+      await useShidurStore.getState().cleanJanus();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error cleaning shidur janus', error);
+    }
+
+    // Clean up Janus
     if (janus) {
       logger.info(NAMESPACE, 'useInRoomStore exitRoom janus', janus);
-      await janus.destroy();
+      try {
+        await janus.destroy();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error destroying janus', error);
+      }
       janus = null;
     }
 
+    // Reset all module states
     videoroom = null;
     subscriber = null;
     _subscriberJoined = false;
+
     useInitsStore.getState().setReadyForJoin(false);
 
     try {
+      // Clean up MQTT subscriptions
+      useChatStore.getState().cleanCounters();
+      useChatStore.getState().cleanMessages();
       await mqtt.exit(`galaxy/room/${room.room}`);
       await mqtt.exit(`galaxy/room/${room.room}/chat`);
+      await useInitsStore.getState().abortMqtt();
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
 
-    AudioBridge.abandonAudioFocus();
-    WakeLockBridge.releaseScreenOn();
-    useAudioDevicesStore.getState().abortAudioDevices();
+    // Clean up device states
+    try {
+      AudioBridge.abandonAudioFocus();
+      WakeLockBridge.releaseScreenOn();
+      useAudioDevicesStore.getState().abortAudioDevices();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error cleaning up device states', error);
+    }
+
     exitWIP = false;
   },
 
   restartRoom: async () => {
     logger.debug(
       NAMESPACE,
-      'bug fixes: useInRoomStore restartRoom restartWIP',
+      'useInRoomStore restartRoom restartWIP',
       restartWIP
     );
 
