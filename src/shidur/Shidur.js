@@ -15,7 +15,8 @@ import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
 import { MuteBtn } from './MuteBtn';
-import { OptionsBtn } from './OptionsBtn';
+import OptionsBtn from './OptionsBtn';
+import { OriginalSwitch } from './OriginalSwitch';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
@@ -60,6 +61,7 @@ const Shidur = () => {
             <View style={styles.toolbarBtnsGroup}>
               <PlayPauseBtn />
               <MuteBtn />
+              <OriginalSwitch />
             </View>
 
             <View style={styles.toolbarBtnsGroup}>

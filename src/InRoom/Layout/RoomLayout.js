@@ -12,9 +12,10 @@ import RoomPortrait from './RoomPortrait';
 const RoomLayout = () => {
   const { isPortrait } = useInitsStore();
   const { isShidur, showGroups, isFullscreen } = useSettingsStore();
-  const { cleanJanus, initJanus } = useShidurStore();
+  const { cleanJanus, initJanus, initAudio } = useShidurStore();
 
   useEffect(() => {
+    initAudio();
     initJanus();
     return () => {
       cleanJanus();

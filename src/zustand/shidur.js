@@ -11,12 +11,13 @@ import logger from '../services/logger';
 // Shared modules
 import api from '../shared/Api';
 import {
-  NOTRL_STREAM_ID,
   NO_VIDEO_OPTION_VALUE,
   VIDEO_240P_OPTION_VALUE,
-  audio_options2,
+  dualLanguageOptions,
   gxycol,
+  sourceStreamOptions,
   trllang,
+  workShopOptions,
 } from '../shared/consts';
 import GxyConfig from '../shared/janus-config';
 import { getFromStorage, setToStorage } from '../shared/tools';
@@ -74,10 +75,33 @@ const initStream = async (_janus, media) => {
 const cleanStream = stream =>
   stream?.getTracks().forEach(track => track.stop());
 
+const getOptionByKey = key => {
+  const _type = key.split('_')[0];
+  switch (_type) {
+    case 'wo':
+      return {
+        ...workShopOptions.find(x => x.key === key),
+        icon: 'group',
+      };
+    case 'ss':
+      return {
+        ...sourceStreamOptions.find(x => x.key === key),
+        icon: 'center-focus-strong',
+      };
+    case 'dl':
+      return {
+        ...dualLanguageOptions.find(x => x.key === key),
+        icon: 'group',
+      };
+    default:
+      return workShopOptions.find(x => x.key === 'wo_original');
+  }
+};
+
 export const useShidurStore = create((set, get) => ({
   video: VIDEO_240P_OPTION_VALUE,
   audio: 64,
-  langtext: 'Original',
+  audio: {},
   videoStream: null,
   quadUrl: null,
   trlUrl: null,
@@ -104,7 +128,7 @@ export const useShidurStore = create((set, get) => ({
   setVideo: async (video, updateState = true) => {
     if (!janus) return;
     if (updateState) {
-      await setToStorage('vrt_video', video);
+      await setToStorage('video', video);
     }
     if (video === NO_VIDEO_OPTION_VALUE) {
       if (videoJanus !== null) {
@@ -122,25 +146,6 @@ export const useShidurStore = create((set, get) => ({
     }
 
     set({ videoStream, video });
-  },
-
-  setAudio: async (audio, langtext) => {
-    if (get().isOnAir) {
-      const audio_option = audio_options2.find(
-        option => option.value === audio
-      );
-      const id = trllang[audio_option.eng_text];
-      if (id) {
-        await trlAudioJanus.switch(id);
-      }
-    } else {
-      await audioJanus?.switch(audio);
-    }
-    logger.debug(NAMESPACE, 'set audio', audio, langtext);
-    setToStorage('vrt_lang', audio);
-    if (audio !== NOTRL_STREAM_ID) setToStorage('trl_lang', audio);
-    setToStorage('vrt_langtext', langtext);
-    set({ videoStream, audio, langtext });
   },
 
   initJanus: async () => {
@@ -207,28 +212,49 @@ export const useShidurStore = create((set, get) => ({
     cleanWIP = false;
   },
 
+  initAudio: async () => {
+    const video = await getFromStorage('video', 1).then(x => Number(x));
+    let audio;
+    const isOriginal = await getFromStorage('is_original', false).then(
+      x => x === 'true'
+    );
+    logger.debug(NAMESPACE, 'initAudio', isOriginal);
+    if (isOriginal) {
+      audio = getOptionByKey('wo_original');
+    } else {
+      const { uiLang } = useSettingsStore.getState();
+      const audioKey = await getFromStorage('audio', `wo_${uiLang}`);
+      audio = getOptionByKey(audioKey);
+      logger.debug(
+        NAMESPACE,
+        'initAudio isOriginal false',
+        audio,
+        audioKey,
+        uiLang
+      );
+    }
+
+    set({ video, audio });
+  },
+
   initShidur: async (isPlay = get().isPlay) => {
     set({ shidurWIP: true });
     logger.debug(NAMESPACE, 'initShidur');
     if (!useSettingsStore.getState().isShidur || !isPlay) return;
 
-    const video = await getFromStorage('vrt_video', 1).then(x => Number(x));
-    const audio = await getFromStorage('vrt_lang', 2).then(x => Number(x));
-
-    set({ video, audio });
-
     const promises = [];
     try {
+      const { video, audio } = get();
       if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
         promises.push(initStream(janus, video));
       }
       if (!audioJanus) {
-        promises.push(initStream(janus, audio));
+        promises.push(initStream(janus, audio.value));
       }
       if (!trlAudioJanus) {
         logger.debug(NAMESPACE, 'init trlAudioJanus');
-        const _langTxt = await getFromStorage('vrt_langtext', 'Original');
-        const id = trllang[_langTxt];
+        const audioKey = await getFromStorage('audio', null);
+        const id = trllang[audioKey?.split('_')[1]];
         if (id) {
           const [stream, janusStream] = await initStream(janus, id);
           stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
@@ -308,7 +334,7 @@ export const useShidurStore = create((set, get) => ({
       const col = 4;
       logger.debug(NAMESPACE, 'Switch audio stream: ', gxycol[col]);
       audioJanus.switch(gxycol[col]);
-      const _langtext = await getFromStorage('vrt_langtext');
+      const _langtext = await getFromStorage('audio');
       const id = trllang[_langtext];
       // Don't bring translation on toggle trl stream
       if (!id) {
@@ -328,7 +354,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       logger.debug(NAMESPACE, 'Stop talking');
       // Bring back source if was choosen before
-      const id = await getFromStorage('vrt_lang', 2).then(x => Number(x));
+      const id = get().audio.value;
       logger.debug(NAMESPACE, 'get stream back id: ', id);
       await audioJanus.switch(id);
       logger.debug(NAMESPACE, 'Switch audio stream back');
@@ -362,7 +388,6 @@ export const useShidurStore = create((set, get) => ({
     quadStream = stream;
     quadJanus = janusStream;
   },
-
   cleanQuads: (updateState = true) => {
     cleanStream(quadStream);
     quadStream = null;
@@ -378,19 +403,40 @@ export const useShidurStore = create((set, get) => ({
     set({ videoStream, trlUrl: null });
   },
 
-  /*
-  shidurBar: true,
-  toggleShidurBar: (hideOnTimeout = true, shidurBar = !get().shidurBar) => {
-    clearTimeout(shidurBarTimeout);
-    if (hideOnTimeout) {
-      shidurBarTimeout = setTimeout(
-        () => set({ shidurBar: false }),
-        HIDE_BARS_TIMEOUT_MS
-      );
-    }
-    set({ shidurBar });
-  },
-  */
-
   setAutoPlay: isAutoPlay => set({ isAutoPlay }),
+
+  setAudio: async key => {
+    const audio = getOptionByKey(key);
+    if (get().isOnAir) {
+      const key = trllang[audio.key.split('_')[1]];
+      if (key) {
+        await trlAudioJanus.switch(id);
+      }
+    } else {
+      await audioJanus?.switch(audio.value);
+    }
+    logger.debug(NAMESPACE, 'set audio', audio);
+    const isOriginal = audio.key === 'wo_original';
+    if (!isOriginal) {
+      await setToStorage('audio', audio.key);
+      await setToStorage('is_original', false);
+    } else {
+      await setToStorage('is_original', true);
+    }
+
+    set({ audio });
+  },
+
+  toggleIsOriginal: async () => {
+    const isOriginal = !(get().audio.key === 'wo_original');
+    let key;
+    if (isOriginal) {
+      key = 'wo_original';
+    } else {
+      const { uiLang } = useSettingsStore.getState();
+      key = await getFromStorage('audio', `wo_${uiLang}`);
+    }
+
+    get().setAudio(key);
+  },
 }));

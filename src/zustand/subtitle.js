@@ -4,15 +4,16 @@ import { create } from 'zustand';
 // Environment variables
 import { SUBTITLES_TOPIC } from '@env';
 
+// Shared modules
+import { subtitle_options } from '../shared/consts';
+
 // Services
 import logger from '../services/logger';
-
-// Shared modules
-import { audio_options2, subtitle_options } from '../shared/consts';
-import mqtt from '../shared/mqtt';
+import { useSettingsStore } from './settings';
+import { useShidurStore } from './shidur';
 
 // Zustand stores
-import { useSettingsStore } from './settings';
+import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Subtitle';
 
@@ -37,20 +38,15 @@ export const useSubtitleStore = create((set, get) => ({
 
   lastMsg: null,
 
-  init: audio => {
-    let subLang = audio_options2
-      .filter(op => op.value === audio)
-      .map(op => {
-        const k = op.langKey ?? op.key;
-        const subOp = subtitle_options.find(sOp => k === sOp.value);
-        return subOp?.value;
-      })[0];
+  init: () => {
+    const { audio } = useShidurStore.getState();
 
-    logger.debug(NAMESPACE, `Subtitle language: ${subLang}`);
-
-    if (!subLang) {
+    let subLang = audio.key?.split('_')[1];
+    if (!subtitle_options.some(op => op.value === subLang)) {
       subLang = useSettingsStore.getState().uiLang;
     }
+
+    logger.debug(NAMESPACE, `Subtitle language: ${subLang}`);
 
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);

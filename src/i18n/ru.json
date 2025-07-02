@@ -51,7 +51,9 @@
     "medium": "Среднее",
     "high": "Высокое",
     "noVideo": "Без видео",
-    "audioOnly": "Только аудио"
+    "audioOnly": "Только аудио",
+    "original": "Оригинал",
+    "translated": "Перевод"
   },
   "chat": {
     "send": "Отправить",

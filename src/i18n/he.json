@@ -51,7 +51,9 @@
     "medium": "בינונית",
     "high": "גבוה",
     "noVideo": "ללא וידיאו",
-    "audioOnly": "שמע בלבד"
+    "audioOnly": "שמע בלבד",
+    "original": "מקור",
+    "translated": "מתורגם"
   },
   "chat": {
     "send": "שלח",
