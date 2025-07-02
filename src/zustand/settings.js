@@ -83,9 +83,7 @@ export const useSettingsStore = create((set, get) => ({
 
       if (!useInitsStore.getState().readyForJoin) return;
 
-      const { initShidur, initQuad } = useShidurStore.getState();
-      initShidur();
-      initQuad();
+      useShidurStore.getState().exitAudioMode();
     } catch (error) {
       logger.error(NAMESPACE, 'exitAudioMode error', error);
     }

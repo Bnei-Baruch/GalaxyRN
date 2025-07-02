@@ -126,6 +126,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   setVideo: async (video, updateState = true) => {
+    logger.debug(NAMESPACE, 'setVideo', video, updateState);
     if (!janus) return;
     if (updateState) {
       await setToStorage('video', video);
@@ -141,7 +142,9 @@ export const useShidurStore = create((set, get) => ({
       if (videoJanus) {
         await videoJanus.switch(video);
       } else {
+        set({ video });
         await get().initShidur();
+        return;
       }
     }
 
@@ -213,7 +216,13 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initAudio: async () => {
-    const video = await getFromStorage('video', 1).then(x => Number(x));
+    let video;
+    if (useSettingsStore.getState().audioMode) {
+      video = NO_VIDEO_OPTION_VALUE;
+    } else {
+      video = await getFromStorage('video', 1).then(x => Number(x));
+    }
+
     let audio;
     const isOriginal = await getFromStorage('is_original', false).then(
       x => x === 'true'
@@ -242,14 +251,17 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'initShidur');
     if (!useSettingsStore.getState().isShidur || !isPlay) return;
 
-    const promises = [];
     try {
       const { video, audio } = get();
       if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
-        promises.push(initStream(janus, video));
+        const [stream, janusStream] = await initStream(janus, video);
+        videoStream = stream;
+        videoJanus = janusStream;
       }
       if (!audioJanus) {
-        promises.push(initStream(janus, audio.value));
+        const [stream, janusStream] = await initStream(janus, audio.value);
+        audioStream = stream;
+        audioJanus = janusStream;
       }
       if (!trlAudioJanus) {
         logger.debug(NAMESPACE, 'init trlAudioJanus');
@@ -264,18 +276,6 @@ export const useShidurStore = create((set, get) => ({
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
-    }
-    logger.debug(NAMESPACE, 'wait for streams ready', promises.length);
-    const results = await Promise.all(promises);
-
-    for (const [stream, janusStream] of results) {
-      if (stream?.getVideoTracks().length > 0) {
-        videoStream = stream;
-        videoJanus = janusStream;
-      } else if (stream?.getAudioTracks().length > 0) {
-        audioStream = stream;
-        audioJanus = janusStream;
-      }
     }
 
     logger.debug(NAMESPACE, 'streams are ready', videoStream);
@@ -401,6 +401,14 @@ export const useShidurStore = create((set, get) => ({
   enterAudioMode: () => {
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
     set({ videoStream, trlUrl: null });
+  },
+
+  exitAudioMode: async () => {
+    const { video: _video, setVideo, initQuad } = get();
+    const video = await getFromStorage('video', 1).then(x => Number(x));
+    logger.debug(NAMESPACE, 'exitAudioMode', _video, video);
+    if (_video !== video) setVideo(video, false);
+    await initQuad();
   },
 
   setAutoPlay: isAutoPlay => set({ isAutoPlay }),
