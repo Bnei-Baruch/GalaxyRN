@@ -1,26 +1,26 @@
-import ListInModal from "../components/ListInModal";
-import React from "react";
-import { videos_options2 } from "../shared/consts";
-import { useShidurStore } from "../zustand/shidur";
-import { Text, View } from "react-native";
-import { baseStyles } from "../constants";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { styles } from "./AudioSelect";
-import { useTranslation } from "react-i18next";
-import logger from "../services/logger";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const NAMESPACE = "VideoSelect";
+import ListInModal from '../components/ListInModal';
+import { baseStyles } from '../constants';
+import logger from '../services/logger';
+import { videos_options2 } from '../shared/consts';
+import { useShidurStore } from '../zustand/shidur';
+
+const NAMESPACE = 'VideoSelect';
 
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
   const { t } = useTranslation();
 
-  const handleSetVideo = (item) => {
-    logger.debug(NAMESPACE, "handleSetVideo", item);
+  const handleSetVideo = item => {
+    logger.debug(NAMESPACE, 'handleSetVideo', item);
     setVideo(item.value);
   };
 
-  const renderItem = (item) => {
+  const renderItem = item => {
     if (item.header) {
       return (
         <View style={[styles.container, styles.header]} key={item.key}>
@@ -44,7 +44,7 @@ const VideoSelect = () => {
     );
   };
 
-  const selected = videos_options2.find((option) => option.value === video);
+  const selected = videos_options2.find(option => option.value === video);
 
   const trigger = (
     <View style={styles.container} key={selected.key}>
@@ -69,5 +69,24 @@ const VideoSelect = () => {
     />
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 5,
+  },
+  header: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'white',
+  },
+  withArrow: {
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    alignItems: 'center',
+  },
+});
 
 export default VideoSelect;

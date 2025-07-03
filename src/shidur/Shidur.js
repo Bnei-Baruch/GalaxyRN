@@ -15,7 +15,8 @@ import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
 import { MuteBtn } from './MuteBtn';
-import { OptionsBtn } from './OptionsBtn';
+import OptionsBtn from './OptionsBtn';
+import { OriginalSwitch } from './OriginalSwitch';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
@@ -31,50 +32,57 @@ const Shidur = () => {
 
   const streamURL = videoStream?.toURL();
   return (
-    <WIP isReady={!shidurWIP}>
-      <View>
-        {isPlay ? (
-          <View>
-            {isOnAir && (
-              <Text style={[baseStyles.text, styles.onAir]}>
-                {t('shidur.onAir')}
-              </Text>
-            )}
-            <TouchableWithoutFeedback onPress={toggleBar}>
-              {video !== NO_VIDEO_OPTION_VALUE && streamURL ? (
-                <RTCView streamURL={streamURL} style={styles.viewer} />
-              ) : (
-                <View style={styles.noVideo}>
-                  <Icon name="graphic-eq" color="white" size={70} />
-                </View>
+    <View style={shidurWIP ? styles.mainContainer : {}}>
+      <WIP isReady={!shidurWIP}>
+        <View>
+          {isPlay ? (
+            <View>
+              {isOnAir && (
+                <Text style={[baseStyles.text, styles.onAir]}>
+                  {t('shidur.onAir')}
+                </Text>
               )}
-            </TouchableWithoutFeedback>
-            <Subtitle />
-          </View>
-        ) : (
-          <PlayPauseOverlay />
-        )}
-
-        {(showBars || !isPlay) && (
-          <View style={styles.toolbar}>
-            <View style={styles.toolbarBtnsGroup}>
-              <PlayPauseBtn />
-              <MuteBtn />
+              <TouchableWithoutFeedback onPress={toggleBar}>
+                {video !== NO_VIDEO_OPTION_VALUE && streamURL ? (
+                  <RTCView streamURL={streamURL} style={styles.viewer} />
+                ) : (
+                  <View style={styles.noVideo}>
+                    <Icon name="graphic-eq" color="white" size={70} />
+                  </View>
+                )}
+              </TouchableWithoutFeedback>
+              <Subtitle />
             </View>
+          ) : (
+            <PlayPauseOverlay />
+          )}
 
-            <View style={styles.toolbarBtnsGroup}>
-              <SubtitleBtn />
-              <OptionsBtn />
-              <FullscreenBtn />
+          {(showBars || !isPlay) && (
+            <View style={styles.toolbar}>
+              <View style={styles.toolbarBtnsGroup}>
+                <PlayPauseBtn />
+                <MuteBtn />
+                <OriginalSwitch />
+              </View>
+
+              <View style={styles.toolbarBtnsGroup}>
+                <SubtitleBtn />
+                <OptionsBtn />
+                <FullscreenBtn />
+              </View>
             </View>
-          </View>
-        )}
-      </View>
-    </WIP>
+          )}
+        </View>
+      </WIP>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+  },
   viewer: {
     aspectRatio: 16 / 9,
     width: '100%',

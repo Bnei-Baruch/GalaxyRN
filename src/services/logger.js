@@ -26,14 +26,11 @@ class Logger {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
 
     return (
-      //tag === 'NAMESPACE'
-      //tag === 'SubscriberPlugin' ||
-      //tag === 'PublisherPlugin' ||
-      //tag === 'InRoom'
+      //tag === 'InRoom' || tag === 'Feed'
       // ||tag === 'Settings'
       // || tag === 'Api'
       true
-    ); //true;
+    );
   }
 
   async initializeLogFile() {

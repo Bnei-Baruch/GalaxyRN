@@ -26,17 +26,19 @@ const InitApp = () => {
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
-  const { audio } = useShidurStore();
+  const {
+    audio: { key },
+  } = useShidurStore();
   const { readyForJoin } = useInitsStore();
 
   useEffect(() => {
     logger.info(NAMESPACE, 'Initializing with language');
-    initSubtitle(audio);
+    key && initSubtitle(key);
     return () => {
       logger.info(NAMESPACE, 'Component unmounting, exiting');
-      exitSubtitle(audio);
+      key && exitSubtitle(key);
     };
-  }, [audio]);
+  }, [key]);
 
   useForegroundListener();
   useScreenRotationListener();

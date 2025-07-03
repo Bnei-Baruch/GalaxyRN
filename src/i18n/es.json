@@ -51,7 +51,9 @@
     "medium": "Media",
     "high": "Alta",
     "noVideo": "Sin vídeo",
-    "audioOnly": "Solo audio"
+    "audioOnly": "Solo audio",
+    "original": "Original",
+    "translated": "Traducido"
   },
   "chat": {
     "send": "Enviar",

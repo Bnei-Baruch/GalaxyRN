@@ -57,7 +57,9 @@
     "high": "High",
     "noVideo": "No Video",
     "audioOnly": "Audio only",
-    "onAir": "ON AIR"
+    "onAir": "ON AIR",
+    "original": "Original",
+    "translated": "Translated"
   },
   "chat": {
     "send": "Send",
