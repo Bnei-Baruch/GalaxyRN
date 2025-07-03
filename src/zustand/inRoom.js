@@ -42,10 +42,6 @@ let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
 
-// URL buffer queue
-let urlBuffer = [];
-let isProcessingBuffer = false;
-
 export const useInRoomStore = create((set, get) => ({
   // State
   feedById: {},
@@ -90,39 +86,6 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     set({ feedIds });
-  },
-
-  setFeedUrlWithDelay: async (id, stream) => {
-    if (get().feedById[id]?.url) return;
-
-    urlBuffer.push({ id, stream });
-    if (isProcessingBuffer) return;
-
-    isProcessingBuffer = true;
-    while (urlBuffer.length > 0) {
-      const { id, stream } = urlBuffer.shift();
-      let url;
-      try {
-        url = stream.toURL();
-      } catch (error) {
-        logger.error(NAMESPACE, 'Error setting feed url', error);
-        url = null;
-      }
-      set(
-        produce(state => {
-          logger.debug(
-            NAMESPACE,
-            'setFeedUrlWithDelay feedById[id]',
-            state.feedById[id]
-          );
-          state.feedById[id].vOn = true;
-          state.feedById[id].vWIP = false;
-          state.feedById[id].url = url;
-        })
-      );
-      await sleep(100);
-    }
-    isProcessingBuffer = false;
   },
 
   updateDisplayById: data => {
@@ -219,7 +182,6 @@ export const useInRoomStore = create((set, get) => ({
         }
 
         feedById[id].vMid = vStream?.mid;
-        feedById[id].vWIP = true;
         logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
       }
 
@@ -335,12 +297,23 @@ export const useInRoomStore = create((set, get) => ({
       const { id } = stream;
       logger.info(
         NAMESPACE,
-        `>> This track is coming from feed ${id}: ${track}`
+        `>> This track is coming from feed ${id}: ${JSON.stringify(track)}`
       );
-      if (on) {
-        if (track.kind === 'video') {
-          get().setFeedUrlWithDelay(id, stream);
+      if (on && track.kind === 'video') {
+        let url;
+        try {
+          url = stream.toURL();
+        } catch (error) {
+          logger.error(NAMESPACE, 'Error setting feed url', error);
+          url = null;
         }
+        set(
+          produce(state => {
+            state.feedById[id].vOn = true;
+            state.feedById[id].vWIP = false;
+            state.feedById[id].url = url;
+          })
+        );
       }
     };
 

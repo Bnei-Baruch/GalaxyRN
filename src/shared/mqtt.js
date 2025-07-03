@@ -170,7 +170,15 @@ class MqttMsg {
 
   watch = callback => {
     this.mq.on('message', (topic, data, packet) => {
-      logger.trace(NAMESPACE, '<-- receive packet: ', packet);
+      if (
+        packet.payload?.type === 'Buffer' &&
+        Array.isArray(packet.payload.data)
+      ) {
+        const payload = Buffer.from(packet.payload.data).toString();
+        logger.trace(NAMESPACE, '<-- receive packet: ', { ...packet, payload });
+      } else {
+        logger.trace(NAMESPACE, '<-- receive packet: ', packet);
+      }
       let cd = packet?.properties?.correlationData
         ? ` | transaction: ${packet?.properties?.correlationData?.toString()}`
         : '';

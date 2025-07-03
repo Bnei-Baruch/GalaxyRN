@@ -256,7 +256,7 @@ export class JanusMqtt {
     if (isScheduled) {
       BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
     } else {
-      logger.debug(NAMESPACE, 'Sending keepalive to: ' + this.srv);
+      logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
       this.transaction('keepalive', null, null, 20 * 1000)
         .then(() => {
           this.keeptry = 0;
@@ -399,7 +399,7 @@ export class JanusMqtt {
     const { session_id, janus, data, jsep } = json;
 
     if (tD === 'status' && json.online) {
-      logger.debug(NAMESPACE, 'Janus Server - ' + this.srv + ' - Online');
+      logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Online`);
       if (typeof this.connect === 'function') this.connect();
       if (typeof this.onStatus === 'function')
         this.onStatus(this.srv, 'online');
@@ -408,7 +408,7 @@ export class JanusMqtt {
 
     if (tD === 'status' && !json.online) {
       this.isConnected = false;
-      logger.debug(NAMESPACE, 'Janus Server - ' + this.srv + ' - Offline');
+      logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
       if (typeof this.disconnect === 'function') this.disconnect(json);
       if (typeof this.onStatus === 'function')
         this.onStatus(this.srv, 'offline');
@@ -452,8 +452,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + json,
-          'color: darkgrey'
+          `This handle is not attached to this session ${json}`
         );
         return;
       }
@@ -478,8 +477,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + sender,
-          'color: darkgrey'
+          `This handle is not attached to this session ${sender}`
         );
         return;
       }
@@ -498,8 +496,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + sender,
-          'color: darkgrey'
+          `This handle is not attached to this session ${sender}`
         );
         return;
       }
@@ -529,8 +526,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + sender,
-          'color: darkgrey'
+          `This handle is not attached to this session ${sender}`
         );
         return;
       }
@@ -542,7 +538,7 @@ export class JanusMqtt {
       // Trouble uplink or downlink
       logger.debug(
         NAMESPACE,
-        'Got a slowlink event on session ' + this.sessionId
+        `Got a slowlink event on session ${this.sessionId}`
       );
       logger.debug(NAMESPACE, json);
       const sender = json.sender;
@@ -554,8 +550,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + sender,
-          'color: darkgrey'
+          `This handle is not attached to this session ${sender}`
         );
         return;
       }
@@ -565,7 +560,7 @@ export class JanusMqtt {
 
     if (janus === 'error') {
       // Oops, something wrong happened
-      logger.error(NAMESPACE, 'Janus error response' + json);
+      logger.error(NAMESPACE, `Janus error response ${json}`);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
         if (transaction.request) {
@@ -598,8 +593,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         logger.debug(
           NAMESPACE,
-          '%cThis handle is not attached to this session' + sender,
-          'color: darkgrey'
+          `This handle is not attached to this session ${sender}`
         );
         return;
       }
@@ -621,7 +615,7 @@ export class JanusMqtt {
 
     logger.warn(
       NAMESPACE,
-      'Unknown message/event ' + janus + ' on session ' + this.sessionId
+      `Unknown message/event ${janus} on session ${this.sessionId}`
     );
   }
 }

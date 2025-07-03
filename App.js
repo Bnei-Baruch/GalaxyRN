@@ -16,7 +16,7 @@ import SentryErrorBoundary from './src/libs/sentry/SentryErrorBoundary';
 import AndroidPermissions from './src/services/AndroidPermissions';
 import InitApp from './src/services/InitApp';
 import VersionCheck from './src/services/VersionCheck';
-//import logger from './src/services/logger';
+import logger from './src/services/logger';
 
 Sentry.init({
   dsn: SENTRY_DSN,

@@ -399,16 +399,20 @@ export const useShidurStore = create((set, get) => ({
   },
 
   enterAudioMode: () => {
+    if (!useSettingsStore.getState().isShidur || !get().isPlay) return;
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
     set({ videoStream, trlUrl: null });
   },
 
   exitAudioMode: async () => {
-    const { video: _video, setVideo, initQuad } = get();
+    const { video: _video, setVideo, initQuad, isPlay } = get();
+    await initQuad();
+
+    if (!useSettingsStore.getState().isShidur || !isPlay) return;
+
     const video = await getFromStorage('video', 1).then(x => Number(x));
     logger.debug(NAMESPACE, 'exitAudioMode', _video, video);
     if (_video !== video) setVideo(video, false);
-    await initQuad();
   },
 
   setAutoPlay: isAutoPlay => set({ isAutoPlay }),
