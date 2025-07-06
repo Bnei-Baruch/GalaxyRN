@@ -24,6 +24,7 @@ export class PublisherPlugin extends EventEmitter {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
+    this.configure = this.configure.bind(this);
   }
 
   getPluginName() {
@@ -223,26 +224,24 @@ export class PublisherPlugin extends EventEmitter {
     this.configure();
   }
 
-  configure(restart) {
-    this.pc.createOffer().then(offer => {
-      this.pc
-        .setLocalDescription(offer)
-        .catch(error =>
-          logger.error(NAMESPACE, 'setLocalDescription: ', error)
-        );
-      const body = { request: 'configure', restart };
-      return this.transaction('message', { body, jsep: offer }, 'event').then(
-        param => {
-          const { data, json } = param || {};
-          const jsep = json.jsep;
-          logger.debug(NAMESPACE, 'Configure respond: ', param);
-          this.pc
-            .setRemoteDescription(jsep)
-            .then(e => logger.info(NAMESPACE, e))
-            .catch(e => logger.error(NAMESPACE, e));
-        }
-      );
-    });
+  async configure(restart) {
+    const offer = await this.pc.createOffer();
+    logger.debug(NAMESPACE, 'createOffer: ', offer);
+    this.pc
+      .setLocalDescription(offer)
+      .catch(error => logger.error(NAMESPACE, 'setLocalDescription: ', error));
+    const body = { request: 'configure', restart };
+    return this.transaction('message', { body, jsep: offer }, 'event').then(
+      param => {
+        logger.debug(NAMESPACE, 'Configure respond: ', param);
+        const { data, json } = param || {};
+        const jsep = json.jsep;
+        this.pc
+          .setRemoteDescription(jsep)
+          .then(e => logger.info(NAMESPACE, e))
+          .catch(e => logger.error(NAMESPACE, e));
+      }
+    );
   }
 
   initPcEvents() {
@@ -282,10 +281,10 @@ export class PublisherPlugin extends EventEmitter {
     });
   }
 
-  async iceRestart(attempt = 0) {
+  iceRestart(attempt = 0) {
     try {
-      BackgroundTimer.setTimeout(() => {
-        logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
+      BackgroundTimer.setTimeout(async () => {
+        logger.debug(NAMESPACE, 'ICE Restart try: ', attempt, this.iceState);
         if (
           (attempt < 10 && this.iceState !== 'disconnected') ||
           !this.janus?.isConnected
@@ -294,7 +293,7 @@ export class PublisherPlugin extends EventEmitter {
         } else if (mqtt.mq.connected) {
           logger.debug(NAMESPACE, '- Trigger ICE Restart - ');
           this.pc.restartIce();
-          this.configure(true);
+          await this.configure(true);
         } else if (attempt >= 10) {
           typeof this.iceFailed === 'function' && this.iceFailed();
           logger.error(NAMESPACE, '- ICE Restart failed - ');

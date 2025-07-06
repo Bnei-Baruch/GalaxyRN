@@ -22,6 +22,7 @@ export class StreamingPlugin extends EventEmitter {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
+    this.configure = this.configure.bind(this);
   }
 
   getPluginName() {
@@ -188,6 +189,7 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   async iceRestart(attempt = 0) {
+    logger.debug(NAMESPACE, 'ICE Restart start try: ', attempt, this.iceState);
     try {
       BackgroundTimer.setTimeout(() => {
         if (

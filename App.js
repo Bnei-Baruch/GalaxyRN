@@ -30,7 +30,7 @@ Sentry.init({
   maxBreadcrumbs: 100,
   autoInitializeNativeSdk: true,
   beforeSend: event => {
-    console.log('Sentry beforeSend', event);
+    //console.log('Sentry beforeSend', event);
     logger.sendFile();
     return event;
   },
