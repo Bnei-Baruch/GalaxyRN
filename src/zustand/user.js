@@ -25,7 +25,7 @@ export const useUserStore = create((set, get) => ({
   user: null,
   setUser: user => set({ user, wip: false }),
 
-  vhinfo: {},
+  vhinfo: null,
   setVhinfo: vhinfo => set({ vhinfo }),
 
   geoInfo: {},

@@ -23,7 +23,7 @@ const CheckAuthentication = ({ children }) => {
     logger.debug(NAMESPACE, 'Membership validation: login');
     kc.login();
   };
-
+  logger.debug(NAMESPACE, 'render user: ', !!user);
   if (!user) {
     return (
       <WIP isReady={!wip}>
@@ -35,15 +35,15 @@ const CheckAuthentication = ({ children }) => {
       </WIP>
     );
   }
-
+  logger.debug(NAMESPACE, 'render vhinfo: ', !!vhinfo);
   if (!vhinfo) {
     return <WIP isReady={true}></WIP>;
   }
-
+  logger.debug(NAMESPACE, 'render vhinfo.active: ', vhinfo.active);
   if (!vhinfo.active) {
     return <UserPermissions />;
   }
-
+  logger.debug(NAMESPACE, 'render children');
   return <View style={styles.container}>{children}</View>;
 };
 

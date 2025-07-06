@@ -206,6 +206,7 @@ export const useInitsStore = create((set, get) => ({
     BackgroundTimer.stop();
     useSettingsStore.getState().toggleIsFullscreen(false);
     useChatStore.getState().setChatMode(modalModes.close);
+    useUserStore.getState().setVhinfo(null);
     if (subscription) subscription.remove();
   },
 }));
