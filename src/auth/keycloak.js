@@ -13,7 +13,7 @@ import logger from '../services/logger';
 import api from '../shared/Api';
 import { getUserRole, userRolesEnum } from '../shared/enums';
 import mqtt from '../shared/mqtt';
-import { getFromStorage, setToStorage } from '../shared/tools';
+import { fixTextEncoding, getFromStorage, setToStorage } from '../shared/tools';
 import { useUserStore } from '../zustand/user';
 
 const NAMESPACE = 'Keycloak';
@@ -344,7 +344,7 @@ class Keycloak {
 
       const user = {
         id: sub,
-        display: name,
+        display: fixTextEncoding(name),
         username: given_name,
         familyname: family_name,
         name,

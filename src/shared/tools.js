@@ -66,3 +66,47 @@ export const getDateString = jsonDate => {
 };
 
 export const noop = () => {};
+
+/**
+ * Fixes text encoding issues by detecting and correcting common misinterpretations
+ * Handles UTF-8 misinterpreted as Latin-1, Windows-1252, and other common encoding problems
+ * @param {string} text - The potentially garbled text to fix
+ * @returns {string} - The properly decoded text
+ */
+export const fixTextEncoding = text => {
+  if (!text || typeof text !== 'string') {
+    return 'No name';
+  }
+
+  // Check if text likely needs decoding (contains UTF-8 bytes misinterpreted as other encodings)
+  // Common indicators: Ð characters (Cyrillic), â€ sequences, Ã characters, etc.
+  const hasEncodingIssues =
+    /[\xC0-\xFF]/.test(text) &&
+    (/Ð/.test(text) || // Cyrillic UTF-8 as Latin-1
+      /â€/.test(text) || // Common UTF-8 as Windows-1252
+      /Ã/.test(text) || // Accented chars UTF-8 as Latin-1
+      /Â/.test(text)); // Non-breaking space and other issues
+
+  if (!hasEncodingIssues) {
+    return text; // Text is already properly encoded
+  }
+
+  try {
+    // Convert string to bytes as if it was Latin-1
+    const bytes = new Uint8Array(text.length);
+    for (let i = 0; i < text.length; i++) {
+      bytes[i] = text.charCodeAt(i);
+    }
+
+    // Use React Native's built-in TextDecoder to decode as UTF-8
+    const decoder = new TextDecoder('utf-8');
+    const decodedText = decoder.decode(bytes);
+
+    // Return decoded text if it doesn't contain replacement characters
+    return decodedText.includes('\uFFFD') ? text : decodedText;
+  } catch (error) {
+    // If decoding fails, return the original text
+    console.warn('Text encoding fix failed:', error);
+    return text;
+  }
+};
