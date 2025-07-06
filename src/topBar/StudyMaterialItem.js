@@ -9,6 +9,16 @@ import {
 } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 
+const customHTMLElementModels = {
+  font: {
+    tagName: 'font',
+    mixedUAStyles: {
+      color: 'white',
+    },
+    contentModel: 'textual',
+  },
+};
+
 export const StudyMaterialItem = ({ msg }) => {
   const [open, setOpen] = useState(false);
   const { width } = useWindowDimensions();
@@ -16,10 +26,10 @@ export const StudyMaterialItem = ({ msg }) => {
 
   const { Title, Description } = msg;
 
-  const source = {
-    html: Description.toString(),
+  const toggleOpen = () => {
+    setOpen(!open);
   };
-  const toggleOpen = () => setOpen(!open);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={toggleOpen} style={styles.title}>
@@ -30,18 +40,25 @@ export const StudyMaterialItem = ({ msg }) => {
         <View style={styles.content}>
           <RenderHtml
             contentWidth={contentWidth}
-            source={source}
+            source={{
+              html: Description,
+            }}
             baseStyle={{
               color: 'white',
+              fontSize: 14,
             }}
             tagsStyles={{
-              a: {
-                color: '#3498db',
-              },
-              '*': {
-                color: 'white',
-              },
+              div: { color: 'white' },
+              p: { color: 'white' },
+              span: { color: 'white' },
+              b: { color: 'white', fontWeight: 'bold' },
+              u: { color: 'white', textDecorationLine: 'underline' },
+              a: { color: 'blue' },
+              font: { color: 'white' },
             }}
+            customHTMLElementModels={customHTMLElementModels}
+            ignoredStyles={['color', 'background-color', 'font-family']}
+            enableExperimentalBRCollapsing={true}
           />
         </View>
       )}
@@ -62,5 +79,6 @@ const styles = StyleSheet.create({
   content: {
     paddingVertical: 10,
     paddingHorizontal: 5,
+    backgroundColor: '#333',
   },
 });
