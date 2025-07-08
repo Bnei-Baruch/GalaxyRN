@@ -345,10 +345,10 @@ class Keycloak {
       const user = {
         id: sub,
         display: fixTextEncoding(name),
-        username: given_name,
-        familyname: family_name,
-        name,
-        email,
+        username: fixTextEncoding(given_name),
+        familyname: fixTextEncoding(family_name),
+        name: fixTextEncoding(name),
+        email: email,
         role: getUserRole(roles),
         roles,
       };
