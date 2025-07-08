@@ -22,7 +22,7 @@ export class StreamingPlugin extends EventEmitter {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.configure = this.configure.bind(this);
+    this.configure = this.watch.bind(this);
   }
 
   getPluginName() {
