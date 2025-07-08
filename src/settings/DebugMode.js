@@ -9,13 +9,13 @@ import {
   View,
 } from 'react-native';
 
-import logger from '../services/logger';
+import WIP from '../components/WIP';
 import { getFromStorage } from '../shared/tools';
 import { useDebugStore } from '../zustand/debug';
 
 const DebugMode = () => {
   const { t } = useTranslation();
-  const { debugMode, toggleDebugMode } = useDebugStore();
+  const { debugMode, toggleDebugMode, wip, sendLogs } = useDebugStore();
 
   useEffect(() => {
     const initDebugMode = async () => {
@@ -44,9 +44,12 @@ const DebugMode = () => {
       {debugMode && (
         <TouchableOpacity
           style={styles.button}
-          onPress={() => logger.sendFile()}
+          onPress={sendLogs}
+          disabled={wip}
         >
-          <Text style={styles.buttonText}>{t('settings.sendLogs')}</Text>
+          <WIP isReady={!wip}>
+            <Text style={styles.buttonText}>{t('settings.sendLogs')}</Text>
+          </WIP>
         </TouchableOpacity>
       )}
     </View>
