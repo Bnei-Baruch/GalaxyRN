@@ -1,22 +1,28 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { RTCView } from 'react-native-webrtc';
-import { useMyStreamStore } from '../zustand/myStream';
 import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
+import { useMyStreamStore } from '../zustand/myStream';
 
-const MyRTCView = () => {
-  const { stream }     = useMyStreamStore();
-  const { isPortrait } = useInitsStore();
+const MyRTCView = memo(
+  () => {
+    const { stream } = useMyStreamStore();
+    const { isPortrait } = useInitsStore();
 
-  if (!stream) return null;
+    if (!stream) return null;
 
-  return (
-    <RTCView
-      streamURL={stream.toURL()}
-      style={[baseStyles.full, { aspectRatio: isPortrait ? 9 / 16 : 16 / 9 }]}
-      mirror={true}
-      objectFit="cover"
-    />
-  );
-};
+    return (
+      <RTCView
+        streamURL={stream.toURL()}
+        style={[baseStyles.full, { aspectRatio: isPortrait ? 9 / 16 : 16 / 9 }]}
+        mirror={true}
+        objectFit="cover"
+      />
+    );
+  },
+  (prevProps, nextProps) => {
+    return false;
+  }
+);
+
 export default MyRTCView;
