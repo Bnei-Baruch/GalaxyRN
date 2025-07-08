@@ -42,6 +42,10 @@ export const useMyStreamStore = create((set, get) => ({
       stream = await mediaDevices.getUserMedia({
         video: {
           facingMode: 'user',
+          // Add constraints to potentially avoid MediaTek camera buffer issues
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 },
+          frameRate: { ideal: 15, max: 30 },
         },
         audio: {
           // echoCancellation: true,

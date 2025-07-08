@@ -1,13 +1,12 @@
-import React from "react";
+import React from 'react';
 import {
-  StyleSheet,
   ScrollView,
-  View,
+  StyleSheet,
   TouchableWithoutFeedback,
-} from "react-native";
-import { baseStyles } from "../../constants";
-import { useUiActions } from "../../zustand/uiActions";
-import Subtitle from '../../shidur/Subtitle';
+  View,
+} from 'react-native';
+import { baseStyles } from '../../constants';
+import { useUiActions } from '../../zustand/uiActions';
 
 const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
@@ -15,7 +14,10 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
   const isShidur = !!shidur;
 
   const handleAnyPress = () => toggleShowBars(true);
-  const handleScroll = (e) => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+  const handleScroll = e => {
+    const scrollY = e.nativeEvent.contentOffset.y;
+    setFeedsScrollY(scrollY);
+  };
   return (
     <View style={styles.container}>
       {isShidur && (
@@ -46,18 +48,18 @@ export default RoomLandscape;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
-    flexDirection: "row",
+    backgroundColor: 'black',
+    flexDirection: 'row',
   },
   scrollContent: {
     flex: 1,
-    minHeight: "100%",
+    minHeight: '100%',
   },
   shidurWrapper: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   shidur: {
-    width: "100%",
+    width: '100%',
   },
 });
