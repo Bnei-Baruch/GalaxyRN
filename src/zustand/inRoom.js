@@ -46,6 +46,7 @@ export const useInRoomStore = create((set, get) => ({
   // State
   feedById: {},
   feedIds: [],
+  isInBackground: false,
 
   // Feed management
   setFeedIds: () => {
@@ -520,10 +521,12 @@ export const useInRoomStore = create((set, get) => ({
 
   // App lifecycle
   enterBackground: async () => {
+    set({ isInBackground: true });
     useSettingsStore.getState().enterAudioMode();
   },
 
   enterForeground: async () => {
+    set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       useSettingsStore.getState().exitAudioMode();
     }

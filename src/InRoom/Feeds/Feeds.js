@@ -13,7 +13,7 @@ const Feeds = () => {
   const { audioMode, hideSelf } = useSettingsStore();
   const { cammute } = useMyStreamStore();
   const { setFeedsPos } = useUiActions();
-  const { feedIds } = useInRoomStore();
+  const { feedIds, isInBackground } = useInRoomStore();
 
   const ref = useRef({});
 
@@ -24,7 +24,9 @@ const Feeds = () => {
 
   const renderMy = () => {
     if (hideSelf) return null;
-    if (audioMode && cammute) return <MyAudioMode key="my" />;
+    if ((audioMode && cammute) || isInBackground) {
+      return <MyAudioMode key="my" />;
+    }
     return <MyRoomMedia key="my" />;
   };
 
@@ -35,7 +37,9 @@ const Feeds = () => {
       return renderMy();
     }
 
-    if (audioMode) return <FeedAudioMode key={id} id={id} />;
+    if (audioMode || isInBackground) {
+      return <FeedAudioMode key={id} id={id} />;
+    }
     return <Feed key={id} id={id} />;
   };
 
