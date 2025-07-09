@@ -13,7 +13,7 @@ import QuestionOverlay from './QuestionOverlay';
 const NAMESPACE = 'Feed';
 
 const RTCViewWrapper = memo(
-  ({ streamURL, style }) => <RTCView streamURL={streamURL} style={style} />,
+  ({ streamURL }) => <RTCView streamURL={streamURL} style={styles.rtcView} />,
   (prevProps, nextProps) => {
     return prevProps.streamURL === nextProps.streamURL;
   }
@@ -71,7 +71,7 @@ const Feed = ({ id }) => {
     return (
       <View style={styles.viewer}>
         <FeedDisplay display={display} talking={talking} />
-        <RTCViewWrapper streamURL={url} style={styles.rtcView} />
+        <RTCViewWrapper streamURL={url} />
       </View>
     );
   };

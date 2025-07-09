@@ -102,7 +102,7 @@ export const useShidurStore = create((set, get) => ({
   video: VIDEO_240P_OPTION_VALUE,
   audio: 64,
   audio: {},
-  videoStream: null,
+  url: null,
   quadUrl: null,
   trlUrl: null,
   audioUrl: null,
@@ -148,7 +148,7 @@ export const useShidurStore = create((set, get) => ({
       }
     }
 
-    set({ videoStream, video });
+    set({ url: videoStream?.toURL(), video });
   },
 
   initJanus: async () => {
@@ -279,7 +279,7 @@ export const useShidurStore = create((set, get) => ({
     }
 
     logger.debug(NAMESPACE, 'streams are ready', videoStream);
-    set({ videoStream, readyShidur: true, shidurWIP: false });
+    set({ url: videoStream?.toURL(), readyShidur: true, shidurWIP: false });
 
     if (get().isOnAir) {
       get().streamGalaxy(true, true);
@@ -300,7 +300,7 @@ export const useShidurStore = create((set, get) => ({
     set({
       readyShidur: false,
       isPlay: false,
-      videoStream: null,
+      url: null,
       isOnAir: false,
     });
   },
@@ -401,7 +401,7 @@ export const useShidurStore = create((set, get) => ({
   enterAudioMode: () => {
     if (!useSettingsStore.getState().isShidur || !get().isPlay) return;
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
-    set({ videoStream, trlUrl: null });
+    set({ url: null, trlUrl: null });
   },
 
   exitAudioMode: async () => {

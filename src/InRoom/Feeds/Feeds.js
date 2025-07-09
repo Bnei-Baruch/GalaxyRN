@@ -18,7 +18,8 @@ const Feeds = () => {
   const ref = useRef({});
 
   const handleLayout = event => {
-    setFeedsPos(event.nativeEvent.layout.y);
+    const layoutY = event.nativeEvent.layout.y;
+    setFeedsPos(layoutY);
   };
 
   const renderMy = () => {

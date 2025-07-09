@@ -1,5 +1,5 @@
 // Core React and React Native imports
-import React from 'react';
+import React, { memo } from 'react';
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 
 // Third-party libraries
@@ -23,14 +23,13 @@ import Subtitle from './Subtitle';
 import { SubtitleBtn } from './SubtitleBtn';
 
 const Shidur = () => {
-  const { videoStream, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
+  const { url, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
   const { toggleShowBars, showBars } = useUiActions();
 
   const { t } = useTranslation();
 
   const toggleBar = () => toggleShowBars();
 
-  const streamURL = videoStream?.toURL();
   return (
     <View style={shidurWIP ? styles.mainContainer : {}}>
       <WIP isReady={!shidurWIP}>
@@ -43,8 +42,8 @@ const Shidur = () => {
                 </Text>
               )}
               <TouchableWithoutFeedback onPress={toggleBar}>
-                {video !== NO_VIDEO_OPTION_VALUE && streamURL ? (
-                  <RTCView streamURL={streamURL} style={styles.viewer} />
+                {video !== NO_VIDEO_OPTION_VALUE && url ? (
+                  <MemoizedRTCView streamURL={url} style={styles.viewer} />
                 ) : (
                   <View style={styles.noVideo}>
                     <Icon name="graphic-eq" color="white" size={70} />
@@ -77,6 +76,16 @@ const Shidur = () => {
     </View>
   );
 };
+
+// Memoized RTCView component
+const MemoizedRTCView = memo(
+  ({ url }) => {
+    return <RTCView streamURL={url} style={styles.viewer} />;
+  },
+  (prevProps, nextProps) => {
+    return prevProps.url === nextProps.url;
+  }
+);
 
 const styles = StyleSheet.create({
   mainContainer: {

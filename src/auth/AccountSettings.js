@@ -1,17 +1,17 @@
-import React from "react";
-import { StyleSheet, Text, View, Linking } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import ListInModal from "../components/ListInModal";
-import { useTranslation } from "react-i18next";
-import { useUserStore } from "../zustand/user";
-import kc from "./keycloak";
-import { baseStyles } from "../constants";
-import IconWithText from "../settings/IconWithText";
-import TextDisplayWithButton from "../components/TextDisplayWithButton";
-import { ACCOUNT_URL } from "@env";
-import logger from "../services/logger";
+import { ACCOUNT_URL } from '@env';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Linking, StyleSheet, Text, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import ListInModal from '../components/ListInModal';
+import TextDisplayWithButton from '../components/TextDisplayWithButton';
+import { baseStyles } from '../constants';
+import logger from '../services/logger';
+import IconWithText from '../settings/IconWithText';
+import { useUserStore } from '../zustand/user';
+import kc from './keycloak';
 
-const NAMESPACE = "AccountSettings";
+const NAMESPACE = 'AccountSettings';
 
 const AccountSettings = ({ withTitle = true }) => {
   const { t } = useTranslation();
@@ -19,28 +19,28 @@ const AccountSettings = ({ withTitle = true }) => {
 
   const accauntOptions = [
     {
-      key: "account",
-      value: "account",
-      text: t("user.account"),
+      key: 'account',
+      value: 'account',
+      text: t('user.account'),
       action: () => {
         try {
           Linking.openURL(ACCOUNT_URL);
         } catch (error) {
-          logger.error(NAMESPACE, "Error opening account page", error);
+          logger.error(NAMESPACE, 'Error opening account page', error);
         }
       },
     },
     {
-      key: "logout",
-      value: "logout",
-      text: t("user.logout"),
+      key: 'logout',
+      value: 'logout',
+      text: t('user.logout'),
       action: () => kc.logout(),
     },
   ];
 
-  const handleSelect = (item) => item.action && item.action();
+  const handleSelect = item => item.action && item.action();
 
-  const renderItem = (item) => (
+  const renderItem = item => (
     <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>
   );
 
@@ -50,11 +50,11 @@ const AccountSettings = ({ withTitle = true }) => {
         <IconWithText
           style={styles.title}
           iconName="account-circle"
-          text={t("user.title")}
+          text={t('user.title')}
         />
       )}
       <TextDisplayWithButton
-        label={t("user.name")}
+        label={t('user.name')}
         value={user?.display}
         button={
           <ListInModal
@@ -74,16 +74,16 @@ export default AccountSettings;
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
-    width: "100%",
+    width: '100%',
   },
   inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
   },
   dropdownContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   label: {
     fontSize: 16,
@@ -91,14 +91,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.23)",
-    color: "rgba(255, 255, 255, 0.66)",
+    borderColor: 'rgba(255, 255, 255, 0.23)',
+    color: 'rgba(255, 255, 255, 0.66)',
     padding: 10,
     borderRadius: 5,
     flex: 1,
   },
   disabled: {
-    color: "grey",
+    color: 'grey',
   },
   title: {
     marginBottom: 15,

@@ -18,7 +18,10 @@ const RoomPortrait = ({ shidur, quads, members }) => {
 
   const handleAnyPress = () => toggleShowBars(true);
 
-  const handleScroll = e => setFeedsScrollY(e.nativeEvent.contentOffset.y);
+  const handleScroll = e => {
+    const scrollY = e.nativeEvent.contentOffset.y;
+    setFeedsScrollY(scrollY);
+  };
 
   const { width } = Dimensions.get('window');
 
