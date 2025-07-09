@@ -2,10 +2,9 @@
 import { create } from 'zustand';
 
 // i18n
-import { setLanguage } from '../i18n/i18n';
 
 // Shared modules
-import { getFromStorage, setToStorage } from '../shared/tools';
+import { getFromStorage } from '../shared/tools';
 
 // Zustand stores
 import logger from '../services/logger';
@@ -19,15 +18,7 @@ import { useUserStore } from './user';
 const NAMESPACE = 'Settings';
 
 export const useSettingsStore = create((set, get) => ({
-  uiLang: 'en',
   autoEnterRoom: false,
-
-  setUiLang: uiLang => {
-    set({ uiLang });
-    setLanguage(uiLang);
-    setToStorage('ui_lang', uiLang);
-  },
-
   question: false,
 
   isFullscreen: false,

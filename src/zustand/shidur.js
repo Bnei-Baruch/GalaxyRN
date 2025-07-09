@@ -9,6 +9,7 @@ import { StreamingPlugin } from '../libs/streaming-plugin';
 import logger from '../services/logger';
 
 // Shared modules
+import i18n from '../i18n/i18n';
 import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
@@ -231,16 +232,8 @@ export const useShidurStore = create((set, get) => ({
     if (isOriginal) {
       audio = getOptionByKey('wo_original');
     } else {
-      const { uiLang } = useSettingsStore.getState();
-      const audioKey = await getFromStorage('audio', `wo_${uiLang}`);
+      const audioKey = await getFromStorage('audio', `wo_${i18n.language}`);
       audio = getOptionByKey(audioKey);
-      logger.debug(
-        NAMESPACE,
-        'initAudio isOriginal false',
-        audio,
-        audioKey,
-        uiLang
-      );
     }
 
     set({ video, audio });
@@ -445,8 +438,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOriginal) {
       key = 'wo_original';
     } else {
-      const { uiLang } = useSettingsStore.getState();
-      key = await getFromStorage('audio', `wo_${uiLang}`);
+      key = await getFromStorage('audio', `wo_${i18n.language}`);
     }
 
     get().setAudio(key);

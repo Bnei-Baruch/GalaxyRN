@@ -9,10 +9,10 @@ import { subtitle_options } from '../shared/consts';
 
 // Services
 import logger from '../services/logger';
-import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
 
 // Zustand stores
+import i18n from '../i18n/i18n';
 import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Subtitle';
@@ -43,7 +43,7 @@ export const useSubtitleStore = create((set, get) => ({
 
     let subLang = audio.key?.split('_')[1];
     if (!subtitle_options.some(op => op.value === subLang)) {
-      subLang = useSettingsStore.getState().uiLang;
+      subLang = i18n.language;
     }
 
     logger.debug(NAMESPACE, `Subtitle language: ${subLang}`);

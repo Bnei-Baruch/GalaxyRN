@@ -18,7 +18,6 @@ import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
 import mqtt from '../shared/mqtt';
-import { getFromStorage } from '../shared/tools';
 
 // Zustand stores
 import { useChatStore } from './chat';
@@ -180,10 +179,6 @@ export const useInitsStore = create((set, get) => ({
   initApp: async () => {
     BackgroundTimer.start();
     let _isPlay = false;
-    const uiLang = await getFromStorage('ui_lang', 'en');
-    useSettingsStore.getState().setUiLang(uiLang);
-
-    // Only add listener if eventEmitter is defined
     if (eventEmitter) {
       subscription = eventEmitter.addListener(
         'onCallStateChanged',

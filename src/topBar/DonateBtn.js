@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { TouchableOpacity, Text, Linking } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Linking, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { topMenuBtns } from './helper';
-import { useSettingsStore } from '../zustand/settings';
-import { useTranslation } from 'react-i18next';
 
-const PARAMS = '"utm_source"=arvut_system&"&"utm_medium"="button"&"utm_campaign"="donations"&"utm_id"="donations"&"utm_content"="header_button_donate"&"utm_term"="heb"';
+const PARAMS =
+  '"utm_source"=arvut_system&"&"utm_medium"="button"&"utm_campaign"="donations"&"utm_id"="donations"&"utm_content"="header_button_donate"&"utm_term"="heb"';
 
 const iso2ByIso1 = {
   he: 'heb',
@@ -15,20 +15,19 @@ const iso2ByIso1 = {
 };
 
 export const DonateBtn = () => {
-  const { uiLang } = useSettingsStore();
-  const { t }      = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  const isHe        = uiLang === 'he';
+  const isHe = i18n.language === 'he';
   const handlePress = () => {
-    const url = `https://www.kab1.com${isHe ? '' : '/' + uiLang}?${PARAMS}&"utm_term"=${iso2ByIso1[uiLang]}`;
+    const url = `https://www.kab1.com${
+      isHe ? '' : '/' + i18n.language
+    }?${PARAMS}&"utm_term"=${iso2ByIso1[i18n.language]}`;
     Linking.openURL(url);
   };
   return (
     <TouchableOpacity onPress={handlePress} style={topMenuBtns.btn}>
       <Icon name="favorite" size={30} color="white" />
-      <Text style={topMenuBtns.menuItemText}>
-        {t('topBar.donate')}
-      </Text>
+      <Text style={topMenuBtns.menuItemText}>{t('topBar.donate')}</Text>
     </TouchableOpacity>
   );
 };

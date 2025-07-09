@@ -26,7 +26,7 @@ class Logger {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
 
     return (
-      //tag === 'InRoom' || tag === 'Feed'
+      //tag === 'Shidur'
       // ||tag === 'Settings'
       // || tag === 'Api'
       true
