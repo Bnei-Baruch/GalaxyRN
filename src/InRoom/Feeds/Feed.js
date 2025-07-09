@@ -66,6 +66,7 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
+    logger.debug(NAMESPACE, 'renderContent', vOn, url);
     if (!vOn || !url) return <WIP isReady={false} />;
 
     return (

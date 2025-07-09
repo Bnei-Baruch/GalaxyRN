@@ -6,6 +6,7 @@ import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
+import logger from '../services/logger';
 
 // Local imports
 import WIP from '../components/WIP';
@@ -21,6 +22,8 @@ import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
 import { SubtitleBtn } from './SubtitleBtn';
+
+const NAMESPACE = 'Shidur';
 
 const Shidur = () => {
   const { url, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
@@ -43,7 +46,7 @@ const Shidur = () => {
               )}
               <TouchableWithoutFeedback onPress={toggleBar}>
                 {video !== NO_VIDEO_OPTION_VALUE && url ? (
-                  <MemoizedRTCView streamURL={url} style={styles.viewer} />
+                  <MemoizedRTCView streamURL={url} />
                 ) : (
                   <View style={styles.noVideo}>
                     <Icon name="graphic-eq" color="white" size={70} />
@@ -79,8 +82,9 @@ const Shidur = () => {
 
 // Memoized RTCView component
 const MemoizedRTCView = memo(
-  ({ url }) => {
-    return <RTCView streamURL={url} style={styles.viewer} />;
+  ({ streamURL }) => {
+    logger.debug(NAMESPACE, `MemoizedRTCView  url: ${streamURL}`);
+    return <RTCView streamURL={streamURL} style={styles.viewer} />;
   },
   (prevProps, nextProps) => {
     return prevProps.url === nextProps.url;
