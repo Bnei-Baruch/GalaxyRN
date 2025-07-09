@@ -5,6 +5,16 @@ extension AudioManager {
     // MARK: - Audio Monitoring
   
     func setupMonitoring() {
+        NLOG("[audioDevices swift] setupMonitoring")
+        
+        // Remove any existing observers first to avoid duplicates
+        NotificationCenter.default.removeObserver(
+            self,
+            name: AVAudioSession.routeChangeNotification,
+            object: nil
+        )
+        
+        // Add the observer
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleRouteChange),
@@ -29,6 +39,19 @@ extension AudioManager {
             NLOG("[audioDevices swift] Route change: New device available")
         case .oldDeviceUnavailable:
             NLOG("[audioDevices swift] Route change: Old device unavailable")
+            // Check if the disconnected device was from bluetooth group
+            if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
+                let previousOutputs = previousRoute.outputs
+                for output in previousOutputs {
+                    let outputGroup = getGroupByPortType(output.portType)
+                    if outputGroup == .bluetooth {
+                        NLOG("[audioDevices swift] 🔵 Bluetooth group device disconnected: \(output.portName) (\(output.uid))")
+                        NLOG("[audioDevices swift] 🔄 Switching to earpiece due to Bluetooth group disconnection")
+                        activateOutputByGroup(.earpiece)
+                        sendCurrentAudioGroup()
+                    }
+                }
+            }
         case .categoryChange:
             NLOG("[audioDevices swift] Route change: Category changed")
         case .override:

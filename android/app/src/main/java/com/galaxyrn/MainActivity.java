@@ -86,26 +86,50 @@ public class MainActivity extends ReactActivity {
     @Override
     protected void onDestroy() {
         GxyLogger.d(TAG, "onDestroy - ensuring all services are stopped");
+
+        // Abandon audio focus
         try {
+            GxyLogger.d(TAG, "Attempting to get ReactContext for audio cleanup");
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
-            AudioManager audioManager = (AudioManager) getSystemService(reactContext.AUDIO_SERVICE);
-            audioManager.abandonAudioFocus(null);
+            if (reactContext != null) {
+                GxyLogger.d(TAG, "ReactContext obtained, abandoning audio focus");
+                AudioManager audioManager = (AudioManager) getSystemService(reactContext.AUDIO_SERVICE);
+                audioManager.abandonAudioFocus(null);
+                GxyLogger.d(TAG, "Audio focus abandoned successfully");
+            } else {
+                GxyLogger.w(TAG, "ReactContext is null, cannot abandon audio focus");
+            }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error stopping audio session", e);
         }
+
         // Stop any foreground services that might be running
+        GxyLogger.d(TAG, "Stopping foreground services");
         stopForegroundServices();
 
+        // Reset volume control stream
+        GxyLogger.d(TAG, "Resetting volume control stream to default");
         setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+
+        // Emit app termination event
+        GxyLogger.d(TAG, "Attempting to emit AppTerminated event");
         if (getReactInstanceManager() != null) {
             ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
             if (reactContext != null) {
+                GxyLogger.d(TAG, "Emitting AppTerminated event");
                 reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated",
                         null);
+                GxyLogger.d(TAG, "AppTerminated event emitted successfully");
+            } else {
+                GxyLogger.w(TAG, "ReactContext is null, cannot emit AppTerminated event");
             }
+        } else {
+            GxyLogger.w(TAG, "ReactInstanceManager is null, cannot emit AppTerminated event");
         }
 
+        GxyLogger.d(TAG, "Calling super.onDestroy()");
         super.onDestroy();
+        GxyLogger.d(TAG, "onDestroy completed");
     }
 
     /**

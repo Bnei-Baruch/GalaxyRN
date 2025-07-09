@@ -45,8 +45,24 @@ extension AudioManager {
             try audioSession.setActive(true, options: [])
             NLOG("[audioDevices swift] Audio session set active: true")
         
-            try audioSession.setPreferredOutputNumberOfChannels(2)
-            try audioSession.setPreferredIOBufferDuration(0.005)
+            // Configure audio session parameters based on the target group
+            switch group {
+            case .earpiece:
+                // Earpiece supports mono only
+                try audioSession.setPreferredOutputNumberOfChannels(1)
+                try audioSession.setPreferredIOBufferDuration(0.02) // 20ms for stability
+                NLOG("[audioDevices swift] Earpiece audio session configured: 1 channel, 20ms buffer")
+            case .speaker, .bluetooth, .headphones, .external:
+                // These can support stereo
+                try audioSession.setPreferredOutputNumberOfChannels(2)
+                try audioSession.setPreferredIOBufferDuration(0.01) // 10ms for better quality
+                NLOG("[audioDevices swift] Stereo audio session configured: 2 channels, 10ms buffer")
+            case .none:
+                // Default safe configuration
+                try audioSession.setPreferredOutputNumberOfChannels(1)
+                try audioSession.setPreferredIOBufferDuration(0.02)
+                NLOG("[audioDevices swift] Default audio session configured: 1 channel, 20ms buffer")
+            }
             NLOG("[audioDevices swift] Audio session configuration completed")
         } catch {
             NLOG("[audioDevices swift] ❌ ERROR switching audio output:", error)
@@ -102,7 +118,7 @@ extension AudioManager {
         
             case AudioOutputGroup.earpiece:
                 NLOG("[audioDevices swift] 👂 Setting up earpiece mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers])
                 try session.overrideOutputAudioPort(.none)
                 // Поиск и установка встроенного микрофона
                 if let builtInMic = findInputPortOfType(.builtInMic) {
@@ -123,7 +139,7 @@ extension AudioManager {
         
             case AudioOutputGroup.headphones:
                 NLOG("[audioDevices swift] 🎧 Setting up headphones mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers])
                 try session.overrideOutputAudioPort(.none)
         
                 if let headsetMic = findInputPortOfType(.headsetMic) {
@@ -134,7 +150,7 @@ extension AudioManager {
         
             case AudioOutputGroup.external:
                 NLOG("[audioDevices swift] 📺 Setting up external device mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowAirPlay, .mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowAirPlay, .mixWithOthers])
                 NLOG("[audioDevices swift] ✅ External device mode configured")
                 break
         
