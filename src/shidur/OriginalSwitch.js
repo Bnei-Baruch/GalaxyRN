@@ -22,7 +22,7 @@ export const OriginalSwitch = () => {
         value={isOriginal}
       />
       <Text style={styles.title}>
-        {t(`shidur.${isOriginal ? 'original' : 'translated'}`)}
+        {t(`shidur.${isOriginal ? 'translated' : 'original'}`)}
       </Text>
     </View>
   );
