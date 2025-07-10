@@ -67,8 +67,10 @@ const deviceInfoToOption =
 
 const useAudioDevicesStore = create((set, get) => ({
   selected: null,
+  wip: false,
 
   select: async id => {
+    set({ wip: true });
     logger.debug(NAMESPACE, 'select called with id:', id);
     await AudioBridge.updateAudioDevices(id);
   },
@@ -84,20 +86,36 @@ const useAudioDevicesStore = create((set, get) => ({
     }
 
     try {
+      logger.debug(
+        NAMESPACE,
+        'Setting up event listener for updateAudioDevice'
+      );
       subscription = eventEmitter.addListener(
         'updateAudioDevice',
         async data => {
           logger.debug(NAMESPACE, 'updateAudioDevice event received', data);
+          logger.debug(NAMESPACE, 'Raw event data type:', typeof data);
+          logger.debug(
+            NAMESPACE,
+            'Raw event data keys:',
+            Object.keys(data || {})
+          );
+
           const devices = Object.values(data)
             .map(deviceInfoToOption)
             .sort((a, b) => a.priority - b.priority);
           const selected = deviceInfoToOption(
             Object.values(data).find(d => d.active)
           );
-          set({ devices, selected });
+
+          logger.debug(NAMESPACE, 'Processed devices:', devices);
+          logger.debug(NAMESPACE, 'Selected device:', selected);
+
+          set({ devices, selected, wip: false });
         }
       );
 
+      logger.debug(NAMESPACE, 'Event listener set up successfully');
       AudioBridge.initAudioDevices();
     } catch (error) {
       logger.error(NAMESPACE, 'Error in initAudioDevices:', error);
@@ -107,9 +125,19 @@ const useAudioDevicesStore = create((set, get) => ({
   abortAudioDevices: () => {
     logger.info(NAMESPACE, 'abortAudioDevices called');
     if (subscription) {
-      AudioBridge.abandonAudioFocus();
+      logger.debug(NAMESPACE, 'Removing event listener subscription');
       subscription.remove();
       subscription = null;
+      logger.debug(NAMESPACE, 'Event listener subscription removed');
+    } else {
+      logger.debug(NAMESPACE, 'No subscription to remove');
+    }
+
+    try {
+      AudioBridge.abandonAudioFocus();
+      logger.debug(NAMESPACE, 'Audio focus abandoned successfully');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error abandoning audio focus:', error);
     }
   },
 }));

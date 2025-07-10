@@ -12,6 +12,7 @@ class AudioManager: RCTEventEmitter {
     // MARK: - Properties
     var hasListeners: Bool = false
     var isSpeakerMode: Bool = false
+    var isMonitoringSetup: Bool = false
     
     // MARK: - Initialization
     override init() {
@@ -29,6 +30,8 @@ class AudioManager: RCTEventEmitter {
     
     // Method to clean up resources
     func cleanupResources() {
+        NLOG("[audioDevices swift] cleanupResources called")
+        
         // Remove notification observers
         NotificationCenter.default.removeObserver(self)
         
