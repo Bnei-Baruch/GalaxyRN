@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import logger from '../services/logger';
 
 import WIP from '../components/WIP';
+import logger from '../services/logger';
 import UserPermissions from '../services/UserPermissions';
 import { useUserStore } from '../zustand/user';
 import kc from './keycloak';
