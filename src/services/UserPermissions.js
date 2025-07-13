@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import AccountSettings from '../auth/AccountSettings';
 import DebugMode from '../settings/DebugMode';
+import { useUserStore } from '../zustand/user';
 
 const UserPermissions = () => {
   const { t } = useTranslation();
+  const { vhinfo } = useUserStore();
 
   const handleContactSupport = () => {
     Linking.openURL('mailto:help@kli.one');
@@ -28,6 +30,7 @@ const UserPermissions = () => {
         <TouchableOpacity style={styles.sendBtn} onPress={handleContactSupport}>
           <Text style={styles.sendText}>{t('permissions.sendButton')}</Text>
         </TouchableOpacity>
+        {vhinfo.error && <Text>{vhinfo?.error?.message}</Text>}
         <DebugMode />
       </View>
     </View>

@@ -1,10 +1,17 @@
 import React, { useEffect } from 'react';
-import { Modal, StyleSheet, View } from 'react-native';
+import {
+  Modal,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import Orientation from 'react-native-orientation-locker';
 import { useSettingsStore } from '../../zustand/settings';
+import { useUiActions } from '../../zustand/uiActions';
 
 const RoomFullscreen = ({ shidur }) => {
   const { toggleIsFullscreen } = useSettingsStore();
+  const { toggleShowBars } = useUiActions();
 
   useEffect(() => {
     Orientation.lockToLandscape();
@@ -19,6 +26,8 @@ const RoomFullscreen = ({ shidur }) => {
     Orientation.unlockAllOrientations();
   };
 
+  const handleAnyPress = () => toggleShowBars(true);
+
   return (
     <Modal
       visible={true}
@@ -29,7 +38,9 @@ const RoomFullscreen = ({ shidur }) => {
       supportedOrientations={['landscape']}
     >
       <View style={styles.container}>
-        <View style={styles.shidur}>{shidur}</View>
+        <TouchableWithoutFeedback onPress={handleAnyPress}>
+          <View style={styles.shidur}>{shidur}</View>
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );

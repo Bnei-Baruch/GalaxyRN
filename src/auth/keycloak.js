@@ -390,6 +390,7 @@ class Keycloak {
       return isAuthorized;
     } catch (err) {
       logger.error(NAMESPACE, 'Error in permission check:', err);
+      useUserStore.getState().setVhinfo({ active: false, error: err });
       return false;
     }
   };

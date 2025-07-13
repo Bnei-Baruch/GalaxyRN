@@ -1,6 +1,6 @@
 // Core React and React Native imports
 import React, { memo } from 'react';
-import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 // Third-party libraries
 import { useTranslation } from 'react-i18next';
@@ -27,11 +27,9 @@ const NAMESPACE = 'Shidur';
 
 const Shidur = () => {
   const { url, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
-  const { toggleShowBars, showBars } = useUiActions();
+  const { showBars } = useUiActions();
 
   const { t } = useTranslation();
-
-  const toggleBar = () => toggleShowBars();
 
   return (
     <View style={shidurWIP ? styles.mainContainer : {}}>
@@ -44,15 +42,13 @@ const Shidur = () => {
                   {t('shidur.onAir')}
                 </Text>
               )}
-              <TouchableWithoutFeedback onPress={toggleBar}>
-                {video !== NO_VIDEO_OPTION_VALUE && url ? (
-                  <MemoizedRTCView streamURL={url} />
-                ) : (
-                  <View style={styles.noVideo}>
-                    <Icon name="graphic-eq" color="white" size={70} />
-                  </View>
-                )}
-              </TouchableWithoutFeedback>
+              {video !== NO_VIDEO_OPTION_VALUE && url ? (
+                <MemoizedRTCView streamURL={url} />
+              ) : (
+                <View style={styles.noVideo}>
+                  <Icon name="graphic-eq" color="white" size={70} />
+                </View>
+              )}
               <Subtitle />
             </View>
           ) : (
