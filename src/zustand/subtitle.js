@@ -17,19 +17,6 @@ import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Subtitle';
 
-const MSGS_QUESTION = {
-  type: 'question',
-  display_status: 'questions',
-  topic: 'question',
-};
-const MSGS_SUBTITLE = {
-  type: 'subtitle',
-  display_status: 'subtitles',
-  topic: 'slide',
-};
-export const MSGS_NONE = { type: 'none', display_status: 'none' };
-export const MSGS_ALL = [MSGS_QUESTION, MSGS_SUBTITLE, MSGS_NONE];
-
 let subLang = 'en';
 
 export const useSubtitleStore = create((set, get) => ({
@@ -37,35 +24,42 @@ export const useSubtitleStore = create((set, get) => ({
   toggleIsOpen: isOpen => set(state => ({ isOpen: isOpen ?? !state.isOpen })),
 
   lastMsg: null,
+  isConnected: false,
 
-  init: () => {
+  init: async () => {
+    await get().exit();
+
     const { audio } = useShidurStore.getState();
 
-    let subLang = audio.key?.split('_')[1];
+    subLang = audio.key?.split('_')[1];
     if (!subtitle_options.some(op => op.value === subLang)) {
       subLang = i18n.language;
     }
 
-    logger.debug(NAMESPACE, `Subtitle language: ${subLang}`);
-
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
-    mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-    mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    logger.debug(
-      NAMESPACE,
-      `Joined topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
-    );
+    try {
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+    } catch (e) {
+      logger.error(NAMESPACE, `Error joining topics:`, e);
+    }
+
+    logger.debug(NAMESPACE, `Joined topics: ${subLang}`);
+    set({ isConnected: true });
   },
 
-  exit: () => {
-    set({ lastMsg: null });
+  exit: async () => {
+    if (!get().isConnected) return;
+
     logger.info(NAMESPACE, `Exiting and clearing messages`);
-    mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-    mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
-    logger.debug(
-      NAMESPACE,
-      `Left topics: ${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}, ${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`
-    );
+    try {
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+    } catch (e) {
+      logger.error(NAMESPACE, `Error exiting topics:`, e);
+    }
+    logger.debug(NAMESPACE, `Left topics: ${subLang}`);
+    set({ lastMsg: null, isConnected: false });
   },
 
   onMessage: async data => {
@@ -73,16 +67,16 @@ export const useSubtitleStore = create((set, get) => ({
     let msg = JSON.parse(data);
     logger.debug(NAMESPACE, `Parsed message:`, msg);
 
-    if (!msg.visible) {
-      logger.debug(NAMESPACE, `Message is not visible - ignored`);
-      return;
-    }
-    msg.display_status = 'subtitles';
-    if (!msg || msg.display_status === MSGS_NONE.display_status || !msg.slide) {
-      logger.debug(NAMESPACE, `Clearing message - null or none display status`);
+    if (
+      msg.display_status === 'none' ||
+      msg.slide === '' ||
+      (!msg.visible && msg.type === 'questions')
+    ) {
       set({ lastMsg: null });
+      logger.debug(NAMESPACE, `Clearing message`);
       return;
     }
+
     logger.debug(NAMESPACE, `Setting lastMsg:`, msg);
     set({ lastMsg: msg });
   },

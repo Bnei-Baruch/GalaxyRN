@@ -17,10 +17,6 @@ import { useMyStreamStore } from '../zustand/myStream';
 import { useShidurStore } from '../zustand/shidur';
 import { useSubtitleStore } from '../zustand/subtitle';
 
-import logger from './logger';
-
-const NAMESPACE = 'InitApp';
-
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
   const { setIsPortrait, initApp, terminateApp } = useInitsStore();
@@ -32,11 +28,11 @@ const InitApp = () => {
   const { readyForJoin } = useInitsStore();
 
   useEffect(() => {
-    logger.info(NAMESPACE, 'Initializing with language');
-    key && initSubtitle(key);
+    if (key) {
+      initSubtitle();
+    }
     return () => {
-      logger.info(NAMESPACE, 'Component unmounting, exiting');
-      key && exitSubtitle(key);
+      exitSubtitle();
     };
   }, [key]);
 

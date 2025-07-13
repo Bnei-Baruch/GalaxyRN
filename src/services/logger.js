@@ -26,10 +26,10 @@ class Logger {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
 
     return (
-      tag === 'AudioBridge' || tag === 'AudioDevices'
+      //tag === 'AudioBridge' || tag === 'AudioDevices'
       // ||tag === 'Settings'
       // || tag === 'Api'
-      //true
+      true
     );
   }
 
@@ -104,7 +104,7 @@ class Logger {
 
       console.log('Logs directory cleaned successfully');
     } catch (error) {
-      console.error('Failed to clean logs directory:', error);
+      //console.error('Failed to clean logs directory:', error);
     }
   }
 
