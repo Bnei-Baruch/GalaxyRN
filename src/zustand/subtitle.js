@@ -17,6 +17,9 @@ import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Subtitle';
 
+const SUBTITLE_TOPIC = 'slide';
+const QUESTION_TOPIC = 'question';
+
 let subLang = 'en';
 
 export const useSubtitleStore = create((set, get) => ({
@@ -38,8 +41,8 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     try {
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${SUBTITLE_TOPIC}`);
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${QUESTION_TOPIC}`);
     } catch (e) {
       logger.error(NAMESPACE, `Error joining topics:`, e);
     }
@@ -53,8 +56,8 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Exiting and clearing messages`);
     try {
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${SUBTITLE_TOPIC}`);
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${QUESTION_TOPIC}`);
     } catch (e) {
       logger.error(NAMESPACE, `Error exiting topics:`, e);
     }
