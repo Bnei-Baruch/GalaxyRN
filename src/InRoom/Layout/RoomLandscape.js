@@ -1,25 +1,26 @@
 import React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { baseStyles } from '../../constants';
+import logger from '../../services/logger';
 import { useUiActions } from '../../zustand/uiActions';
+
+const NAMESPACE = 'RoomLandscape';
 
 const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
 
   const isShidur = !!shidur;
 
-  const handleAnyPress = () => toggleShowBars(true);
+  const handleAnyPress = () => {
+    logger.debug(NAMESPACE, 'handleAnyPress');
+    toggleShowBars(true);
+  };
   const handleScroll = e => {
     const scrollY = e.nativeEvent.contentOffset.y;
     setFeedsScrollY(scrollY);
   };
   return (
-    <View style={styles.container}>
+    <Pressable onPress={handleAnyPress} style={styles.container}>
       {isShidur && (
         <View style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>
@@ -32,15 +33,13 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
           style={baseStyles.full}
           onScroll={handleScroll}
         >
-          <TouchableWithoutFeedback onPress={handleAnyPress}>
-            <View style={styles.scrollContent}>
-              {quads}
-              {members}
-            </View>
-          </TouchableWithoutFeedback>
+          <View style={styles.scrollContent}>
+            {quads}
+            {members}
+          </View>
         </ScrollView>
       </View>
-    </View>
+    </Pressable>
   );
 };
 export default RoomLandscape;
@@ -50,6 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'black',
     flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   scrollContent: {
     flex: 1,

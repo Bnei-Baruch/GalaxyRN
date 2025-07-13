@@ -1,22 +1,28 @@
 import React from 'react';
 import {
   Dimensions,
+  Pressable,
   ScrollView,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
 import WIP from '../../components/WIP';
 import { baseStyles } from '../../constants';
+import logger from '../../services/logger';
 import { useShidurStore } from '../../zustand/shidur';
 import { useUiActions } from '../../zustand/uiActions';
+
+const NAMESPACE = 'RoomPortrait';
 
 const RoomPortrait = ({ shidur, quads, members }) => {
   const { janusReady } = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
-  const handleAnyPress = () => toggleShowBars(true);
+  const handleAnyPress = () => {
+    logger.debug(NAMESPACE, 'handleAnyPress');
+    toggleShowBars(true);
+  };
 
   const handleScroll = e => {
     const scrollY = e.nativeEvent.contentOffset.y;
@@ -32,17 +38,15 @@ const RoomPortrait = ({ shidur, quads, members }) => {
         style={baseStyles.full}
         onScroll={handleScroll}
       >
-        <TouchableWithoutFeedback onPress={handleAnyPress}>
-          <View style={styles.scrollContent}>
-            <WIP isReady={janusReady}>
-              <View style={[baseStyles.full, { width }]}>
-                {shidur}
-                {quads}
-              </View>
-            </WIP>
-            {members}
-          </View>
-        </TouchableWithoutFeedback>
+        <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
+          <WIP isReady={janusReady}>
+            <View style={[baseStyles.full, { width }]}>
+              {shidur}
+              {quads}
+            </View>
+          </WIP>
+          {members}
+        </Pressable>
       </ScrollView>
     </View>
   );

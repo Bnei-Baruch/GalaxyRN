@@ -1,13 +1,11 @@
 import React, { useEffect } from 'react';
-import {
-  Modal,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
+import logger from '../../services/logger';
 import { useSettingsStore } from '../../zustand/settings';
 import { useUiActions } from '../../zustand/uiActions';
+
+const NAMESPACE = 'RoomFullscreen';
 
 const RoomFullscreen = ({ shidur }) => {
   const { toggleIsFullscreen } = useSettingsStore();
@@ -26,7 +24,10 @@ const RoomFullscreen = ({ shidur }) => {
     Orientation.unlockAllOrientations();
   };
 
-  const handleAnyPress = () => toggleShowBars(true);
+  const handleAnyPress = () => {
+    logger.debug(NAMESPACE, 'handleAnyPress');
+    toggleShowBars(true);
+  };
 
   return (
     <Modal
@@ -38,9 +39,9 @@ const RoomFullscreen = ({ shidur }) => {
       supportedOrientations={['landscape']}
     >
       <View style={styles.container}>
-        <TouchableWithoutFeedback onPress={handleAnyPress}>
+        <Pressable onPress={handleAnyPress}>
           <View style={styles.shidur}>{shidur}</View>
-        </TouchableWithoutFeedback>
+        </Pressable>
       </View>
     </Modal>
   );

@@ -12,6 +12,8 @@ import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 
+const NAMESPACE = 'UiActions';
+
 let lastTimestemp = 0;
 let showBarTimeout = null;
 
@@ -79,6 +81,7 @@ export const useUiActions = create((set, get) => ({
 
   showBars: true,
   toggleShowBars: (hideOnTimeout, showBars = !get().showBars) => {
+    logger.debug(NAMESPACE, 'toggleShowBars', hideOnTimeout, showBars);
     clearTimeout(showBarTimeout);
     if (hideOnTimeout && showBars) {
       showBarTimeout = setTimeout(
