@@ -16,25 +16,29 @@ import io.sentry.Sentry;
  */
 public class CallEventManager {
     private static final String TAG = "CallEventManager";
-    
+
     /**
      * Dispatches a call state event to the JavaScript layer
+     * 
      * @param state The call state to dispatch
      */
     public static void dispatchCallStateEvent(CallStateType state) {
+        GxyLogger.d(TAG, "dispatchCallStateEvent() called with state: " + state.name());
         try {
             WritableMap data = Arguments.createMap();
             data.putString("state", state.name());
+            GxyLogger.d(TAG, "Calling SendEventToClient.sendEvent() with data: " + data.toString());
             SendEventToClient.sendEvent("onCallStateChanged", data);
-            GxyLogger.d(TAG, "Dispatched call state event: " + state.name());
+            GxyLogger.d(TAG, "SendEventToClient.sendEvent() completed for state: " + state.name());
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error sending event: " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in dispatchCallStateEvent for state " + state.name() + ": " + e.getMessage(), e);
             Sentry.captureException(e);
         }
     }
-    
+
     /**
      * Brings the application to foreground after a call ends
+     * 
      * @param context The React application context
      */
     public static void bringAppToForeground(ReactApplicationContext context) {
@@ -50,4 +54,4 @@ public class CallEventManager {
             Sentry.captureException(e);
         }
     }
-} 
+}

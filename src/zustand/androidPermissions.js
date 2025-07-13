@@ -1,5 +1,5 @@
 // React Native modules
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import { DeviceEventEmitter, NativeModules } from 'react-native';
 
 // External libraries
 import { create } from 'zustand';
@@ -11,19 +11,6 @@ const NAMESPACE = 'androidPermissions';
 
 logger.debug(NAMESPACE, 'NativeModules on Android:', NativeModules);
 const permissionsModule = NativeModules.PermissionsModule;
-
-let eventEmitter;
-try {
-  if (permissionsModule) {
-    eventEmitter = new NativeEventEmitter(permissionsModule);
-  }
-} catch (error) {
-  logger.error(
-    NAMESPACE,
-    'Error creating permissions NativeEventEmitter:',
-    error
-  );
-}
 
 let subscription;
 
@@ -46,13 +33,21 @@ export const useAndroidPermissionsStore = create((set, get) => ({
     }
 
     try {
-      subscription = eventEmitter?.addListener('permissionsStatus', event => {
-        logger.debug(NAMESPACE, 'initAndroidPermissions eventEmitter', event);
-        if (event && event.allGranted) {
-          logger.info(NAMESPACE, 'All Android permissions granted!');
-          set({ permissionsReady: true });
+      logger.debug(NAMESPACE, 'Setting up permissions status listener');
+      subscription = DeviceEventEmitter.addListener(
+        'permissionsStatus',
+        event => {
+          logger.debug(NAMESPACE, 'initAndroidPermissions eventEmitter', event);
+          if (event && event.allGranted) {
+            logger.info(NAMESPACE, 'All Android permissions granted!');
+            set({ permissionsReady: true });
+          }
         }
-      });
+      );
+      logger.debug(
+        NAMESPACE,
+        'Permissions status listener set up successfully'
+      );
     } catch (error) {
       logger.error(
         NAMESPACE,

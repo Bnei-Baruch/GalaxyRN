@@ -223,6 +223,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       video = await getFromStorage('video', 1).then(x => Number(x));
     }
+    logger.debug(NAMESPACE, 'initAudio video', video);
 
     let audio;
     const isOriginal = await getFromStorage('is_original', false).then(

@@ -1,4 +1,9 @@
-import { NativeModules, Platform } from 'react-native';
+import {
+  DeviceEventEmitter,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import logger from './logger';
 
 const NAMESPACE = 'AudioBridge';
@@ -19,6 +24,31 @@ if (Platform.OS === 'ios') {
 }
 
 const AudioBridge = {
+  /**
+   * Get the appropriate event emitter for the current platform
+   * @returns {Object} DeviceEventEmitter for Android, NativeEventEmitter for iOS
+   */
+  getEventEmitter: () => {
+    try {
+      if (Platform.OS === 'ios') {
+        if (NativeAudio) {
+          logger.debug(NAMESPACE, 'Creating NativeEventEmitter for iOS');
+          return new NativeEventEmitter(NativeAudio);
+        } else {
+          logger.warn(NAMESPACE, 'iOS native module not available');
+          return DeviceEventEmitter;
+        }
+      } else {
+        // Android: Use DeviceEventEmitter as events are sent via SendEventToClient
+        logger.debug(NAMESPACE, 'Using DeviceEventEmitter for Android');
+        return DeviceEventEmitter;
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error creating event emitter', error);
+      return DeviceEventEmitter;
+    }
+  },
+
   initAudioDevices: () => {
     logger.debug(NAMESPACE, 'initAudioDevices');
     if (NativeAudio?.initAudioDevices) {

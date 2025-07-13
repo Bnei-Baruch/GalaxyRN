@@ -443,16 +443,11 @@ export const useInRoomStore = create((set, get) => ({
   exitRoom: async () => {
     logger.debug(NAMESPACE, 'exitRoom exitWIP', exitWIP);
     if (exitWIP) return;
+
     exitWIP = true;
-
     const { room } = useRoomStore.getState();
-
-    // First, clear the UI state to prevent any new animations
     set({ feedById: {}, feedIds: [] });
-
-    // Wait for any pending animations to complete
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
+    logger.debug(NAMESPACE, 'exitRoom room', room);
     try {
       // Clean up shidur first
       await useShidurStore.getState().cleanJanus();
@@ -460,6 +455,7 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error cleaning shidur janus', error);
     }
 
+    logger.debug(NAMESPACE, 'exitRoom janus', janus);
     // Clean up Janus
     if (janus) {
       logger.info(NAMESPACE, 'useInRoomStore exitRoom janus', janus);
@@ -478,6 +474,7 @@ export const useInRoomStore = create((set, get) => ({
 
     useInitsStore.getState().setReadyForJoin(false);
 
+    logger.debug(NAMESPACE, 'exitRoom setReadyForJoin(false)');
     try {
       // Clean up MQTT subscriptions
       useChatStore.getState().cleanCounters();
@@ -489,6 +486,7 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
 
+    logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
     // Clean up device states
     try {
       AudioBridge.abandonAudioFocus();

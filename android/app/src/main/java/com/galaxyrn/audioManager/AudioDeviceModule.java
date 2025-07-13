@@ -30,7 +30,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     private static final String TAG = REACT_NATIVE_MODULE_NAME;
     private static final String EVENT_UPDATE_AUDIO_DEVICE = "updateAudioDevice";
     private static final float DEFAULT_VOLUME_LEVEL = 0.8f;
-    
+
     private final ReactApplicationContext context;
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
@@ -53,15 +53,15 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     public void initialize() {
         super.initialize();
         GxyLogger.d(TAG, "initialize");
-        
+
         if (autoInitializeDisabled) {
             GxyLogger.d(TAG, "Auto-initialization disabled - waiting for permissions");
             return;
         }
-        
+
         initializeAudioManagersInternal();
     }
-    
+
     /**
      * Public method to initialize the module after permissions are granted
      * This is called from the ModuleInitializer
@@ -71,7 +71,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         autoInitializeDisabled = false;
         initializeAudioManagersInternal();
     }
-    
+
     private void initializeAudioManagersInternal() {
         try {
             initializeAudioManagers();
@@ -79,7 +79,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             GxyLogger.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);
         }
     }
-    
+
     private void initializeAudioManagers() {
         UpdateAudioDeviceCallback callback = () -> handleDevicesChange(null);
         UiThreadUtil.runOnUiThread(() -> {
@@ -91,7 +91,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 GxyLogger.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
             }
         });
-        
+
         audioFocusManager = new AudioFocusManager(this.context);
     }
 
@@ -110,13 +110,13 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         GxyLogger.d(TAG, "onHostDestroy()");
         cleanupResources();
     }
-    
+
     private void cleanupResources() {
         try {
             if (audioFocusManager != null) {
                 audioFocusManager.abandonAudioFocus();
             }
-            
+
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     if (audioDeviceManager != null) {
@@ -167,12 +167,13 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         GxyLogger.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
         UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId, false));
     }
-    
+
     private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialized) {
         GxyLogger.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
         try {
             AudioManager audioManager = getAudioManager();
-            if (audioManager == null) return;
+            if (audioManager == null)
+                return;
 
             AudioDeviceInfo[] devices = getAvailableAudioDevices(audioManager);
             if (devices == null || devices.length == 0) {
@@ -180,14 +181,13 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 return;
             }
 
-        
-            
             AudioDeviceInfo selectedDevice = findDeviceById(devices, deviceId);
 
             // If no device found by ID, select default
             if (selectedDevice == null) {
                 selectedDevice = selectDefaultDevice(devices);
-                // If the default device is a built-in earpiece and the module is initialized, select the speaker
+                // If the default device is a built-in earpiece and the module is initialized,
+                // select the speaker
                 if (selectedDevice.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE && isInitialized) {
                     AudioDeviceInfo speaker = findDeviceByType(devices, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
                     if (speaker != null) {
@@ -196,30 +196,30 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 }
                 GxyLogger.d(TAG, "Selected default device: " + selectedDevice);
             } else {
-                GxyLogger.d(TAG, "Selected device by id: " + selectedDevice); 
+                GxyLogger.d(TAG, "Selected device by id: " + selectedDevice);
             }
-            
+
             // Map all devices to the response
             WritableMap data = Arguments.createMap();
             for (AudioDeviceInfo device : devices) {
                 data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
                 GxyLogger.d(TAG, "Device type: " + device.getType());
             }
-            
+
             if (selectedDevice != null) {
                 setAudioDevice(selectedDevice);
-                
+
                 WritableMap selectedResponse = deviceInfoToResponse(selectedDevice);
                 selectedResponse.putBoolean("active", true);
                 data.putMap(String.valueOf(selectedDevice.getId()), selectedResponse);
-                
+
                 sendDeviceUpdateToClient(data);
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
         }
     }
-    
+
     private AudioManager getAudioManager() {
         AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
@@ -227,7 +227,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         }
         return audioManager;
     }
-    
+
     private AudioDeviceInfo[] getAvailableAudioDevices(AudioManager audioManager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             return audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
@@ -235,8 +235,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             return audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
         }
     }
-    
-    
+
     private void sendDeviceUpdateToClient(WritableMap data) {
         GxyLogger.d(TAG, "sendDeviceUpdateToClient() result: " + data);
         try {
@@ -285,7 +284,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 }
             }
         }
-        
+
         return selected;
     }
 
@@ -307,7 +306,8 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             }
 
             AudioManager audioManager = getAudioManager();
-            if (audioManager == null) return;
+            if (audioManager == null)
+                return;
 
             configureAudioManager(audioManager);
 
@@ -321,22 +321,21 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             GxyLogger.e(TAG, "Error setting audio device: " + e.getMessage(), e);
         }
     }
-    
+
     private void configureAudioManager(AudioManager audioManager) {
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
         adjustVolumeIfNeeded(audioManager);
     }
-    
+
     private void adjustVolumeIfNeeded(AudioManager audioManager) {
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
         int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-        
+
         if (currentVolume < maxVolume * DEFAULT_VOLUME_LEVEL) {
             audioManager.setStreamVolume(
-                AudioManager.STREAM_VOICE_CALL, 
-                (int) (maxVolume * DEFAULT_VOLUME_LEVEL), 
-                0
-            );
+                    AudioManager.STREAM_VOICE_CALL,
+                    (int) (maxVolume * DEFAULT_VOLUME_LEVEL),
+                    0);
         }
     }
 

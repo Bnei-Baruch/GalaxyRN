@@ -1,5 +1,5 @@
 // React Native modules
-import { NativeEventEmitter, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 // External libraries
 import { create } from 'zustand';
@@ -13,7 +13,7 @@ import logger from '../services/logger';
 
 const NAMESPACE = 'AudioDevices';
 
-const eventEmitter = new NativeEventEmitter(AudioBridge.raw);
+const eventEmitter = AudioBridge.getEventEmitter();
 let subscription = null;
 
 const deviceInfoToOptionAndroid = d => {

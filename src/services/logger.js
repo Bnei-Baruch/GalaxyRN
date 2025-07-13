@@ -26,10 +26,10 @@ class Logger {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
 
     return (
-      //tag === 'AudioBridge' || tag === 'AudioDevices'
+      tag === 'Inits' || tag === 'InRoom'
       // ||tag === 'Settings'
       // || tag === 'Api'
-      true
+      //true
     );
   }
 

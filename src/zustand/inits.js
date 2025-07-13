@@ -3,7 +3,6 @@ import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 
 // React Native modules
-import { NativeEventEmitter } from 'react-native';
 
 // Services
 import CallsBridge from '../services/CallsBridge';
@@ -30,25 +29,20 @@ import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
 const NAMESPACE = 'Inits';
+
 const CLIENT_RECONNECT_TYPES = [
   'client-reconnect',
   'client-reload',
   'client-disconnect',
 ];
 
-// Safely create event emitter only if CallsBridge.raw is defined
+// Safely create event emitter using the bridge's method
 let eventEmitter;
 try {
-  if (CallsBridge && CallsBridge.raw) {
-    eventEmitter = new NativeEventEmitter(CallsBridge.raw);
-  } else {
-    logger.warn(
-      NAMESPACE,
-      'CallsBridge.raw is undefined, event emitter not created'
-    );
-  }
+  eventEmitter = CallsBridge.getEventEmitter();
+  logger.debug(NAMESPACE, 'eventEmitter created successfully:', eventEmitter);
 } catch (error) {
-  logger.error(NAMESPACE, 'Error creating NativeEventEmitter:', error);
+  logger.error(NAMESPACE, 'Error setting up event emitter:', error);
 }
 
 let subscription = null;
@@ -183,25 +177,38 @@ export const useInitsStore = create((set, get) => ({
       subscription = eventEmitter.addListener(
         'onCallStateChanged',
         async data => {
-          const { exitRoom } = useInRoomStore.getState();
+          logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
 
           if (data.state === 'ON_START_CALL') {
+            logger.debug(NAMESPACE, 'Processing ON_START_CALL');
             _isPlay = useShidurStore.getState().isPlay;
-            await exitRoom();
+            logger.debug(NAMESPACE, 'ON_START_CALL exitRoom');
+            await useInRoomStore.getState().exitRoom();
+            logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
+            logger.debug(NAMESPACE, 'Processing ON_END_CALL');
             _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
             useInitsStore.getState().setReadyForJoin(true);
+            logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
+          } else {
+            logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
           }
         }
       );
+    } else {
+      logger.error(NAMESPACE, 'eventEmitter is undefined');
     }
   },
 
   terminateApp: () => {
+    logger.debug(NAMESPACE, 'terminateApp');
     BackgroundTimer.stop();
     useSettingsStore.getState().toggleIsFullscreen(false);
     useChatStore.getState().setChatMode(modalModes.close);
     useUserStore.getState().setVhinfo(null);
-    if (subscription) subscription.remove();
+    if (subscription) {
+      logger.debug(NAMESPACE, 'remove event listener');
+      subscription.remove();
+    }
   },
 }));

@@ -22,16 +22,22 @@ public class SendEventToClient {
     public static void sendEvent(final String eventName, @Nullable WritableMap params) {
         try {
             if (SendEventToClient.context != null && SendEventToClient.context.hasActiveCatalystInstance()) {
+                GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName);
                 SendEventToClient.context
                         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit(eventName, params);
+                GxyLogger.d(TAG, "Event emitted successfully: " + eventName);
             } else {
                 GxyLogger.w(SendEventToClient.TAG,
-                        "sendEvent(): reactContext is null or not having CatalystInstance yet.");
+                        "sendEvent() BLOCKED - reactContext is null or not having CatalystInstance yet. EventName: "
+                                + eventName);
             }
         } catch (RuntimeException e) {
             GxyLogger.e(SendEventToClient.TAG,
-                    "sendEvent(): java.lang.RuntimeException: Trying to invoke JS before CatalystInstance has been set!");
+                    "sendEvent() RuntimeException for event '" + eventName + "': " + e.getMessage(), e);
+        } catch (Exception e) {
+            GxyLogger.e(SendEventToClient.TAG,
+                    "sendEvent() Exception for event '" + eventName + "': " + e.getMessage(), e);
         }
     }
 }
