@@ -193,7 +193,7 @@ class MqttMsg {
       switch (root) {
         case 'subtitles':
           logger.debug(NAMESPACE, `On subtitles msg from topic ${topic}`);
-          useSubtitleStore.getState().onMessage(data);
+          useSubtitleStore.getState().onMessage(data, topic);
           break;
         case 'galaxy':
           // FIXME: we need send cmd messages to separate topic

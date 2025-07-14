@@ -17,10 +17,21 @@ import mqtt from '../shared/mqtt';
 
 const NAMESPACE = 'Subtitle';
 
-const SUBTITLE_TOPIC = 'slide';
-const QUESTION_TOPIC = 'question';
+export const MSGS_QUESTION = {
+  type: 'question',
+  display_status: 'questions',
+  topic: 'question',
+};
+export const MSGS_SUBTITLE = {
+  type: 'subtitle',
+  display_status: 'subtitles',
+  topic: 'slide',
+};
+export const MSGS_NONE = { type: 'none', display_status: 'none' };
+export const MSGS_ALL = [MSGS_QUESTION, MSGS_SUBTITLE, MSGS_NONE];
 
-let subLang = 'en';
+const ORIGINAL_LANG = 'he';
+let subLang = ORIGINAL_LANG;
 
 export const useSubtitleStore = create((set, get) => ({
   isOpen: false,
@@ -35,14 +46,17 @@ export const useSubtitleStore = create((set, get) => ({
     const { audio } = useShidurStore.getState();
 
     subLang = audio.key?.split('_')[1];
+    if (subLang === 'original') {
+      subLang = ORIGINAL_LANG;
+    }
     if (!subtitle_options.some(op => op.value === subLang)) {
       subLang = i18n.language;
     }
 
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     try {
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${SUBTITLE_TOPIC}`);
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${QUESTION_TOPIC}`);
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
+      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
     } catch (e) {
       logger.error(NAMESPACE, `Error joining topics:`, e);
     }
@@ -56,8 +70,8 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Exiting and clearing messages`);
     try {
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${SUBTITLE_TOPIC}`);
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${QUESTION_TOPIC}`);
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
+      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
     } catch (e) {
       logger.error(NAMESPACE, `Error exiting topics:`, e);
     }
@@ -65,15 +79,25 @@ export const useSubtitleStore = create((set, get) => ({
     set({ lastMsg: null, isConnected: false });
   },
 
-  onMessage: async data => {
-    logger.debug(NAMESPACE, `Message received:`, data);
+  onMessage: async (data, topic) => {
+    logger.debug(NAMESPACE, `Message received:`, data, topic);
     let msg = JSON.parse(data);
     logger.debug(NAMESPACE, `Parsed message:`, msg);
 
+    const infoByType = MSGS_ALL.find(m => m.type === msg.type);
+    if (msg.type !== MSGS_NONE.type && infoByType?.topic !== topic) {
+      logger.debug(
+        NAMESPACE,
+        `Message type mismatch: ${msg.type} ${infoByType?.topic} ${topic}`
+      );
+      return;
+    }
+
     if (
-      msg.display_status === 'none' ||
+      msg.display_status === MSGS_NONE.display_status ||
       msg.slide === '' ||
-      (!msg.visible && msg.type === 'questions')
+      msg.display_status !== infoByType?.display_status ||
+      (!msg.visible && msg.type === MSGS_QUESTION.type)
     ) {
       set({ lastMsg: null });
       logger.debug(NAMESPACE, `Clearing message`);
