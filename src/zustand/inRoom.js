@@ -110,6 +110,7 @@ export const useInRoomStore = create((set, get) => ({
       await WakeLockBridge.keepScreenOn();
       useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
+      set({ isInBackground: false });
     } catch (error) {
       logger.error(
         NAMESPACE,

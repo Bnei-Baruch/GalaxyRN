@@ -22,7 +22,7 @@ export const OriginalSwitch = () => {
         value={isOriginal}
       />
       <Text style={styles.title}>
-        {t(`shidur.${isOriginal ? 'translated' : 'original'}`)}
+        {t(`shidur.${!isOriginal ? 'translationOn' : 'translationOff'}`)}
       </Text>
     </View>
   );
@@ -33,9 +33,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    flexWrap: 'wrap',
   },
   title: {
     color: 'white',
     fontSize: 12,
+    marginLeft: 4,
+    maxWidth: 70,
+    textAlign: 'center',
   },
 });

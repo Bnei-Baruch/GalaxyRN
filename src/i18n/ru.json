@@ -52,8 +52,8 @@
     "high": "Высокое",
     "noVideo": "Без видео",
     "audioOnly": "Только аудио",
-    "original": "Оригинал",
-    "translated": "Перевод"
+    "translationOn": "Перевод вкл.",
+    "translationOff": "Перевод выкл."
   },
   "chat": {
     "send": "Отправить",

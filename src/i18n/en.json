@@ -58,8 +58,8 @@
     "noVideo": "No Video",
     "audioOnly": "Audio only",
     "onAir": "ON AIR",
-    "original": "Original",
-    "translated": "Translated"
+    "translationOn": "Translation On",
+    "translationOff": "Translation Off"
   },
   "chat": {
     "send": "Send",

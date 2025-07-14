@@ -52,8 +52,8 @@
     "high": "Alta",
     "noVideo": "Sin vídeo",
     "audioOnly": "Solo audio",
-    "original": "Original",
-    "translated": "Traducido"
+    "translationOn": "Traducción activ.",
+    "translationOff": "Traducción desactiv."
   },
   "chat": {
     "send": "Enviar",
