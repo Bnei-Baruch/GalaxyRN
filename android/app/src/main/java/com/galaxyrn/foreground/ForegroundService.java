@@ -10,14 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import com.galaxyrn.logger.GxyLogger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-
 import com.galaxyrn.R;
 
 public class ForegroundService extends Service {
@@ -27,7 +24,6 @@ public class ForegroundService extends Service {
     public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
 
     private volatile boolean mIsServiceStarted = false;
-    private final Handler mHandler = new Handler(android.os.Looper.getMainLooper());
     private static ForegroundService sInstance;
 
     @Nullable
@@ -43,11 +39,6 @@ public class ForegroundService extends Service {
         GxyLogger.i(TAG, "ForegroundService: onCreate");
     }
 
-    /**
-     * Starts the foreground service
-     *
-     * @param context The application context
-     */
     public void start(@NonNull Context context) {
         Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(APP_TO_FOREGROUND_ACTION);
@@ -55,7 +46,7 @@ public class ForegroundService extends Service {
         createNotificationChannel(context);
 
         GxyLogger.d(TAG, "Starting foreground service");
-        ComponentName componentName = null;
+        ComponentName componentName;
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -63,70 +54,35 @@ public class ForegroundService extends Service {
             } else {
                 componentName = context.startService(intent);
             }
+
+            if (componentName == null) {
+                GxyLogger.w(TAG, "Foreground service not started");
+            } else {
+                GxyLogger.i(TAG, "Foreground service started successfully");
+            }
         } catch (RuntimeException e) {
             GxyLogger.w(TAG, "Failed to start foreground service", e);
-            return;
-        }
-
-        if (componentName == null) {
-            GxyLogger.w(TAG, "Foreground service not started");
-        } else {
-            GxyLogger.i(TAG, "Foreground service started successfully");
         }
     }
 
-    /**
-     * Stops the foreground service
-     *
-     * @param context The application context
-     */
     public void stop(@NonNull Context context) {
         GxyLogger.i(TAG, "Stopping foreground service");
-
-        if (sInstance != null) {
-            if (!sInstance.mIsServiceStarted) {
-                GxyLogger.i(TAG, "Service not fully started yet, delaying stop request");
-                mHandler.postDelayed(() -> {
-                    stopServiceSafely(context);
-                }, 500);
-                return;
-            }
-        }
-
-        stopServiceSafely(context);
-    }
-
-    /**
-     * Safely stops the service after ensuring it's been properly started
-     */
-    private void stopServiceSafely(Context context) {
         Intent intent = new Intent(context, ForegroundService.class);
-        boolean stopped = context.stopService(intent);
-        GxyLogger.i(TAG, "Service stopped by context: " + stopped);
-
-        if (!stopped && sInstance != null) {
-            sInstance.cleanup();
-        }
+        context.stopService(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         GxyLogger.i(TAG, "ForegroundService: onStartCommand");
 
-        // Create and start foreground immediately to avoid timing issues
-        Notification notification = buildNotification(this);
-
         try {
-            // Start foreground before doing anything else to avoid timeout
+            Notification notification = buildNotification(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
             } else {
                 startForeground(NOTIFICATION_ID, notification);
             }
-
-            // Mark that service is now in foreground state
             mIsServiceStarted = true;
-            GxyLogger.i(TAG, "Successfully called startForeground()");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error starting foreground", e);
         }
@@ -136,55 +92,36 @@ public class ForegroundService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        GxyLogger.i(TAG, "ForegroundService: onTaskRemoved - App was swiped away");
-
+        GxyLogger.i(TAG, "ForegroundService: onTaskRemoved");
         cleanup();
+        stopSelf();
     }
 
     @Override
     public void onDestroy() {
-        GxyLogger.i(TAG, "ForegroundService: onDestroy - Service is being destroyed");
-        try {
-            cleanup();
-            GxyLogger.i(TAG, "ForegroundService: onDestroy completed - Resources cleaned up");
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error during onDestroy cleanup", e);
-        } finally {
-            super.onDestroy();
-        }
+        GxyLogger.i(TAG, "ForegroundService: onDestroy");
+        cleanup();
+        super.onDestroy();
     }
 
     private void cleanup() {
+        if (!mIsServiceStarted) {
+            return;
+        }
+
         try {
             mIsServiceStarted = false;
-
-            // First stop foreground state
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);
             } else {
                 stopForeground(true);
             }
-
-            if (mHandler != null) {
-                mHandler.removeCallbacksAndMessages(null);
-            }
-
-            // Clear static instance reference
             sInstance = null;
-
-            stopSelf();
-
-            GxyLogger.i(TAG, "Service cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during cleanup", e);
         }
     }
 
-    /**
-     * Creates the notification channel (required for Android O and above)
-     *
-     * @param context The application context
-     */
     private void createNotificationChannel(@NonNull Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
@@ -192,13 +129,11 @@ public class ForegroundService extends Service {
 
         NotificationManager manager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         if (manager == null) {
-            GxyLogger.d(TAG, "Cannot create notification channel: no NotificationManager");
             return;
         }
 
         NotificationChannel existingChannel = manager.getNotificationChannel(NOTIFICATION_CHANNEL_ID);
         if (existingChannel != null) {
-            // Channel already exists
             return;
         }
 
@@ -208,15 +143,8 @@ public class ForegroundService extends Service {
                 NotificationManager.IMPORTANCE_HIGH);
         channel.setShowBadge(false);
         manager.createNotificationChannel(channel);
-        GxyLogger.d(TAG, "Notification channel created");
     }
 
-    /**
-     * Builds the notification for the foreground service
-     *
-     * @param context The application context
-     * @return The notification
-     */
     private Notification buildNotification(@NonNull Context context) {
         Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -235,11 +163,6 @@ public class ForegroundService extends Service {
                 .build();
     }
 
-    /**
-     * Brings the app to the foreground
-     *
-     * @param context The application context
-     */
     public static void moveAppToForeground(@NonNull Context context) {
         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launchIntent != null) {

@@ -21,6 +21,8 @@ import com.galaxyrn.SendEventToClient;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import android.os.Handler;
+import android.os.Looper;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 @ReactModule(name = AudioDeviceModule.NAME)
@@ -112,21 +114,34 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     }
 
     private void cleanupResources() {
+        GxyLogger.d(TAG, "Starting cleanup of audio resources");
+        if (!isInitialized) {
+            GxyLogger.d(TAG, "Audio managers already initialized");
+            return;
+        }
+
         try {
+            // First abandon audio focus
             if (audioFocusManager != null) {
-                audioFocusManager.abandonAudioFocus();
+                boolean focusAbandoned = audioFocusManager.abandonAudioFocus();
+                GxyLogger.d(TAG, "Audio focus abandoned: " + focusAbandoned);
             }
 
+            // Then stop the device manager on UI thread
             UiThreadUtil.runOnUiThread(() -> {
                 try {
                     if (audioDeviceManager != null) {
                         audioDeviceManager.stop();
                         audioDeviceManager = null;
+                        GxyLogger.d(TAG, "AudioDeviceManager stopped and nullified");
                     }
                 } catch (Exception e) {
                     GxyLogger.e(TAG, "Error stopping AudioDeviceManager: " + e.getMessage(), e);
                 }
             });
+
+            isInitialized = false;
+            GxyLogger.d(TAG, "Audio resources cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error in cleanupResources(): " + e.getMessage(), e);
         }

@@ -44,12 +44,12 @@ const InitApp = () => {
     setIsPortrait(height > width);
 
     initApp();
-    initAudioDevices();
+    //initAudioDevices();
     myInit();
 
     return () => {
       terminateApp();
-      abortAudioDevices();
+      //abortAudioDevices();
       myAbort();
     };
   }, []);

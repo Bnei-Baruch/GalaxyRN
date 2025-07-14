@@ -5,6 +5,9 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.os.Process;
+import android.content.IntentFilter;
+import android.content.Context;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
@@ -22,6 +25,21 @@ import com.galaxyrn.logger.GxyLoggerUtils;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
+    private PermissionHelper permissionHelper;
+    private static volatile boolean isCleanupInProgress = false;
+
+    private synchronized boolean startCleanup() {
+        if (isCleanupInProgress) {
+            GxyLogger.w(TAG, "Cleanup already in progress, skipping");
+            return false;
+        }
+        isCleanupInProgress = true;
+        return true;
+    }
+
+    private void finishCleanup() {
+        isCleanupInProgress = false;
+    }
 
     /**
      * Returns the name of the main component registered from JavaScript.
@@ -31,8 +49,6 @@ public class MainActivity extends ReactActivity {
     protected String getMainComponentName() {
         return "GalaxyRN";
     }
-
-    private PermissionHelper permissionHelper;
 
     @Override
     protected ReactActivityDelegate createReactActivityDelegate() {
@@ -47,8 +63,8 @@ public class MainActivity extends ReactActivity {
         permissionHelper = new PermissionHelper(this);
 
         // Using custom logger instead of Log.d
-        GxyLogger.i("MainActivity", "onCreate");
-        GxyLoggerUtils.logDeviceInfo("MainActivity");
+        GxyLogger.i(TAG, "onCreate");
+        GxyLoggerUtils.logDeviceInfo(TAG);
 
         getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
             @Override
@@ -87,57 +103,39 @@ public class MainActivity extends ReactActivity {
     protected void onDestroy() {
         GxyLogger.d(TAG, "onDestroy - ensuring all services are stopped");
 
-        // Abandon audio focus
+        if (!startCleanup()) {
+            super.onDestroy();
+            return;
+        }
+
         try {
-            GxyLogger.d(TAG, "Attempting to get ReactContext for audio cleanup");
-            ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
-            if (reactContext != null) {
-                GxyLogger.d(TAG, "ReactContext obtained, abandoning audio focus");
-                AudioManager audioManager = (AudioManager) getSystemService(reactContext.AUDIO_SERVICE);
-                audioManager.abandonAudioFocus(null);
-                GxyLogger.d(TAG, "Audio focus abandoned successfully");
-            } else {
-                GxyLogger.w(TAG, "ReactContext is null, cannot abandon audio focus");
-            }
+            // Clear screen lock flag first
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+            // Reset volume control stream
+            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+
+            // Stop foreground services
+            stopForegroundServices();
+
+            // Ensure application-level cleanup
+            MainApplication.performCleanup();
+
+            // Final cleanup log
+            GxyLogger.i(TAG, "Activity cleanup completed");
+
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error stopping audio session", e);
+            GxyLogger.e(TAG, "Error during activity cleanup", e);
+        } finally {
+            finishCleanup();
+            super.onDestroy();
+            GxyLogger.d(TAG, "onDestroy completed");
         }
-
-        // Stop any foreground services that might be running
-        GxyLogger.d(TAG, "Stopping foreground services");
-        stopForegroundServices();
-
-        // Reset volume control stream
-        GxyLogger.d(TAG, "Resetting volume control stream to default");
-        setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-
-        // Emit app termination event
-        GxyLogger.d(TAG, "Attempting to emit AppTerminated event");
-        if (getReactInstanceManager() != null) {
-            ReactContext reactContext = getReactInstanceManager().getCurrentReactContext();
-            if (reactContext != null) {
-                GxyLogger.d(TAG, "Emitting AppTerminated event");
-                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("AppTerminated",
-                        null);
-                GxyLogger.d(TAG, "AppTerminated event emitted successfully");
-            } else {
-                GxyLogger.w(TAG, "ReactContext is null, cannot emit AppTerminated event");
-            }
-        } else {
-            GxyLogger.w(TAG, "ReactInstanceManager is null, cannot emit AppTerminated event");
-        }
-
-        GxyLogger.d(TAG, "Calling super.onDestroy()");
-        super.onDestroy();
-        GxyLogger.d(TAG, "onDestroy completed");
     }
 
-    /**
-     * Ensures all foreground services are stopped when the app is destroyed
-     */
     private void stopForegroundServices() {
         try {
-            GxyLogger.d(TAG, "Manually stopping foreground services");
+            GxyLogger.d(TAG, "Stopping foreground services");
 
             // Stop the foreground service
             Intent serviceIntent = new Intent(this, ForegroundService.class);

@@ -24,34 +24,68 @@ public class AudioDeviceManager {
     // Bluetooth related constants
     private static final int BLUETOOTH_SCO_TIMEOUT_MS = 1000;
 
-    private final BroadcastReceiver receiver;
+    private BroadcastReceiver receiver;
     private final ReactApplicationContext reactContext;
     private final UpdateAudioDeviceCallback callback;
-    private final AudioDeviceCallback audioCallback;
-    private final AudioManager audioManager;
+    private AudioDeviceCallback audioCallback;
+    private AudioManager audioManager;
     private final Handler handler;
+
+    private boolean isContextReady() {
+        return reactContext != null && reactContext.hasActiveCatalystInstance();
+    }
 
     public AudioDeviceManager(ReactApplicationContext context, UpdateAudioDeviceCallback callback) {
         this.reactContext = context;
         this.callback = callback;
         this.handler = new Handler(Looper.getMainLooper());
 
-        // Initialize audio manager
-        this.audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
-        if (this.audioManager == null) {
-            GxyLogger.e(TAG, "Failed to get AudioManager service");
-            this.receiver = null;
-            this.audioCallback = null;
+        if (!isContextReady()) {
+            GxyLogger.w(TAG, "React context not ready, waiting for initialization");
+            handler.postDelayed(() -> {
+                if (isContextReady()) {
+                    GxyLogger.d(TAG, "React context ready, initializing audio manager");
+                    initializeAudioManager();
+                } else {
+                    GxyLogger.e(TAG, "React context still not ready after delay");
+                }
+            }, 1000);
             return;
         }
 
-        // Initialize audio callback
-        this.audioCallback = createAudioDeviceCallback();
-        registerAudioDeviceCallback();
+        initializeAudioManager();
+    }
 
-        // Initialize broadcast receiver
-        this.receiver = createBroadcastReceiver();
-        registerBroadcastReceiver();
+    private void initializeAudioManager() {
+        GxyLogger.d(TAG, "Initializing AudioDeviceManager");
+        try {
+            // Check if already initialized
+            if (audioManager != null) {
+                GxyLogger.w(TAG, "AudioDeviceManager already initialized");
+                return;
+            }
+
+            // Initialize audio manager
+            audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager == null) {
+                GxyLogger.e(TAG, "Failed to get AudioManager service");
+                return;
+            }
+
+            // Initialize audio callback
+            audioCallback = createAudioDeviceCallback();
+            registerAudioDeviceCallback();
+
+            // Initialize broadcast receiver
+            receiver = createBroadcastReceiver();
+            registerBroadcastReceiver();
+
+            GxyLogger.d(TAG, "AudioDeviceManager initialized successfully");
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Failed to initialize AudioDeviceManager", e);
+            // Cleanup in case of partial initialization
+            stop();
+        }
     }
 
     private AudioDeviceCallback createAudioDeviceCallback() {
@@ -109,7 +143,10 @@ public class AudioDeviceManager {
             callback.onUpdateAudioDeviceState();
             GxyLogger.d(TAG, "Callback executed successfully");
         } else {
-            GxyLogger.w(TAG, "Callback NOT executed - conditions not met");
+            GxyLogger.w(TAG, "Cannot notify device state change. Conditions: callback=" +
+                    callback + ", reactContext=" + reactContext +
+                    ", hasActiveCatalystInstance="
+                    + (reactContext != null ? reactContext.hasActiveCatalystInstance() : "null"));
         }
     }
 
@@ -194,16 +231,40 @@ public class AudioDeviceManager {
     }
 
     public void stop() {
-        unregisterBroadcastReceiver();
-        unregisterAudioDeviceCallback();
-        disableBluetoothSco();
+        GxyLogger.d(TAG, "Stopping AudioDeviceManager");
+        try {
+            // First disable Bluetooth SCO to prevent audio routing issues
+            disableBluetoothSco();
+
+            // Then unregister callbacks to prevent unwanted events
+            unregisterAudioDeviceCallback();
+            unregisterBroadcastReceiver();
+
+            // Reset audio mode to normal
+            if (audioManager != null) {
+                audioManager.setMode(AudioManager.MODE_NORMAL);
+            }
+
+            // Clear references
+            audioCallback = null;
+            receiver = null;
+            audioManager = null;
+
+            GxyLogger.d(TAG, "AudioDeviceManager stopped successfully");
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error during AudioDeviceManager stop", e);
+        }
     }
 
     private void unregisterBroadcastReceiver() {
         try {
             if (receiver != null && reactContext != null) {
                 reactContext.unregisterReceiver(receiver);
+                GxyLogger.d(TAG, "Broadcast receiver unregistered");
             }
+        } catch (IllegalArgumentException e) {
+            // Receiver not registered, this is fine
+            GxyLogger.d(TAG, "Broadcast receiver was not registered");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to unregister receiver", e);
         }
@@ -213,7 +274,11 @@ public class AudioDeviceManager {
         try {
             if (audioCallback != null && audioManager != null) {
                 audioManager.unregisterAudioDeviceCallback(audioCallback);
+                GxyLogger.d(TAG, "Audio device callback unregistered");
             }
+        } catch (IllegalArgumentException e) {
+            // Callback not registered, this is fine
+            GxyLogger.d(TAG, "Audio device callback was not registered");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to unregister audio device callback", e);
         }

@@ -1,25 +1,38 @@
 package com.galaxyrn;
 
 import android.app.Application;
+import android.content.Context;
+import android.media.AudioManager;
+import android.util.Log;
+import com.galaxyrn.logger.GxyLogger;
+import com.galaxyrn.foreground.ForegroundService;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactHost;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
-import com.facebook.react.defaults.DefaultReactHost;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 
-import java.util.List;
-
 import io.sentry.android.core.SentryAndroid;
+import io.sentry.android.core.SentryAndroidOptions;
+
+import java.util.List;
+import android.content.Intent;
 
 public class MainApplication extends Application implements ReactApplication {
 
-    private final ReactNativeHost reactNativeHost = new DefaultReactNativeHost(this) {
+    private static final String TAG = "MainApplication";
+    private static MainApplication instance;
+    private boolean isCleaningUp = false;
+
+    private final ReactNativeHost mReactNativeHost = new DefaultReactNativeHost(this) {
+        @Override
+        public boolean getUseDeveloperSupport() {
+            return BuildConfig.DEBUG;
+        }
+
         @Override
         protected List<ReactPackage> getPackages() {
             List<ReactPackage> packages = new PackageList(this).getPackages();
@@ -30,11 +43,6 @@ public class MainApplication extends Application implements ReactApplication {
         @Override
         protected String getJSMainModuleName() {
             return "index";
-        }
-
-        @Override
-        public boolean getUseDeveloperSupport() {
-            return BuildConfig.DEBUG;
         }
 
         @Override
@@ -50,51 +58,97 @@ public class MainApplication extends Application implements ReactApplication {
 
     @Override
     public ReactNativeHost getReactNativeHost() {
-        return reactNativeHost;
-    }
-
-    @Override
-    public ReactHost getReactHost() {
-        return DefaultReactHost.getDefaultReactHost(getApplicationContext(), reactNativeHost);
+        return mReactNativeHost;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
 
-        ReactContext reactContext = new ReactContext(this);
-        SentryAndroid.init(this, sentryOpts -> {
-            sentryOpts.setDsn(BuildConfig.SENTRY_DSN);
-            sentryOpts.setDebug(BuildConfig.DEBUG);
-            sentryOpts.setTracesSampleRate(0.2);
-            sentryOpts.setProfilesSampleRate(0.1);
-            sentryOpts.setEnableAutoSessionTracking(true);
-            sentryOpts.setAttachScreenshot(true);
-            sentryOpts.setAttachViewHierarchy(true);
-            sentryOpts.setAttachStacktrace(true);
-            sentryOpts.setMaxBreadcrumbs(100);
-            sentryOpts.setSessionTrackingIntervalMillis(30000);
+        // Initialize Sentry
+        initializeSentry();
 
-            // Set environment based on build type
-            if (BuildConfig.DEBUG) {
-                sentryOpts.setEnvironment("development");
-            } else {
-                sentryOpts.setEnvironment("production");
-            }
-
-            sentryOpts.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME + "+" + BuildConfig.VERSION_CODE);
-        });
         SoLoader.init(this, false);
-
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             DefaultNewArchitectureEntryPoint.load();
         }
     }
 
+    private void initializeSentry() {
+        SentryAndroid.init(this, options -> {
+            options.setDsn(BuildConfig.SENTRY_DSN);
+            options.setDebug(BuildConfig.DEBUG);
+            options.setTracesSampleRate(0.2);
+            options.setProfilesSampleRate(0.1);
+            options.setEnableAutoSessionTracking(true);
+            options.setAttachScreenshot(true);
+            options.setAttachViewHierarchy(true);
+            options.setAttachStacktrace(true);
+            options.setMaxBreadcrumbs(100);
+            options.setSessionTrackingIntervalMillis(30000);
+
+            if (BuildConfig.DEBUG) {
+                options.setEnvironment("development");
+            } else {
+                options.setEnvironment("production");
+            }
+
+            options.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME + "+" + BuildConfig.VERSION_CODE);
+        });
+    }
+
     @Override
     public void onTerminate() {
+        GxyLogger.i(TAG, "Application terminating - performing final cleanup");
+        performCleanup();
         super.onTerminate();
+    }
 
-        io.sentry.Sentry.flush(2000);
+    public static void performCleanup() {
+        MainApplication app = instance;
+        if (app == null || app.isCleaningUp) {
+            return;
+        }
+
+        app.isCleaningUp = true;
+        try {
+            GxyLogger.i(TAG, "Starting application-level cleanup");
+
+            // Reset audio state
+            AudioManager audioManager = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager != null) {
+                try {
+                    audioManager.abandonAudioFocus(null);
+                    audioManager.setMode(AudioManager.MODE_NORMAL);
+                } catch (Exception e) {
+                    GxyLogger.e(TAG, "Error resetting audio state", e);
+                }
+            }
+
+            // Stop foreground service
+            try {
+                app.stopService(new Intent(app, ForegroundService.class));
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error stopping foreground service", e);
+            }
+
+            // Flush Sentry events
+            try {
+                io.sentry.Sentry.flush(2000);
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error flushing Sentry", e);
+            }
+
+            GxyLogger.i(TAG, "Application-level cleanup completed");
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error during application cleanup", e);
+        } finally {
+            app.isCleaningUp = false;
+        }
+    }
+
+    public static MainApplication getInstance() {
+        return instance;
     }
 }
