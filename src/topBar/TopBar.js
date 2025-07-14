@@ -11,7 +11,7 @@ import { LeaveBtn } from './LeaveBtn';
 import { TopMenuBtn } from './TopMenuBtn';
 
 export const TopBar = () => {
-  const { room }                     = useRoomStore();
+  const { room } = useRoomStore();
   const { toggleShowBars, showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
 
@@ -37,19 +37,19 @@ export const TopBar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    position       : 'absolute',
-    top            : 0,
-    left           : 0,
-    right          : 0,
-    flexDirection  : 'row',
-    alignItems     : 'center',
-    justifyContent : 'space-between',
-    padding        : 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    zIndex         : 1000
-  },
-  left     : {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    alignItems   : 'flex-start',
-  }
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 1000,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
 });

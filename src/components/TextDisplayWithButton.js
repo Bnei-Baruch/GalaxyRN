@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 const TextDisplayWithButton = ({
   label,
@@ -33,43 +33,43 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 15,
     marginBottom: 5,
-    position: "relative",
+    position: 'relative',
   },
   labelContainer: {
-    position: "absolute",
+    position: 'absolute',
     top: -10,
     left: 10,
     paddingHorizontal: 5,
     zIndex: 1,
-    backgroundColor: "black",
+    backgroundColor: 'black',
   },
   label: {
-    color: "white",
+    color: 'white',
     fontSize: 12,
   },
   displayContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#9e9e9e",
-    flexWrap: "nowrap",
+    borderColor: '#9e9e9e',
+    flexWrap: 'nowrap',
     height: 40,
     borderRadius: 5,
   },
   textContainer: {
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingVertical: 8,
     flex: 1,
     paddingHorizontal: 10,
   },
   displayText: {
     fontSize: 16,
-    color: "white",
+    color: 'white',
   },
   buttonContainer: {
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
