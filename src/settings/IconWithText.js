@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { baseStyles } from '../constants';
 
@@ -15,14 +15,14 @@ const IconWithText = ({ iconName, text }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems   : 'center',
-    marginBottom : 10,
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  text     : {
-    marginLeft   : 5,
-    fontSize     : 16,
-    fontWeight   : 'bold',
-    textTransform: 'capitalize'
+  text: {
+    marginLeft: 5,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'capitalize',
   },
 });
 
