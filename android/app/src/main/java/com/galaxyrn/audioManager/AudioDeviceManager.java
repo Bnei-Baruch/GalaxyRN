@@ -15,14 +15,14 @@ import android.os.Looper;
 import android.util.Log;
 import com.galaxyrn.logger.GxyLogger;
 import com.facebook.react.bridge.ReactApplicationContext;
+import android.bluetooth.BluetoothProfile;
 
 import java.util.Arrays;
 
 public class AudioDeviceManager {
     private static final String TAG = AudioDeviceManager.class.getSimpleName();
 
-    // Bluetooth related constants
-    private static final int BLUETOOTH_SCO_TIMEOUT_MS = 1000;
+    private static final int NOTIFICATION_DEBOUNCE_MS = 1500;
 
     private BroadcastReceiver receiver;
     private final ReactApplicationContext reactContext;
@@ -30,6 +30,7 @@ public class AudioDeviceManager {
     private AudioDeviceCallback audioCallback;
     private AudioManager audioManager;
     private final Handler handler;
+    private final Runnable notificationRunnable;
 
     private boolean isContextReady() {
         return reactContext != null && reactContext.hasActiveCatalystInstance();
@@ -39,6 +40,7 @@ public class AudioDeviceManager {
         this.reactContext = context;
         this.callback = callback;
         this.handler = new Handler(Looper.getMainLooper());
+        this.notificationRunnable = this::notifyDeviceStateChangedInternal;
 
         if (!isContextReady()) {
             GxyLogger.w(TAG, "React context not ready, waiting for initialization");
@@ -92,14 +94,36 @@ public class AudioDeviceManager {
         return new AudioDeviceCallback() {
             @Override
             public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                GxyLogger.d(TAG, "onAudioDevicesAdded() addedDevices: " + Arrays.toString(addedDevices));
-                notifyDeviceStateChanged();
+                boolean changed = false;
+                for (AudioDeviceInfo device : addedDevices) {
+                    GxyLogger.d(TAG, "onAudioDevicesAdded() device: " + device.getType());
+                    AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                    GxyLogger.d(TAG, "onAudioDevicesAdded() group: " + group.getType());
+                    if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
+                            || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    notifyDeviceStateChanged();
+                }
             }
 
             @Override
             public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                GxyLogger.d(TAG, "onAudioDevicesRemoved() removedDevices: " + Arrays.toString(removedDevices));
-                notifyDeviceStateChanged();
+                boolean changed = false;
+                for (AudioDeviceInfo device : removedDevices) {
+                    GxyLogger.d(TAG, "onAudioDevicesRemoved() device: " + device.getType());
+                    AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                    GxyLogger.d(TAG, "onAudioDevicesRemoved() group: " + group.getType());
+                    if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
+                            || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    notifyDeviceStateChanged();
+                }
             }
         };
     }
@@ -122,13 +146,21 @@ public class AudioDeviceManager {
                     String action = intent.getAction();
                     GxyLogger.d(TAG, "onReceive() action: " + action);
 
+                    boolean isBluetoothAction = false;
                     if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                         handleBluetoothStateChange(intent);
-                    } else if (BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
-                        handleBluetoothConnectionStateChange(intent);
+                        isBluetoothAction = true;
+                    } else if (BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
+                        handleBluetoothHeadsetConnectionStateChange(intent);
+                        isBluetoothAction = true;
+                    } else if (BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED.equals(action)) {
+                        handleBluetoothAudioStateChange(intent);
+                        isBluetoothAction = true;
                     }
 
-                    notifyDeviceStateChanged();
+                    if (!isBluetoothAction) {
+                        notifyDeviceStateChanged();
+                    }
                 } catch (Exception e) {
                     GxyLogger.e(TAG, "Exception in onReceive", e);
                 }
@@ -137,7 +169,12 @@ public class AudioDeviceManager {
     }
 
     private void notifyDeviceStateChanged() {
-        GxyLogger.d(TAG, "notifyDeviceStateChanged()");
+        handler.removeCallbacks(notificationRunnable);
+        handler.postDelayed(notificationRunnable, NOTIFICATION_DEBOUNCE_MS);
+    }
+
+    private void notifyDeviceStateChangedInternal() {
+        GxyLogger.d(TAG, "notifyDeviceStateChangedInternal()");
 
         if (callback != null && reactContext != null && reactContext.hasActiveCatalystInstance()) {
             callback.onUpdateAudioDeviceState();
@@ -150,6 +187,33 @@ public class AudioDeviceManager {
         }
     }
 
+    private void handleBluetoothAudioStateChange(Intent intent) {
+        int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_DISCONNECTED);
+
+        if (state == BluetoothHeadset.STATE_AUDIO_CONNECTED) {
+            GxyLogger.d(TAG, "Bluetooth audio SCO connected");
+            if (audioManager != null) {
+                audioManager.setBluetoothScoOn(true);
+            }
+            notifyDeviceStateChanged();
+        } else if (state == BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
+            GxyLogger.d(TAG, "Bluetooth audio SCO disconnected");
+            if (audioManager != null && audioManager.isBluetoothScoOn()) {
+                audioManager.setBluetoothScoOn(false);
+            }
+            notifyDeviceStateChanged();
+        }
+    }
+
+    private void handleBluetoothHeadsetConnectionStateChange(Intent intent) {
+        int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_DISCONNECTED);
+        if (state == BluetoothProfile.STATE_CONNECTED) {
+            enableBluetoothSco();
+        } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
+            disableBluetoothSco();
+        }
+    }
+
     private void handleBluetoothStateChange(Intent intent) {
         int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
         if (state == BluetoothAdapter.STATE_ON) {
@@ -159,31 +223,10 @@ public class AudioDeviceManager {
         }
     }
 
-    private void handleBluetoothConnectionStateChange(Intent intent) {
-        int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-        if (state == BluetoothAdapter.STATE_CONNECTED) {
-            enableBluetoothSco();
-        } else if (state == BluetoothAdapter.STATE_DISCONNECTED) {
-            disableBluetoothSco();
-        }
-    }
-
     private void enableBluetoothSco() {
         try {
             if (audioManager != null) {
                 audioManager.startBluetoothSco();
-                audioManager.setBluetoothScoOn(true);
-
-                // Add a delayed check to ensure SCO is started
-                handler.postDelayed(() -> {
-                    try {
-                        if (audioManager != null && !audioManager.isBluetoothScoOn()) {
-                            audioManager.startBluetoothSco();
-                        }
-                    } catch (Exception e) {
-                        GxyLogger.e(TAG, "Failed in delayed SCO check", e);
-                    }
-                }, BLUETOOTH_SCO_TIMEOUT_MS);
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to start Bluetooth SCO", e);
@@ -193,8 +236,9 @@ public class AudioDeviceManager {
     private void disableBluetoothSco() {
         try {
             if (audioManager != null) {
-                audioManager.stopBluetoothSco();
-                audioManager.setBluetoothScoOn(false);
+                if (audioManager.isBluetoothScoOn()) {
+                    audioManager.stopBluetoothSco();
+                }
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to stop Bluetooth SCO", e);
@@ -237,6 +281,7 @@ public class AudioDeviceManager {
             disableBluetoothSco();
 
             // Then unregister callbacks to prevent unwanted events
+            handler.removeCallbacks(notificationRunnable);
             unregisterAudioDeviceCallback();
             unregisterBroadcastReceiver();
 

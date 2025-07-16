@@ -16,6 +16,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.module.annotations.ReactModule;
 import com.galaxyrn.SendEventToClient;
 
@@ -23,6 +24,12 @@ import java.util.Arrays;
 import java.util.Comparator;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.res.Configuration;
+import android.app.UiModeManager;
+
+import static com.galaxyrn.audioManager.AudioHelper.BUILTIN_EARPIECE_GROUP;
+import static com.galaxyrn.audioManager.AudioHelper.BUILTIN_SPEAKER_GROUP;
+import static com.galaxyrn.audioManager.AudioHelper.BLUETOOTH_GROUP;
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 @ReactModule(name = AudioDeviceModule.NAME)
@@ -37,7 +44,8 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
     private boolean isInitialized = false;
-    private boolean autoInitializeDisabled = true; // Disable auto-initialization
+    private boolean autoInitializeDisabled = true;
+    private String prevGroupType = "";
 
     public AudioDeviceModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -154,6 +162,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             if (audioFocusManager != null) {
                 audioFocusManager.requestAudioFocus();
             }
+            processAudioDevicesOnUiThread(null, false);
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
         }
@@ -183,7 +192,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId, false));
     }
 
-    private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialized) {
+    private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialize) {
         GxyLogger.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
         try {
             AudioManager audioManager = getAudioManager();
@@ -197,38 +206,59 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             }
 
             AudioDeviceInfo selectedDevice = findDeviceById(devices, deviceId);
+            AudioDeviceGroup selectedGroup;
 
             // If no device found by ID, select default
             if (selectedDevice == null) {
-                selectedDevice = selectDefaultDevice(devices);
-                // If the default device is a built-in earpiece and the module is initialized,
-                // select the speaker
-                if (selectedDevice.getType() == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE && isInitialized) {
-                    AudioDeviceInfo speaker = findDeviceByType(devices, AudioDeviceInfo.TYPE_BUILTIN_SPEAKER);
-                    if (speaker != null) {
-                        selectedDevice = speaker;
-                    }
+                selectedGroup = selectDefaultGroup(devices);
+                // If the previous group type is Bluetooth, select the built-in earpiece group
+                if (prevGroupType.equals(BLUETOOTH_GROUP.getType())
+                        && selectedGroup.getType().equals(BUILTIN_SPEAKER_GROUP.getType())) {
+                    selectedGroup = BUILTIN_EARPIECE_GROUP;
+                } else if (selectedGroup.getType().equals(BUILTIN_EARPIECE_GROUP.getType())
+                        && isInitialize) {
+                    // If the default device is a built-in earpiece and the module is initialized,
+                    // select the speaker
+                    selectedGroup = BUILTIN_SPEAKER_GROUP;
                 }
+                GxyLogger.d(TAG, "Selected default group: " + selectedGroup.getType());
+
+                selectedDevice = AudioHelper.getDeviceByGroup(devices, selectedGroup);
+
                 GxyLogger.d(TAG, "Selected default device: " + selectedDevice);
             } else {
                 GxyLogger.d(TAG, "Selected device by id: " + selectedDevice);
+                selectedGroup = AudioHelper.getGroupByDeviceType(selectedDevice.getType());
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                AudioDeviceInfo currentDevice = getAudioManager().getCommunicationDevice();
+                if (currentDevice == null || selectedDevice.getId() != currentDevice.getId()) {
+                    setAudioDevice(selectedDevice);
+                }
+            } else {
+                setAudioDevice(selectedDevice);
             }
 
-            // Map all devices to the response
             WritableMap data = Arguments.createMap();
             for (AudioDeviceInfo device : devices) {
-                data.putMap(String.valueOf(device.getId()), deviceInfoToResponse(device));
+                AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                WritableMap deviceMap = Arguments.createMap();
+                deviceMap.putString("type", group.getType());
+                deviceMap.putString("priority", String.valueOf(group.getPriority()));
+                deviceMap.putInt("id", device.getId());
+                deviceMap.putBoolean("active", device.getId() == selectedDevice.getId());
+                data.putMap(group.getType(), deviceMap);
                 GxyLogger.d(TAG, "Device type: " + device.getType());
             }
 
-            if (selectedDevice != null) {
-                setAudioDevice(selectedDevice);
+            GxyLogger.d(TAG, "sendDeviceUpdateToClient() result: " + data);
+            prevGroupType = selectedGroup.getType();
+            GxyLogger.d(TAG, "prevGroupType updated: " + prevGroupType);
 
-                WritableMap selectedResponse = deviceInfoToResponse(selectedDevice);
-                selectedResponse.putBoolean("active", true);
-                data.putMap(String.valueOf(selectedDevice.getId()), selectedResponse);
-
-                sendDeviceUpdateToClient(data);
+            try {
+                SendEventToClient.sendEvent(EVENT_UPDATE_AUDIO_DEVICE, data);
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
@@ -251,45 +281,27 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         }
     }
 
-    private void sendDeviceUpdateToClient(WritableMap data) {
-        GxyLogger.d(TAG, "sendDeviceUpdateToClient() result: " + data);
+    private AudioDeviceGroup selectDefaultGroup(AudioDeviceInfo[] devices) {
+        AudioDeviceGroup result = BUILTIN_EARPIECE_GROUP;
         try {
-            SendEventToClient.sendEvent(EVENT_UPDATE_AUDIO_DEVICE, data);
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
-        }
-    }
-
-    private WritableMap deviceInfoToResponse(AudioDeviceInfo deviceInfo) {
-        try {
-            WritableMap map = Arguments.createMap();
-            map.putInt("type", deviceInfo.getType());
-            map.putInt("id", deviceInfo.getId());
-            return map;
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error creating device info response: " + e.getMessage(), e);
-            return Arguments.createMap();
-        }
-    }
-
-    public AudioDeviceInfo selectDefaultDevice(AudioDeviceInfo[] devices) {
-        try {
-            Arrays.sort(devices, new Comparator<AudioDeviceInfo>() {
-                @Override
-                public int compare(AudioDeviceInfo d1, AudioDeviceInfo d2) {
-                    return Integer.compare(AudioHelper.devicePriorityOrder.indexOf(d1.getType()),
-                            AudioHelper.devicePriorityOrder.indexOf(d2.getType()));
+            for (AudioDeviceInfo device : devices) {
+                AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                if (group.getPriority() > result.getPriority()) {
+                    result = group;
                 }
-            });
-            return devices[0];
+            }
+            if (!result.getType().equals(BLUETOOTH_GROUP.getType())) {
+                return result;
+            }
+
+            return result;
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error selecting default device: " + e.getMessage(), e);
-            return devices.length > 0 ? devices[0] : null;
+            GxyLogger.e(TAG, "Error selecting default group: " + e.getMessage(), e);
+            return BUILTIN_EARPIECE_GROUP;
         }
     }
 
     private AudioDeviceInfo findDeviceById(AudioDeviceInfo[] devices, Integer deviceId) {
-        // Find device by ID if specified
         AudioDeviceInfo selected = null;
         if (deviceId != null) {
             for (AudioDeviceInfo device : devices) {
@@ -324,12 +336,12 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             if (audioManager == null)
                 return;
 
-            configureAudioManager(audioManager);
+            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 audioManager.setCommunicationDevice(device);
             } else {
-                setAudioDeviceOld(audioManager);
+                setAudioDeviceOld(audioManager, device);
             }
             GxyLogger.d(TAG, "setAudioDevice() after setCommunicationDevice()");
         } catch (Exception e) {
@@ -337,28 +349,27 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
         }
     }
 
-    private void configureAudioManager(AudioManager audioManager) {
-        audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
-        adjustVolumeIfNeeded(audioManager);
-    }
-
-    private void adjustVolumeIfNeeded(AudioManager audioManager) {
-        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL);
-        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-
-        if (currentVolume < maxVolume * DEFAULT_VOLUME_LEVEL) {
-            audioManager.setStreamVolume(
-                    AudioManager.STREAM_VOICE_CALL,
-                    (int) (maxVolume * DEFAULT_VOLUME_LEVEL),
-                    0);
-        }
-    }
-
-    private void setAudioDeviceOld(AudioManager audioManager) {
+    private void setAudioDeviceOld(AudioManager audioManager, AudioDeviceInfo device) {
         try {
-            audioManager.startBluetoothSco();
-            audioManager.setBluetoothScoOn(true);
-            audioManager.setSpeakerphoneOn(false);
+            AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+            GxyLogger.d(TAG, "setAudioDeviceOld() device group: " + group.getType());
+
+            if (group.getType().equals(BLUETOOTH_GROUP.getType())) {
+                GxyLogger.d(TAG, "Setting audio to Bluetooth");
+                audioManager.startBluetoothSco();
+                audioManager.setBluetoothScoOn(true);
+                audioManager.setSpeakerphoneOn(false);
+            } else if (group.getType().equals(BUILTIN_SPEAKER_GROUP.getType())) {
+                GxyLogger.d(TAG, "Setting audio to Speaker");
+                audioManager.stopBluetoothSco();
+                audioManager.setBluetoothScoOn(false);
+                audioManager.setSpeakerphoneOn(true);
+            } else { // Earpiece, wired headset etc.
+                GxyLogger.d(TAG, "Setting audio to Earpiece/other");
+                audioManager.stopBluetoothSco();
+                audioManager.setBluetoothScoOn(false);
+                audioManager.setSpeakerphoneOn(false);
+            }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error in setAudioDeviceOld: " + e.getMessage(), e);
         }

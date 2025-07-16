@@ -22,7 +22,6 @@ import mqtt from '../shared/mqtt';
 import { deepClone, sleep } from '../shared/tools';
 
 // Zustand stores
-import useAudioDevicesStore from './audioDevices';
 import { useChatStore } from './chat';
 import useRoomStore from './fetchRooms';
 import { useInitsStore } from './inits';
@@ -108,7 +107,6 @@ export const useInRoomStore = create((set, get) => ({
     try {
       AudioBridge.requestAudioFocus();
       await WakeLockBridge.keepScreenOn();
-      useAudioDevicesStore.getState().initAudioDevices();
       useMyStreamStore.getState().toggleMute(true);
       set({ isInBackground: false });
     } catch (error) {
@@ -492,7 +490,6 @@ export const useInRoomStore = create((set, get) => ({
     try {
       AudioBridge.abandonAudioFocus();
       WakeLockBridge.releaseScreenOn();
-      useAudioDevicesStore.getState().abortAudioDevices();
     } catch (error) {
       logger.error(NAMESPACE, 'Error cleaning up device states', error);
     }

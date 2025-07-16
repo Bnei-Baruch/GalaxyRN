@@ -31,11 +31,6 @@ public class AudioFocusManager {
         }
     }
 
-    /**
-     * Request audio focus for voice communication
-     * 
-     * @return true if audio focus was granted, false otherwise
-     */
     public boolean requestAudioFocus() {
         if (audioManager == null) {
             GxyLogger.e(TAG, "Cannot request audio focus: AudioManager is null");
