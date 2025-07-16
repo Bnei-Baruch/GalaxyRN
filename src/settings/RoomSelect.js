@@ -45,9 +45,10 @@ const RoomSelect = () => {
   logger.debug(NAMESPACE, 'rooms rendered', filteredOptions[0]);
 
   const handleSearch = text => {
+    const searchValue = text.toLowerCase().trim();
     setSearchText(text);
     const _room = filteredOptions.find(
-      o => o.description.toLowerCase() === text.toLowerCase()
+      o => o.description.toLowerCase() === searchValue
     );
     _room ? setRoom(_room) : setRoom(null);
   };
