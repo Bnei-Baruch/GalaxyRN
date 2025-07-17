@@ -14,13 +14,13 @@ export const setLanguage = value => {
   setToStorage('lng', value);
 };
 
-const getSystemLanguage = () => {
+export const getSystemLanguage = () => {
   try {
     const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 
     const languageCode = systemLocale.split('-')[0];
 
-    return languageCode || DEFAULT_LANGUAGE;
+    return languageCode;
   } catch (error) {
     console.warn('Could not detect system language:', error);
     return DEFAULT_LANGUAGE;
@@ -31,15 +31,19 @@ const languageDetector = {
   type: 'languageDetector',
   async: true,
   detect: async callback => {
-    const storedLang = await getFromStorage('lng', getSystemLanguage());
+    const storedLang = await getFromStorage('lng');
     logger.debug(NAMESPACE, `Stored language: ${storedLang}`);
-
-    if (storedLang && UI_LANGUAGES.includes(storedLang)) {
+    if (storedLang) {
       callback(storedLang);
-    } else {
-      const systemLang = getSystemLanguage();
-      logger.warn(NAMESPACE, `System language: ${systemLang}`);
+      return;
+    }
+
+    const systemLang = getSystemLanguage();
+    if (UI_LANGUAGES.includes(systemLang)) {
+      logger.debug(NAMESPACE, `System language: ${systemLang}`);
       callback(systemLang);
+    } else {
+      callback(DEFAULT_LANGUAGE);
     }
   },
 };

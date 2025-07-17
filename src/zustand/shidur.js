@@ -9,7 +9,7 @@ import { StreamingPlugin } from '../libs/streaming-plugin';
 import logger from '../services/logger';
 
 // Shared modules
-import i18n from '../i18n/i18n';
+import i18n, { getSystemLanguage } from '../i18n/i18n';
 import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
@@ -97,6 +97,18 @@ const getOptionByKey = key => {
     default:
       return workShopOptions.find(x => x.key === 'wo_original');
   }
+};
+
+const getAudioKey = async () => {
+  let audioKey = await getFromStorage('audio');
+  if (!audioKey) {
+    const systemLang = getSystemLanguage();
+    audioKey = `wo_${systemLang}`;
+    if (!workShopOptions.find(x => x.key === audioKey)) {
+      audioKey = `wo_${i18n.language}`;
+    }
+  }
+  return audioKey;
 };
 
 export const useShidurStore = create((set, get) => ({
@@ -233,7 +245,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOriginal) {
       audio = getOptionByKey('wo_original');
     } else {
-      const audioKey = await getFromStorage('audio', `wo_${i18n.language}`);
+      const audioKey = await getAudioKey();
       audio = getOptionByKey(audioKey);
     }
 
@@ -439,7 +451,7 @@ export const useShidurStore = create((set, get) => ({
     if (isOriginal) {
       key = 'wo_original';
     } else {
-      key = await getFromStorage('audio', `wo_${i18n.language}`);
+      key = await getAudioKey();
     }
 
     get().setAudio(key);

@@ -125,7 +125,6 @@ extension AudioManager {
                 NLOG("[audioDevices swift] 👂 Setting up earpiece mode")
                 try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers])
                 try session.overrideOutputAudioPort(.none)
-                // Поиск и установка встроенного микрофона
                 if let builtInMic = findInputPortOfType(.builtInMic) {
                     try session.setPreferredInput(builtInMic)
                 }
