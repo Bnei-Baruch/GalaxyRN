@@ -31,11 +31,13 @@ export const useSettingsStore = create((set, get) => ({
   },
 
   isShidur: true,
-  toggleIsShidur: () => {
+  toggleIsShidur: async () => {
     const isShidur = !get().isShidur;
-    !isShidur && useShidurStore.getState().cleanShidur(true);
-    useUiActions.getState().updateWidth(isShidur);
+    if (!isShidur) {
+      await useShidurStore.getState().cleanShidur(true);
+    }
     set({ isShidur });
+    useUiActions.getState().updateWidth(isShidur);
   },
 
   audioMode: false,

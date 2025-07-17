@@ -74,8 +74,9 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
      * Initialize the call listener - called after permissions are granted
      */
     private void initializeCallListener() {
-        GxyLogger.d(TAG, "initializeCallListener() called - isInitialized: " + isInitialized + ", autoInitializeDisabled: "
-                + autoInitializeDisabled);
+        GxyLogger.d(TAG,
+                "initializeCallListener() called - isInitialized: " + isInitialized + ", autoInitializeDisabled: "
+                        + autoInitializeDisabled);
         try {
             // If we're already initialized, don't do it again
             if (isInitialized) {
@@ -104,7 +105,8 @@ public class CallListenerModule extends ReactContextBaseJavaModule implements Li
                         if (success) {
                             isInitialized = true;
                             autoInitializeDisabled = false; // Enable for future lifecycle events
-                            GxyLogger.d(TAG, "CallListenerModule initialized successfully - isInitialized: " + isInitialized);
+                            GxyLogger.d(TAG,
+                                    "CallListenerModule initialized successfully - isInitialized: " + isInitialized);
                         } else {
                             GxyLogger.e(TAG,
                                     "Failed to initialize CallListenerModule - PhoneCallListener.initialize() returned false");

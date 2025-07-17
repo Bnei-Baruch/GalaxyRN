@@ -31,6 +31,11 @@ public class SendEventToClient {
                 GxyLogger.w(SendEventToClient.TAG,
                         "sendEvent() BLOCKED - reactContext is null or not having CatalystInstance yet. EventName: "
                                 + eventName);
+                if (SendEventToClient.context == null) {
+                    GxyLogger.w(SendEventToClient.TAG, "ReactContext is NULL");
+                } else {
+                    GxyLogger.w(SendEventToClient.TAG, "CatalystInstance is NOT active");
+                }
             }
         } catch (RuntimeException e) {
             GxyLogger.e(SendEventToClient.TAG,

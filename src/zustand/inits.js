@@ -173,7 +173,8 @@ export const useInitsStore = create((set, get) => ({
   initApp: async () => {
     BackgroundTimer.start();
     let _isPlay = false;
-    if (eventEmitter) {
+    logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
+    try {
       subscription = eventEmitter.addListener(
         'onCallStateChanged',
         async data => {
@@ -195,8 +196,8 @@ export const useInitsStore = create((set, get) => ({
           }
         }
       );
-    } else {
-      logger.error(NAMESPACE, 'eventEmitter is undefined');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error initializing app', error);
     }
   },
 

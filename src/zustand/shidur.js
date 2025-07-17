@@ -228,37 +228,42 @@ export const useShidurStore = create((set, get) => ({
     cleanWIP = false;
   },
 
-  initAudio: async () => {
+  initMedias: async () => {
     let video;
     if (useSettingsStore.getState().audioMode) {
       video = NO_VIDEO_OPTION_VALUE;
     } else {
       video = await getFromStorage('video', 1).then(x => Number(x));
     }
-    logger.debug(NAMESPACE, 'initAudio video', video);
+    logger.debug(NAMESPACE, 'initMedias video', video);
 
     let audio;
     const isOriginal = await getFromStorage('is_original', false).then(
       x => x === 'true'
     );
-    logger.debug(NAMESPACE, 'initAudio', isOriginal);
+    logger.debug(NAMESPACE, 'initMedias audio', isOriginal);
     if (isOriginal) {
       audio = getOptionByKey('wo_original');
     } else {
       const audioKey = await getAudioKey();
       audio = getOptionByKey(audioKey);
     }
-
+    logger.debug(NAMESPACE, `initMedias video: ${video}, audio: ${audio} `);
     set({ video, audio });
   },
 
   initShidur: async (isPlay = get().isPlay) => {
     set({ shidurWIP: true });
     logger.debug(NAMESPACE, 'initShidur');
-    if (!useSettingsStore.getState().isShidur || !isPlay) return;
+    if (!useSettingsStore.getState().isShidur || !isPlay) {
+      set({ shidurWIP: false });
+      return;
+    }
 
     try {
       const { video, audio } = get();
+      logger.debug(NAMESPACE, `initShidur video: ${video}, audio: ${audio} `);
+
       if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
         const [stream, janusStream] = await initStream(janus, video);
         videoStream = stream;
@@ -296,12 +301,18 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'cleanShidur');
     cleanStream(videoStream);
     videoStream = null;
+    videoJanus?.detach();
+    videoJanus = null;
 
     cleanStream(audioStream);
     audioStream = null;
+    audioJanus?.detach();
+    audioJanus = null;
 
     cleanStream(trlAudioStream);
     trlAudioStream = null;
+    trlAudioJanus?.detach();
+    trlAudioJanus = null;
 
     set({
       readyShidur: false,
