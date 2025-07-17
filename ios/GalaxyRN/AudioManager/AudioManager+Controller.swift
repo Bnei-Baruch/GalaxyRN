@@ -13,8 +13,9 @@ extension AudioManager {
         case earpiece = 0
         case speaker = 1   
         case bluetooth = 2 
-        case headphones = 3
-        case external = 4  
+        case carAudio = 3
+        case headphones = 4
+        case external = 5
     }
   
     @objc
@@ -40,19 +41,20 @@ extension AudioManager {
     func activateOutputByGroup(_ group: AudioOutputGroup) {
         do {
             NLOG("[audioDevices swift] Attempting to switch to route group:", group)
-            switchToRouteGroup(group)
+            let resultGroup = switchToRouteGroup(group)
+            NLOG("[audioDevices swift] Current group after switch:", resultGroup)
         
             try audioSession.setActive(true, options: [])
             NLOG("[audioDevices swift] Audio session set active: true")
         
             // Configure audio session parameters based on the target group
-            switch group {
+            switch resultGroup {
             case .earpiece:
                 // Earpiece supports mono only
                 try audioSession.setPreferredOutputNumberOfChannels(1)
                 try audioSession.setPreferredIOBufferDuration(0.02) // 20ms for stability
                 NLOG("[audioDevices swift] Earpiece audio session configured: 1 channel, 20ms buffer")
-            case .speaker, .bluetooth, .headphones, .external:
+            case .speaker, .bluetooth, .headphones, .external, .carAudio:
                 // These can support stereo
                 try audioSession.setPreferredOutputNumberOfChannels(2)
                 try audioSession.setPreferredIOBufferDuration(0.01) // 10ms for better quality
@@ -68,7 +70,7 @@ extension AudioManager {
             NLOG("[audioDevices swift] ❌ ERROR switching audio output:", error)
             print("Error switching audio output: \(error)")
         }
-        NLOG("[audioDevices swift] final audio group after switching:", getCurrentAudioOutputGroup())
+        sendCurrentAudioGroup()
         NLOG("[audioDevices swift] 📱 EXIT: switchAudioOutput completed")
     }
 
@@ -76,11 +78,12 @@ extension AudioManager {
         guard let output = audioSession.currentRoute.outputs.first else {
             return .none
         }
-    
+        NLOG("[audioDevices swift] getCurrentAudioOutputGroup: \(output.portType)")
         return getGroupByPortType(output.portType)
     }
   
     func getGroupByPortType(_ port: AVAudioSession.Port) -> AudioOutputGroup {
+        NLOG("[audioDevices swift] getGroupByPortType: \(port)")
         switch port {
         case .bluetoothA2DP, .bluetoothHFP, .bluetoothLE:
             return .bluetooth
@@ -90,6 +93,8 @@ extension AudioManager {
             return .speaker
         case .builtInReceiver:
             return .earpiece
+        case .carAudio:
+            return .carAudio
         case .HDMI, .airPlay, .usbAudio:
             return .external
         default:
@@ -97,10 +102,10 @@ extension AudioManager {
         }
     }
   
-    func switchToRouteGroup(_ group: AudioOutputGroup) {
+  func switchToRouteGroup(_ group: AudioOutputGroup) -> AudioOutputGroup {
         if group.rawValue < 0 || group == .none {
             NLOG("[audioDevices swift] 🚫 Skipping invalid route group:", group)
-            return
+          return .none
         }
     
         do {
@@ -153,10 +158,17 @@ extension AudioManager {
                 try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowAirPlay, .mixWithOthers])
                 NLOG("[audioDevices swift] ✅ External device mode configured")
                 break
+
+            case AudioOutputGroup.carAudio:
+                NLOG("[audioDevices swift] 🚗 Setting up CarPlay mode")
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers, .defaultToSpeaker])
+                try session.overrideOutputAudioPort(.none)
+                NLOG("[audioDevices swift] ✅ CarPlay mode configured")
+                break
         
             case .none:
                 NLOG("[audioDevices swift] 🚫 None mode selected, returning")
-                return
+              return .none
             }
       
             let currentGroup = getCurrentAudioOutputGroup()
@@ -168,6 +180,7 @@ extension AudioManager {
             } else {
                 NLOG("[audioDevices swift] ✅ Successfully switched to target group:", group)
             }
+            return currentGroup
         } catch {
             NLOG("[audioDevices swift] ❌ ERROR configuring route group:", group, "error:", error)
             NLOG("[audioDevices swift] ↩️ Falling back to previous group:", AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)

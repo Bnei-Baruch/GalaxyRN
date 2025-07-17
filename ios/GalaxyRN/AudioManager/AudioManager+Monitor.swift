@@ -48,7 +48,6 @@ extension AudioManager {
                         NLOG("[audioDevices swift] 🔵 Bluetooth group device disconnected: \(output.portName) (\(output.uid))")
                         NLOG("[audioDevices swift] 🔄 Switching to earpiece due to Bluetooth group disconnection")
                         activateOutputByGroup(.earpiece)
-                        sendCurrentAudioGroup()
                     }
                 }
             }
@@ -56,6 +55,14 @@ extension AudioManager {
             NLOG("[audioDevices swift] Route change: Category changed")
         case .override:
             NLOG("[audioDevices swift] Route change: Override")
+          if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
+              let prevOutput = previousRoute.outputs.first
+              let output = audioSession.currentRoute.outputs.first
+            NLOG("[audioDevices swift] prevOutput: \(String(describing: prevOutput?.portType)) output: \(String(describing: output?.portType))")
+              if prevOutput?.portType == output?.portType {
+                  return
+              }
+          }
         case .wakeFromSleep:
             NLOG("[audioDevices swift] Route change: Wake from sleep")
         case .noSuitableRouteForCategory:
@@ -76,5 +83,7 @@ extension AudioManager {
         NLOG("[audioDevices swift] Current outputs: \(currentRoute.outputs.map { "\($0.portName) (\($0.uid))" }.joined(separator: ", "))")
     
         sendCurrentAudioGroup()
+        NLOG("[audioDevices swift] sendCurrentAudioGroup done")
+        
     }
 } 
