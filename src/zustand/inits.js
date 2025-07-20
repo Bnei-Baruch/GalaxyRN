@@ -136,12 +136,10 @@ export const useInitsStore = create((set, get) => ({
           );
       }
 
-      // Small delay to ensure unsubscribe messages are processed
       await sleep(100);
 
-      // Then end the connection
       if (mqtt.mq) {
-        mqtt.mq.removeAllListeners();
+        logger.debug(NAMESPACE, 'ending MQTT connection');
         await mqtt
           .end()
           .catch(err =>

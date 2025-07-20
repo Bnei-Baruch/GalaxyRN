@@ -195,6 +195,7 @@ public class GxyLoggerUtils {
         }
 
         if (logDir == null || logDir.isEmpty()) {
+            Log.e(TAG, "Log directory not initialized. Cannot save log to file.");
             return;
         }
 
