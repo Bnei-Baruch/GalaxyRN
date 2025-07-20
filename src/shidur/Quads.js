@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import { useShidurStore } from '../zustand/shidur';
-import { useSettingsStore } from '../zustand/settings';
-import { useUiActions } from '../zustand/uiActions';
+
 import { useInitsStore } from '../zustand/inits';
+import { useSettingsStore } from '../zustand/settings';
+import { useShidurStore } from '../zustand/shidur';
+import { useUiActions } from '../zustand/uiActions';
 
 export const Quads = () => {
   const { quadUrl, initQuad, cleanQuads } = useShidurStore();
-  const { isShidur }                      = useSettingsStore();
-  const { isPortrait }                    = useInitsStore();
-  const { width }                         = useUiActions();
+  const { isShidur } = useSettingsStore();
+  const { isPortrait } = useInitsStore();
+  const { width } = useUiActions();
 
   useEffect(() => {
     initQuad();
@@ -20,11 +21,17 @@ export const Quads = () => {
   }, []);
 
   return (
-    <View style={[styles.container, (!isShidur && !isPortrait) && { width, alignSelf: 'center' }]}>
+    <View
+      style={[
+        styles.container,
+        !isShidur && !isPortrait && { width, alignSelf: 'center' },
+      ]}
+    >
       {quadUrl && (
         <RTCView
           streamURL={quadUrl}
           style={styles.viewer}
+          objectFit="contain"
         />
       )}
     </View>
@@ -33,14 +40,14 @@ export const Quads = () => {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems    : 'center',
-    width         : '100%',
-    justifyContent: 'center'
-  },
-  viewer   : {
-    aspectRatio   : 16 / 9,
-    width         : '100%',
+    alignItems: 'center',
+    width: '100%',
     justifyContent: 'center',
-    alignItems    : 'center',
-  }
+  },
+  viewer: {
+    aspectRatio: 16 / 9,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

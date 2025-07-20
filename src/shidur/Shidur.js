@@ -80,7 +80,13 @@ const Shidur = () => {
 const MemoizedRTCView = memo(
   ({ streamURL }) => {
     logger.debug(NAMESPACE, `MemoizedRTCView  url: ${streamURL}`);
-    return <RTCView streamURL={streamURL} style={styles.viewer} />;
+    return (
+      <RTCView
+        streamURL={streamURL}
+        style={styles.viewer}
+        objectFit="contain"
+      />
+    );
   },
   (prevProps, nextProps) => {
     return prevProps.url === nextProps.url;

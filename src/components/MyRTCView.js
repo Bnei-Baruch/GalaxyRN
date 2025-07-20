@@ -16,7 +16,7 @@ const MyRTCView = memo(
         streamURL={stream.toURL()}
         style={[baseStyles.full, { aspectRatio: isPortrait ? 9 / 16 : 16 / 9 }]}
         mirror={true}
-        objectFit="cover"
+        objectFit="contain"
       />
     );
   },
