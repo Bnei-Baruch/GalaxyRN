@@ -18,16 +18,16 @@ import mqtt from '../shared/mqtt';
 const NAMESPACE = 'Subtitle';
 
 export const MSGS_QUESTION = {
-  type: 'question',
+  slide_type: 'question',
   display_status: 'questions',
   topic: 'question',
 };
 export const MSGS_SUBTITLE = {
-  type: 'subtitle',
+  slide_type: 'subtitle',
   display_status: 'subtitles',
   topic: 'slide',
 };
-export const MSGS_NONE = { type: 'none', display_status: 'none' };
+export const MSGS_NONE = { slide_type: 'none', display_status: 'none' };
 export const MSGS_ALL = [MSGS_QUESTION, MSGS_SUBTITLE, MSGS_NONE];
 
 const ORIGINAL_LANG = 'he';
@@ -84,20 +84,21 @@ export const useSubtitleStore = create((set, get) => ({
     let msg = JSON.parse(data);
     logger.debug(NAMESPACE, `Parsed message:`, msg);
 
-    const infoByType = MSGS_ALL.find(m => m.type === msg.type);
-    if (msg.type !== MSGS_NONE.type && infoByType?.topic !== topic) {
-      logger.debug(
-        NAMESPACE,
-        `Message type mismatch: ${msg.type} ${infoByType?.topic} ${topic}`
-      );
+    if (msg.slide_type === MSGS_NONE.slide_type) {
+      set({ lastMsg: null });
+      logger.debug(NAMESPACE, `Clearing message`);
+      return;
+    }
+
+    const infoByType = MSGS_ALL.find(m => m.slide_type === msg.slide_type);
+    if (infoByType?.slide_type !== msg.slide_type) {
+      logger.debug(NAMESPACE, `Ignoring message`);
       return;
     }
 
     if (
-      msg.display_status === MSGS_NONE.display_status ||
       msg.slide === '' ||
-      msg.display_status !== infoByType?.display_status ||
-      (!msg.visible && msg.type === MSGS_QUESTION.type)
+      (!msg.visible && msg.slide_type === MSGS_QUESTION.slide_type)
     ) {
       set({ lastMsg: null });
       logger.debug(NAMESPACE, `Clearing message`);
