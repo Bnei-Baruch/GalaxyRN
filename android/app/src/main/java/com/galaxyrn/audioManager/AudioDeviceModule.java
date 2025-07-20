@@ -21,6 +21,8 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.galaxyrn.SendEventToClient;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.Comparator;
 import android.os.Handler;
 import android.os.Looper;
@@ -205,7 +207,11 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
                 return;
             }
 
-            AudioDeviceInfo selectedDevice = findDeviceById(devices, deviceId);
+            AudioDeviceInfo selectedDevice = null;
+            if (deviceId != null) {
+                selectedDevice = findDeviceById(devices, deviceId);
+            }
+
             AudioDeviceGroup selectedGroup;
 
             // If no device found by ID, select default
@@ -274,11 +280,15 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     }
 
     private AudioDeviceInfo[] getAvailableAudioDevices(AudioManager audioManager) {
+        AudioDeviceInfo[] result = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
+            result = audioManager.getAvailableCommunicationDevices().toArray(new AudioDeviceInfo[0]);
         } else {
-            return audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+            result = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
         }
+        return Arrays.stream(result)
+                .filter(device -> device.getType() != AudioDeviceInfo.TYPE_TELEPHONY)
+                .toArray(AudioDeviceInfo[]::new);
     }
 
     private AudioDeviceGroup selectDefaultGroup(AudioDeviceInfo[] devices) {
