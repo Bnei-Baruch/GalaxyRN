@@ -79,19 +79,18 @@ export const useSubtitleStore = create((set, get) => ({
     set({ lastMsg: null, isConnected: false });
   },
 
-  onMessage: async (data, topic) => {
-    logger.debug(NAMESPACE, `Message received:`, data, topic);
+  onMessage: async data => {
     let msg = JSON.parse(data);
     logger.debug(NAMESPACE, `Parsed message:`, msg);
 
-    if (msg.slide_type === MSGS_NONE.slide_type) {
+    if (msg.display_status === MSGS_NONE.display_status) {
       set({ lastMsg: null });
       logger.debug(NAMESPACE, `Clearing message`);
       return;
     }
 
-    const infoByType = MSGS_ALL.find(m => m.topic === msg.topic);
-    if (infoByType?.slide_type !== msg.slide_type) {
+    const infoByType = MSGS_ALL.find(m => m.slide_type === msg.slide_type);
+    if (infoByType?.display_status !== msg.display_status) {
       logger.debug(NAMESPACE, `Ignoring message`);
       return;
     }

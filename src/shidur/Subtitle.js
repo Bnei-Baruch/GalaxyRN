@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 import { SHIDUR_SUBTITLE_ZINDEX } from '../constants';
-import { useSubtitleStore } from '../zustand/subtitle';
+import { MSGS_QUESTION, useSubtitleStore } from '../zustand/subtitle';
 
 const md = markdownit({ html: true, breaks: false }).disable([
   'lheading',
@@ -20,6 +20,13 @@ const Subtitle = () => {
   const rendered = md.render(slide);
   const htmlContent = `<div dir="${isLtr ? 'ltr' : 'rtl'}">${rendered}</div>`;
 
+  let textAlign = 'left';
+  if (lastMsg?.slide_type === MSGS_QUESTION.slide_type) {
+    textAlign = 'center';
+  } else {
+    textAlign = isLtr ? 'left' : 'right';
+  }
+
   return (
     <View style={styles.subtitle}>
       <RenderHtml
@@ -30,9 +37,7 @@ const Subtitle = () => {
             color: 'black',
           },
         }}
-        baseStyle={{
-          textAlign: isLtr ? 'left' : 'right',
-        }}
+        baseStyle={{ textAlign }}
         defaultTextProps={{
           selectable: false,
         }}
@@ -45,7 +50,7 @@ const styles = StyleSheet.create({
   subtitle: {
     position: 'absolute',
     top: 'auto',
-    minHeight: '20%',
+    minHeight: '24%',
     backgroundColor: 'white',
     bottom: 0,
     left: 0,
