@@ -65,23 +65,12 @@
     }
   },
   "audioDeviceName": {
-    "TYPE_BUILTIN_EARPIECE": "Altavoz incorporado (oído)",
-    "TYPE_BUILTIN_SPEAKER": "Altavoz incorporado",
-    "TYPE_WIRED_HEADSET": "Auriculares con cable",
-    "TYPE_WIRED_HEADPHONES": "Auriculares con cable",
-    "TYPE_BLUETOOTH_SCO": "Bluetooth (SCO) – auricular",
-    "TYPE_BLUETOOTH_A2DP": "Bluetooth (A2DP) – auriculares estéreo",
-    "TYPE_USB_DEVICE": "Audio USB",
-    "TYPE_USB_HEADSET": "Auriculares USB",
-    "TYPE_HDMI": "Audio HDMI",
-    "TYPE_HDMI_ARC": "HDMI ARC",
-    "TYPE_USB_ACCESSORY": "Accesorio USB",
-    "TYPE_DOCK": "Base de acoplamiento",
-    "TYPE_TELEPHONY": "Telefonía",
-    "TYPE_LINE_ANALOG": "Entrada/salida analógica",
-    "TYPE_LINE_DIGITAL": "Entrada/salida digital",
-    "TYPE_FM": "Radio FM",
-    "TYPE_HEARING_AID": "Audífono"
+    "earpiece": "Altavoz incorporado (oído)",
+    "speaker": "Altavoz incorporado",
+    "bluetooth": "Bluetooth",
+    "carAudio": "Audio del coche",
+    "external": "Audio externo",
+    "headphones": "Auriculares"
   },
   "update": {
     "isRequired": "Actualización Requerida",

@@ -65,23 +65,12 @@
     }
   },
   "audioDeviceName": {
-    "TYPE_BUILTIN_EARPIECE": "רמקול מובנה (אוזן)",
-    "TYPE_BUILTIN_SPEAKER": "רמקול מובנה",
-    "TYPE_WIRED_HEADSET": "אוזניות חוטיות",
-    "TYPE_WIRED_HEADPHONES": "אוזניות חוטיות",
-    "TYPE_BLUETOOTH_SCO": "Bluetooth (SCO) – אוזניות",
-    "TYPE_BLUETOOTH_A2DP": "Bluetooth (A2DP) – אוזניות סטריאו",
-    "TYPE_USB_DEVICE": "שמע USB",
-    "TYPE_USB_HEADSET": "אוזניות USB",
-    "TYPE_HDMI": "שמע HDMI",
-    "TYPE_HDMI_ARC": "HDMI ARC",
-    "TYPE_USB_ACCESSORY": "אביזר USB",
-    "TYPE_DOCK": "תחנת עגינה",
-    "TYPE_TELEPHONY": "טלפוניה",
-    "TYPE_LINE_ANALOG": "כניסת/יציאת אנלוגי",
-    "TYPE_LINE_DIGITAL": "כניסת/יציאת דיגיטלי",
-    "TYPE_FM": "רדיו FM",
-    "TYPE_HEARING_AID": "מכשיר שמיעה"
+    "earpiece": "רמקול מובנה (אוזן)",
+    "speaker": "רמקול מובנה",
+    "bluetooth": "Bluetooth",
+    "carAudio": "שמע רכב",
+    "external": "שמע חיצוני",
+    "headphones": "אוזניות"
   },
   "update": {
     "isRequired": "נדרש עדכון",

@@ -96,12 +96,16 @@ public class AudioDeviceManager {
             public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
                 boolean changed = false;
                 for (AudioDeviceInfo device : addedDevices) {
-                    GxyLogger.d(TAG, "onAudioDevicesAdded() device: " + device.getType());
-                    AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
-                    GxyLogger.d(TAG, "onAudioDevicesAdded() group: " + group.getType());
-                    if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
-                            || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
-                        changed = true;
+                    try {
+                        GxyLogger.d(TAG, "onAudioDevicesAdded() device: " + device.getType());
+                        AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                        GxyLogger.d(TAG, "onAudioDevicesAdded() group: " + group.getType());
+                        if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
+                                || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
+                            changed = true;
+                        }
+                    } catch (Exception e) {
+                        GxyLogger.e(TAG, "onAudioDevicesAdded() error", e);
                     }
                 }
                 if (changed) {
@@ -113,13 +117,18 @@ public class AudioDeviceManager {
             public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
                 boolean changed = false;
                 for (AudioDeviceInfo device : removedDevices) {
-                    GxyLogger.d(TAG, "onAudioDevicesRemoved() device: " + device.getType());
-                    AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
-                    GxyLogger.d(TAG, "onAudioDevicesRemoved() group: " + group.getType());
-                    if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
-                            || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
-                        changed = true;
+                    try {
+                        GxyLogger.d(TAG, "onAudioDevicesRemoved() device: " + device.getType());
+                        AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
+                        GxyLogger.d(TAG, "onAudioDevicesRemoved() group: " + group.getType());
+                        if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
+                                || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
+                            changed = true;
+                        }
+                    } catch (Exception e) {
+                        GxyLogger.e(TAG, "onAudioDevicesRemoved() error", e);
                     }
+
                 }
                 if (changed) {
                     notifyDeviceStateChanged();
