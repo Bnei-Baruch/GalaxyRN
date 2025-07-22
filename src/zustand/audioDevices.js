@@ -17,21 +17,22 @@ let subscription = null;
 const deviceInfoToOption = d => {
   if (!d) return null;
   let res = { ...d };
+  logger.debug(NAMESPACE, 'deviceInfoToOption called with:', d);
   switch (d.type.toLowerCase()) {
     case 'headphones':
       return { ...res, icon: 'headset' };
     case 'external':
       return { ...res, icon: 'hearing' };
-    case 'carPlay':
-      return { ...res, icon: 'car-audio' };
+    case 'caraudio':
+      return { ...res, icon: 'directions-car' };
     case 'bluetooth':
       return { ...res, icon: 'bluetooth-audio' };
     case 'earpiece':
-      return { ...res, icon: 'volume-off', priority: 6 };
+      return { ...res, icon: 'volume-off' };
     case 'speaker':
-      return { ...res, icon: 'volume-up', priority: 8 };
+      return { ...res, icon: 'volume-up' };
     default:
-      return { ...res, icon: 'hearing', priority: 9 };
+      return { ...res, icon: 'hearing' };
   }
 };
 

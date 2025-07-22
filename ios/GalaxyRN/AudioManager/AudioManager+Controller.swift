@@ -115,15 +115,26 @@ extension AudioManager {
             switch group {
             case AudioOutputGroup.speaker:
                 NLOG("[audioDevices swift] 🔊 Setting up speaker mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers])
                 try session.overrideOutputAudioPort(.speaker)
                 try session.setPreferredInput(nil)
+                
+                // Additional attempt to force speaker if still not working
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    do {
+                        try session.overrideOutputAudioPort(.speaker)
+                        NLOG("[audioDevices swift] 🔄 Additional speaker override attempt")
+                    } catch {
+                        NLOG("[audioDevices swift] ❌ Additional speaker override failed:", error)
+                    }
+                }
+                
                 NLOG("[audioDevices swift] ✅ Speaker mode configured")
                 break
         
             case AudioOutputGroup.earpiece:
                 NLOG("[audioDevices swift] 👂 Setting up earpiece mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers])
                 try session.overrideOutputAudioPort(.none)
                 if let builtInMic = findInputPortOfType(.builtInMic) {
                     try session.setPreferredInput(builtInMic)
@@ -133,7 +144,7 @@ extension AudioManager {
         
             case AudioOutputGroup.bluetooth:
                 NLOG("[audioDevices swift] 🎧 Setting up bluetooth mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP, .mixWithOthers])
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers])
       
                 if let bluetoothInput = findBluetoothInput() {
                     try session.setPreferredInput(bluetoothInput)
@@ -143,8 +154,7 @@ extension AudioManager {
         
             case AudioOutputGroup.headphones:
                 NLOG("[audioDevices swift] 🎧 Setting up headphones mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers])
-                try session.overrideOutputAudioPort(.none)
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowAirPlay, .mixWithOthers])
         
                 if let headsetMic = findInputPortOfType(.headsetMic) {
                     try session.setPreferredInput(headsetMic)
@@ -152,17 +162,16 @@ extension AudioManager {
                 NLOG("[audioDevices swift] ✅ Headphones mode configured")
                 break
         
-            case AudioOutputGroup.external:
-                NLOG("[audioDevices swift] 📺 Setting up external device mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowAirPlay, .mixWithOthers])
-                NLOG("[audioDevices swift] ✅ External device mode configured")
-                break
-
             case AudioOutputGroup.carAudio:
                 NLOG("[audioDevices swift] 🚗 Setting up CarPlay mode")
-                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .mixWithOthers, .defaultToSpeaker])
-                try session.overrideOutputAudioPort(.none)
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [ .mixWithOthers, .allowAirPlay])
                 NLOG("[audioDevices swift] ✅ CarPlay mode configured")
+                break
+
+            case AudioOutputGroup.external:
+                NLOG("[audioDevices swift] 📺 Setting up external device mode")
+                try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowAirPlay, .mixWithOthers])
+                NLOG("[audioDevices swift] ✅ External device mode configured")
                 break
         
             case .none:
@@ -173,6 +182,18 @@ extension AudioManager {
             let currentGroup = getCurrentAudioOutputGroup()
             NLOG("[audioDevices swift] 🔍 After configuration - current group:", currentGroup, "target group:", group)
       
+            // Special handling for speaker mode when CarAudio is detected
+            if group == .speaker && currentGroup == .carAudio {
+                NLOG("[audioDevices swift] 🚗 CarAudio detected, but speaker mode was requested - accepting this as success")
+                return .speaker
+            }
+            
+            // Also accept if we're in speaker mode but system reports CarAudio (common in CarPlay)
+            if group == .speaker && (currentGroup == .speaker || currentGroup == .carAudio) {
+                NLOG("[audioDevices swift] ✅ Speaker mode achieved (CarAudio may be reported but audio is through speaker)")
+                return .speaker
+            }
+            
             if currentGroup != group && !(currentGroup == .none && group == .earpiece) {
                 NLOG("[audioDevices swift] ↩️ Target not achieved, falling back to previous group:", AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
                 return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
@@ -182,6 +203,15 @@ extension AudioManager {
             return currentGroup
         } catch {
             NLOG("[audioDevices swift] ❌ ERROR configuring route group:", group, "error:", error)
+            
+            // Special handling for session deactivation errors
+            if let nsError = error as NSError?, nsError.domain == "NSOSStatusErrorDomain" && nsError.code == 560030580 {
+                NLOG("[audioDevices swift] 🚫 Session deactivation failed, trying to continue with current configuration")
+                // Try to continue with the current configuration instead of falling back
+                let currentGroup = getCurrentAudioOutputGroup()
+                return currentGroup
+            }
+            
             NLOG("[audioDevices swift] ↩️ Falling back to previous group:", AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
             return switchToRouteGroup(AudioOutputGroup(rawValue: group.rawValue - 1) ?? .none)
         }

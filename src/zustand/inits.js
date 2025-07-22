@@ -64,14 +64,18 @@ export const useInitsStore = create((set, get) => ({
 
   initMQTT: () => {
     const { user } = useUserStore.getState();
+    const { restartRoom, exitRoom } = useInRoomStore.getState();
+
     mqtt.init(user, (reconnected, error) => {
       logger.debug(NAMESPACE, 'initMQTT', reconnected, error);
       if (error) {
         logger.info(NAMESPACE, 'MQTT disconnected');
-        set(() => ({ mqttReady: false }));
+        //set(() => ({ mqttReady: false }));
+        exitRoom();
         alert('- Lost Connection to Arvut System -');
       } else if (reconnected) {
-        set(() => ({ mqttReady: true }));
+        //set(() => ({ mqttReady: true }));
+        restartRoom();
         logger.info(NAMESPACE, 'MQTT reconnected');
       }
       set(() => ({ mqttReady: true }));
@@ -84,7 +88,6 @@ export const useInitsStore = create((set, get) => ({
       const { streamGalaxy } = useShidurStore.getState();
       const { toggleQuestion } = useSettingsStore.getState();
       const { updateDisplayById } = useInRoomStore.getState();
-      const { restartRoom } = useInRoomStore.getState();
 
       mqtt.watch(data => {
         const { type, id, bitrate } = data;

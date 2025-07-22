@@ -39,7 +39,7 @@ extension AudioManager {
             NLOG("[audioDevices swift] Route change: New device available")
         case .oldDeviceUnavailable:
             NLOG("[audioDevices swift] Route change: Old device unavailable")
-            // Check if the disconnected device was from bluetooth group
+            // Check if the disconnected device was from bluetooth or carAudio group
             if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
                 let previousOutputs = previousRoute.outputs
                 for output in previousOutputs {
@@ -48,6 +48,13 @@ extension AudioManager {
                         NLOG("[audioDevices swift] 🔵 Bluetooth group device disconnected: \(output.portName) (\(output.uid))")
                         NLOG("[audioDevices swift] 🔄 Switching to earpiece due to Bluetooth group disconnection")
                         activateOutputByGroup(.earpiece)
+                    } else if outputGroup == .carAudio {
+                        NLOG("[audioDevices swift] 🚗 CarAudio device disconnected: \(output.portName) (\(output.uid))")
+                        NLOG("[audioDevices swift] 🔄 Switching to bluetooth due to CarAudio disconnection")
+                        activateOutputByGroup(.bluetooth)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.activateOutputByGroup(.bluetooth)
+                        }
                     }
                 }
             }
@@ -69,6 +76,15 @@ extension AudioManager {
             NLOG("[audioDevices swift] Route change: No suitable route for category")
         case .routeConfigurationChange:
             NLOG("[audioDevices swift] Route change: Route configuration change")
+            // Check if this is related to CarPlay disconnection
+            let currentGroup = getCurrentAudioOutputGroup()
+            if currentGroup == .speaker || currentGroup == .earpiece {
+                NLOG("[audioDevices swift] 🔄 Route configuration change detected, ensuring proper audio output")
+                // Small delay to let the system settle
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.sendCurrentAudioGroup()
+                }
+            }
         case .unknown:
             NLOG("[audioDevices swift] Route change: Unknown reason")
         @unknown default:

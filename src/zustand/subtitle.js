@@ -90,7 +90,7 @@ export const useSubtitleStore = create((set, get) => ({
       return;
     }
 
-    const infoByType = MSGS_ALL.find(m => m.slide_type === msg.slide_type);
+    const infoByType = MSGS_ALL.find(m => m.topic === msg.topic);
     if (infoByType?.slide_type !== msg.slide_type) {
       logger.debug(NAMESPACE, `Ignoring message`);
       return;
