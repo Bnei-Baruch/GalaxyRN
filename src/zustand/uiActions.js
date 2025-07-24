@@ -1,5 +1,6 @@
 // React Native modules
 import { Dimensions } from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 
 // External libraries
 import { create } from 'zustand';
@@ -20,7 +21,7 @@ let showBarTimeout = null;
 const getBorders = async (scrollPos, feedsPos) => {
   lastTimestemp = Date.now();
   const currentTimestamp = lastTimestemp;
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise(r => BackgroundTimer.setTimeout(r, 500));
 
   if (lastTimestemp !== currentTimestamp) return null;
 
@@ -82,9 +83,11 @@ export const useUiActions = create((set, get) => ({
   showBars: true,
   toggleShowBars: (hideOnTimeout, showBars = !get().showBars) => {
     logger.debug(NAMESPACE, 'toggleShowBars', hideOnTimeout, showBars);
-    clearTimeout(showBarTimeout);
+    if (showBarTimeout) {
+      BackgroundTimer.clearTimeout(showBarTimeout);
+    }
     if (hideOnTimeout && showBars) {
-      showBarTimeout = setTimeout(
+      showBarTimeout = BackgroundTimer.setTimeout(
         () => set({ showBars: false }),
         HIDE_BARS_TIMEOUT_MS
       );

@@ -4,6 +4,7 @@ import {
   NativeModules,
   Platform,
 } from 'react-native';
+import BackgroundTimer from 'react-native-background-timer';
 import logger from './logger';
 
 const NAMESPACE = 'AudioBridge';
@@ -75,8 +76,7 @@ const AudioBridge = {
   activateAudioOutput: () => {
     logger.debug(NAMESPACE, 'activateAudioOutput');
     if (Platform.OS === 'ios' && NativeAudio?.activateAudioOutput) {
-      // activate audio output after webRTC defined audio output
-      setTimeout(() => {
+      BackgroundTimer.setTimeout(() => {
         NativeAudio.activateAudioOutput();
       }, 500);
     }

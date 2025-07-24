@@ -508,9 +508,9 @@ export const useInRoomStore = create((set, get) => ({
 
     restartWIP = true;
     await get().exitRoom();
-    _isPlay = useShidurStore.getState().isPlay;
+    const _isPlay = useShidurStore.getState().isPlay;
     await sleep(7000);
-    _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
+    useShidurStore.getState().setAutoPlay(_isPlay);
     useInitsStore.getState().setReadyForJoin(true);
     restartWIP = false;
   },

@@ -5,6 +5,23 @@ import { randomString } from '../shared/tools';
 
 const NAMESPACE = 'JanusMqtt';
 
+let keepAliveTimer = null;
+
+const clearKeepAliveTimer = () => {
+  if (keepAliveTimer) {
+    BackgroundTimer.clearTimeout(keepAliveTimer);
+    keepAliveTimer = null;
+  }
+};
+
+const setKeepAliveTimer = (func, ms = 20 * 1000) => {
+  clearKeepAliveTimer();
+  keepAliveTimer = BackgroundTimer.setTimeout(() => {
+    logger.debug(NAMESPACE, 'keepAliveTimer tick');
+    func();
+  }, ms);
+};
+
 export class JanusMqtt {
   constructor(user, srv, mit) {
     this.user = user;
@@ -24,6 +41,8 @@ export class JanusMqtt {
     this.connect = null;
     this.disconnect = null;
     this.onMessage = this.onMessage.bind(this);
+    this.keepAlive = this.keepAlive.bind(this);
+    this.isJanusInitialized = false;
   }
 
   init(token) {
@@ -41,12 +60,13 @@ export class JanusMqtt {
     if (this.user.mit) mqtt.mq.on(this.user.mit, this.onMessage);
 
     return new Promise((resolve, reject) => {
-      logger.debug(NAMESPACE, '[janus] in Promise');
+      logger.debug(NAMESPACE, 'in Promise');
       const transaction = randomString(12);
       const msg = { janus: 'create', transaction, token };
 
       this.transactions[transaction] = {
         resolve: json => {
+          logger.debug(NAMESPACE, 'transaction resolve', json);
           if (json.janus !== 'success') {
             logger.error(NAMESPACE, 'Cannot connect to Janus', json);
             reject(json);
@@ -73,8 +93,18 @@ export class JanusMqtt {
         reject,
         replyType: 'success',
       };
+      logger.debug(
+        NAMESPACE,
+        'janus-mqtt init this.sessionId',
+        this.sessionId,
+        Object.keys(this.transactions)
+      );
 
       this.connect = function () {
+        if (this.isJanusInitialized) {
+          return;
+        }
+        this.isJanusInitialized = true;
         mqtt.send(
           JSON.stringify(msg),
           false,
@@ -82,9 +112,11 @@ export class JanusMqtt {
           this.rxTopic + '/' + this.user.id,
           this.user
         );
+        this.connect = null;
       };
 
       this.disconnect = function (json) {
+        logger.debug(NAMESPACE, 'janus-mqtt disconnect', json);
         reject(json);
         this._cleanupTransactions();
       };
@@ -92,6 +124,7 @@ export class JanusMqtt {
   }
 
   attach(plugin) {
+    logger.debug(NAMESPACE, 'janus-mqtt attach', plugin);
     const name = plugin.getPluginName();
     return this.transaction(
       'attach',
@@ -111,7 +144,9 @@ export class JanusMqtt {
   }
 
   destroy() {
+    logger.debug(NAMESPACE, 'janus-mqtt destroy');
     if (!this.isConnected) {
+      clearKeepAliveTimer();
       return Promise.resolve();
     }
 
@@ -127,6 +162,9 @@ export class JanusMqtt {
             logger.debug(NAMESPACE, 'destroy err', JSON.stringify(err));
             this._cleanupTransactions();
             resolve();
+          })
+          .finally(() => {
+            clearKeepAliveTimer();
           });
       });
     });
@@ -170,12 +208,21 @@ export class JanusMqtt {
   }
 
   transaction(type, payload, replyType, timeoutMs) {
+    logger.debug(
+      NAMESPACE,
+      'janus-mqtt transaction',
+      type,
+      payload,
+      replyType,
+      timeoutMs
+    );
     if (!replyType) {
       replyType = 'ack';
     }
     const transactionId = randomString(12);
 
     return new Promise((resolve, reject) => {
+      logger.debug(NAMESPACE, 'janus-mqtt transaction promise', transactionId);
       if (timeoutMs) {
         BackgroundTimer.setTimeout(() => {
           // Clean up transaction on timeout
@@ -220,6 +267,11 @@ export class JanusMqtt {
           request,
         };
 
+        logger.debug(
+          NAMESPACE,
+          'janus-mqtt transaction request',
+          Object.keys(this.transactions)
+        );
         // Check MQTT connection
         if (!mqtt.mq || !mqtt.mq.connected) {
           logger.warn(
@@ -249,41 +301,39 @@ export class JanusMqtt {
   }
 
   keepAlive(isScheduled) {
+    logger.debug(NAMESPACE, 'keepAlive', isScheduled);
     if (!this.isConnected || !this.sessionId) {
       return;
     }
 
     if (isScheduled) {
-      BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
+      setKeepAliveTimer(this.keepAlive);
     } else {
       logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
       this.transaction('keepalive', null, null, 20 * 1000)
         .then(() => {
           this.keeptry = 0;
-          BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
+          setKeepAliveTimer(this.keepAlive);
         })
         .catch(err => {
-          logger.debug(err, this.keeptry);
+          logger.debug(NAMESPACE, err, this.keeptry);
           if (this.keeptry === 3) {
             logger.error(
               NAMESPACE,
-              'keepalive is not reached (' +
-                this.srv +
-                ') after: ' +
-                this.keeptry +
-                ' tries'
+              `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
             );
             this.isConnected = false;
             this.onStatus(this.srv, 'error');
             return;
           }
-          BackgroundTimer.setTimeout(() => this.keepAlive(), 20 * 1000);
+          setKeepAliveTimer(this.keepAlive);
           this.keeptry++;
         });
     }
   }
 
   getTransaction(json, ignoreReplyType = false) {
+    logger.debug(NAMESPACE, 'janus-mqtt getTransaction', json, ignoreReplyType);
     const type = json.janus;
     const transactionId = json.transaction;
     if (
@@ -298,7 +348,9 @@ export class JanusMqtt {
   }
 
   onClose() {
+    logger.debug(NAMESPACE, 'janus-mqtt onClose');
     if (!this.isConnected) {
+      clearKeepAliveTimer();
       return;
     }
 
@@ -307,6 +359,7 @@ export class JanusMqtt {
   }
 
   _cleanupPlugins() {
+    logger.debug(NAMESPACE, 'janus-mqtt _cleanupPlugins');
     const arr = [];
     Object.keys(this.pluginHandles).forEach(pluginId => {
       const plugin = this.pluginHandles[pluginId];
@@ -353,6 +406,7 @@ export class JanusMqtt {
   }
 
   _cleanupTransactions() {
+    logger.debug(NAMESPACE, 'janus-mqtt _cleanupTransactions');
     Object.keys(this.transactions).forEach(transactionId => {
       const transaction = this.transactions[transactionId];
       if (transaction.reject) {
@@ -506,6 +560,7 @@ export class JanusMqtt {
     }
 
     if (janus === 'detached') {
+      logger.debug(NAMESPACE, 'detached', json);
       // A plugin asked the core to detach one of our handles
       const sender = json.sender;
       if (!sender) {

@@ -22,7 +22,8 @@ export class StreamingPlugin extends EventEmitter {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.configure = this.watch.bind(this);
+    this.watch = this.watch.bind(this);
+    this.transaction = this.transaction.bind(this);
   }
 
   getPluginName() {
@@ -30,6 +31,13 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   transaction(message, additionalFields, replyType) {
+    logger.debug(
+      NAMESPACE,
+      'transaction: ',
+      message,
+      additionalFields,
+      replyType
+    );
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -38,11 +46,14 @@ export class StreamingPlugin extends EventEmitter {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
 
-    return this.janus.transaction(message, payload, replyType);
+    return this.janus.transaction(message, payload, replyType).then(r => {
+      logger.debug(NAMESPACE, 'janus transaction response: ', r);
+      return r;
+    });
   }
 
   watch(id, restart = false) {
-    logger.info(NAMESPACE, 'STUN SERVER', STUN_SRV_GXY);
+    logger.info(NAMESPACE, 'watch: ', id, restart);
     this.streamId = id;
     const body = { request: 'watch', id, restart };
     return new Promise((resolve, reject) => {
@@ -56,6 +67,7 @@ export class StreamingPlugin extends EventEmitter {
 
       this.transaction('message', { body }, 'event')
         .then(param => {
+          logger.debug(NAMESPACE, 'message from watch: ', param);
           if (!param) {
             logger.error(NAMESPACE, 'Empty response from transaction');
             return reject(new Error('Empty transaction response'));
@@ -108,6 +120,7 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   sdpExchange(jsep) {
+    logger.debug(NAMESPACE, 'sdpExchange: ', jsep);
     this.pc.setRemoteDescription(jsep);
     this.pc.createAnswer().then(
       desc => {
@@ -123,6 +136,7 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   start(jsep) {
+    logger.debug(NAMESPACE, 'start: ', jsep);
     const body = { request: 'start' };
     const message = { body };
     if (jsep) {
@@ -131,6 +145,7 @@ export class StreamingPlugin extends EventEmitter {
 
     return this.transaction('message', message, 'event')
       .then(({ data, json }) => {
+        logger.debug(NAMESPACE, 'start: ', data, json);
         return { data, json };
       })
       .catch(err => {
@@ -144,27 +159,25 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   switch(id) {
+    logger.debug(NAMESPACE, 'switch: ', id);
     const body = { request: 'switch', id };
-
-    return this.transaction('message', { body }, 'event').catch(err => {
-      logger.error(NAMESPACE, 'StreamingJanusPlugin, cannot start stream', err);
-      throw err;
-    });
-  }
-
-  getVolume(mid, result) {
-    let transceiver = this.pc
-      .getTransceivers()
-      .find(t => t.receiver.track.kind === 'audio');
-    transceiver.receiver.getStats().then(stats => {
-      stats.forEach(res => {
-        if (!res || res.kind !== 'audio') return;
-        result(res.audioLevel ? res.audioLevel : 0);
+    return this.transaction('message', { body }, 'event')
+      .then(({ data, json }) => {
+        logger.debug(NAMESPACE, 'start: ', data, json);
+        return { data, json };
+      })
+      .catch(err => {
+        logger.error(
+          NAMESPACE,
+          'StreamingJanusPlugin, cannot start stream',
+          err
+        );
+        throw err;
       });
-    });
   }
 
   initPcEvents(resolve) {
+    logger.debug(NAMESPACE, 'initPcEvents');
     this.pc.addEventListener('connectionstatechange', e => {
       logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
       this.iceState = e.target.connectionState;
@@ -174,11 +187,18 @@ export class StreamingPlugin extends EventEmitter {
 
       // ICE restart does not help here, peer connection will be down
       if (this.iceState === 'failed') {
+        logger.info(NAMESPACE, 'ICE State: ', this.iceState);
         this.onStatus && this.onStatus(this.iceState);
       }
     });
     this.pc.addEventListener('icecandidate', e => {
-      return this.transaction('trickle', { candidate: e.candidate });
+      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate, this.iceState);
+      return this.transaction('trickle', { candidate: e.candidate }).then(
+        ({ data, json }) => {
+          logger.debug(NAMESPACE, 'trickle: ', data, json);
+          return { data, json };
+        }
+      );
     });
     this.pc.addEventListener('track', e => {
       logger.info(NAMESPACE, 'Got track: ', e);
@@ -192,6 +212,12 @@ export class StreamingPlugin extends EventEmitter {
     logger.debug(NAMESPACE, 'ICE Restart start try: ', attempt, this.iceState);
     try {
       BackgroundTimer.setTimeout(() => {
+        logger.debug(
+          NAMESPACE,
+          'ICE Restart start try: ',
+          attempt,
+          this.iceState
+        );
         if (
           (attempt < 10 && this.iceState !== 'disconnected') ||
           !this.janus?.isConnected
@@ -271,6 +297,7 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   detach() {
+    logger.debug(NAMESPACE, 'Detach called');
     if (this.janus) {
       if (this.pc) {
         this.pc.close();

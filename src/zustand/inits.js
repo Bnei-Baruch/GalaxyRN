@@ -70,11 +70,9 @@ export const useInitsStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'initMQTT', reconnected, error);
       if (error) {
         logger.info(NAMESPACE, 'MQTT disconnected');
-        //set(() => ({ mqttReady: false }));
         exitRoom();
         alert('- Lost Connection to Arvut System -');
       } else if (reconnected) {
-        //set(() => ({ mqttReady: true }));
         restartRoom();
         logger.info(NAMESPACE, 'MQTT reconnected');
       }
@@ -189,7 +187,7 @@ export const useInitsStore = create((set, get) => ({
             logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');
-            _isPlay = useShidurStore.getState().setAutoPlay(_isPlay);
+            useShidurStore.getState().setAutoPlay(_isPlay);
             useInitsStore.getState().setReadyForJoin(true);
             logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
           } else {

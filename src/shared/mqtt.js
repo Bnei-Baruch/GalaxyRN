@@ -83,6 +83,7 @@ class MqttMsg {
     this.mq.setMaxListeners(50);
 
     this.mq.on('connect', data => {
+      logger.debug(NAMESPACE, 'connect', data);
       if (data && !this.isConnected) {
         logger.info(NAMESPACE, `Connected to server: ${data}`);
         this.isConnected = true;
@@ -98,6 +99,7 @@ class MqttMsg {
     });
 
     this.mq.on('close', () => {
+      logger.debug(NAMESPACE, 'close');
       if (this.reconnect_count < RC + 2) {
         this.reconnect_count++;
         logger.debug(
@@ -135,6 +137,7 @@ class MqttMsg {
   };
 
   exit = topic => {
+    logger.debug(NAMESPACE, `Unsubscribe from: ${topic}`);
     if (!this.mq) return;
     let options = {};
     logger.info(NAMESPACE, `Unsubscribe from: ${topic}`);
@@ -147,6 +150,7 @@ class MqttMsg {
   };
 
   send = (message, retain, topic, rxTopic, user) => {
+    logger.debug(NAMESPACE, `Send message to: ${topic}`);
     if (!this.mq) return;
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? ` | transaction: ${correlationData}` : '';
@@ -170,6 +174,7 @@ class MqttMsg {
 
   watch = callback => {
     this.mq.on('message', (topic, data, packet) => {
+      logger.debug(NAMESPACE, 'message', topic, packet);
       if (
         packet.payload?.type === 'Buffer' &&
         Array.isArray(packet.payload.data)
@@ -192,8 +197,12 @@ class MqttMsg {
       );
       switch (root) {
         case 'subtitles':
-          logger.debug(NAMESPACE, `On subtitles msg from topic ${topic}`);
-          useSubtitleStore.getState().onMessage(data);
+          try {
+            logger.debug(NAMESPACE, `On subtitles msg from topic ${topic}`);
+            useSubtitleStore.getState().onMessage(data);
+          } catch (e) {
+            logger.error(NAMESPACE, e);
+          }
           break;
         case 'galaxy':
           // FIXME: we need send cmd messages to separate topic
@@ -231,12 +240,17 @@ class MqttMsg {
           */
           break;
         case 'janus':
-          const json = JSON.parse(data);
-          const mit =
-            json?.session_id ||
-            packet?.properties?.userProperties?.mit ||
-            service;
-          this.mq.emit(mit, data, id);
+          try {
+            logger.debug(NAMESPACE, 'janus', id);
+            const json = JSON.parse(data);
+            const mit =
+              json?.session_id ||
+              packet?.properties?.userProperties?.mit ||
+              service;
+            this.mq.emit(mit, data, id);
+          } catch (e) {
+            logger.error(NAMESPACE, e);
+          }
           break;
         default:
           if (typeof callback === 'function')

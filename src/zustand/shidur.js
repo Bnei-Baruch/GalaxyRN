@@ -1,4 +1,5 @@
 // External libraries
+import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 
 // Libs
@@ -198,6 +199,13 @@ export const useShidurStore = create((set, get) => ({
     try {
       logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
       janus = new JanusMqtt(user, srv);
+      janus.onStatus = (srv, status) => {
+        logger.debug(NAMESPACE, 'janus status: ', status);
+        if (status !== 'online') {
+          logger.warn(NAMESPACE, 'janus status: ', status);
+          useInRoomStore.getState().restartRoom();
+        }
+      };
 
       await janus.init(config.token);
       logger.debug(NAMESPACE, 'init janus ready');
@@ -340,7 +348,8 @@ export const useShidurStore = create((set, get) => ({
         NAMESPACE,
         'look like we got talk event before stream init finished'
       );
-      setTimeout(() => {
+
+      BackgroundTimer.setTimeout(() => {
         get().streamGalaxy(isOnAir);
       }, 1000);
       return;
