@@ -137,7 +137,7 @@ export const useInRoomStore = create((set, get) => ({
     let _subscriberJoined = false;
 
     const makeSubscription = async pubs => {
-      logger.debug('NAMESPACE', 'makeSubscription pubs', pubs);
+      logger.debug(NAMESPACE, 'makeSubscription pubs', pubs);
 
       const feedById = deepClone(get().feedById);
       const subs = [];
@@ -260,8 +260,12 @@ export const useInRoomStore = create((set, get) => ({
       });
 
       // Send an unsubscribe request
-      if (_subscriberJoined && params.length > 0) {
-        await subscriber.unsub(params);
+      try {
+        if (_subscriberJoined && params.length > 0) {
+          await subscriber.unsub(params);
+        }
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error unsubscribing from publishers', error);
       }
 
       set(
@@ -276,6 +280,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     videoroom.iceFailed = async () => {
+      logger.error(NAMESPACE, 'videoroom iceFailed');
       get().restartRoom();
     };
 
@@ -318,7 +323,7 @@ export const useInRoomStore = create((set, get) => ({
     };
 
     subscriber.onUpdate = streams => {
-      logger.debug('NAMESPACE', 'subscriber.onUpdate streams', streams);
+      logger.debug(NAMESPACE, 'subscriber.onUpdate streams', streams);
       if (!streams) return;
 
       const _videosByFeed = {};
@@ -350,7 +355,7 @@ export const useInRoomStore = create((set, get) => ({
     janus
       .init(config.token)
       .then(data => {
-        logger.info('NAMESPACE', 'joinRoom on janus.init', data);
+        logger.info(NAMESPACE, 'joinRoom on janus.init', data, janus);
         janus.attach(videoroom).then(data => {
           AudioBridge.activateAudioOutput();
           logger.info(NAMESPACE, 'Publisher Handle: ', data);
@@ -373,7 +378,7 @@ export const useInRoomStore = create((set, get) => ({
           videoroom
             .join(room.room, d)
             .then(async data => {
-              logger.info('NAMESPACE', 'Joined respond:', data);
+              logger.info(NAMESPACE, 'Joined respond:', data);
 
               useUserStore.getState().setJannusInfo({
                 session: janus.sessionId,
@@ -427,7 +432,7 @@ export const useInRoomStore = create((set, get) => ({
         });
 
         janus.attach(subscriber).then(data => {
-          logger.info('NAMESPACE', 'Subscriber Handle: ', data);
+          logger.info(NAMESPACE, 'Subscriber Handle: ', data);
         });
       })
       .catch(err => {

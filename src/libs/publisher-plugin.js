@@ -25,6 +25,7 @@ export class PublisherPlugin extends EventEmitter {
       iceServers: list,
     });
     this.configure = this.configure.bind(this);
+    this.iceRestart = this.iceRestart.bind(this);
   }
 
   getPluginName() {
@@ -32,6 +33,13 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   transaction(message, additionalFields, replyType) {
+    logger.debug(
+      NAMESPACE,
+      'transaction: ',
+      message,
+      additionalFields,
+      replyType
+    );
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -246,37 +254,47 @@ export class PublisherPlugin extends EventEmitter {
 
   initPcEvents() {
     this.pc.addEventListener('connectionstatechange', e => {
-      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
-      this.iceState = e.target.connectionState;
+      const connectionState = e.target.connectionState;
+      try {
+        logger.info(NAMESPACE, 'ICE State: ', connectionState);
+        this.iceState = connectionState;
 
-      if (this.iceState === 'disconnected') {
-        this.iceRestart();
-      }
+        if (this.iceState === 'disconnected') {
+          this.iceRestart();
+        }
 
-      // ICE restart does not help here, peer connection will be down
-      if (this.iceState === 'failed') {
-        //this.iceFailed("publisher")
+        // ICE restart does not help here, peer connection will be down
+        if (this.iceState === 'failed') {
+          this.iceFailed('publisher');
+        }
+      } catch (e) {
+        logger.error(NAMESPACE, 'ICE connectionstatechange error', e);
       }
     });
     this.pc.addEventListener('icecandidate', e => {
-      let candidate = { completed: true };
-      if (
-        !e.candidate ||
-        e.candidate.candidate.indexOf('endOfCandidates') > 0
-      ) {
-        logger.debug(NAMESPACE, 'End of candidates');
-      } else {
-        // JSON.stringify doesn't work on some WebRTC objects anymore
-        // See https://code.google.com/p/chromium/issues/detail?id=467366
-        candidate = {
-          candidate: e.candidate.candidate,
-          sdpMid: e.candidate.sdpMid,
-          sdpMLineIndex: e.candidate.sdpMLineIndex,
-        };
-      }
+      try {
+        let candidate = { completed: true };
+        const _candidate = e.candidate;
+        if (
+          !_candidate ||
+          _candidate.candidate.indexOf('endOfCandidates') > 0
+        ) {
+          logger.debug(NAMESPACE, 'End of candidates');
+        } else {
+          // JSON.stringify doesn't work on some WebRTC objects anymore
+          // See https://code.google.com/p/chromium/issues/detail?id=467366
+          candidate = {
+            candidate: _candidate.candidate,
+            sdpMid: _candidate.sdpMid,
+            sdpMLineIndex: _candidate.sdpMLineIndex,
+          };
+        }
 
-      if (candidate) {
-        return this.transaction('trickle', { candidate });
+        if (candidate) {
+          return this.transaction('trickle', { candidate });
+        }
+      } catch (e) {
+        logger.error(NAMESPACE, 'ICE candidate error', e);
       }
     });
   }

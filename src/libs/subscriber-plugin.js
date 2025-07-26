@@ -31,6 +31,13 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   transaction(message, additionalFields, replyType) {
+    logger.debug(
+      NAMESPACE,
+      'transaction: ',
+      message,
+      additionalFields,
+      replyType
+    );
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -38,10 +45,19 @@ export class SubscriberPlugin extends EventEmitter {
     if (!this.janus) {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
-    return this.janus.transaction(message, payload, replyType);
+    return this.janus.transaction(message, payload, replyType).then(r => {
+      logger.debug(
+        NAMESPACE,
+        'janus transaction response: ',
+        r,
+        this.janus.sessionId
+      );
+      return r;
+    });
   }
 
   async sub(subscription) {
+    logger.debug(NAMESPACE, 'sub: ', subscription);
     const body = { request: 'subscribe', streams: subscription };
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'sub: ', body);
@@ -106,11 +122,11 @@ export class SubscriberPlugin extends EventEmitter {
       ptype: 'subscriber',
       streams: subscription,
     };
-    logger.debug('NAMESPACE', 'join: ', body);
+    logger.debug(NAMESPACE, 'join: ', body);
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
-          logger.debug('NAMESPACE', 'joined: ', param);
+          logger.debug(NAMESPACE, 'joined: ', param);
           const { data, json } = param;
 
           if (data) {
@@ -188,6 +204,7 @@ export class SubscriberPlugin extends EventEmitter {
     logger.debug(NAMESPACE, 'initPcEvents');
     if (this.pc) {
       this.pc.addEventListener('connectionstatechange', e => {
+        logger.debug(NAMESPACE, 'connectionstatechange: ', e);
         logger.debug(NAMESPACE, 'ICE State: ', e.target.connectionState);
         this.iceState = e.target.connectionState;
         if (this.iceState === 'disconnected') {
@@ -230,6 +247,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   async iceRestart(attempt = 0) {
+    logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
     try {
       BackgroundTimer.setTimeout(() => {
         logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
@@ -325,6 +343,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   detach() {
+    logger.debug(NAMESPACE, 'detach');
     if (this.pc) {
       this.pc.getTransceivers().forEach(transceiver => {
         if (transceiver) {

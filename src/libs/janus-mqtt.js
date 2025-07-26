@@ -5,23 +5,6 @@ import { randomString } from '../shared/tools';
 
 const NAMESPACE = 'JanusMqtt';
 
-let keepAliveTimer = null;
-
-const clearKeepAliveTimer = () => {
-  if (keepAliveTimer) {
-    BackgroundTimer.clearTimeout(keepAliveTimer);
-    keepAliveTimer = null;
-  }
-};
-
-const setKeepAliveTimer = (func, ms = 20 * 1000) => {
-  clearKeepAliveTimer();
-  keepAliveTimer = BackgroundTimer.setTimeout(() => {
-    logger.debug(NAMESPACE, 'keepAliveTimer tick');
-    func();
-  }, ms);
-};
-
 export class JanusMqtt {
   constructor(user, srv, mit) {
     this.user = user;
@@ -43,6 +26,9 @@ export class JanusMqtt {
     this.onMessage = this.onMessage.bind(this);
     this.keepAlive = this.keepAlive.bind(this);
     this.isJanusInitialized = false;
+    this.clearKeepAliveTimer = this.clearKeepAliveTimer.bind(this);
+    this.setKeepAliveTimer = this.setKeepAliveTimer.bind(this);
+    this.keepAliveTimer = null;
   }
 
   init(token) {
@@ -146,7 +132,7 @@ export class JanusMqtt {
   destroy() {
     logger.debug(NAMESPACE, 'janus-mqtt destroy');
     if (!this.isConnected) {
-      clearKeepAliveTimer();
+      this.clearKeepAliveTimer();
       return Promise.resolve();
     }
 
@@ -164,7 +150,7 @@ export class JanusMqtt {
             resolve();
           })
           .finally(() => {
-            clearKeepAliveTimer();
+            this.clearKeepAliveTimer();
           });
       });
     });
@@ -307,13 +293,13 @@ export class JanusMqtt {
     }
 
     if (isScheduled) {
-      setKeepAliveTimer(this.keepAlive);
+      this.setKeepAliveTimer(this.keepAlive);
     } else {
       logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
       this.transaction('keepalive', null, null, 20 * 1000)
         .then(() => {
           this.keeptry = 0;
-          setKeepAliveTimer(this.keepAlive);
+          this.setKeepAliveTimer(this.keepAlive);
         })
         .catch(err => {
           logger.debug(NAMESPACE, err, this.keeptry);
@@ -326,7 +312,7 @@ export class JanusMqtt {
             this.onStatus(this.srv, 'error');
             return;
           }
-          setKeepAliveTimer(this.keepAlive);
+          this.setKeepAliveTimer(this.keepAlive);
           this.keeptry++;
         });
     }
@@ -350,7 +336,7 @@ export class JanusMqtt {
   onClose() {
     logger.debug(NAMESPACE, 'janus-mqtt onClose');
     if (!this.isConnected) {
-      clearKeepAliveTimer();
+      this.clearKeepAliveTimer();
       return;
     }
 
@@ -672,5 +658,20 @@ export class JanusMqtt {
       NAMESPACE,
       `Unknown message/event ${janus} on session ${this.sessionId}`
     );
+  }
+
+  clearKeepAliveTimer() {
+    if (this.keepAliveTimer) {
+      BackgroundTimer.clearTimeout(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
+  }
+
+  setKeepAliveTimer(func, ms = 20 * 1000) {
+    this.clearKeepAliveTimer();
+    this.keepAliveTimer = BackgroundTimer.setTimeout(() => {
+      logger.debug(NAMESPACE, 'keepAliveTimer tick');
+      func();
+    }, ms);
   }
 }
