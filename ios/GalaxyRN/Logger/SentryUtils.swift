@@ -197,6 +197,12 @@ class SentryUtils {
                     try fileManager.createDirectory(at: destFile, withIntermediateDirectories: true, attributes: nil)
                     try copyDirectoryContents(from: file, to: destFile)
                 } else {
+                    // Remove existing file if it exists
+                    if fileManager.fileExists(atPath: destFile.path) {
+                        os_log("Removing existing file: %@", log: OSLog.default, type: .debug, destFile.lastPathComponent)
+                        try fileManager.removeItem(at: destFile)
+                    }
+                    
                     os_log("Copying file: %@ (%lld bytes)", log: OSLog.default, type: .debug, 
                            file.lastPathComponent, (try file.resourceValues(forKeys: [.fileSizeKey])).fileSize ?? 0)
                     try fileManager.copyItem(at: file, to: destFile)
@@ -229,7 +235,7 @@ class SentryUtils {
         }
         
         // Add device info to logs
-        let deviceInfoFile = iosLogsSubDir.appendingPathComponent("device_info.txt")
+        let deviceInfoFile = iosLogsSubDir.appendingPathComponent("device_info.json")
         let deviceInfo = getDeviceInfo()
         try deviceInfo.write(to: deviceInfoFile, atomically: true, encoding: .utf8)
         os_log("Added device info to logs", log: OSLog.default, type: .debug)

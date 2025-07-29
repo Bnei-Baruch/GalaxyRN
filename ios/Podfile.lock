@@ -953,6 +953,8 @@ PODS:
   - react-native-crisp-chat-sdk (0.16.1):
     - Crisp (= 2.8.2)
     - React
+  - react-native-netinfo (11.4.1):
+    - React-Core
   - react-native-orientation-locker (1.7.0):
     - React-Core
   - react-native-render-html (6.3.4):
@@ -1300,6 +1302,7 @@ DEPENDENCIES:
   - react-native-app-auth (from `../node_modules/react-native-app-auth`)
   - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - react-native-crisp-chat-sdk (from `../node_modules/react-native-crisp-chat-sdk`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-orientation-locker (from `../node_modules/react-native-orientation-locker`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -1410,6 +1413,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-background-timer"
   react-native-crisp-chat-sdk:
     :path: "../node_modules/react-native-crisp-chat-sdk"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-orientation-locker:
     :path: "../node_modules/react-native-orientation-locker"
   react-native-render-html:
@@ -1514,6 +1519,7 @@ SPEC CHECKSUMS:
   react-native-app-auth: 63fa4e58c5bd29aeb974d3a06a23c5858322d533
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
   react-native-crisp-chat-sdk: ad0ebdfae82665d23bc63c3b2e8caa379418782f
+  react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-orientation-locker: 5819fd23ca89cbac0d736fb4314745f62716d517
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 141eca0fd4e4191288dfc8b96a7c7e1c2983447a

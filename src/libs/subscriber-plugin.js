@@ -1,10 +1,9 @@
 import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
-import BackgroundTimer from 'react-native-background-timer';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
 import { randomString } from '../shared/tools';
+import IceConnectionMonitor from './ice-connection-monitor';
 
 const NAMESPACE = 'SubscriberPlugin';
 
@@ -24,6 +23,7 @@ export class SubscriberPlugin extends EventEmitter {
       iceServers: list,
     });
     this.configure = this.configure.bind(this);
+    this.iceConnectionMonitor = null;
   }
 
   getPluginName() {
@@ -151,7 +151,7 @@ export class SubscriberPlugin extends EventEmitter {
     const body = { request: 'configure', restart: true };
     return this.transaction('message', { body }, 'event')
       .then(param => {
-        logger.info(NAMESPACE, 'iceRestart: ', param);
+        logger.info(NAMESPACE, 'configure: ', param);
         const { json } = param || {};
         if (json?.jsep) {
           logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
@@ -203,20 +203,15 @@ export class SubscriberPlugin extends EventEmitter {
   initPcEvents() {
     logger.debug(NAMESPACE, 'initPcEvents');
     if (this.pc) {
-      this.pc.addEventListener('connectionstatechange', e => {
-        logger.debug(NAMESPACE, 'connectionstatechange: ', e);
-        logger.debug(NAMESPACE, 'ICE State: ', e.target.connectionState);
-        this.iceState = e.target.connectionState;
-        if (this.iceState === 'disconnected') {
-          this.iceRestart();
-        }
-        // ICE restart does not help here, peer connection will be down
-        if (this.iceState === 'failed') {
-          if (typeof this.iceFailed === 'function') {
-            this.iceFailed();
-          }
-        }
-      });
+      this.iceConnectionMonitor = new IceConnectionMonitor(
+        this.pc,
+        this.iceFailed,
+        this.janus,
+        () => this.configure(),
+        'subscriber'
+      );
+      this.iceConnectionMonitor.init();
+
       this.pc.addEventListener('icecandidate', e => {
         logger.debug(NAMESPACE, 'onicecandidate set', e.candidate);
         let candidate = { completed: true };
@@ -238,39 +233,12 @@ export class SubscriberPlugin extends EventEmitter {
           return this.transaction('trickle', { candidate });
         }
       });
+
       this.pc.addEventListener('track', e => {
         if (!e.streams[0]) return;
 
         this.onTrack && this.onTrack(e.track, e.streams[0], true);
       });
-    }
-  }
-
-  async iceRestart(attempt = 0) {
-    logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
-    try {
-      BackgroundTimer.setTimeout(() => {
-        logger.debug(NAMESPACE, 'ICE Restart try: ', attempt);
-        if (
-          (attempt < 10 && this.iceState !== 'disconnected') ||
-          !this.janus?.isConnected
-        ) {
-          return;
-        } else if (mqtt.mq.connected) {
-          logger.debug(NAMESPACE, 'Trigger ICE Restart - ');
-          this.configure();
-        } else if (attempt >= 10) {
-          logger.error(NAMESPACE, 'Ice restart bug: - ICE Restart failed - ');
-          if (typeof this.iceFailed === 'function') {
-            this.iceFailed();
-          }
-          return;
-        }
-        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
-        return this.iceRestart(attempt + 1);
-      }, 1000);
-    } catch (e) {
-      logger.error(NAMESPACE, 'Subscriber plugin iceRestart', e);
     }
   }
 
@@ -357,6 +325,11 @@ export class SubscriberPlugin extends EventEmitter {
       this.removeAllListeners();
       this.pc = null;
       this.janus = null;
+    }
+
+    if (this.iceConnectionMonitor) {
+      this.iceConnectionMonitor.remove();
+      this.iceConnectionMonitor = null;
     }
 
     // Clear additional properties

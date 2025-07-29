@@ -1,10 +1,9 @@
 import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
-import BackgroundTimer from 'react-native-background-timer';
 import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
 import { randomString } from '../shared/tools';
+import IceConnectionMonitor from './ice-connection-monitor';
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -25,7 +24,7 @@ export class PublisherPlugin extends EventEmitter {
       iceServers: list,
     });
     this.configure = this.configure.bind(this);
-    this.iceRestart = this.iceRestart.bind(this);
+    this.iceConnectionMonitor = null;
   }
 
   getPluginName() {
@@ -253,24 +252,15 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   initPcEvents() {
-    this.pc.addEventListener('connectionstatechange', e => {
-      const connectionState = e.target.connectionState;
-      try {
-        logger.info(NAMESPACE, 'ICE State: ', connectionState);
-        this.iceState = connectionState;
+    this.iceConnectionMonitor = new IceConnectionMonitor(
+      this.pc,
+      this.iceFailed,
+      this.janus,
+      () => this.configure(true),
+      'publisher'
+    );
+    this.iceConnectionMonitor.init();
 
-        if (this.iceState === 'disconnected') {
-          this.iceRestart();
-        }
-
-        // ICE restart does not help here, peer connection will be down
-        if (this.iceState === 'failed') {
-          this.iceFailed('publisher');
-        }
-      } catch (e) {
-        logger.error(NAMESPACE, 'ICE connectionstatechange error', e);
-      }
-    });
     this.pc.addEventListener('icecandidate', e => {
       try {
         let candidate = { completed: true };
@@ -297,32 +287,6 @@ export class PublisherPlugin extends EventEmitter {
         logger.error(NAMESPACE, 'ICE candidate error', e);
       }
     });
-  }
-
-  iceRestart(attempt = 0) {
-    try {
-      BackgroundTimer.setTimeout(async () => {
-        logger.debug(NAMESPACE, 'ICE Restart try: ', attempt, this.iceState);
-        if (
-          (attempt < 10 && this.iceState !== 'disconnected') ||
-          !this.janus?.isConnected
-        ) {
-          return;
-        } else if (mqtt.mq.connected) {
-          logger.debug(NAMESPACE, '- Trigger ICE Restart - ');
-          this.pc.restartIce();
-          await this.configure(true);
-        } else if (attempt >= 10) {
-          typeof this.iceFailed === 'function' && this.iceFailed();
-          logger.error(NAMESPACE, '- ICE Restart failed - ');
-          return;
-        }
-        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
-        return this.iceRestart(attempt + 1);
-      }, 1000);
-    } catch (e) {
-      logger.error(NAMESPACE, 'Streaming plugin iceRestart', e);
-    }
   }
 
   success(janus, janusHandleId) {
@@ -426,6 +390,11 @@ export class PublisherPlugin extends EventEmitter {
       this.removeAllListeners();
       this.pc = null;
       this.janus = null;
+    }
+
+    if (this.iceConnectionMonitor) {
+      this.iceConnectionMonitor.remove();
+      this.iceConnectionMonitor = null;
     }
 
     // Clear additional properties

@@ -172,8 +172,12 @@ class Logger {
       console.log('Device info written to file', deviceFilePath);
 
       // Use native LoggerModule to compress and send logs to Sentry
-      const result = await NativeModules.LoggerModule.sendLog(tempLogsDir);
-      console.log('Logs sent successfully:', result);
+      try {
+        const result = await NativeModules.LoggerModule.sendLog(tempLogsDir);
+        console.log('Logs sent successfully:', result);
+      } catch (error) {
+        console.error('Failed to send log file:', error);
+      }
 
       // Clean up temp files
       try {

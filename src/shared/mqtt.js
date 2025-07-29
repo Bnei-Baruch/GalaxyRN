@@ -166,6 +166,7 @@ class MqttMsg {
         }
       : { userProperties: user || this.user };
 
+    logger.debug(NAMESPACE, 'send properties', properties);
     let options = { qos: 1, retain, properties };
     this.mq.publish(topic, message, { ...options }, err => {
       err && logger.error(NAMESPACE, 'Error: ', err);

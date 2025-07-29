@@ -1,10 +1,9 @@
 import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
-import BackgroundTimer from 'react-native-background-timer';
 import { MediaStream, RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
 import { randomString } from '../shared/tools';
+import IceConnectionMonitor from './ice-connection-monitor';
 
 const NAMESPACE = 'StreamingPlugin';
 
@@ -24,6 +23,7 @@ export class StreamingPlugin extends EventEmitter {
     });
     this.watch = this.watch.bind(this);
     this.transaction = this.transaction.bind(this);
+    this.iceConnectionMonitor = null;
   }
 
   getPluginName() {
@@ -178,19 +178,15 @@ export class StreamingPlugin extends EventEmitter {
 
   initPcEvents(resolve) {
     logger.debug(NAMESPACE, 'initPcEvents');
-    this.pc.addEventListener('connectionstatechange', e => {
-      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
-      this.iceState = e.target.connectionState;
-      if (this.iceState === 'disconnected') {
-        this.iceRestart();
-      }
+    this.iceConnectionMonitor = new IceConnectionMonitor(
+      this.pc,
+      this.iceFailed,
+      this.janus,
+      () => this.watch(this.streamId, true),
+      'streaming'
+    );
+    this.iceConnectionMonitor.init();
 
-      // ICE restart does not help here, peer connection will be down
-      if (this.iceState === 'failed') {
-        logger.info(NAMESPACE, 'ICE State: ', this.iceState);
-        this.onStatus && this.onStatus(this.iceState);
-      }
-    });
     this.pc.addEventListener('icecandidate', e => {
       logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate, this.iceState);
       return this.transaction('trickle', { candidate: e.candidate }).then(
@@ -200,53 +196,13 @@ export class StreamingPlugin extends EventEmitter {
         }
       );
     });
+
     this.pc.addEventListener('track', e => {
       logger.info(NAMESPACE, 'Got track: ', e);
       const stream = new MediaStream([e.track]);
       logger.debug(NAMESPACE, 'StreamingPlugin stream from track', stream);
       resolve(stream);
     });
-  }
-
-  async iceRestart(attempt = 0) {
-    logger.debug(NAMESPACE, 'ICE Restart start try: ', attempt, this.iceState);
-    try {
-      BackgroundTimer.setTimeout(() => {
-        logger.debug(
-          NAMESPACE,
-          'ICE Restart start try: ',
-          attempt,
-          this.iceState
-        );
-        if (
-          (attempt < 10 && this.iceState !== 'disconnected') ||
-          !this.janus?.isConnected
-        ) {
-          logger.debug(NAMESPACE, 'Current ice state:', this.iceState);
-          return;
-        } else if (mqtt.mq.connected) {
-          logger.debug(NAMESPACE, '- Trigger ICE Restart -');
-          this.watch(this.streamId, true).catch(err => {
-            logger.error(
-              NAMESPACE,
-              'Error during ICE restart',
-              err?.message || JSON.stringify(err) || 'undefined'
-            );
-          });
-        } else if (attempt >= 10) {
-          logger.error(NAMESPACE, '- ICE Restart failed -');
-          return;
-        }
-        logger.debug(NAMESPACE, `ICE Restart try: ${attempt}`);
-        return this.iceRestart(attempt + 1);
-      }, 1000);
-    } catch (e) {
-      logger.error(
-        NAMESPACE,
-        'Error in iceRestart',
-        e?.message || JSON.stringify(e) || 'undefined'
-      );
-    }
   }
 
   success(janus, janusHandleId) {
@@ -302,6 +258,10 @@ export class StreamingPlugin extends EventEmitter {
       if (this.pc) {
         this.pc.close();
         this.pc = null;
+      }
+      if (this.iceConnectionMonitor) {
+        this.iceConnectionMonitor.remove();
+        this.iceConnectionMonitor = null;
       }
       this.removeAllListeners();
 
