@@ -14,25 +14,16 @@ class IceConnectionMonitor {
     this.janus = janus;
     this.sendIceRestart = sendIceRestart;
     this.who = who;
+    this.attempts = 0;
   }
 
   init() {
     logger.debug(NAMESPACE, 'init', this.who);
-    this.pc.addEventListener('connectionstatechange', e => {
-      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState);
-      this.iceState = e.target.connectionState;
-      if (this.iceState === 'disconnected') {
-        this.iceRestart();
-      }
 
-      // ICE restart does not help here, peer connection will be down
-      if (this.iceState === 'failed') {
-        logger.info(NAMESPACE, 'ICE State: ', this.iceState);
-        this.iceFailed();
-      }
-    });
     if (Platform.OS === 'ios') {
       this.iosInit();
+    } else {
+      this.androidInit();
     }
   }
 
@@ -52,6 +43,8 @@ class IceConnectionMonitor {
         }
 
         const ipAddress = state.details?.ipAddress;
+        this.iceState = 'connected';
+        this.attempts = 0;
         if (this.ipAddress && (!ipAddress || ipAddress !== this.ipAddress)) {
           logger.debug(
             NAMESPACE,
@@ -61,90 +54,105 @@ class IceConnectionMonitor {
             this.who
           );
           this.iceState = 'disconnected';
-          this.iceRestart();
-        } else {
-          this.iceState = 'connected';
+          this.iceRestart(true);
         }
         this.ipAddress = ipAddress;
       });
     } catch (e) {
       logger.error(NAMESPACE, 'Error in iosInit', e, this.who);
     }
+  }
 
-    this.pc.addEventListener('iceconnectionstatechange', e => {
-      logger.info(NAMESPACE, 'ICE State: ', e.target.connectionState, this.who);
+  androidInit() {
+    logger.debug(NAMESPACE, 'androidInit', this.who);
+    this.pc.addEventListener('connectionstatechange', e => {
+      logger.info(
+        NAMESPACE,
+        'connectionstatechange: ',
+        e.target.connectionState,
+        this.who
+      );
+
       this.iceState = e.target.connectionState;
+
       if (this.iceState === 'disconnected') {
         this.iceRestart();
       }
 
       // ICE restart does not help here, peer connection will be down
       if (this.iceState === 'failed') {
-        logger.info(NAMESPACE, 'ICE State: ', this.iceState, this.who);
+        logger.info(
+          NAMESPACE,
+          'connectionstatechange failed: ',
+          this.iceState,
+          this.who
+        );
         this.iceFailed();
+      }
+      if (this.iceState === 'connected') {
+        this.attempts = 0;
       }
     });
   }
 
-  async iceRestart(attempt = 0) {
+  async iceRestart(force = false) {
     logger.debug(NAMESPACE, 'iceRestart', this.who);
     if (this.iceState === 'failed') {
       return;
     }
 
-    logger.debug(
-      NAMESPACE,
-      'ICE Restart start try: ',
-      attempt,
-      this.iceState,
-      this.who
-    );
     BackgroundTimer.clearTimeout(this.timeout);
     try {
       this.timeout = BackgroundTimer.setTimeout(async () => {
         logger.debug(
           NAMESPACE,
           'ICE Restart start try: ',
-          attempt,
+          this.attempts,
           this.iceState,
           this.who
         );
 
-        if (this.iceState !== 'disconnected') {
+        if (this.iceState !== 'disconnected' && !force) {
+          logger.debug(NAMESPACE, 'ICE Restart not needed', this.who);
           return;
         }
 
-        if (attempt > 10) {
+        if (this.attempts > 10) {
+          logger.debug(NAMESPACE, 'ICE Restart failed', this.who);
           this.iceFailed();
           return;
         }
 
         if (!this.janus?.isConnected || !mqtt.mq.connected) {
           logger.debug(NAMESPACE, 'Janus or MQTT not connected', this.who);
-          return this.iceRestart(attempt + 1);
+          this.attempts++;
+          return this.iceRestart(force);
         }
 
-        logger.debug(NAMESPACE, '- Trigger ICE Restart -');
+        logger.debug(NAMESPACE, '- Trigger ICE Restart -', this.who);
         try {
           await this.sendIceRestart();
+          if (force) {
+            this.attempts = 0;
+            this.iceState = 'connected';
+            return;
+          }
         } catch (err) {
-          logger.error(NAMESPACE, 'Error during ICE restart', err);
+          logger.error(NAMESPACE, 'Error during ICE restart', err, this.who);
         }
 
-        return this.iceRestart(attempt + 1);
+        this.attempts++;
+        return this.iceRestart();
       }, 1000);
     } catch (e) {
-      logger.error(
-        NAMESPACE,
-        'Error in iceRestart',
-        e?.message || JSON.stringify(e) || 'undefined'
-      );
+      logger.error(NAMESPACE, 'Error in iceRestart', e, this.who);
     }
   }
 
   remove() {
     logger.debug(NAMESPACE, 'remove');
     if (this.timeout) {
+      this.attempts = 0;
       BackgroundTimer.clearTimeout(this.timeout);
     }
     if (this.netInfoUnsubscribe) {

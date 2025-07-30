@@ -84,7 +84,7 @@ class MqttMsg {
 
     this.mq.on('connect', data => {
       logger.debug(NAMESPACE, 'connect', data);
-      if (data && !this.isConnected) {
+      if (data) {
         logger.info(NAMESPACE, `Connected to server: ${data}`);
         this.isConnected = true;
         if (typeof callback === 'function') callback(false, false);

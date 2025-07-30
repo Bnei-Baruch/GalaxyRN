@@ -261,6 +261,30 @@ export class PublisherPlugin extends EventEmitter {
     );
     this.iceConnectionMonitor.init();
 
+    this.pc.addEventListener('connectionstatechange', () => {
+      logger.info(
+        NAMESPACE,
+        'Connection state changed:',
+        this.pc.connectionState
+      );
+    });
+
+    this.pc.addEventListener('iceconnectionstatechange', () => {
+      logger.info(
+        NAMESPACE,
+        'ICE connection state changed:',
+        this.pc.iceConnectionState
+      );
+    });
+
+    this.pc.addEventListener('signalingstatechange', () => {
+      logger.info(
+        NAMESPACE,
+        'Signaling state changed:',
+        this.pc.signalingState
+      );
+    });
+
     this.pc.addEventListener('icecandidate', e => {
       try {
         let candidate = { completed: true };
@@ -374,8 +398,7 @@ export class PublisherPlugin extends EventEmitter {
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (this.pc && !isReady && typeof this.iceFailed === 'function')
-      this.iceFailed();
+    if (this.pc && !isReady) this.iceFailed();
   }
 
   detach() {

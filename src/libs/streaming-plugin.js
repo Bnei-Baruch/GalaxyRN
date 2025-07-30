@@ -250,6 +250,9 @@ export class StreamingPlugin extends EventEmitter {
     logger.debug(NAMESPACE, 'WebRTC state changed:', {
       isReady,
     });
+    if (this.pc && !isReady) {
+      this.iceFailed();
+    }
   }
 
   detach() {

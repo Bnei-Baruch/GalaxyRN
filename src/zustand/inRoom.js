@@ -46,6 +46,7 @@ export const useInRoomStore = create((set, get) => ({
   feedById: {},
   feedIds: [],
   isInBackground: false,
+  restartCount: 0,
 
   // Feed management
   setFeedIds: () => {
@@ -118,13 +119,14 @@ export const useInRoomStore = create((set, get) => ({
       return get().exitRoom();
     }
 
-    attempts++;
-    if (attempts > 5) {
+    if (attempts > 2) {
       get().exitRoom();
       alert('Could not connect to the server, please try again later');
+      attempts = 0;
       return;
     }
 
+    attempts++;
     if (janus) {
       await janus.destroy();
       janus = null;
@@ -401,7 +403,6 @@ export const useInRoomStore = create((set, get) => ({
                 data.publishers.filter(p => p.id !== data.id)
               );
               useUserStore.getState().sendUserState();
-              attempts = 0;
               const stream = await getStream();
               if (!stream) {
                 logger.error(NAMESPACE, 'Stream is null');
@@ -419,6 +420,7 @@ export const useInRoomStore = create((set, get) => ({
                     isGroup: false,
                   });
                   logger.debug(NAMESPACE, 'videoroom published', json);
+                  attempts = 0;
                 })
                 .catch(err => {
                   logger.error(NAMESPACE, 'Publish error :', err);
@@ -446,7 +448,10 @@ export const useInRoomStore = create((set, get) => ({
 
   exitRoom: async () => {
     logger.debug(NAMESPACE, 'exitRoom exitWIP', exitWIP);
-    if (exitWIP) return;
+    if (exitWIP) {
+      logger.debug(NAMESPACE, 'exitRoom exitWIP is true');
+      return;
+    }
 
     exitWIP = true;
     const { room } = useRoomStore.getState();
@@ -500,6 +505,7 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     exitWIP = false;
+    attempts = 0;
   },
 
   restartRoom: async () => {
@@ -512,9 +518,10 @@ export const useInRoomStore = create((set, get) => ({
     if (restartWIP || exitWIP) return;
 
     restartWIP = true;
-    await get().exitRoom();
     const _isPlay = useShidurStore.getState().isPlay;
+    await get().exitRoom();
     await sleep(7000);
+    logger.debug(NAMESPACE, 'restartRoom setAutoPlay', _isPlay);
     useShidurStore.getState().setAutoPlay(_isPlay);
     useInitsStore.getState().setReadyForJoin(true);
     restartWIP = false;

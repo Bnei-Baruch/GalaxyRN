@@ -305,7 +305,7 @@ export class SubscriberPlugin extends EventEmitter {
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (this.pc && !isReady && typeof this.iceFailed === 'function') {
+    if (this.pc && !isReady) {
       this.iceFailed();
     }
   }
