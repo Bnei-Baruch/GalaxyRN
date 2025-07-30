@@ -20,7 +20,7 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
     setFeedsScrollY(scrollY);
   };
   return (
-    <Pressable onPress={handleAnyPress} style={styles.container}>
+    <View style={styles.container}>
       {isShidur && (
         <View style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>
@@ -33,13 +33,15 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
           style={baseStyles.full}
           onScroll={handleScroll}
         >
-          <View style={styles.scrollContent}>
-            {quads}
-            {members}
-          </View>
+          <Pressable onPress={handleAnyPress}>
+            <View style={styles.scrollContent}>
+              {quads}
+              {members}
+            </View>
+          </Pressable>
         </ScrollView>
       </View>
-    </Pressable>
+    </View>
   );
 };
 export default RoomLandscape;
