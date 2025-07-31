@@ -22,10 +22,10 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
   return (
     <View style={styles.container}>
       {isShidur && (
-        <View style={styles.shidurWrapper}>
+        <Pressable onPress={handleAnyPress} style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>
           {subtitle}
-        </View>
+        </Pressable>
       )}
       <View style={isShidur ? { width: width * 2 } : baseStyles.full}>
         <ScrollView
@@ -33,11 +33,9 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
           style={baseStyles.full}
           onScroll={handleScroll}
         >
-          <Pressable onPress={handleAnyPress}>
-            <View style={styles.scrollContent}>
-              {quads}
-              {members}
-            </View>
+          <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
+            {quads}
+            {members}
           </Pressable>
         </ScrollView>
       </View>
@@ -59,7 +57,8 @@ const styles = StyleSheet.create({
   },
   shidurWrapper: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    height: '100%',
   },
   shidur: {
     width: '100%',

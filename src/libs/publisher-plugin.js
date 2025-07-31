@@ -265,7 +265,7 @@ export class PublisherPlugin extends EventEmitter {
       logger.info(
         NAMESPACE,
         'Connection state changed:',
-        this.pc.connectionState
+        this.pc?.connectionState
       );
     });
 
@@ -273,7 +273,7 @@ export class PublisherPlugin extends EventEmitter {
       logger.info(
         NAMESPACE,
         'ICE connection state changed:',
-        this.pc.iceConnectionState
+        this.pc?.iceConnectionState
       );
     });
 
@@ -281,7 +281,7 @@ export class PublisherPlugin extends EventEmitter {
       logger.info(
         NAMESPACE,
         'Signaling state changed:',
-        this.pc.signalingState
+        this.pc?.signalingState
       );
     });
 
