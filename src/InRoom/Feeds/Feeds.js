@@ -10,7 +10,7 @@ import MyAudioMode from './MyAudioMode';
 import MyRoomMedia from './MyRoomVideo';
 
 const Feeds = () => {
-  const { audioMode, hideSelf } = useSettingsStore();
+  const { audioMode, hideSelf, isFullscreen } = useSettingsStore();
   const { cammute } = useMyStreamStore();
   const { setFeedsPos } = useUiActions();
   const { feedIds, isInBackground } = useInRoomStore();
@@ -23,7 +23,7 @@ const Feeds = () => {
   };
 
   const renderMy = () => {
-    if (hideSelf) return null;
+    if (hideSelf || isFullscreen) return null;
     if ((audioMode && cammute) || isInBackground) {
       return <MyAudioMode key="my" />;
     }
@@ -37,7 +37,7 @@ const Feeds = () => {
       return renderMy();
     }
 
-    if (audioMode || isInBackground) {
+    if (audioMode || isInBackground || isFullscreen) {
       return <FeedAudioMode key={id} id={id} />;
     }
     return <Feed key={id} id={id} />;

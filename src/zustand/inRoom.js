@@ -539,6 +539,19 @@ export const useInRoomStore = create((set, get) => ({
       useSettingsStore.getState().exitAudioMode();
     }
   },
+
+  feedAudioModeOn: async () => {
+    logger.debug(NAMESPACE, 'allFeedAudioMode');
+
+    const { feedById } = get();
+    logger.debug(NAMESPACE, 'enterAudioMode feedById', feedById);
+    try {
+      const ids = Object.keys(feedById);
+      await get().deactivateFeedsVideos(ids);
+    } catch (error) {
+      logger.error(NAMESPACE, 'allFeedAudioMode error', error);
+    }
+  },
   activateFeedsVideos: ids => {
     logger.debug(NAMESPACE, 'activateFeedsVideos ids', ids);
     const { feedById } = get();

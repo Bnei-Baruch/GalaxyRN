@@ -22,8 +22,12 @@ export const useSettingsStore = create((set, get) => ({
   question: false,
 
   isFullscreen: false,
-  toggleIsFullscreen: (isFullscreen = !get().isFullscreen) =>
-    set({ isFullscreen }),
+  toggleIsFullscreen: (isFullscreen = !get().isFullscreen) => {
+    if (isFullscreen) {
+      useInRoomStore.getState().feedAudioModeOn();
+    }
+    set({ isFullscreen });
+  },
 
   toggleQuestion: (question = !get().question) => {
     useUserStore.getState().sendUserState({ question });
@@ -55,11 +59,7 @@ export const useSettingsStore = create((set, get) => ({
       const { enterAudioMode, cleanQuads } = useShidurStore.getState();
       enterAudioMode();
       cleanQuads(false);
-
-      const { feedById } = useInRoomStore.getState();
-      logger.debug(NAMESPACE, 'enterAudioMode feedById', feedById);
-      const ids = Object.keys(feedById);
-      await useInRoomStore.getState().deactivateFeedsVideos(ids);
+      useInRoomStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
     }
