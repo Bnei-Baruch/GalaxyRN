@@ -1,6 +1,12 @@
 {
   "pageTitle": "Arvut-virtual ten",
   "login": "LOGIN",
+  "loginPage": {
+    "appTitle": "Arvut",
+    "slogan": "The Group Today Is You Tomorrow",
+    "termsOfUse": "Arvut Terms of Use",
+    "termsOfUseContent": "Terms of Use of \"Bnei Baruch Association - Kabbalah La'am\"\n\nHereinafter \"Bnei Baruch Association\" or \"the Association\", No. 580292753\n\nAddress of the Association:\n\n12 Rabash St. Petah Tikva, Zip code 4934829\n\nEmail: info@kab.co.il\n\nConditions of Use\n\n\n\nBnei Baruch - Kabbalah L'Am Association (R.A.) (hereinafter: the \"Association\", \"us\" or \"we\") provides a platform which facilitates viewing and participating in Kabbalah lessons via a website owned by the Association (hereinafter \"the Site\") or via other services provided by us (hereinafter, together: \"the Services\"). These Conditions of Use set out your access and use of the Site and its Services. The \"User\" or \"you\" means the Site user. Entrance to the Site represents your agreement to the Conditions of Use, as well as the Privacy Policy (hereinafter: \"Privacy Policy\"), according to the letter, and constitutes your agreement to behave according to the Conditions of Use. The user is requested to read the Conditions of Use carefully.\n\nWe reserve the right, at our exclusive discretion, to change or amend the Conditions of Use at any time. You agree to be bound by the aforementioned changes. You are responsible for reading these Conditions of Use from time to time. Your continued use of the Site after the aforementioned change or amendment constitutes your agreement to the amended Conditions of Use.\n\nYou agree that we may change any part of the Site, at any time, or terminate the Services or any part of them, for whatsoever reason, without informing you and without any obligation. Currently, part of the Site and the Services are offered free of charge, although payment for these services may be transferred to the Association. We are entitled to start or stop billing you for your use of the Site or its Services, or to increase or decrease any sum that we collect for the use of the Site or its Services, at any time, according to our exclusive discretion.\n\nThe Conditions of Use are worded in the masculine [in Hebrew] for the purpose of convenience only, but relate equally to women and men."
+  },
   "settings": {
     "page": "Settings",
     "uiLanguage": "Interface language",

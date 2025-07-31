@@ -1,6 +1,11 @@
 {
   "pageTitle": "Arvut-virtual ten",
   "login": "INGRESAR",
+  "loginPage": {
+    "appTitle": "Arvut",
+    "slogan": "El Grupo Hoy Eres Tú Mañana",
+    "termsOfUse": "Términos de uso de Arvut"
+  },
   "settings": {
     "page": "Configuración",
     "uiLanguage": "Idioma de la interface",
