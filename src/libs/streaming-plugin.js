@@ -130,19 +130,6 @@ export class StreamingPlugin extends EventEmitter {
     });
   }
 
-  async sdpExchange(jsep) {
-    logger.debug(NAMESPACE, 'sdpExchange: ', jsep);
-    const sessionDescription = new RTCSessionDescription(jsep);
-    await this.pc.setRemoteDescription(sessionDescription);
-    const answer = await this.pc.createAnswer();
-    answer.sdp = answer.sdp.replace(
-      /a=fmtp:111 minptime=10;useinbandfec=1\r\n/g,
-      'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n'
-    );
-    await this.pc.setLocalDescription(answer);
-    await this.start(answer);
-  }
-
   async waitForStable(attempts = 0) {
     if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
@@ -191,7 +178,7 @@ export class StreamingPlugin extends EventEmitter {
       const { json } = result || {};
 
       if (json?.jsep) {
-        this.sdpExchange(json.jsep);
+        await this.sdpExchange(json.jsep);
         logger.info(NAMESPACE, 'ICE restart completed successfully');
       } else {
         logger.warn(NAMESPACE, 'ICE restart: No JSEP in response');
@@ -205,27 +192,34 @@ export class StreamingPlugin extends EventEmitter {
     }
   }
 
-  start(jsep) {
+  async sdpExchange(jsep) {
+    logger.debug(NAMESPACE, 'sdpExchange: ', jsep);
+    const sessionDescription = new RTCSessionDescription(jsep);
+    await this.pc.setRemoteDescription(sessionDescription);
+    const answer = await this.pc.createAnswer();
+    answer.sdp = answer.sdp.replace(
+      /a=fmtp:111 minptime=10;useinbandfec=1\r\n/g,
+      'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n'
+    );
+    await this.pc.setLocalDescription(answer);
+    await this.start(answer);
+  }
+
+  async start(jsep) {
     logger.debug(NAMESPACE, 'start: ', jsep);
     const body = { request: 'start' };
     const message = { body };
     if (jsep) {
       message.jsep = jsep;
     }
-
-    return this.transaction('message', message, 'event')
-      .then(({ data, json }) => {
-        logger.debug(NAMESPACE, 'start: ', data, json);
-        return { data, json };
-      })
-      .catch(err => {
-        logger.error(
-          NAMESPACE,
-          'StreamingJanusPlugin, cannot start stream',
-          err
-        );
-        throw err;
-      });
+    let result = null;
+    try {
+      result = await this.transaction('message', message, 'event');
+    } catch (error) {
+      logger.error(NAMESPACE, 'cannot start stream', error);
+      useInRoomStore.getState().restartRoom();
+    }
+    return result;
   }
 
   stop() {
