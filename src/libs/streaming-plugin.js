@@ -191,13 +191,13 @@ export class StreamingPlugin extends EventEmitter {
       const { json } = result || {};
 
       if (json?.jsep) {
-        const sessionDescription = new RTCSessionDescription(json.jsep);
-        await this.pc.setRemoteDescription(sessionDescription);
+        this.sdpExchange(json.jsep);
         logger.info(NAMESPACE, 'ICE restart completed successfully');
       } else {
         logger.warn(NAMESPACE, 'ICE restart: No JSEP in response');
       }
 
+      this.iceRestartInProgress = false;
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
