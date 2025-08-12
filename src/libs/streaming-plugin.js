@@ -6,7 +6,7 @@ import {
   RTCSessionDescription,
 } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
+import { randomString, sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import {
   addConnectionListener,
@@ -25,6 +25,7 @@ export class StreamingPlugin extends EventEmitter {
     this.candidates = [];
     this.onStatus = null;
     this.pluginName = 'janus.plugin.streaming';
+    this.iceRestartInProgress = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -142,19 +143,41 @@ export class StreamingPlugin extends EventEmitter {
     await this.start(answer);
   }
 
+  async waitForStable(attempts = 0) {
+    if (attempts > 30) {
+      throw new Error('Failed to wait for stable state');
+    }
+    if (!this.pc || this.pc.connectionState === 'closed') {
+      throw new Error('PeerConnection not available');
+    }
+    if (this.pc.signalingState === 'stable') {
+      return true;
+    }
+    await sleep(100);
+    return await this.waitForStable(attempts + 1);
+  }
+
   async iceRestart() {
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
 
-    if (!this.pc || this.pc.connectionState === 'closed') {
-      logger.warn(
-        NAMESPACE,
-        'Cannot restart ICE - PeerConnection not available'
-      );
+    if (this.iceRestartInProgress) {
+      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
       return;
     }
+    this.iceRestartInProgress = true;
 
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
+      useInRoomStore.getState().restartRoom();
+      return;
+    }
+
+    try {
+      await this.waitForStable();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
+      useInRoomStore.getState().restartRoom();
+      this.iceRestartInProgress = false;
       return;
     }
 
