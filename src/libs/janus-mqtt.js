@@ -2,19 +2,18 @@ import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { randomString } from '../shared/tools';
+import { netIsConnected } from './connection-monitor';
 
 const NAMESPACE = 'JanusMqtt';
 
 export class JanusMqtt {
-  constructor(user, srv, mit) {
+  constructor(user, srv) {
     this.user = user;
     this.srv = srv;
-    this.mit = mit;
     this.rxTopic = 'janus/' + srv + '/from-janus';
     this.txTopic = 'janus/' + srv + '/to-janus';
     this.stTopic = 'janus/' + srv + '/status';
     this.isConnected = false;
-    this.onStatus = null;
     this.sessionId = undefined;
     this.transactions = {};
     this.pluginHandles = {};
@@ -22,7 +21,6 @@ export class JanusMqtt {
     this.keeptry = 0;
     this.token = null;
     this.connect = null;
-    this.disconnect = null;
     this.onMessage = this.onMessage.bind(this);
     this.keepAlive = this.keepAlive.bind(this);
     this.isJanusInitialized = false;
@@ -31,24 +29,41 @@ export class JanusMqtt {
     this.keepAliveTimer = null;
   }
 
-  init(token) {
+  async init(token) {
     this.token = token;
     logger.debug(NAMESPACE, 'janus-mqtt init this.user', this.user);
-    mqtt.sub(this.rxTopic + '/' + this.user.id, 0);
-    mqtt.sub(this.rxTopic, 0);
-    mqtt.sub(this.stTopic, 1);
+    try {
+      await mqtt.sub(this.rxTopic + '/' + this.user.id, 0);
+      await mqtt.sub(this.rxTopic, 0);
+      await mqtt.sub(this.stTopic, 1);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
+      throw error;
+    }
     logger.debug(NAMESPACE, 'janus-mqtt init this.srv', this.srv);
     mqtt.mq.on(this.srv, this.onMessage);
 
-    // If we need more than 1 session on the same janus server
-    // we need to set mit property in user object, otherwise - this.srv emit trigger
-    // in wrong places and unexpected result occur.
-    if (this.user.mit) mqtt.mq.on(this.user.mit, this.onMessage);
+    const transaction = randomString(12);
+    const msg = { janus: 'create', transaction, token };
+
+    this.connect = () => {
+      logger.debug(NAMESPACE, 'janus-mqtt connect', this.isJanusInitialized);
+      this.isConnected = true;
+      if (this.isJanusInitialized) {
+        return;
+      }
+
+      this.isJanusInitialized = true;
+      return mqtt.send(
+        JSON.stringify(msg),
+        false,
+        this.txTopic,
+        this.rxTopic + '/' + this.user.id
+      );
+    };
 
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'in Promise');
-      const transaction = randomString(12);
-      const msg = { janus: 'create', transaction, token };
 
       this.transactions[transaction] = {
         resolve: json => {
@@ -68,10 +83,6 @@ export class JanusMqtt {
             'Janus connected, sessionId: ',
             this.sessionId
           );
-
-          // this.user.mit - actually trigger once and after that we use
-          // session id as emit. In case we not using multiple session on same server
-          // still good as we will not see message from other sessions
           mqtt.mq.on(this.sessionId, this.onMessage);
 
           resolve(this);
@@ -79,34 +90,12 @@ export class JanusMqtt {
         reject,
         replyType: 'success',
       };
-      logger.debug(
-        NAMESPACE,
-        'janus-mqtt init this.sessionId',
-        this.sessionId,
-        Object.keys(this.transactions)
-      );
-
-      this.connect = function () {
-        if (this.isJanusInitialized) {
-          return;
-        }
-        this.isJanusInitialized = true;
-        mqtt.send(
-          JSON.stringify(msg),
-          false,
-          this.txTopic,
-          this.rxTopic + '/' + this.user.id,
-          this.user
-        );
-        this.connect = null;
-      };
-
-      this.disconnect = function (json) {
-        logger.debug(NAMESPACE, 'janus-mqtt disconnect', json);
-        reject(json);
-        this._cleanupTransactions();
-      };
     });
+  }
+
+  disconnect(json) {
+    logger.debug(NAMESPACE, 'janus-mqtt disconnect', json);
+    this._cleanupTransactions();
   }
 
   attach(plugin) {
@@ -193,7 +182,7 @@ export class JanusMqtt {
     });
   }
 
-  transaction(type, payload, replyType, timeoutMs) {
+  transaction(type, payload, replyType = 'ack', timeoutMs) {
     logger.debug(
       NAMESPACE,
       'janus-mqtt transaction',
@@ -202,24 +191,10 @@ export class JanusMqtt {
       replyType,
       timeoutMs
     );
-    if (!replyType) {
-      replyType = 'ack';
-    }
     const transactionId = randomString(12);
-
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'janus-mqtt transaction promise', transactionId);
-      if (timeoutMs) {
-        BackgroundTimer.setTimeout(() => {
-          // Clean up transaction on timeout
-          if (this.transactions[transactionId]) {
-            delete this.transactions[transactionId];
-            reject(new Error(`Transaction timed out after ${timeoutMs} ms`));
-          }
-        }, timeoutMs);
-      }
-
-      if (!this.isConnected) {
+      if (!this.isConnected || !netIsConnected()) {
         reject(new Error('Janus is not connected'));
         return;
       }
@@ -253,6 +228,26 @@ export class JanusMqtt {
           request,
         };
 
+        if (timeoutMs) {
+          this.transactions[transactionId].timeout = BackgroundTimer.setTimeout(
+            () => {
+              logger.debug(
+                NAMESPACE,
+                'janus-mqtt transaction timeout',
+                this.transactions[transactionId]
+              );
+              // Clean up transaction on timeout
+              if (this.transactions[transactionId]) {
+                delete this.transactions[transactionId];
+                reject(
+                  new Error(`Transaction timed out after ${timeoutMs} ms`)
+                );
+              }
+            },
+            timeoutMs
+          );
+        }
+
         logger.debug(
           NAMESPACE,
           'janus-mqtt transaction request',
@@ -271,8 +266,7 @@ export class JanusMqtt {
           JSON.stringify(request),
           false,
           this.txTopic,
-          this.rxTopic + '/' + this.user.id,
-          this.user
+          this.rxTopic + '/' + this.user.id
         );
       } catch (error) {
         logger.error(
@@ -286,36 +280,34 @@ export class JanusMqtt {
     });
   }
 
-  keepAlive(isScheduled) {
-    logger.debug(NAMESPACE, 'keepAlive', isScheduled);
-    if (!this.isConnected || !this.sessionId) {
+  keepAlive() {
+    logger.debug(NAMESPACE, 'keepAlive tick', this.keeptry);
+    if (!this.isConnected || !this.sessionId || !netIsConnected()) {
+      this.setKeepAliveTimer(this.keepAlive);
       return;
     }
 
-    if (isScheduled) {
-      this.setKeepAliveTimer(this.keepAlive);
-    } else {
-      logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
-      this.transaction('keepalive', null, null, 20 * 1000)
-        .then(() => {
-          this.keeptry = 0;
-          this.setKeepAliveTimer(this.keepAlive);
-        })
-        .catch(err => {
-          logger.debug(NAMESPACE, err, this.keeptry);
-          if (this.keeptry === 3) {
-            logger.error(
-              NAMESPACE,
-              `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
-            );
-            this.isConnected = false;
-            this.onStatus(this.srv, 'error');
-            return;
-          }
-          this.setKeepAliveTimer(this.keepAlive);
-          this.keeptry++;
-        });
-    }
+    logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
+    this.transaction('keepalive', null, 'ack', 20 * 1000)
+      .then(() => {
+        logger.debug(NAMESPACE, 'keepalive sent');
+        this.keeptry = 0;
+        this.setKeepAliveTimer(this.keepAlive);
+      })
+      .catch(err => {
+        logger.debug(NAMESPACE, err, this.keeptry);
+        if (this.keeptry === 3) {
+          logger.error(
+            NAMESPACE,
+            `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
+          );
+          this.isConnected = false;
+          useInRoomStore.getState().restartRoom();
+          return;
+        }
+        this.setKeepAliveTimer(this.keepAlive);
+        this.keeptry++;
+      });
   }
 
   getTransaction(json, ignoreReplyType = false) {
@@ -328,6 +320,7 @@ export class JanusMqtt {
       (ignoreReplyType || this.transactions[transactionId].replyType === type)
     ) {
       const ret = this.transactions[transactionId];
+      BackgroundTimer.clearTimeout(ret.timeout);
       delete this.transactions[transactionId];
       return ret;
     }
@@ -391,7 +384,7 @@ export class JanusMqtt {
     return Promise.allSettled(arr);
   }
 
-  _cleanupTransactions() {
+  async _cleanupTransactions() {
     logger.debug(NAMESPACE, 'janus-mqtt _cleanupTransactions');
     Object.keys(this.transactions).forEach(transactionId => {
       const transaction = this.transactions[transactionId];
@@ -404,16 +397,15 @@ export class JanusMqtt {
     this.isConnected = false;
 
     try {
-      mqtt.exit(this.rxTopic + '/' + this.user.id);
-      mqtt.exit(this.rxTopic);
-      mqtt.exit(this.stTopic);
+      await mqtt.exit(this.rxTopic + '/' + this.user.id);
+      await mqtt.exit(this.rxTopic);
+      await mqtt.exit(this.stTopic);
     } catch (e) {
       logger.error(NAMESPACE, 'Error exiting MQTT topics:', e);
     }
 
     try {
       mqtt.mq.removeListener(this.srv, this.onMessage);
-      if (this.user.mit) mqtt.mq.removeListener(this.user.mit, this.onMessage);
       if (this.sessionId)
         mqtt.mq.removeListener(this.sessionId, this.onMessage);
     } catch (e) {
@@ -440,18 +432,16 @@ export class JanusMqtt {
 
     if (tD === 'status' && json.online) {
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Online`);
-      if (typeof this.connect === 'function') this.connect();
-      if (typeof this.onStatus === 'function')
-        this.onStatus(this.srv, 'online');
+      this.connect();
       return;
     }
 
     if (tD === 'status' && !json.online) {
       this.isConnected = false;
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
-      if (typeof this.disconnect === 'function') this.disconnect(json);
-      if (typeof this.onStatus === 'function')
-        this.onStatus(this.srv, 'offline');
+      this.disconnect(json);
+      useInRoomStore.getState().exitRoom();
+      alert('Janus Server - ' + this.srv + ' - Offline');
       return;
     }
 
@@ -463,6 +453,7 @@ export class JanusMqtt {
     if (janus === 'ack') {
       // Just an ack, we can probably ignore
       const transaction = this.getTransaction(json);
+      logger.debug(NAMESPACE, 'janus ack', transaction);
       if (transaction && transaction.resolve) {
         transaction.resolve(json);
       }
@@ -667,11 +658,11 @@ export class JanusMqtt {
     }
   }
 
-  setKeepAliveTimer(func, ms = 20 * 1000) {
+  setKeepAliveTimer(ms = 20 * 1000) {
     this.clearKeepAliveTimer();
     this.keepAliveTimer = BackgroundTimer.setTimeout(() => {
       logger.debug(NAMESPACE, 'keepAliveTimer tick');
-      func();
+      this.keepAlive();
     }, ms);
   }
 }

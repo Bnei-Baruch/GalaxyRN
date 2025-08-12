@@ -29,7 +29,7 @@ class Logger {
       //tag === 'Shidur' || tag === 'Inits' || tag === 'CallsBridge'
       // ||tag === 'Settings'
       // || tag === 'Api'
-      true
+      tag !== 'SelectDeviceBtn'
     );
   }
 
@@ -318,7 +318,7 @@ class Logger {
   prepareConsoleMsg(args) {
     const firstArg = Array.isArray(args[0]) ? args[0].join(' ') : args[0];
     const _timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-    return [`[${firstArg}] ${_timestamp}`, ...args.slice(1)];
+    return [`[${_timestamp}] [${firstArg}]`, ...args.slice(1)];
   }
 
   // Enable stack traces for debugging

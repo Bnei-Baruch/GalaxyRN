@@ -1,9 +1,13 @@
 import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
-import { RTCPeerConnection } from 'react-native-webrtc';
+import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../shared/tools';
-import IceConnectionMonitor from './ice-connection-monitor';
+import { useInRoomStore } from '../zustand/inRoom';
+import {
+  addConnectionListener,
+  removeConnectionListener,
+} from './connection-monitor';
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -18,13 +22,15 @@ export class PublisherPlugin extends EventEmitter {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
-    this.iceState = null;
-    this.iceFailed = null;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
     this.configure = this.configure.bind(this);
-    this.iceConnectionMonitor = null;
+    this.iceRestart = this.iceRestart.bind(this);
+
+    addConnectionListener(NAMESPACE, () => {
+      this.iceRestart();
+    });
   }
 
   getPluginName() {
@@ -91,71 +97,78 @@ export class PublisherPlugin extends EventEmitter {
     }
   }
 
-  publish(stream) {
-    return new Promise((resolve, reject) => {
-      if (!stream) {
-        reject(new Error('Stream is null or undefined'));
-        return;
-      }
-      const videoTracks = stream.getVideoTracks();
-      const audioTracks = stream.getAudioTracks();
+  async publish(stream) {
+    if (!stream) {
+      throw new Error('Stream is null or undefined');
+    }
+    const videoTracks = stream.getVideoTracks();
+    const audioTracks = stream.getAudioTracks();
 
-      if (videoTracks.length > 0) {
-        this.pc.addTrack(videoTracks[0], stream);
-      }
-      if (audioTracks.length > 0) {
-        this.pc.addTrack(audioTracks[0], stream);
-      }
+    if (videoTracks.length > 0) {
+      this.pc.addTrack(videoTracks[0], stream);
+    }
+    if (audioTracks.length > 0) {
+      this.pc.addTrack(audioTracks[0], stream);
+    }
 
-      let videoTransceiver = null;
-      let audioTransceiver = null;
+    let videoTransceiver = null;
+    let audioTransceiver = null;
 
-      let tr = this.pc.getTransceivers();
-      if (tr && tr.length > 0) {
-        for (let t of tr) {
-          if (t.sender && t.sender.track && t.sender.track.kind === 'video') {
-            videoTransceiver = t;
-            if (videoTransceiver.setDirection) {
-              videoTransceiver.setDirection('sendonly');
-            } else {
-              videoTransceiver.direction = 'sendonly';
-            }
-            break;
+    let tr = this.pc.getTransceivers();
+    if (tr && tr.length > 0) {
+      for (let t of tr) {
+        if (t.sender && t.sender.track && t.sender.track.kind === 'video') {
+          videoTransceiver = t;
+          if (videoTransceiver.setDirection) {
+            videoTransceiver.setDirection('sendonly');
+          } else {
+            videoTransceiver.direction = 'sendonly';
           }
-          if (t.sender && t.sender.track && t.sender.track.kind === 'audio') {
-            audioTransceiver = t;
-            if (audioTransceiver.setDirection) {
-              audioTransceiver.setDirection('sendonly');
-            } else {
-              audioTransceiver.direction = 'sendonly';
-            }
-            break;
+          break;
+        }
+        if (t.sender && t.sender.track && t.sender.track.kind === 'audio') {
+          audioTransceiver = t;
+          if (audioTransceiver.setDirection) {
+            audioTransceiver.setDirection('sendonly');
+          } else {
+            audioTransceiver.direction = 'sendonly';
           }
+          break;
         }
       }
+    }
 
-      this.initPcEvents();
+    this.initPcEvents();
 
-      this.pc.createOffer().then(offer => {
-        this.pc.setLocalDescription(offer);
-        const sdp = offer.sdp.replace(
-          /profile-level-id=[a-f0-9]{6}/g,
-          'profile-level-id=42e01f'
-        );
+    await this.sdpActions();
+    return true;
+  }
 
-        const jsep = { type: offer.type, sdp };
-        const body = { request: 'configure', video: true, audio: true };
-        return this.transaction('message', { body, jsep }, 'event')
-          .then(param => {
-            const { data, json } = param || {};
-            const jsep = json.jsep;
-            logger.debug(NAMESPACE, 'Configure respond: ', param);
-            resolve(data);
-            this.pc.setRemoteDescription(jsep);
-          })
-          .catch(error => reject(error));
-      });
-    });
+  async sdpActions() {
+    try {
+      const offer = await this.pc.createOffer();
+      logger.debug(NAMESPACE, 'Offer created', offer);
+
+      await this.pc.setLocalDescription(offer);
+      logger.debug(NAMESPACE, 'Local description set', offer);
+
+      const sdp = offer.sdp.replace(
+        /profile-level-id=[a-f0-9]{6}/g,
+        'profile-level-id=42e01f'
+      );
+      const jsep = { type: offer.type, sdp };
+      const body = { request: 'configure', video: true, audio: true };
+      const result = await this.transaction('message', { body, jsep }, 'event');
+      const { json, data } = result || {};
+      if (!json?.jsep) {
+        throw new Error('No JSEP in response', result);
+      }
+      await this.pc.setRemoteDescription(json.jsep);
+      return data;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to run sdpActions', error);
+      throw error;
+    }
   }
 
   mute(video, stream) {
@@ -243,24 +256,60 @@ export class PublisherPlugin extends EventEmitter {
         logger.debug(NAMESPACE, 'Configure respond: ', param);
         const { data, json } = param || {};
         const jsep = json.jsep;
+        const sessionDescription = new RTCSessionDescription(jsep);
         this.pc
-          .setRemoteDescription(jsep)
+          .setRemoteDescription(sessionDescription)
           .then(e => logger.info(NAMESPACE, e))
           .catch(e => logger.error(NAMESPACE, e));
       }
     );
   }
 
-  initPcEvents() {
-    this.iceConnectionMonitor = new IceConnectionMonitor(
-      this.pc,
-      this.iceFailed,
-      this.janus,
-      () => this.configure(true),
-      'publisher'
-    );
-    this.iceConnectionMonitor.init();
+  async waitForStable(attempts = 0) {
+    if (attempts > 10) {
+      throw new Error('Failed to wait for stable state');
+    }
+    if (!this.pc || this.pc.connectionState === 'closed') {
+      throw new Error('PeerConnection not available');
+    }
+    if (this.pc.signalingState === 'stable') {
+      return true;
+    }
+    await sleep(100);
+    return await this.waitForStable(attempts + 1);
+  }
 
+  async iceRestart() {
+    logger.info(NAMESPACE, 'Starting ICE restart');
+    try {
+      await this.waitForStable();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to wait for stable state', error);
+      useInRoomStore.getState().restartRoom();
+      return;
+    }
+
+    try {
+      this.pc.restartIce();
+
+      const body = { request: 'configure', restart: true };
+      const result = await this.transaction('message', { body }, 'event');
+
+      logger.debug(NAMESPACE, 'ICE restart response: ', result);
+      const { json, data } = result || {};
+
+      if (json?.jsep) {
+        logger.debug(NAMESPACE, 'ICE restart: JSEP in response');
+      }
+      await this.sdpActions();
+      return data;
+    } catch (error) {
+      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      throw error;
+    }
+  }
+
+  initPcEvents() {
     this.pc.addEventListener('connectionstatechange', () => {
       logger.info(
         NAMESPACE,
@@ -270,10 +319,14 @@ export class PublisherPlugin extends EventEmitter {
     });
 
     this.pc.addEventListener('iceconnectionstatechange', () => {
+      const iceState = this.pc?.iceConnectionState;
+      const signalingState = this.pc?.signalingState;
       logger.info(
         NAMESPACE,
         'ICE connection state changed:',
-        this.pc?.iceConnectionState
+        iceState,
+        'Signaling state:',
+        signalingState
       );
     });
 
@@ -286,6 +339,8 @@ export class PublisherPlugin extends EventEmitter {
     });
 
     this.pc.addEventListener('icecandidate', e => {
+      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
+
       try {
         let candidate = { completed: true };
         const _candidate = e.candidate;
@@ -318,10 +373,6 @@ export class PublisherPlugin extends EventEmitter {
     this.janusHandleId = janusHandleId;
 
     return this;
-  }
-
-  error(cause) {
-    // Couldn't attach to the plugin
   }
 
   onmessage(data) {
@@ -398,7 +449,9 @@ export class PublisherPlugin extends EventEmitter {
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (this.pc && !isReady) this.iceFailed();
+    if (this.pc && !isReady) {
+      useInRoomStore.getState().restartRoom();
+    }
   }
 
   detach() {
@@ -409,22 +462,16 @@ export class PublisherPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
+      removeConnectionListener(NAMESPACE);
       this.pc.close();
       this.removeAllListeners();
       this.pc = null;
       this.janus = null;
     }
 
-    if (this.iceConnectionMonitor) {
-      this.iceConnectionMonitor.remove();
-      this.iceConnectionMonitor = null;
-    }
-
     // Clear additional properties
     this.janusHandleId = undefined;
     this.roomId = null;
-    this.iceState = null;
-    this.iceFailed = null;
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;

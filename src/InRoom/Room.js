@@ -1,6 +1,10 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomBar } from '../bottomBar/BottomBar';
+import {
+  initConnectionMonitor,
+  removeConnectionMonitor,
+} from '../libs/connection-monitor';
 import logger from '../services/logger';
 import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -14,6 +18,7 @@ const Room = () => {
   useEffect(() => {
     const init = async () => {
       try {
+        initConnectionMonitor();
         logger.debug(NAMESPACE, 'Initializing room');
         await joinRoom();
       } catch (error) {
@@ -25,6 +30,7 @@ const Room = () => {
 
     return () => {
       logger.debug(NAMESPACE, 'Cleaning up room');
+      removeConnectionMonitor();
       exitRoom();
     };
   }, []);

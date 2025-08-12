@@ -55,8 +55,8 @@ const initStream = async (_janus, media) => {
   try {
     const janusStream = new StreamingPlugin(config?.iceServers);
     janusStream.onStatus = async (srv, status) => {
-      if (status !== 'online') {
-        logger.warn(NAMESPACE, 'janus status: ', status);
+      logger.warn(NAMESPACE, 'janus status: ', status);
+      if (status === 'offline') {
         useInRoomStore.getState().restartRoom();
       }
     };
@@ -201,7 +201,7 @@ export const useShidurStore = create((set, get) => ({
       janus = new JanusMqtt(user, srv);
       janus.onStatus = (srv, status) => {
         logger.debug(NAMESPACE, 'janus status: ', status);
-        if (status !== 'online') {
+        if (status === 'offline') {
           logger.warn(NAMESPACE, 'janus status: ', status);
           useInRoomStore.getState().restartRoom();
         }

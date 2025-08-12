@@ -219,19 +219,6 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
 
-    janus.onStatus = (srv, status) => {
-      if (status === 'offline') {
-        alert('Janus Server - ' + srv + ' - Offline');
-        get().exitRoom();
-        return;
-      }
-
-      if (status === 'error') {
-        logger.error(NAMESPACE, 'Janus error, reconnecting...');
-        get().restartRoom();
-      }
-    };
-
     /**
      * Publish my video stream to the room
      */
@@ -279,11 +266,6 @@ export const useInRoomStore = create((set, get) => ({
       );
 
       useUiActions.getState().updateWidth();
-    };
-
-    videoroom.iceFailed = async () => {
-      logger.error(NAMESPACE, 'videoroom iceFailed');
-      get().restartRoom();
     };
 
     videoroom.talkEvent = (id, talking) => {
@@ -349,11 +331,6 @@ export const useInRoomStore = create((set, get) => ({
       );
     };
 
-    subscriber.iceFailed = async () => {
-      logger.warn(NAMESPACE, 'subscriber iceFailed');
-      get().restartRoom();
-    };
-
     janus
       .init(config.token)
       .then(data => {
@@ -395,8 +372,7 @@ export const useInRoomStore = create((set, get) => ({
               ).length;
               if (feeds_count > 25) {
                 alert(i18n.t('messages.maxUsersInRoom'));
-                get().restartRoom();
-                return;
+                throw new Error('Max users in room');
               }
 
               await makeSubscription(
@@ -406,8 +382,7 @@ export const useInRoomStore = create((set, get) => ({
               const stream = await getStream();
               if (!stream) {
                 logger.error(NAMESPACE, 'Stream is null');
-                get().restartRoom();
-                return;
+                throw new Error('Stream is null');
               }
               stream.getVideoTracks().forEach(track => {
                 track.enabled = !cammute;
@@ -424,12 +399,12 @@ export const useInRoomStore = create((set, get) => ({
                 })
                 .catch(err => {
                   logger.error(NAMESPACE, 'Publish error :', err);
-                  get().restartRoom();
+                  throw new Error('Publish error: ' + err);
                 });
             })
             .catch(err => {
               logger.error(NAMESPACE, 'Join error:', err);
-              get().restartRoom();
+              throw new Error('Join error: ' + err);
             });
         });
 
@@ -440,10 +415,14 @@ export const useInRoomStore = create((set, get) => ({
       .catch(err => {
         logger.error(NAMESPACE, 'Janus init error', err);
         get().restartRoom();
+        return;
       });
-
-    mqtt.join(`galaxy/room/${room.room}`);
-    mqtt.join(`galaxy/room/${room.room}/chat`, true);
+    try {
+      await mqtt.join(`galaxy/room/${room.room}`);
+      await mqtt.join(`galaxy/room/${room.room}/chat`, true);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error joining MQTT rooms', error);
+    }
   },
 
   exitRoom: async () => {
@@ -520,7 +499,7 @@ export const useInRoomStore = create((set, get) => ({
     restartWIP = true;
     const _isPlay = useShidurStore.getState().isPlay;
     await get().exitRoom();
-    await sleep(7000);
+    await sleep(1000);
     logger.debug(NAMESPACE, 'restartRoom setAutoPlay', _isPlay);
     useShidurStore.getState().setAutoPlay(_isPlay);
     useInitsStore.getState().setReadyForJoin(true);
@@ -547,6 +526,7 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'enterAudioMode feedById', feedById);
     try {
       const ids = Object.keys(feedById);
+      logger.debug(NAMESPACE, 'feedAudioModeOn ids', ids);
       await get().deactivateFeedsVideos(ids);
     } catch (error) {
       logger.error(NAMESPACE, 'allFeedAudioMode error', error);

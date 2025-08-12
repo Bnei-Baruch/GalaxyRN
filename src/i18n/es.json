@@ -93,5 +93,8 @@
     "title": "Permiso de usuario",
     "contactMessage": "Por favor contacta a help@kli.one",
     "sendButton": "Enviar"
+  },
+  "connection": {
+    "unstable": "Conexión inestable"
   }
 }

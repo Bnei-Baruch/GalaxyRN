@@ -95,5 +95,8 @@
     "title": "Разрешение пользователя",
     "contactMessage": "Пожалуйста, свяжитесь с help@kli.one",
     "sendButton": "Отправить"
+  },
+  "connection": {
+    "unstable": "Соединение нестабильно"
   }
 }

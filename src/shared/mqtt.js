@@ -6,6 +6,7 @@ import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
 import { useSubtitleStore } from '../zustand/subtitle';
+import { useUserStore } from '../zustand/user';
 import { isServiceID, userRolesEnum } from './enums';
 import { randomString } from './tools';
 
@@ -22,16 +23,15 @@ class MqttMsg {
     this.isConnected = false;
     this.room = null;
     this.token = null;
-    this.reconnect_count = 0;
   }
 
-  init = (user, callback) => {
-    this.user = user;
-    const RC = mqttTimeout;
+  init = async () => {
+    const { user } = useUserStore.getState();
     const service = isServiceID(user.id);
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
     const token = service ? svc_token : this.token;
     const id = service ? user.id : user.id + '-' + randomString(3);
+    logger.debug(NAMESPACE, 'MQTT init', user);
 
     const transformUrl = (url, options, client) => {
       client.options.clientId = service
@@ -46,6 +46,7 @@ class MqttMsg {
       clientId: id,
       protocolId: 'MQTT',
       protocolVersion: 5,
+      reconnectPeriod: 1000,
       clean: true,
       username: user.email,
       password: token,
@@ -78,99 +79,75 @@ class MqttMsg {
       user.role !== userRolesEnum.user && !service && user?.isClient
         ? MQTT_URL
         : MSG_URL;
-
-    this.mq = mqtt.connect(`wss://${url}`, options);
+    logger.debug(NAMESPACE, 'Connecting to MQTT:', url);
+    try {
+      this.mq = await mqtt.connectAsync(`wss://${url}`, options);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error connecting to MQTT:', error);
+      throw error;
+    }
     this.mq.setMaxListeners(50);
 
     this.mq.on('connect', data => {
-      logger.debug(NAMESPACE, 'connect', data);
-      if (data) {
-        logger.info(NAMESPACE, `Connected to server: ${data}`);
-        this.isConnected = true;
-        if (typeof callback === 'function') callback(false, false);
-      } else {
-        logger.info(NAMESPACE, `Connected: ${data}`);
-        this.isConnected = true;
-        if (this.reconnect_count > RC) {
-          if (typeof callback === 'function') callback(true, false);
-        }
-        this.reconnect_count = 0;
-      }
+      logger.debug(NAMESPACE, 'mqtt on connect', data);
+      this.isConnected = true;
     });
-
+    this.mq.on('reconnect', data => {
+      logger.debug(NAMESPACE, 'mqtt on reconnect', data);
+    });
     this.mq.on('close', () => {
-      logger.debug(NAMESPACE, 'close');
-      if (this.reconnect_count < RC + 2) {
-        this.reconnect_count++;
-        logger.debug(
-          NAMESPACE,
-          `Reconnecting counter: ${this.reconnect_count}`
-        );
-      }
-      if (this.reconnect_count === RC) {
-        this.reconnect_count++;
-        logger.warn(
-          NAMESPACE,
-          `Disconnected after ${this.reconnect_count} seconds`
-        );
-        if (typeof callback === 'function') callback(false, true);
-      }
+      logger.debug(NAMESPACE, 'mqtt on close');
+      this.isConnected = false;
     });
+    this.mq.on('error', error => {
+      logger.error(NAMESPACE, 'mqtt on error', error);
+    });
+    return this.mq;
   };
 
-  join = (topic, chat) => {
+  join = async (topic, chat) => {
     if (!this.mq) return;
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = chat ? { qos: 0, nl: false } : { qos: 1, nl: true };
-    this.mq.subscribe(topic, { ...options }, err => {
-      err && logger.error(NAMESPACE, `Error: ${err}`);
-    });
+    return this.mq.subscribeAsync(topic, { ...options });
   };
 
   sub = (topic, qos) => {
     if (!this.mq) return;
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = { qos, nl: true };
-    this.mq.subscribe(topic, { ...options }, err => {
-      err && logger.error(NAMESPACE, `Error: ${err}`);
-    });
+    return this.mq.subscribeAsync(topic, { ...options });
   };
 
-  exit = topic => {
+  exit = async topic => {
     logger.debug(NAMESPACE, `Unsubscribe from: ${topic}`);
     if (!this.mq) return;
     let options = {};
     logger.info(NAMESPACE, `Unsubscribe from: ${topic}`);
-    return new Promise((resolve, reject) => {
-      this.mq.unsubscribe(topic, { ...options }, err => {
-        err && logger.error(NAMESPACE, `Error: ${err}`);
-        err ? reject(err) : resolve();
-      });
-    });
+    return this.mq.unsubscribeAsync(topic, { ...options });
   };
 
-  send = (message, retain, topic, rxTopic, user) => {
+  send = (message, retain, topic, rxTopic) => {
     logger.debug(NAMESPACE, `Send message to: ${topic}`);
     if (!this.mq) return;
+    const { user } = useUserStore.getState();
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? ` | transaction: ${correlationData}` : '';
     logger.debug(
       NAMESPACE,
-      `--> send message${cd} | topic: ${topic} | data: ${message}`
+      `--> send message ${cd} | topic: ${topic} | data: ${message}`
     );
     let properties = !!rxTopic
       ? {
-          userProperties: user || this.user,
+          userProperties: user,
           responseTopic: rxTopic,
           correlationData,
         }
-      : { userProperties: user || this.user };
+      : { userProperties: user };
 
     logger.debug(NAMESPACE, 'send properties', properties);
     let options = { qos: 1, retain, properties };
-    this.mq.publish(topic, message, { ...options }, err => {
-      err && logger.error(NAMESPACE, 'Error: ', err);
-    });
+    return this.mq.publishAsync(topic, message, { ...options });
   };
 
   watch = callback => {
@@ -254,8 +231,7 @@ class MqttMsg {
           }
           break;
         default:
-          if (typeof callback === 'function')
-            callback(JSON.parse(data.toString()), topic);
+          callback(JSON.parse(data.toString()), topic);
       }
     });
   };
@@ -264,27 +240,26 @@ class MqttMsg {
     this.token = token;
   };
 
-  end = () => {
+  end = async () => {
     this.isConnected = false;
-    this.reconnect_count = 0;
-    return new Promise((resolve, reject) => {
-      if (!this.mq) {
-        resolve();
-        return;
-      }
-      this.mq.removeAllListeners();
-      this.mq.end(err => {
-        this.mq = null;
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    if (!this.mq) return;
+    this.mq.removeAllListeners();
+    await this.mq.endAsync();
+    this.mq = null;
+    return true;
   };
 }
 
 const defaultMqtt = new MqttMsg();
+
+const restartMqtt = async () => {
+  logger.debug(NAMESPACE, 'restartMqtt');
+  try {
+    await defaultMqtt.end();
+    defaultMqtt.mq = await defaultMqtt.init();
+  } catch (e) {
+    logger.error(NAMESPACE, 'restartMqtt error', e);
+  }
+};
 
 export default defaultMqtt;

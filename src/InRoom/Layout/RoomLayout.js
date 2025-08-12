@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+
+import ConnectionNotStable from '../../components/ConnectionNotStable';
 import { Quads } from '../../shidur/Quads';
 import Shidur from '../../shidur/Shidur';
 import { useInitsStore } from '../../zustand/inits';
@@ -26,12 +28,21 @@ const RoomLayout = () => {
   const quads = showGroups && <Quads />;
   const members = <Feeds key="members" />;
 
+  let content;
   if (isFullscreen)
-    return <RoomFullscreen shidur={shidur} quads={quads} members={members} />;
+    content = (
+      <RoomFullscreen shidur={shidur} quads={quads} members={members} />
+    );
+  else if (isPortrait)
+    content = <RoomPortrait shidur={shidur} quads={quads} members={members} />;
+  else
+    content = <RoomLandscape shidur={shidur} quads={quads} members={members} />;
 
-  if (isPortrait)
-    return <RoomPortrait shidur={shidur} quads={quads} members={members} />;
-
-  return <RoomLandscape shidur={shidur} quads={quads} members={members} />;
+  return (
+    <>
+      {content}
+      <ConnectionNotStable />
+    </>
+  );
 };
 export default RoomLayout;

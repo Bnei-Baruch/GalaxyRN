@@ -1,9 +1,17 @@
 import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
-import { MediaStream, RTCPeerConnection } from 'react-native-webrtc';
+import {
+  MediaStream,
+  RTCPeerConnection,
+  RTCSessionDescription,
+} from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../shared/tools';
-import IceConnectionMonitor from './ice-connection-monitor';
+import { useInRoomStore } from '../zustand/inRoom';
+import {
+  addConnectionListener,
+  removeConnectionListener,
+} from './connection-monitor';
 
 const NAMESPACE = 'StreamingPlugin';
 
@@ -13,7 +21,6 @@ export class StreamingPlugin extends EventEmitter {
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
-    this.iceState = null;
     this.streamId = null;
     this.candidates = [];
     this.onStatus = null;
@@ -23,7 +30,11 @@ export class StreamingPlugin extends EventEmitter {
     });
     this.watch = this.watch.bind(this);
     this.transaction = this.transaction.bind(this);
-    this.iceConnectionMonitor = null;
+    this.iceRestart = this.iceRestart.bind(this);
+
+    addConnectionListener(NAMESPACE, () => {
+      this.watch(this.streamId, true);
+    });
   }
 
   getPluginName() {
@@ -64,7 +75,6 @@ export class StreamingPlugin extends EventEmitter {
         );
         return reject(new Error('Janus connection not initialized'));
       }
-
       this.transaction('message', { body }, 'event')
         .then(param => {
           logger.debug(NAMESPACE, 'message from watch: ', param);
@@ -74,7 +84,7 @@ export class StreamingPlugin extends EventEmitter {
           }
 
           logger.debug(NAMESPACE, 'watch: ', param);
-          const { session_id, json } = param;
+          const { json } = param;
 
           let audioTransceiver = null,
             videoTransceiver = null;
@@ -119,20 +129,57 @@ export class StreamingPlugin extends EventEmitter {
     });
   }
 
-  sdpExchange(jsep) {
+  async sdpExchange(jsep) {
     logger.debug(NAMESPACE, 'sdpExchange: ', jsep);
-    this.pc.setRemoteDescription(jsep);
-    this.pc.createAnswer().then(
-      desc => {
-        desc.sdp = desc.sdp.replace(
-          /a=fmtp:111 minptime=10;useinbandfec=1\r\n/g,
-          'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n'
-        );
-        this.pc.setLocalDescription(desc);
-        this.start(desc);
-      },
-      error => logger.error(NAMESPACE, 'SDP Exchange', error)
+    const sessionDescription = new RTCSessionDescription(jsep);
+    await this.pc.setRemoteDescription(sessionDescription);
+    const answer = await this.pc.createAnswer();
+    answer.sdp = answer.sdp.replace(
+      /a=fmtp:111 minptime=10;useinbandfec=1\r\n/g,
+      'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n'
     );
+    await this.pc.setLocalDescription(answer);
+    await this.start(answer);
+  }
+
+  async iceRestart() {
+    logger.info(NAMESPACE, 'Starting ICE restart for streaming');
+
+    if (!this.pc || this.pc.connectionState === 'closed') {
+      logger.warn(
+        NAMESPACE,
+        'Cannot restart ICE - PeerConnection not available'
+      );
+      return;
+    }
+
+    if (!this.streamId) {
+      logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
+      return;
+    }
+
+    try {
+      this.pc.restartIce();
+
+      const body = { request: 'watch', id: this.streamId, restart: true };
+      const result = await this.transaction('message', { body }, 'event');
+
+      logger.debug(NAMESPACE, 'ICE restart response: ', result);
+      const { json } = result || {};
+
+      if (json?.jsep) {
+        const sessionDescription = new RTCSessionDescription(json.jsep);
+        await this.pc.setRemoteDescription(sessionDescription);
+        logger.info(NAMESPACE, 'ICE restart completed successfully');
+      } else {
+        logger.warn(NAMESPACE, 'ICE restart: No JSEP in response');
+      }
+
+      return result;
+    } catch (error) {
+      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      useInRoomStore.getState().restartRoom();
+    }
   }
 
   start(jsep) {
@@ -152,6 +199,24 @@ export class StreamingPlugin extends EventEmitter {
         logger.error(
           NAMESPACE,
           'StreamingJanusPlugin, cannot start stream',
+          err
+        );
+        throw err;
+      });
+  }
+
+  stop() {
+    logger.debug(NAMESPACE, 'stop');
+    const body = { request: 'stop' };
+    return this.transaction('message', { body }, 'event')
+      .then(({ data, json }) => {
+        logger.debug(NAMESPACE, 'stop: ', data, json);
+        return { data, json };
+      })
+      .catch(err => {
+        logger.error(
+          NAMESPACE,
+          'StreamingJanusPlugin, cannot stop stream',
           err
         );
         throw err;
@@ -178,23 +243,34 @@ export class StreamingPlugin extends EventEmitter {
 
   initPcEvents(resolve) {
     logger.debug(NAMESPACE, 'initPcEvents');
-    this.iceConnectionMonitor = new IceConnectionMonitor(
-      this.pc,
-      this.iceFailed,
-      this.janus,
-      () => this.watch(this.streamId, true),
-      'streaming'
-    );
-    this.iceConnectionMonitor.init();
 
     this.pc.addEventListener('icecandidate', e => {
-      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate, this.iceState);
-      return this.transaction('trickle', { candidate: e.candidate }).then(
-        ({ data, json }) => {
-          logger.debug(NAMESPACE, 'trickle: ', data, json);
-          return { data, json };
+      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
+
+      try {
+        let candidate = { completed: true };
+        const _candidate = e.candidate;
+        if (
+          !_candidate ||
+          _candidate.candidate.indexOf('endOfCandidates') > 0
+        ) {
+          logger.debug(NAMESPACE, 'End of candidates');
+        } else {
+          // JSON.stringify doesn't work on some WebRTC objects anymore
+          // See https://code.google.com/p/chromium/issues/detail?id=467366
+          candidate = {
+            candidate: _candidate.candidate,
+            sdpMid: _candidate.sdpMid,
+            sdpMLineIndex: _candidate.sdpMLineIndex,
+          };
         }
-      );
+
+        if (candidate) {
+          return this.transaction('trickle', { candidate });
+        }
+      } catch (e) {
+        logger.error(NAMESPACE, 'ICE candidate error', e);
+      }
     });
 
     this.pc.addEventListener('track', e => {
@@ -202,6 +278,11 @@ export class StreamingPlugin extends EventEmitter {
       const stream = new MediaStream([e.track]);
       logger.debug(NAMESPACE, 'StreamingPlugin stream from track', stream);
       resolve(stream);
+    });
+
+    this.pc.addEventListener('iceconnectionstatechange', () => {
+      const iceState = this.pc?.iceConnectionState;
+      logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
     });
   }
 
@@ -250,9 +331,6 @@ export class StreamingPlugin extends EventEmitter {
     logger.debug(NAMESPACE, 'WebRTC state changed:', {
       isReady,
     });
-    if (this.pc && !isReady) {
-      this.iceFailed();
-    }
   }
 
   detach() {
@@ -262,10 +340,7 @@ export class StreamingPlugin extends EventEmitter {
         this.pc.close();
         this.pc = null;
       }
-      if (this.iceConnectionMonitor) {
-        this.iceConnectionMonitor.remove();
-        this.iceConnectionMonitor = null;
-      }
+      removeConnectionListener(NAMESPACE);
       this.removeAllListeners();
 
       // Store janus reference before clearing
@@ -273,7 +348,6 @@ export class StreamingPlugin extends EventEmitter {
 
       // Clear additional properties
       this.janusHandleId = undefined;
-      this.iceState = null;
       this.streamId = null;
       this.candidates = [];
       this.onStatus = null;

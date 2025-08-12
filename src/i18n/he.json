@@ -94,5 +94,8 @@
     "title": "הרשאת משתמש",
     "contactMessage": "אנא צור קשר עם help@kli.one",
     "sendButton": "שלח"
+  },
+  "connection": {
+    "unstable": "החיבור אינו יציב"
   }
 }

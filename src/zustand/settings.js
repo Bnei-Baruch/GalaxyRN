@@ -87,4 +87,7 @@ export const useSettingsStore = create((set, get) => ({
 
   hideSelf: false,
   toggleHideSelf: () => set(state => ({ hideSelf: !state.hideSelf })),
+
+  netWIP: false,
+  setNetWIP: netWIP => set({ netWIP }),
 }));

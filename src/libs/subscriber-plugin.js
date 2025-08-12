@@ -2,8 +2,12 @@ import { STUN_SRV_GXY } from '@env';
 import { EventEmitter } from 'events';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
-import IceConnectionMonitor from './ice-connection-monitor';
+import { randomString, sleep } from '../shared/tools';
+import { useInRoomStore } from '../zustand/inRoom';
+import {
+  addConnectionListener,
+  removeConnectionListener,
+} from './connection-monitor';
 
 const NAMESPACE = 'SubscriberPlugin';
 
@@ -17,13 +21,16 @@ export class SubscriberPlugin extends EventEmitter {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
-    this.iceState = null;
-    this.iceFailed = null;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
     this.configure = this.configure.bind(this);
-    this.iceConnectionMonitor = null;
+    this.transaction = this.transaction.bind(this);
+    this.iceRestart = this.iceRestart.bind(this);
+
+    addConnectionListener(NAMESPACE, () => {
+      this.iceRestart();
+    });
   }
 
   getPluginName() {
@@ -42,6 +49,7 @@ export class SubscriberPlugin extends EventEmitter {
       handle_id: this.janusHandleId,
     });
 
+    logger.debug(NAMESPACE, 'transaction janus: ', Object.keys(this.janus));
     if (!this.janus) {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
@@ -163,24 +171,70 @@ export class SubscriberPlugin extends EventEmitter {
       });
   }
 
-  handleJsep(jsep) {
+  async waitForStable(attempts = 0) {
+    if (attempts > 10) {
+      throw new Error('Failed to wait for stable state');
+    }
+    if (!this.pc || this.pc.connectionState === 'closed') {
+      throw new Error('PeerConnection not available');
+    }
+    if (this.pc.signalingState === 'stable') {
+      return true;
+    }
+    await sleep(100);
+    return await this.waitForStable(attempts + 1);
+  }
+
+  async iceRestart() {
+    logger.info(NAMESPACE, 'Starting ICE restart');
+    try {
+      await this.waitForStable();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
+      useInRoomStore.getState().restartRoom();
+      return;
+    }
+
+    this.pc.restartIce();
+
+    try {
+      const body = { request: 'configure', restart: true };
+      const result = await this.transaction('message', { body }, 'event');
+
+      logger.debug(NAMESPACE, 'ICE restart response: ', result);
+      const { json } = result || {};
+
+      if (json?.jsep) {
+        this.handleJsep(json.jsep);
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      useInRoomStore.getState().restartRoom();
+    }
+  }
+
+  async handleJsep(jsep) {
+    logger.debug(NAMESPACE, 'handleJsep', jsep);
     const sessionDescription = new RTCSessionDescription(jsep);
-    this.pc
-      .setRemoteDescription(sessionDescription)
-      .then(() => {
-        return this.pc.createAnswer();
-      })
-      .then(answer => {
-        logger.debug(NAMESPACE, 'Answer created', answer);
-        this.pc
-          .setLocalDescription(answer)
-          .then(data => {
-            logger.debug(NAMESPACE, 'setLocalDescription', data);
-          })
-          .catch(error => logger.error(NAMESPACE, error, answer));
-        this.start(answer);
-      })
-      .catch(error => logger.error(NAMESPACE, error, jsep));
+    try {
+      await this.pc.setRemoteDescription(sessionDescription);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to set remote description', error);
+    }
+    let answer;
+    try {
+      answer = await this.pc.createAnswer();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to create answer', error);
+    }
+    logger.debug(NAMESPACE, 'Answer created', answer);
+    try {
+      const localDescription = await this.pc.setLocalDescription(answer);
+      logger.debug(NAMESPACE, 'Local description set', localDescription);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to set local description', error);
+    }
+    this.start(answer);
   }
 
   start(answer) {
@@ -203,17 +257,8 @@ export class SubscriberPlugin extends EventEmitter {
   initPcEvents() {
     logger.debug(NAMESPACE, 'initPcEvents');
     if (this.pc) {
-      this.iceConnectionMonitor = new IceConnectionMonitor(
-        this.pc,
-        this.iceFailed,
-        this.janus,
-        () => this.configure(),
-        'subscriber'
-      );
-      this.iceConnectionMonitor.init();
-
       this.pc.addEventListener('icecandidate', e => {
-        logger.debug(NAMESPACE, 'onicecandidate set', e.candidate);
+        logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
         let candidate = { completed: true };
         if (
           !e.candidate ||
@@ -239,10 +284,59 @@ export class SubscriberPlugin extends EventEmitter {
 
         this.onTrack && this.onTrack(e.track, e.streams[0], true);
       });
+
+      // Добавляем мониторинг signaling state
+      this.pc.addEventListener('signalingstatechange', () => {
+        const signalingState = this.pc?.signalingState;
+        logger.info(NAMESPACE, 'Signaling state changed:', signalingState);
+      });
+
+      this.pc.addEventListener('connectionstatechange', () => {
+        const connectionState = this.pc?.connectionState;
+        logger.info(NAMESPACE, 'Connection state changed:', connectionState);
+      });
+
+      this.pc.addEventListener('iceconnectionstatechange', () => {
+        const iceState = this.pc?.iceConnectionState;
+        const signalingState = this.pc?.signalingState;
+        logger.info(
+          NAMESPACE,
+          'ICE connection state changed:',
+          iceState,
+          'Signaling state:',
+          signalingState
+        );
+
+        // Автоматический ICE restart при проблемах с соединением
+        if (iceState === 'failed') {
+          logger.warn(NAMESPACE, 'ICE connection failed, attempting restart');
+          this.iceRestart().catch(error => {
+            logger.error(NAMESPACE, 'ICE restart after failure failed:', error);
+          });
+        } else if (iceState === 'disconnected') {
+          // Ждём немного перед рестартом, т.к. disconnected может быть временным
+          setTimeout(() => {
+            if (this.pc?.iceConnectionState === 'disconnected') {
+              logger.warn(
+                NAMESPACE,
+                'ICE connection still disconnected, attempting restart'
+              );
+              this.iceRestart().catch(error => {
+                logger.error(
+                  NAMESPACE,
+                  'ICE restart after disconnect failed:',
+                  error
+                );
+              });
+            }
+          }, 5000); // 5 секунд задержки
+        }
+      });
     }
   }
 
   success(janus, janusHandleId) {
+    logger.debug(NAMESPACE, 'Subscriber plugin success', janus, janusHandleId);
     this.janus = janus;
     this.janusHandleId = janusHandleId;
 
@@ -305,9 +399,6 @@ export class SubscriberPlugin extends EventEmitter {
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (this.pc && !isReady) {
-      this.iceFailed();
-    }
   }
 
   detach() {
@@ -320,16 +411,11 @@ export class SubscriberPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
-
+      removeConnectionListener(NAMESPACE);
       this.pc.close();
       this.removeAllListeners();
       this.pc = null;
       this.janus = null;
-    }
-
-    if (this.iceConnectionMonitor) {
-      this.iceConnectionMonitor.remove();
-      this.iceConnectionMonitor = null;
     }
 
     // Clear additional properties
@@ -337,7 +423,5 @@ export class SubscriberPlugin extends EventEmitter {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
-    this.iceState = null;
-    this.iceFailed = null;
   }
 }

@@ -95,5 +95,8 @@
     "title": "Something went wrong",
     "message": "The application has encountered an unexpected error.",
     "tryAgain": "Try Again"
+  },
+  "connection": {
+    "unstable": "Connection not stable"
   }
 }

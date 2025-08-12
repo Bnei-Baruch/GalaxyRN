@@ -62,60 +62,55 @@ export const useInitsStore = create((set, get) => ({
     set({ isPortrait });
   },
 
-  initMQTT: () => {
+  initMQTT: async () => {
     const { user } = useUserStore.getState();
     const { restartRoom, exitRoom } = useInRoomStore.getState();
 
-    mqtt.init(user, (reconnected, error) => {
-      logger.debug(NAMESPACE, 'initMQTT', reconnected, error);
-      if (error) {
-        logger.info(NAMESPACE, 'MQTT disconnected');
-        exitRoom();
-        alert('- Lost Connection to Arvut System -');
-      } else if (reconnected) {
-        restartRoom();
-        logger.info(NAMESPACE, 'MQTT reconnected');
-      }
+    try {
+      await mqtt.init();
+      logger.debug(NAMESPACE, 'MQTT initialized');
+      await mqtt.join('galaxy/users/notification');
+      await mqtt.join('galaxy/users/broadcast');
       set(() => ({ mqttReady: true }));
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error initializing MQTT:', error);
+      restartRoom();
+      return;
+    }
 
-      mqtt.join('galaxy/users/notification');
-      mqtt.join('galaxy/users/broadcast');
+    const { toggleCammute, toggleMute } = useMyStreamStore.getState();
+    const { streamGalaxy } = useShidurStore.getState();
+    const { toggleQuestion } = useSettingsStore.getState();
+    const { updateDisplayById } = useInRoomStore.getState();
 
-      const { user } = useUserStore.getState();
-      const { toggleCammute, toggleMute } = useMyStreamStore.getState();
-      const { streamGalaxy } = useShidurStore.getState();
-      const { toggleQuestion } = useSettingsStore.getState();
-      const { updateDisplayById } = useInRoomStore.getState();
+    mqtt.watch(data => {
+      const { type, id, bitrate } = data;
+      logger.debug(NAMESPACE, 'got message: ', data);
 
-      mqtt.watch(data => {
-        const { type, id, bitrate } = data;
-        logger.debug(NAMESPACE, 'got message: ', data);
-
-        if (user.id === id && CLIENT_RECONNECT_TYPES.includes(type)) {
-          restartRoom();
-        } else if (type === 'client-kicked' && user.id === id) {
-          kc.logout();
-        } else if (type === 'client-question' && user.id === id) {
-          toggleQuestion();
-        } else if (type === 'client-mute' && user.id === id) {
-          toggleMute();
-        } else if (type === 'video-mute' && user.id === id) {
-          toggleCammute();
-        } else if (type === 'audio-out') {
-          logger.debug(NAMESPACE, 'audio-out: ', data);
-          streamGalaxy(data.status);
-          if (data.status) {
-            // Remove question mark when sndman unmute our room
-            toggleQuestion(false);
-          }
-        } else if (type === 'reload-config') {
-          // this.reloadConfig();
-        } else if (type === 'client-reload-all') {
-          restartRoom();
-        } else if (type === 'client-state') {
-          updateDisplayById(data.user);
+      if (user.id === id && CLIENT_RECONNECT_TYPES.includes(type)) {
+        restartRoom();
+      } else if (type === 'client-kicked' && user.id === id) {
+        kc.logout();
+      } else if (type === 'client-question' && user.id === id) {
+        toggleQuestion();
+      } else if (type === 'client-mute' && user.id === id) {
+        toggleMute();
+      } else if (type === 'video-mute' && user.id === id) {
+        toggleCammute();
+      } else if (type === 'audio-out') {
+        logger.debug(NAMESPACE, 'audio-out: ', data);
+        streamGalaxy(data.status);
+        if (data.status) {
+          // Remove question mark when sndman unmute our room
+          toggleQuestion(false);
         }
-      });
+      } else if (type === 'reload-config') {
+        // this.reloadConfig();
+      } else if (type === 'client-reload-all') {
+        restartRoom();
+      } else if (type === 'client-state') {
+        updateDisplayById(data.user);
+      }
     });
   },
 
