@@ -21,6 +21,7 @@ export class SubscriberPlugin extends EventEmitter {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
+    this.iceRestartInProgress = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -172,7 +173,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   async waitForStable(attempts = 0) {
-    if (attempts > 10) {
+    if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
     }
     if (!this.pc || this.pc.connectionState === 'closed') {
@@ -187,11 +188,18 @@ export class SubscriberPlugin extends EventEmitter {
 
   async iceRestart() {
     logger.info(NAMESPACE, 'Starting ICE restart');
+    if (this.iceRestartInProgress) {
+      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+      return;
+    }
+    this.iceRestartInProgress = true;
+
     try {
       await this.waitForStable();
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
       useInRoomStore.getState().restartRoom();
+      this.iceRestartInProgress = false;
       return;
     }
 
@@ -207,9 +215,11 @@ export class SubscriberPlugin extends EventEmitter {
       if (json?.jsep) {
         this.handleJsep(json.jsep);
       }
+      this.iceRestartInProgress = false;
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useInRoomStore.getState().restartRoom();
+      this.iceRestartInProgress = false;
     }
   }
 

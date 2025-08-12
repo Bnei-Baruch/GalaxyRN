@@ -22,6 +22,7 @@ export class PublisherPlugin extends EventEmitter {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
+    this.iceRestartInProgress = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -266,11 +267,15 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   async waitForStable(attempts = 0) {
-    if (attempts > 10) {
+    if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
     }
     if (!this.pc || this.pc.connectionState === 'closed') {
       throw new Error('PeerConnection not available');
+    }
+
+    if (this.pc.connectionState === 'failed') {
+      throw new Error('PeerConnection failed');
     }
     if (this.pc.signalingState === 'stable') {
       return true;
@@ -280,11 +285,19 @@ export class PublisherPlugin extends EventEmitter {
   }
 
   async iceRestart() {
+    if (this.iceRestartInProgress) {
+      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+      return;
+    }
+
+    this.iceRestartInProgress = true;
     logger.info(NAMESPACE, 'Starting ICE restart');
+
     try {
       await this.waitForStable();
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to wait for stable state', error);
+      this.iceRestartInProgress = false;
       useInRoomStore.getState().restartRoom();
       return;
     }
@@ -302,9 +315,11 @@ export class PublisherPlugin extends EventEmitter {
         logger.debug(NAMESPACE, 'ICE restart: JSEP in response');
       }
       await this.sdpActions();
+      this.iceRestartInProgress = false;
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
+      this.iceRestartInProgress = false;
       throw error;
     }
   }

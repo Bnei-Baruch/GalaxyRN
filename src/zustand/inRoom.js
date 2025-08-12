@@ -19,7 +19,7 @@ import WakeLockBridge from '../services/WakeLockBridge';
 import { userRolesEnum } from '../shared/enums';
 import GxyConfig from '../shared/janus-config';
 import mqtt from '../shared/mqtt';
-import { deepClone, sleep } from '../shared/tools';
+import { deepClone } from '../shared/tools';
 
 // Zustand stores
 import { useChatStore } from './chat';
@@ -499,7 +499,6 @@ export const useInRoomStore = create((set, get) => ({
     restartWIP = true;
     const _isPlay = useShidurStore.getState().isPlay;
     await get().exitRoom();
-    await sleep(1000);
     logger.debug(NAMESPACE, 'restartRoom setAutoPlay', _isPlay);
     useShidurStore.getState().setAutoPlay(_isPlay);
     useInitsStore.getState().setReadyForJoin(true);
