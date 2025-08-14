@@ -177,7 +177,6 @@ export class StreamingPlugin {
 
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
-      this.pc.restartIce();
       const body = { request: 'watch', id: this.streamId, restart: true };
       const result = await this.transaction('message', { body }, 'event');
 

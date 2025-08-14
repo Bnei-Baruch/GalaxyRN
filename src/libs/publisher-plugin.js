@@ -1,7 +1,7 @@
 import { STUN_SRV_GXY } from '@env';
-import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
+import { randomString, sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import {
   addConnectionListener,
@@ -253,25 +253,37 @@ export class PublisherPlugin {
     this.configure();
   }
 
-  async configure(restart) {
-    const offer = await this.pc.createOffer();
+  async configure(restart = false) {
+    const offer = await this.pc.createOffer({ iceRestart: restart });
     logger.debug(NAMESPACE, 'createOffer: ', offer);
-    this.pc
-      .setLocalDescription(offer)
-      .catch(error => logger.error(NAMESPACE, 'setLocalDescription: ', error));
-    const body = { request: 'configure', restart };
-    return this.transaction('message', { body, jsep: offer }, 'event').then(
-      param => {
-        logger.debug(NAMESPACE, 'Configure respond: ', param);
-        const { data, json } = param || {};
-        const jsep = json.jsep;
-        const sessionDescription = new RTCSessionDescription(jsep);
-        this.pc
-          .setRemoteDescription(sessionDescription)
-          .then(e => logger.info(NAMESPACE, e))
-          .catch(e => logger.error(NAMESPACE, e));
+    try {
+      await this.pc.setLocalDescription(offer);
+      logger.debug(NAMESPACE, 'setLocalDescription: ', offer);
+    } catch (error) {
+      logger.error(NAMESPACE, 'setLocalDescription: ', error);
+    }
+
+    const message = {
+      body: { request: 'configure', audio: true, video: true },
+      jsep: offer,
+    };
+    if (restart) {
+      message.body.restart = true;
+    }
+
+    const param = await this.transaction('message', message, 'event');
+
+    logger.debug(NAMESPACE, 'Configure respond: ', param);
+    const { json } = param || {};
+    if (json?.jsep) {
+      try {
+        await this.pc.setRemoteDescription(json.jsep);
+        logger.debug(NAMESPACE, 'setRemoteDescription success');
+      } catch (error) {
+        logger.error(NAMESPACE, 'setRemoteDescription: ', error);
       }
-    );
+    }
+    logger.debug(NAMESPACE, 'Configure respond success');
   }
 
   async waitForStable(attempts = 0) {
@@ -293,13 +305,14 @@ export class PublisherPlugin {
   }
 
   async iceRestart() {
+    logger.info(NAMESPACE, 'Starting ICE restart');
+
     if (this.iceRestartInProgress) {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
       return;
     }
 
     this.iceRestartInProgress = true;
-    logger.info(NAMESPACE, 'Starting ICE restart');
 
     try {
       await this.waitForStable();
@@ -312,19 +325,8 @@ export class PublisherPlugin {
 
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
-      this.pc.restartIce();
-      const body = { request: 'configure', restart: true };
-      const result = await this.transaction('message', { body }, 'event');
-
-      logger.debug(NAMESPACE, 'ICE restart response: ', result);
-      const { json, data } = result || {};
-
-      if (json?.jsep) {
-        logger.debug(NAMESPACE, 'ICE restart: JSEP in response');
-      }
-      await this.sdpActions();
+      await this.configure(true);
       this.iceRestartInProgress = false;
-      return data;
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       this.iceRestartInProgress = false;

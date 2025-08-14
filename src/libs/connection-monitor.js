@@ -129,6 +129,7 @@ const monitorMqtt = async () => {
 };
 
 const callListeners = () => {
+  logger.debug(NAMESPACE, 'callListeners', Object.keys(listeners));
   for (const key in listeners) {
     listeners[key]();
   }
