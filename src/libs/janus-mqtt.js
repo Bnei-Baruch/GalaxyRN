@@ -21,15 +21,12 @@ export class JanusMqtt {
     this.keeptry = 0;
     this.token = null;
     this.connect = null;
-    this.onMessage = this.onMessage.bind(this);
-    this.keepAlive = this.keepAlive.bind(this);
     this.isJanusInitialized = false;
-    this.clearKeepAliveTimer = this.clearKeepAliveTimer.bind(this);
-    this.setKeepAliveTimer = this.setKeepAliveTimer.bind(this);
     this.keepAliveTimer = null;
+    // Стрелочные функции автоматически связывают this
   }
 
-  async init(token) {
+  init = async token => {
     this.token = token;
     logger.debug(NAMESPACE, 'init this.user', this.user);
     try {
@@ -91,14 +88,14 @@ export class JanusMqtt {
         replyType: 'success',
       };
     });
-  }
+  };
 
-  disconnect(json) {
+  disconnect = json => {
     logger.debug(NAMESPACE, 'disconnect', json);
     this._cleanupTransactions();
-  }
+  };
 
-  attach(plugin) {
+  attach = plugin => {
     logger.debug(NAMESPACE, 'attach', plugin);
     const name = plugin.getPluginName();
     return this.transaction(
@@ -116,9 +113,9 @@ export class JanusMqtt {
 
       return plugin.success(this, json.data.id);
     });
-  }
+  };
 
-  destroy() {
+  destroy = () => {
     logger.debug(NAMESPACE, 'destroy');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -143,9 +140,9 @@ export class JanusMqtt {
           });
       });
     });
-  }
+  };
 
-  detach(plugin) {
+  detach = plugin => {
     logger.debug(
       NAMESPACE,
       'detach plugin',
@@ -180,14 +177,14 @@ export class JanusMqtt {
           reject(err);
         });
     });
-  }
+  };
 
-  transaction(type, payload, replyType = 'ack', timeoutMs) {
+  transaction = (type, payload, replyType = 'ack', timeoutMs) => {
     logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
     const transactionId = randomString(12);
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'transaction promise', transactionId);
-      if (!this.isConnected || !netIsConnected()) {
+      if (!this.isConnected) {
         reject(new Error('Janus is not connected'));
         return;
       }
@@ -271,9 +268,9 @@ export class JanusMqtt {
         reject(error || new Error('Unknown transaction error'));
       }
     });
-  }
+  };
 
-  keepAlive() {
+  keepAlive = () => {
     logger.debug(NAMESPACE, 'keepAlive tick', this.keeptry);
     if (!this.isConnected || !this.sessionId || !netIsConnected()) {
       this.setKeepAliveTimer(this.keepAlive);
@@ -301,9 +298,9 @@ export class JanusMqtt {
         this.setKeepAliveTimer(this.keepAlive);
         this.keeptry++;
       });
-  }
+  };
 
-  getTransaction(json, ignoreReplyType = false) {
+  getTransaction = (json, ignoreReplyType = false) => {
     logger.debug(
       NAMESPACE,
       'getTransaction',
@@ -322,9 +319,9 @@ export class JanusMqtt {
       delete this.transactions[transactionId];
       return ret;
     }
-  }
+  };
 
-  onClose() {
+  onClose = () => {
     logger.debug(NAMESPACE, 'onClose');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -333,9 +330,9 @@ export class JanusMqtt {
 
     this.isConnected = false;
     logger.error(NAMESPACE, 'Lost connection to the gateway (is it down?)');
-  }
+  };
 
-  _cleanupPlugins() {
+  _cleanupPlugins = () => {
     logger.debug(NAMESPACE, '_cleanupPlugins');
     const arr = [];
     Object.keys(this.pluginHandles).forEach(pluginId => {
@@ -380,9 +377,9 @@ export class JanusMqtt {
       );
     });
     return Promise.allSettled(arr);
-  }
+  };
 
-  async _cleanupTransactions() {
+  _cleanupTransactions = async () => {
     logger.debug(NAMESPACE, '_cleanupTransactions');
     Object.keys(this.transactions).forEach(transactionId => {
       const transaction = this.transactions[transactionId];
@@ -409,9 +406,9 @@ export class JanusMqtt {
     } catch (e) {
       logger.error(NAMESPACE, 'Error removing MQTT listeners:', e);
     }
-  }
+  };
 
-  onMessage(message, tD) {
+  onMessage = (message, tD) => {
     let json;
     try {
       json = JSON.parse(message);
@@ -649,20 +646,20 @@ export class JanusMqtt {
       NAMESPACE,
       `Unknown message/event ${janus} on session ${this.sessionId}`
     );
-  }
+  };
 
-  clearKeepAliveTimer() {
+  clearKeepAliveTimer = () => {
     if (this.keepAliveTimer) {
       BackgroundTimer.clearTimeout(this.keepAliveTimer);
       this.keepAliveTimer = null;
     }
-  }
+  };
 
-  setKeepAliveTimer(ms = 20 * 1000) {
+  setKeepAliveTimer = (ms = 20 * 1000) => {
     this.clearKeepAliveTimer();
     this.keepAliveTimer = BackgroundTimer.setTimeout(() => {
       logger.debug(NAMESPACE, 'keepAliveTimer tick');
       this.keepAlive();
     }, ms);
-  }
+  };
 }

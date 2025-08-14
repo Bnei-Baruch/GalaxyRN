@@ -23,16 +23,11 @@ export class SubscriberPlugin {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.configure = this.configure.bind(this);
-    this.transaction = this.transaction.bind(this);
-    this.iceRestart = this.iceRestart.bind(this);
-    this.mediaState = this.mediaState.bind(this);
-    this.webrtcState = this.webrtcState.bind(this);
 
-    addConnectionListener(this.id, () => {
+    addConnectionListener(this.id, async () => {
       try {
         logger.info(NAMESPACE, 'Connection listener called');
-        this.iceRestart();
+        await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
         useInRoomStore.getState().restartRoom();
@@ -40,11 +35,11 @@ export class SubscriberPlugin {
     });
   }
 
-  getPluginName() {
+  getPluginName = () => {
     return this.pluginName;
-  }
+  };
 
-  transaction(message, additionalFields, replyType) {
+  transaction = (message, additionalFields, replyType) => {
     logger.debug(
       NAMESPACE,
       'transaction: ',
@@ -61,9 +56,9 @@ export class SubscriberPlugin {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
     return this.janus.transaction(message, payload, replyType);
-  }
+  };
 
-  async sub(subscription) {
+  sub = async subscription => {
     logger.debug(NAMESPACE, 'sub: ', subscription);
     const body = { request: 'subscribe', streams: subscription };
     logger.debug(NAMESPACE, 'sub: ', body);
@@ -87,9 +82,9 @@ export class SubscriberPlugin {
       logger.error(NAMESPACE, 'Subscribe to: ', error);
       throw error;
     }
-  }
+  };
 
-  async unsub(streams) {
+  unsub = async streams => {
     logger.info(NAMESPACE, 'Unsubscribe from streams: ', streams);
     try {
       const body = { request: 'unsubscribe', streams };
@@ -112,9 +107,9 @@ export class SubscriberPlugin {
       logger.error(NAMESPACE, 'Unsubscribe from: ', error);
       throw error;
     }
-  }
+  };
 
-  join(subscription, roomId) {
+  join = (subscription, roomId) => {
     this.roomId = roomId;
     const body = {
       request: 'join',
@@ -145,9 +140,9 @@ export class SubscriberPlugin {
           reject(err);
         });
     });
-  }
+  };
 
-  configure() {
+  configure = () => {
     logger.info(NAMESPACE, 'Subscriber plugin configure');
     const body = { request: 'configure', restart: true };
     return this.transaction('message', { body }, 'event')
@@ -162,9 +157,9 @@ export class SubscriberPlugin {
       .catch(err => {
         logger.error(NAMESPACE, 'Subscriber plugin configure', err);
       });
-  }
+  };
 
-  async waitForStable(attempts = 0) {
+  waitForStable = async (attempts = 0) => {
     if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
     }
@@ -176,9 +171,9 @@ export class SubscriberPlugin {
     }
     await sleep(100);
     return await this.waitForStable(attempts + 1);
-  }
+  };
 
-  async iceRestart() {
+  iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
     if (this.iceRestartInProgress) {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
@@ -210,9 +205,9 @@ export class SubscriberPlugin {
       useInRoomStore.getState().restartRoom();
       this.iceRestartInProgress = false;
     }
-  }
+  };
 
-  async handleJsep(jsep) {
+  handleJsep = async jsep => {
     logger.debug(NAMESPACE, 'handleJsep', jsep);
     const sessionDescription = new RTCSessionDescription(jsep);
     try {
@@ -228,9 +223,9 @@ export class SubscriberPlugin {
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to set answer', error);
     }
-  }
+  };
 
-  async start(jsep) {
+  start = async jsep => {
     logger.debug(NAMESPACE, 'start', jsep);
     const body = { request: 'start', room: this.roomId };
     try {
@@ -238,9 +233,9 @@ export class SubscriberPlugin {
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to start', error);
     }
-  }
+  };
 
-  initPcEvents() {
+  initPcEvents = () => {
     logger.debug(NAMESPACE, 'initPcEvents');
     this.pc.addEventListener('icecandidate', e => {
       logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
@@ -283,21 +278,21 @@ export class SubscriberPlugin {
       const iceState = this.pc?.iceConnectionState;
       logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
     });
-  }
+  };
 
-  success(janus, janusHandleId) {
+  success = (janus, janusHandleId) => {
     logger.debug(NAMESPACE, 'Subscriber plugin success', janus, janusHandleId);
     this.janus = janus;
     this.janusHandleId = janusHandleId;
 
     return this;
-  }
+  };
 
-  error(cause) {
+  error = cause => {
     logger.error(NAMESPACE, 'plugin error', cause);
-  }
+  };
 
-  onmessage(data, json) {
+  onmessage = (data, json) => {
     logger.info(NAMESPACE, 'onmessage: ', data, json);
     if (data?.videoroom === 'updated') {
       logger.info(NAMESPACE, 'Streams updated: ', data.streams);
@@ -308,50 +303,50 @@ export class SubscriberPlugin {
       logger.debug(NAMESPACE, 'Handle jsep: ', json.jsep);
       this.handleJsep(json.jsep);
     }
-  }
+  };
 
-  oncleanup() {
+  oncleanup = () => {
     logger.info(NAMESPACE, '- oncleanup - ');
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
-  }
+  };
 
-  detached() {
+  detached = () => {
     logger.info(NAMESPACE, '- detached - ');
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
-  }
+  };
 
-  hangup() {
+  hangup = () => {
     logger.info(NAMESPACE, '- hangup - ', this.janus);
     //this.detach();
-  }
+  };
 
-  slowLink(uplink, lost, mid) {
+  slowLink = (uplink, lost, mid) => {
     const direction = uplink ? 'sending' : 'receiving';
     logger.info(
       NAMESPACE,
       `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
     //this.emit('slowlink')
-  }
+  };
 
-  mediaState(media, on) {
+  mediaState = (media, on) => {
     logger.info(
       NAMESPACE,
       `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
     //this.emit('mediaState', medium, on)
-  }
+  };
 
-  webrtcState(isReady) {
+  webrtcState = isReady => {
     logger.info(
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-  }
+  };
 
-  detach() {
+  detach = () => {
     logger.debug(NAMESPACE, 'detach');
     if (this.pc) {
       this.pc.getTransceivers().forEach(transceiver => {
@@ -372,5 +367,5 @@ export class SubscriberPlugin {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
-  }
+  };
 }

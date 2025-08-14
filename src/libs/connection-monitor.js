@@ -2,6 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
+import { sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useSettingsStore } from '../zustand/settings';
 
@@ -128,10 +129,16 @@ const monitorMqtt = async () => {
   });
 };
 
-const callListeners = () => {
+const callListeners = async () => {
   logger.debug(NAMESPACE, 'callListeners', Object.keys(listeners));
   for (const key in listeners) {
-    listeners[key]();
+    try {
+      logger.debug(NAMESPACE, 'calling listener', key);
+      listeners[key]();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error in listener', key, error);
+    }
+    await sleep(1000);
   }
 };
 

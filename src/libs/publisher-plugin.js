@@ -24,15 +24,11 @@ export class PublisherPlugin {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.configure = this.configure.bind(this);
-    this.iceRestart = this.iceRestart.bind(this);
-    this.mediaState = this.mediaState.bind(this);
-    this.webrtcState = this.webrtcState.bind(this);
 
-    addConnectionListener(this.id, () => {
+    addConnectionListener(this.id, async () => {
       try {
         logger.info(NAMESPACE, 'Connection listener called');
-        this.iceRestart();
+        await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
         useInRoomStore.getState().restartRoom();
@@ -40,15 +36,15 @@ export class PublisherPlugin {
     });
   }
 
-  getPluginName() {
+  getPluginName = () => {
     return this.pluginName;
-  }
+  };
 
-  transaction(message, additionalFields, replyType) {
+  transaction = (message, additionalFields, replyType) => {
     logger.debug(
       NAMESPACE,
       'transaction: ',
-      message,
+      message?.body,
       additionalFields,
       replyType
     );
@@ -60,9 +56,9 @@ export class PublisherPlugin {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
     return this.janus.transaction(message, payload, replyType);
-  }
+  };
 
-  join(roomId, user) {
+  join = (roomId, user) => {
     this.roomId = roomId;
     const body = {
       request: 'join',
@@ -84,9 +80,9 @@ export class PublisherPlugin {
           reject(err);
         });
     });
-  }
+  };
 
-  leave() {
+  leave = () => {
     if (this.roomId) {
       const body = { request: 'leave', room: this.roomId };
       return new Promise((resolve, reject) => {
@@ -103,9 +99,9 @@ export class PublisherPlugin {
           });
       });
     }
-  }
+  };
 
-  async publish(stream) {
+  publish = async stream => {
     if (!stream) {
       throw new Error('Stream is null or undefined');
     }
@@ -150,9 +146,9 @@ export class PublisherPlugin {
 
     await this.sdpActions();
     return true;
-  }
+  };
 
-  async sdpActions() {
+  sdpActions = async () => {
     try {
       const offer = await this.pc.createOffer();
       logger.debug(NAMESPACE, 'Offer created', offer);
@@ -178,9 +174,9 @@ export class PublisherPlugin {
       logger.error(NAMESPACE, 'Failed to run sdpActions', error);
       throw error;
     }
-  }
+  };
 
-  mute(video, stream) {
+  mute = (video, stream) => {
     let videoTransceiver = null;
     let tr = this.pc.getTransceivers();
     if (tr && tr.length > 0) {
@@ -207,9 +203,9 @@ export class PublisherPlugin {
       }
     }
     if (stream) this.configure();
-  }
+  };
 
-  setBitrate(bitrate) {
+  setBitrate = bitrate => {
     const body = { request: 'configure', bitrate };
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
@@ -224,9 +220,9 @@ export class PublisherPlugin {
           reject(err);
         });
     });
-  }
+  };
 
-  audio(stream) {
+  audio = stream => {
     let audioTransceiver = null;
     let tr = this.pc.getTransceivers();
     if (tr && tr.length > 0) {
@@ -251,9 +247,9 @@ export class PublisherPlugin {
       }
     }
     this.configure();
-  }
+  };
 
-  async configure(restart = false) {
+  configure = async (restart = false) => {
     const offer = await this.pc.createOffer({ iceRestart: restart });
     logger.debug(NAMESPACE, 'createOffer: ', offer);
     try {
@@ -284,9 +280,9 @@ export class PublisherPlugin {
       }
     }
     logger.debug(NAMESPACE, 'Configure respond success');
-  }
+  };
 
-  async waitForStable(attempts = 0) {
+  waitForStable = async (attempts = 0) => {
     if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
     }
@@ -302,9 +298,9 @@ export class PublisherPlugin {
     }
     await sleep(100);
     return await this.waitForStable(attempts + 1);
-  }
+  };
 
-  async iceRestart() {
+  iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
 
     if (this.iceRestartInProgress) {
@@ -332,9 +328,9 @@ export class PublisherPlugin {
       this.iceRestartInProgress = false;
       throw error;
     }
-  }
+  };
 
-  initPcEvents() {
+  initPcEvents = () => {
     this.pc.addEventListener('connectionstatechange', () => {
       logger.info(
         NAMESPACE,
@@ -391,16 +387,16 @@ export class PublisherPlugin {
         logger.error(NAMESPACE, 'ICE candidate error', e);
       }
     });
-  }
+  };
 
-  success(janus, janusHandleId) {
+  success = (janus, janusHandleId) => {
     this.janus = janus;
     this.janusHandleId = janusHandleId;
 
     return this;
-  }
+  };
 
-  onmessage(data) {
+  onmessage = data => {
     logger.debug(NAMESPACE, 'onmessage: ', data);
     if (data?.publishers) {
       logger.info(NAMESPACE, 'New feed enter: ', data.publishers[0]);
@@ -433,43 +429,43 @@ export class PublisherPlugin {
       logger.debug(NAMESPACE, 'stopped talking: ', data.id);
       this.talkEvent(data.id, false);
     }
-  }
+  };
 
-  oncleanup() {
+  oncleanup = () => {
     logger.info(NAMESPACE, '- oncleanup - ');
     // PeerConnection with the plugin closed, clean the UI
     // The plugin handle is still valid so we can create a new one
-  }
+  };
 
-  detached() {
+  detached = () => {
     logger.info(NAMESPACE, '- detached - ');
     // Connection with the plugin closed, get rid of its features
     // The plugin handle is not valid anymore
-  }
+  };
 
-  hangup() {
+  hangup = () => {
     logger.info(NAMESPACE, '- hangup - ', this.janus);
     //this.detach();
-  }
+  };
 
-  slowLink(uplink, lost, mid) {
+  slowLink = (uplink, lost, mid) => {
     const direction = uplink ? 'sending' : 'receiving';
     logger.info(
       NAMESPACE,
       `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
     //this.emit('slowlink')
-  }
+  };
 
-  mediaState(media, on) {
+  mediaState = (media, on) => {
     logger.info(
       NAMESPACE,
       `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
     //this.emit('mediaState', medium, on)
-  }
+  };
 
-  webrtcState(isReady) {
+  webrtcState = isReady => {
     logger.info(
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
@@ -477,9 +473,9 @@ export class PublisherPlugin {
     if (this.pc && !isReady) {
       useInRoomStore.getState().restartRoom();
     }
-  }
+  };
 
-  detach() {
+  detach = () => {
     if (this.pc) {
       this.pc.getTransceivers().forEach(transceiver => {
         if (transceiver) {
@@ -499,5 +495,5 @@ export class PublisherPlugin {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
-  }
+  };
 }

@@ -27,18 +27,13 @@ export class StreamingPlugin {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.init = this.init.bind(this);
-    this.transaction = this.transaction.bind(this);
-    this.iceRestart = this.iceRestart.bind(this);
-    this.mediaState = this.mediaState.bind(this);
-    this.webrtcState = this.webrtcState.bind(this);
 
     this.initPcEvents();
 
-    addConnectionListener(this.id, () => {
+    addConnectionListener(this.id, async () => {
       try {
         logger.info(NAMESPACE, 'Connection listener called');
-        this.iceRestart();
+        await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
         useInRoomStore.getState().restartRoom();
@@ -46,11 +41,11 @@ export class StreamingPlugin {
     });
   }
 
-  getPluginName() {
+  getPluginName = () => {
     return this.pluginName;
-  }
+  };
 
-  initPcEvents() {
+  initPcEvents = () => {
     logger.debug(NAMESPACE, 'initPcEvents');
 
     this.pc.addEventListener('track', e => {
@@ -95,9 +90,9 @@ export class StreamingPlugin {
       const iceState = this.pc?.iceConnectionState;
       logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
     });
-  }
+  };
 
-  async transaction(message, additionalFields, replyType) {
+  transaction = async (message, additionalFields, replyType) => {
     logger.debug(
       NAMESPACE,
       'transaction: ',
@@ -114,9 +109,9 @@ export class StreamingPlugin {
     }
 
     return this.janus.transaction(message, payload, replyType);
-  }
+  };
 
-  async init(id) {
+  init = async id => {
     logger.info(NAMESPACE, 'watch: ', id);
     this.streamId = id;
     const body = { request: 'watch', id };
@@ -128,9 +123,9 @@ export class StreamingPlugin {
       throw new Error('No JSEP received');
     }
     await this.sdpExchange(json.jsep);
-  }
+  };
 
-  async waitForStable(attempts = 0) {
+  waitForStable = async (attempts = 0) => {
     logger.debug(
       NAMESPACE,
       'waitForStable: ',
@@ -149,9 +144,9 @@ export class StreamingPlugin {
     await sleep(100);
     logger.debug(NAMESPACE, 'waitForStable loop: ', this.pc?.connectionState);
     return this.waitForStable(attempts + 1);
-  }
+  };
 
-  async iceRestart() {
+  iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
 
     if (this.iceRestartInProgress) {
@@ -196,9 +191,9 @@ export class StreamingPlugin {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useInRoomStore.getState().restartRoom();
     }
-  }
+  };
 
-  async sdpExchange(jsep) {
+  sdpExchange = async jsep => {
     logger.debug(NAMESPACE, 'sdpExchange: ', jsep);
     const sessionDescription = new RTCSessionDescription(jsep);
     await this.pc.setRemoteDescription(sessionDescription);
@@ -209,9 +204,9 @@ export class StreamingPlugin {
     );
     await this.pc.setLocalDescription(answer);
     await this.start(answer);
-  }
+  };
 
-  async start(jsep) {
+  start = async jsep => {
     logger.debug(NAMESPACE, 'start: ', jsep);
     const body = { request: 'start' };
     const message = { body };
@@ -228,9 +223,9 @@ export class StreamingPlugin {
     }
 
     return result;
-  }
+  };
 
-  stop() {
+  stop = () => {
     logger.debug(NAMESPACE, 'stop');
     const body = { request: 'stop' };
     return this.transaction('message', { body }, 'event')
@@ -246,9 +241,9 @@ export class StreamingPlugin {
         );
         throw err;
       });
-  }
+  };
 
-  switch(id) {
+  switch = id => {
     logger.debug(NAMESPACE, 'switch: ', id);
     const body = { request: 'switch', id };
     return this.transaction('message', { body }, 'event')
@@ -260,57 +255,58 @@ export class StreamingPlugin {
         logger.error(NAMESPACE, 'cannot switch stream', err);
         throw err;
       });
-  }
-  success(janus, janusHandleId) {
+  };
+
+  success = (janus, janusHandleId) => {
     this.janus = janus;
     this.janusHandleId = janusHandleId;
     return this;
-  }
+  };
 
-  error(cause) {
+  error = cause => {
     logger.error(NAMESPACE, 'Error in streaming plugin:', cause);
-  }
+  };
 
-  onmessage(data) {
+  onmessage = data => {
     logger.debug(NAMESPACE, 'Received message:', data);
-  }
+  };
 
-  oncleanup() {
+  oncleanup = () => {
     logger.debug(NAMESPACE, 'Cleanup called');
-  }
+  };
 
-  detached() {
+  detached = () => {
     logger.debug(NAMESPACE, 'Detached from plugin');
-  }
+  };
 
-  hangup() {
+  hangup = () => {
     logger.debug(NAMESPACE, 'Hangup called');
     //useInRoomStore.getState().restartRoom();
-  }
+  };
 
-  slowLink(uplink, lost, mid) {
+  slowLink = (uplink, lost, mid) => {
     logger.warn(NAMESPACE, 'SlowLink detected:', {
       uplink,
       lost,
       mid,
     });
-  }
+  };
 
-  mediaState(media, on) {
+  mediaState = (media, on) => {
     logger.info(
       NAMESPACE,
       `mediaState: Janus ${on ? 'start' : 'stop'} ${media}`
     );
-  }
+  };
 
-  webrtcState(isReady) {
+  webrtcState = isReady => {
     logger.info(
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-  }
+  };
 
-  detach() {
+  detach = () => {
     logger.debug(NAMESPACE, 'Detach called');
     if (this.janus) {
       if (this.pc) {
@@ -330,5 +326,5 @@ export class StreamingPlugin {
       this.janus = null;
     }
     return Promise.resolve();
-  }
+  };
 }

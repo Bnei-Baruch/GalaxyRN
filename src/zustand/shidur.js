@@ -253,7 +253,7 @@ export const useShidurStore = create((set, get) => ({
       const audioKey = await getAudioKey();
       audio = getOptionByKey(audioKey);
     }
-    logger.debug(NAMESPACE, `initMedias video: ${video}, audio: ${audio} `);
+    logger.debug(NAMESPACE, `initMedias audio: ${JSON.stringify(audio)} `);
     set({ video, audio });
   },
 
@@ -296,6 +296,9 @@ export const useShidurStore = create((set, get) => ({
           trlAudioJanus.onTrack = stream => {
             logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
             cleanStream(trlAudioStream);
+            trlAudioStream
+              ?.getAudioTracks()
+              ?.forEach(track => (track.enabled = false));
             trlAudioStream = stream;
           };
           await initStream(janus, id, trlAudioJanus);
@@ -394,6 +397,7 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'Switch audio stream back');
       audioStream?.getAudioTracks().forEach(track => track._setVolume(0.8));
     }
+    logger.debug(NAMESPACE, 'Switch trl stream back', isOnAir);
     trlAudioStream
       ?.getAudioTracks()
       ?.forEach(track => (track.enabled = isOnAir));
