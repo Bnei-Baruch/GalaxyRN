@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import ConnectionNotStable from '../../components/ConnectionNotStable';
 import { Quads } from '../../shidur/Quads';
+import Shidur from '../../shidur/Shidur';
 import { useInitsStore } from '../../zustand/inits';
 import { useSettingsStore } from '../../zustand/settings';
 import { useShidurStore } from '../../zustand/shidur';
@@ -15,15 +16,15 @@ const RoomLayout = () => {
   const { isShidur, showGroups, isFullscreen } = useSettingsStore();
   const { cleanJanus, initJanus, initMedias } = useShidurStore();
 
-  // useEffect(() => {
-  //   initMedias();
-  //   initJanus();
-  //   return () => {
-  //     cleanJanus();
-  //   };
-  // }, []);
+  useEffect(() => {
+    initMedias();
+    initJanus();
+    return () => {
+      cleanJanus();
+    };
+  }, []);
 
-  const shidur = null; //isShidur && <Shidur />;
+  const shidur = isShidur && <Shidur />;
   const quads = showGroups && <Quads />;
   const members = <Feeds key="members" />;
 
