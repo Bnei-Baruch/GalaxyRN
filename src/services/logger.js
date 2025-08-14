@@ -28,8 +28,11 @@ class Logger {
     return (
       //tag === 'Shidur' || tag === 'Inits' || tag === 'CallsBridge'
       // ||tag === 'Settings'
-      // || tag === 'Api'
-      tag !== 'SelectDeviceBtn'
+      //tag === 'StreamingPlugin'
+      //tag === 'JanusMqtt' ||
+      //tag === 'Mqtt' ||
+      //tag === 'Shidur'
+      true
     );
   }
 

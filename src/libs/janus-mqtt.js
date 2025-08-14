@@ -31,7 +31,7 @@ export class JanusMqtt {
 
   async init(token) {
     this.token = token;
-    logger.debug(NAMESPACE, 'janus-mqtt init this.user', this.user);
+    logger.debug(NAMESPACE, 'init this.user', this.user);
     try {
       await mqtt.sub(this.rxTopic + '/' + this.user.id, 0);
       await mqtt.sub(this.rxTopic, 0);
@@ -40,14 +40,14 @@ export class JanusMqtt {
       logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
       throw error;
     }
-    logger.debug(NAMESPACE, 'janus-mqtt init this.srv', this.srv);
+    logger.debug(NAMESPACE, 'init this.srv', this.srv);
     mqtt.mq.on(this.srv, this.onMessage);
 
     const transaction = randomString(12);
     const msg = { janus: 'create', transaction, token };
 
     this.connect = () => {
-      logger.debug(NAMESPACE, 'janus-mqtt connect', this.isJanusInitialized);
+      logger.debug(NAMESPACE, 'connect', this.isJanusInitialized);
       this.isConnected = true;
       if (this.isJanusInitialized) {
         return;
@@ -94,12 +94,12 @@ export class JanusMqtt {
   }
 
   disconnect(json) {
-    logger.debug(NAMESPACE, 'janus-mqtt disconnect', json);
+    logger.debug(NAMESPACE, 'disconnect', json);
     this._cleanupTransactions();
   }
 
   attach(plugin) {
-    logger.debug(NAMESPACE, 'janus-mqtt attach', plugin);
+    logger.debug(NAMESPACE, 'attach', plugin);
     const name = plugin.getPluginName();
     return this.transaction(
       'attach',
@@ -119,7 +119,7 @@ export class JanusMqtt {
   }
 
   destroy() {
-    logger.debug(NAMESPACE, 'janus-mqtt destroy');
+    logger.debug(NAMESPACE, 'destroy');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
       return Promise.resolve();
@@ -183,17 +183,10 @@ export class JanusMqtt {
   }
 
   transaction(type, payload, replyType = 'ack', timeoutMs) {
-    logger.debug(
-      NAMESPACE,
-      'janus-mqtt transaction',
-      type,
-      payload,
-      replyType,
-      timeoutMs
-    );
+    logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
     const transactionId = randomString(12);
     return new Promise((resolve, reject) => {
-      logger.debug(NAMESPACE, 'janus-mqtt transaction promise', transactionId);
+      logger.debug(NAMESPACE, 'transaction promise', transactionId);
       if (!this.isConnected || !netIsConnected()) {
         reject(new Error('Janus is not connected'));
         return;
@@ -233,7 +226,7 @@ export class JanusMqtt {
             () => {
               logger.debug(
                 NAMESPACE,
-                'janus-mqtt transaction timeout',
+                'transaction timeout',
                 this.transactions[transactionId]
               );
               // Clean up transaction on timeout
@@ -250,7 +243,7 @@ export class JanusMqtt {
 
         logger.debug(
           NAMESPACE,
-          'janus-mqtt transaction request',
+          'transaction request',
           Object.keys(this.transactions)
         );
         // Check MQTT connection
@@ -311,7 +304,12 @@ export class JanusMqtt {
   }
 
   getTransaction(json, ignoreReplyType = false) {
-    logger.debug(NAMESPACE, 'janus-mqtt getTransaction', json, ignoreReplyType);
+    logger.debug(
+      NAMESPACE,
+      'getTransaction',
+      json?.plugindata,
+      ignoreReplyType
+    );
     const type = json.janus;
     const transactionId = json.transaction;
     if (
@@ -327,7 +325,7 @@ export class JanusMqtt {
   }
 
   onClose() {
-    logger.debug(NAMESPACE, 'janus-mqtt onClose');
+    logger.debug(NAMESPACE, 'onClose');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
       return;
@@ -338,7 +336,7 @@ export class JanusMqtt {
   }
 
   _cleanupPlugins() {
-    logger.debug(NAMESPACE, 'janus-mqtt _cleanupPlugins');
+    logger.debug(NAMESPACE, '_cleanupPlugins');
     const arr = [];
     Object.keys(this.pluginHandles).forEach(pluginId => {
       const plugin = this.pluginHandles[pluginId];
@@ -385,7 +383,7 @@ export class JanusMqtt {
   }
 
   async _cleanupTransactions() {
-    logger.debug(NAMESPACE, 'janus-mqtt _cleanupTransactions');
+    logger.debug(NAMESPACE, '_cleanupTransactions');
     Object.keys(this.transactions).forEach(transactionId => {
       const transaction = this.transactions[transactionId];
       if (transaction.reject) {
@@ -418,17 +416,11 @@ export class JanusMqtt {
     try {
       json = JSON.parse(message);
     } catch (err) {
-      logger.error(
-        NAMESPACE,
-        'Cannot parse message',
-        message?.data || message || 'undefined',
-        err
-      );
+      logger.error(NAMESPACE, 'Cannot parse message', message, err);
       return;
     }
 
     logger.debug(NAMESPACE, 'On message: ', json, tD);
-    const { session_id, janus, data, jsep } = json;
 
     if (tD === 'status' && json.online) {
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Online`);
@@ -437,6 +429,7 @@ export class JanusMqtt {
     }
 
     if (tD === 'status' && !json.online) {
+      logger.debug(NAMESPACE, 'status');
       this.isConnected = false;
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
       this.disconnect(json);
@@ -445,7 +438,11 @@ export class JanusMqtt {
       return;
     }
 
+    const { janus } = json;
+    logger.debug(NAMESPACE, 'janus', janus);
+
     if (janus === 'keepalive') {
+      logger.debug(NAMESPACE, 'keepalive', json);
       // Do nothing
       return;
     }
@@ -517,6 +514,7 @@ export class JanusMqtt {
     }
 
     if (janus === 'hangup') {
+      logger.debug(NAMESPACE, 'hangup');
       // A plugin asked the core to hangup a PeerConnection on one of our handles
       const sender = json.sender;
       if (!sender) {
@@ -548,6 +546,7 @@ export class JanusMqtt {
     }
 
     if (janus === 'media') {
+      logger.debug(NAMESPACE, 'media');
       // Media started/stopped flowing
       const sender = json.sender;
       if (!sender) {
@@ -567,6 +566,7 @@ export class JanusMqtt {
     }
 
     if (janus === 'slowlink') {
+      logger.debug(NAMESPACE, 'slowlink');
       // Trouble uplink or downlink
       logger.debug(
         NAMESPACE,

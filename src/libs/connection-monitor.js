@@ -157,5 +157,6 @@ export const removeConnectionMonitor = () => {
 };
 
 export const netIsConnected = () => {
+  logger.debug(NAMESPACE, 'netIsConnected', currentState, mqtt.mq.connected);
   return currentState === NET_INFO_STATE_CONNECTED && mqtt.mq.connected;
 };

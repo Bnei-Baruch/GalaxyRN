@@ -1,5 +1,4 @@
 import { STUN_SRV_GXY } from '@env';
-import { EventEmitter } from 'events';
 import {
   MediaStream,
   RTCPeerConnection,
@@ -15,9 +14,8 @@ import {
 
 const NAMESPACE = 'StreamingPlugin';
 
-export class StreamingPlugin extends EventEmitter {
+export class StreamingPlugin {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
-    super();
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
@@ -29,12 +27,22 @@ export class StreamingPlugin extends EventEmitter {
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
-    this.watch = this.watch.bind(this);
+    this.init = this.init.bind(this);
     this.transaction = this.transaction.bind(this);
     this.iceRestart = this.iceRestart.bind(this);
+    this.mediaState = this.mediaState.bind(this);
+    this.webrtcState = this.webrtcState.bind(this);
 
-    addConnectionListener(NAMESPACE, () => {
-      this.watch(this.streamId, true);
+    this.initPcEvents();
+
+    addConnectionListener(this.id, () => {
+      try {
+        logger.info(NAMESPACE, 'Connection listener called');
+        this.iceRestart();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error in connection listener', error);
+        useInRoomStore.getState().restartRoom();
+      }
     });
   }
 
@@ -42,7 +50,54 @@ export class StreamingPlugin extends EventEmitter {
     return this.pluginName;
   }
 
-  transaction(message, additionalFields, replyType) {
+  initPcEvents() {
+    logger.debug(NAMESPACE, 'initPcEvents');
+
+    this.pc.addEventListener('track', e => {
+      const { track } = e;
+      logger.info(NAMESPACE, 'track: ', track);
+      if (track.kind === 'audio' || track.kind === 'video') {
+        const stream = new MediaStream([track]);
+        this.onTrack(stream);
+      }
+    });
+
+    this.pc.addEventListener('icecandidate', e => {
+      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
+
+      try {
+        let candidate = { completed: true };
+        const _candidate = e.candidate;
+        if (
+          !_candidate ||
+          _candidate.candidate.indexOf('endOfCandidates') > 0
+        ) {
+          logger.debug(NAMESPACE, 'End of candidates');
+        } else {
+          // JSON.stringify doesn't work on some WebRTC objects anymore
+          // See https://code.google.com/p/chromium/issues/detail?id=467366
+          candidate = {
+            candidate: _candidate.candidate,
+            sdpMid: _candidate.sdpMid,
+            sdpMLineIndex: _candidate.sdpMLineIndex,
+          };
+        }
+
+        if (candidate) {
+          return this.transaction('trickle', { candidate });
+        }
+      } catch (e) {
+        logger.error(NAMESPACE, 'ICE candidate error', e);
+      }
+    });
+
+    this.pc.addEventListener('iceconnectionstatechange', () => {
+      const iceState = this.pc?.iceConnectionState;
+      logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
+    });
+  }
+
+  async transaction(message, additionalFields, replyType) {
     logger.debug(
       NAMESPACE,
       'transaction: ',
@@ -55,82 +110,33 @@ export class StreamingPlugin extends EventEmitter {
     });
 
     if (!this.janus) {
-      return Promise.reject(new Error('JanusPlugin is not connected'));
+      throw new Error('JanusPlugin is not connected');
     }
 
-    return this.janus.transaction(message, payload, replyType).then(r => {
-      logger.debug(NAMESPACE, 'janus transaction response: ', r);
-      return r;
-    });
+    return this.janus.transaction(message, payload, replyType);
   }
 
-  watch(id, restart = false) {
-    logger.info(NAMESPACE, 'watch: ', id, restart);
+  async init(id) {
+    logger.info(NAMESPACE, 'watch: ', id);
     this.streamId = id;
-    const body = { request: 'watch', id, restart };
-    return new Promise((resolve, reject) => {
-      if (!this.janus) {
-        logger.error(
-          NAMESPACE,
-          'Cannot watch stream - janus connection is not initialized'
-        );
-        return reject(new Error('Janus connection not initialized'));
-      }
-      this.transaction('message', { body }, 'event')
-        .then(param => {
-          logger.debug(NAMESPACE, 'message from watch: ', param);
-          if (!param) {
-            logger.error(NAMESPACE, 'Empty response from transaction');
-            return reject(new Error('Empty transaction response'));
-          }
-
-          logger.debug(NAMESPACE, 'watch: ', param);
-          const { json } = param;
-
-          let audioTransceiver = null,
-            videoTransceiver = null;
-          let transceivers = this.pc.getTransceivers();
-          if (transceivers && transceivers.length > 0) {
-            for (let t of transceivers) {
-              if (t?.receiver?.track?.kind === 'audio') {
-                if (audioTransceiver?.setDirection) {
-                  audioTransceiver.setDirection('recvonly');
-                }
-                continue;
-              }
-              if (t?.receiver?.track?.kind === 'video') {
-                if (videoTransceiver?.setDirection) {
-                  videoTransceiver.setDirection('recvonly');
-                }
-                continue;
-              }
-            }
-          }
-
-          if (json?.jsep) {
-            logger.debug(NAMESPACE, 'sdp: ', json);
-            try {
-              this.sdpExchange(json.jsep);
-            } catch (error) {
-              logger.error(NAMESPACE, 'Error in SDP exchange', error);
-              return reject(error);
-            }
-          } else if (!restart) {
-            logger.warn(NAMESPACE, 'No JSEP received');
-          }
-
-          if (restart) return;
-
-          this.initPcEvents(resolve);
-        })
-        .catch(err => {
-          logger.error(NAMESPACE, 'Error watching stream', err);
-          reject(err);
-        });
-    });
+    const body = { request: 'watch', id };
+    const result = await this.transaction('message', { body }, 'event');
+    logger.debug(NAMESPACE, 'init: ', result);
+    const { json } = result || {};
+    if (!json?.jsep) {
+      logger.error(NAMESPACE, 'No JSEP received');
+      throw new Error('No JSEP received');
+    }
+    await this.sdpExchange(json.jsep);
   }
 
   async waitForStable(attempts = 0) {
+    logger.debug(
+      NAMESPACE,
+      'waitForStable: ',
+      this.pc?.connectionState,
+      this.pc?.signalingState
+    );
     if (attempts > 30) {
       throw new Error('Failed to wait for stable state');
     }
@@ -141,7 +147,8 @@ export class StreamingPlugin extends EventEmitter {
       return true;
     }
     await sleep(100);
-    return await this.waitForStable(attempts + 1);
+    logger.debug(NAMESPACE, 'waitForStable loop: ', this.pc?.connectionState);
+    return this.waitForStable(attempts + 1);
   }
 
   async iceRestart() {
@@ -169,12 +176,12 @@ export class StreamingPlugin extends EventEmitter {
     }
 
     try {
+      logger.debug(NAMESPACE, 'Restarting ICE');
       this.pc.restartIce();
-
       const body = { request: 'watch', id: this.streamId, restart: true };
       const result = await this.transaction('message', { body }, 'event');
 
-      logger.debug(NAMESPACE, 'ICE restart response: ', result);
+      logger.debug(NAMESPACE, 'ICE restart response: ', result?.plugindata);
       const { json } = result || {};
 
       if (json?.jsep) {
@@ -215,10 +222,12 @@ export class StreamingPlugin extends EventEmitter {
     let result = null;
     try {
       result = await this.transaction('message', message, 'event');
+      logger.debug(NAMESPACE, 'start response: ', result);
     } catch (error) {
       logger.error(NAMESPACE, 'cannot start stream', error);
       useInRoomStore.getState().restartRoom();
     }
+
     return result;
   }
 
@@ -249,60 +258,10 @@ export class StreamingPlugin extends EventEmitter {
         return { data, json };
       })
       .catch(err => {
-        logger.error(
-          NAMESPACE,
-          'StreamingJanusPlugin, cannot start stream',
-          err
-        );
+        logger.error(NAMESPACE, 'cannot switch stream', err);
         throw err;
       });
   }
-
-  initPcEvents(resolve) {
-    logger.debug(NAMESPACE, 'initPcEvents');
-
-    this.pc.addEventListener('icecandidate', e => {
-      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
-
-      try {
-        let candidate = { completed: true };
-        const _candidate = e.candidate;
-        if (
-          !_candidate ||
-          _candidate.candidate.indexOf('endOfCandidates') > 0
-        ) {
-          logger.debug(NAMESPACE, 'End of candidates');
-        } else {
-          // JSON.stringify doesn't work on some WebRTC objects anymore
-          // See https://code.google.com/p/chromium/issues/detail?id=467366
-          candidate = {
-            candidate: _candidate.candidate,
-            sdpMid: _candidate.sdpMid,
-            sdpMLineIndex: _candidate.sdpMLineIndex,
-          };
-        }
-
-        if (candidate) {
-          return this.transaction('trickle', { candidate });
-        }
-      } catch (e) {
-        logger.error(NAMESPACE, 'ICE candidate error', e);
-      }
-    });
-
-    this.pc.addEventListener('track', e => {
-      logger.info(NAMESPACE, 'Got track: ', e);
-      const stream = new MediaStream([e.track]);
-      logger.debug(NAMESPACE, 'StreamingPlugin stream from track', stream);
-      resolve(stream);
-    });
-
-    this.pc.addEventListener('iceconnectionstatechange', () => {
-      const iceState = this.pc?.iceConnectionState;
-      logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
-    });
-  }
-
   success(janus, janusHandleId) {
     this.janus = janus;
     this.janusHandleId = janusHandleId;
@@ -327,6 +286,7 @@ export class StreamingPlugin extends EventEmitter {
 
   hangup() {
     logger.debug(NAMESPACE, 'Hangup called');
+    //useInRoomStore.getState().restartRoom();
   }
 
   slowLink(uplink, lost, mid) {
@@ -338,16 +298,17 @@ export class StreamingPlugin extends EventEmitter {
   }
 
   mediaState(media, on) {
-    logger.debug(NAMESPACE, 'Media state changed:', {
-      media,
-      on,
-    });
+    logger.info(
+      NAMESPACE,
+      `mediaState: Janus ${on ? 'start' : 'stop'} ${media}`
+    );
   }
 
   webrtcState(isReady) {
-    logger.debug(NAMESPACE, 'WebRTC state changed:', {
-      isReady,
-    });
+    logger.info(
+      NAMESPACE,
+      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
+    );
   }
 
   detach() {
@@ -357,8 +318,7 @@ export class StreamingPlugin extends EventEmitter {
         this.pc.close();
         this.pc = null;
       }
-      removeConnectionListener(NAMESPACE);
-      this.removeAllListeners();
+      removeConnectionListener(this.id);
 
       // Store janus reference before clearing
       const janusRef = this.janus;

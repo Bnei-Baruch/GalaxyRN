@@ -50,32 +50,29 @@ let trlAudioStream = null;
 
 let config = null;
 
-const initStream = async (_janus, media) => {
+const initStream = async (_janus, media, _janusStream) => {
   if (!_janus) return [];
   try {
-    const janusStream = new StreamingPlugin(config?.iceServers);
-    janusStream.onStatus = async (srv, status) => {
+    _janusStream.onStatus = async (srv, status) => {
       logger.warn(NAMESPACE, 'janus status: ', status);
       if (status === 'offline') {
         useInRoomStore.getState().restartRoom();
       }
     };
-    const _data = await _janus.attach(janusStream);
+    const _data = await _janus.attach(_janusStream);
     logger.debug(NAMESPACE, 'attach media', _data);
-    const stream = await janusStream.watch(media);
-    return [stream, janusStream];
+    await _janusStream.init(media);
   } catch (error) {
-    logger.error(
-      NAMESPACE,
-      'stream error',
-      error?.message || JSON.stringify(error) || 'undefined'
-    );
-    return [];
+    logger.error(NAMESPACE, 'stream error', error);
+    return null;
   }
 };
 
 const cleanStream = stream =>
-  stream?.getTracks().forEach(track => track.stop());
+  stream?.getTracks().forEach(track => {
+    track.stop();
+    track.enabled = false;
+  });
 
 const getOptionByKey = key => {
   const _type = key.split('_')[0];
@@ -273,24 +270,35 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, `initShidur video: ${video}, audio: ${audio} `);
 
       if (!videoJanus && video !== NO_VIDEO_OPTION_VALUE) {
-        const [stream, janusStream] = await initStream(janus, video);
-        videoStream = stream;
-        videoJanus = janusStream;
+        videoJanus = new StreamingPlugin(config?.iceServers);
+        videoJanus.onTrack = stream => {
+          logger.info(NAMESPACE, 'videoStream got track: ', stream);
+          cleanStream(videoStream);
+          videoStream = stream;
+        };
+        await initStream(janus, video, videoJanus);
       }
       if (!audioJanus) {
-        const [stream, janusStream] = await initStream(janus, audio.value);
-        audioStream = stream;
-        audioJanus = janusStream;
+        audioJanus = new StreamingPlugin(config?.iceServers);
+        audioJanus.onTrack = stream => {
+          logger.info(NAMESPACE, 'audioStream got track: ', stream);
+          cleanStream(audioStream);
+          audioStream = stream;
+        };
+        await initStream(janus, audio.value, audioJanus);
       }
       if (!trlAudioJanus) {
         logger.debug(NAMESPACE, 'init trlAudioJanus');
         const audioKey = await getFromStorage('audio', null);
         const id = trllang[audioKey?.split('_')[1]];
         if (id) {
-          const [stream, janusStream] = await initStream(janus, id);
-          stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
-          trlAudioStream = stream;
-          trlAudioJanus = janusStream;
+          trlAudioJanus = new StreamingPlugin(config?.iceServers);
+          trlAudioJanus.onTrack = stream => {
+            logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
+            cleanStream(trlAudioStream);
+            trlAudioStream = stream;
+          };
+          await initStream(janus, id, trlAudioJanus);
         }
       }
     } catch (error) {
@@ -343,7 +351,7 @@ export const useShidurStore = create((set, get) => ({
       return;
     }
 
-    if (!trlAudioJanus) {
+    if (!trlAudioStream || !audioStream) {
       logger.debug(
         NAMESPACE,
         'look like we got talk event before stream init finished'
@@ -409,10 +417,15 @@ export const useShidurStore = create((set, get) => ({
 
   initQuad: async () => {
     if (quadStream) return;
-    const [stream, janusStream] = await initStream(janus, 102);
-    set({ quadUrl: stream.toURL(), isQuad: true });
-    quadStream = stream;
-    quadJanus = janusStream;
+    quadJanus = new StreamingPlugin(config?.iceServers);
+    quadJanus.onTrack = stream => {
+      logger.info(NAMESPACE, 'quadStream got track: ', stream);
+      cleanStream(quadStream);
+      quadStream = stream;
+      set({ quadUrl: quadStream.toURL() });
+    };
+    await initStream(janus, 102, quadJanus);
+    set({ isQuad: true });
   },
   cleanQuads: (updateState = true) => {
     cleanStream(quadStream);

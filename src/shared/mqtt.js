@@ -243,8 +243,16 @@ class MqttMsg {
   end = async () => {
     this.isConnected = false;
     if (!this.mq) return;
-    this.mq.removeAllListeners();
-    await this.mq.endAsync();
+    try {
+      this.mq.removeAllListeners();
+    } catch (e) {
+      logger.error(NAMESPACE, 'end removeAllListeners', e);
+    }
+    try {
+      await this.mq.endAsync();
+    } catch (e) {
+      logger.error(NAMESPACE, 'endAsync error', e);
+    }
     this.mq = null;
     return true;
   };

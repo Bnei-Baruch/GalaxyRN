@@ -1,5 +1,4 @@
 import { STUN_SRV_GXY } from '@env';
-import { EventEmitter } from 'events';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString, sleep } from '../shared/tools';
@@ -11,9 +10,8 @@ import {
 
 const NAMESPACE = 'SubscriberPlugin';
 
-export class SubscriberPlugin extends EventEmitter {
+export class SubscriberPlugin {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
-    super();
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
@@ -28,9 +26,17 @@ export class SubscriberPlugin extends EventEmitter {
     this.configure = this.configure.bind(this);
     this.transaction = this.transaction.bind(this);
     this.iceRestart = this.iceRestart.bind(this);
+    this.mediaState = this.mediaState.bind(this);
+    this.webrtcState = this.webrtcState.bind(this);
 
-    addConnectionListener(NAMESPACE, () => {
-      this.iceRestart();
+    addConnectionListener(this.id, () => {
+      try {
+        logger.info(NAMESPACE, 'Connection listener called');
+        this.iceRestart();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error in connection listener', error);
+        useInRoomStore.getState().restartRoom();
+      }
     });
   }
 
@@ -54,72 +60,58 @@ export class SubscriberPlugin extends EventEmitter {
     if (!this.janus) {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
-    return this.janus.transaction(message, payload, replyType).then(r => {
-      logger.debug(
-        NAMESPACE,
-        'janus transaction response: ',
-        r,
-        this.janus.sessionId
-      );
-      return r;
-    });
+    return this.janus.transaction(message, payload, replyType);
   }
 
   async sub(subscription) {
     logger.debug(NAMESPACE, 'sub: ', subscription);
     const body = { request: 'subscribe', streams: subscription };
-    return new Promise((resolve, reject) => {
-      logger.debug(NAMESPACE, 'sub: ', body);
-      this.transaction('message', { body }, 'event')
-        .then(param => {
-          logger.info(NAMESPACE, 'Subscribe to: ', param);
-          const { data, json } = param;
+    logger.debug(NAMESPACE, 'sub: ', body);
+    try {
+      const param = await this.transaction('message', { body }, 'event');
+      logger.info(NAMESPACE, 'Subscribe to: ', param);
+      const { data, json } = param;
 
-          if (data?.videoroom === 'updated') {
-            logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate && this.onUpdate(data.streams);
-          }
+      if (data?.videoroom === 'updated') {
+        logger.info(NAMESPACE, 'Streams updated: ', data.streams);
+        this.onUpdate && this.onUpdate(data.streams);
+      }
 
-          if (json?.jsep) {
-            logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
-            this.handleJsep(json.jsep);
-          }
+      if (json?.jsep) {
+        logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
+        await this.handleJsep(json.jsep);
+      }
 
-          resolve(data);
-        })
-        .catch(err => {
-          logger.error(NAMESPACE, 'Subscribe to: ', err);
-          reject(err);
-        });
-    });
+      return data;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Subscribe to: ', error);
+      throw error;
+    }
   }
 
   async unsub(streams) {
     logger.info(NAMESPACE, 'Unsubscribe from streams: ', streams);
-    const body = { request: 'unsubscribe', streams };
-    return new Promise((resolve, reject) => {
-      this.transaction('message', { body }, 'event')
-        .then(param => {
-          logger.info(NAMESPACE, 'Unsubscribe from: ', param);
-          const { data, json } = param;
+    try {
+      const body = { request: 'unsubscribe', streams };
+      const param = await this.transaction('message', { body }, 'event');
+      logger.info(NAMESPACE, 'Unsubscribe from: ', param);
+      const { data, json } = param;
 
-          if (data?.videoroom === 'updated') {
-            logger.info(NAMESPACE, 'Streams updated: ', data.streams);
-            this.onUpdate && this.onUpdate(data.streams);
-          }
+      if (data?.videoroom === 'updated') {
+        logger.info(NAMESPACE, 'Streams updated: ', data.streams);
+        this.onUpdate && this.onUpdate(data.streams);
+      }
 
-          if (json?.jsep) {
-            logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
-            this.handleJsep(json.jsep);
-          }
+      if (json?.jsep) {
+        logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
+        await this.handleJsep(json.jsep);
+      }
 
-          resolve(data);
-        })
-        .catch(err => {
-          logger.error(NAMESPACE, 'Unsubscribe from: ', err);
-          reject(err);
-        });
-    });
+      return data;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Unsubscribe from: ', error);
+      throw error;
+    }
   }
 
   join(subscription, roomId) {
@@ -198,22 +190,19 @@ export class SubscriberPlugin extends EventEmitter {
       await this.waitForStable();
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
-      useInRoomStore.getState().restartRoom();
       this.iceRestartInProgress = false;
+      useInRoomStore.getState().restartRoom();
       return;
     }
 
-    this.pc.restartIce();
-
     try {
+      logger.debug(NAMESPACE, 'Restarting ICE');
       const body = { request: 'configure', restart: true };
-      const result = await this.transaction('message', { body }, 'event');
-
-      logger.debug(NAMESPACE, 'ICE restart response: ', result);
-      const { json } = result || {};
+      const { json } = await this.transaction('message', { body }, 'event');
+      logger.debug(NAMESPACE, 'ICE restart response');
 
       if (json?.jsep) {
-        this.handleJsep(json.jsep);
+        await this.handleJsep(json.jsep);
       }
       this.iceRestartInProgress = false;
     } catch (error) {
@@ -231,118 +220,69 @@ export class SubscriberPlugin extends EventEmitter {
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to set remote description', error);
     }
-    let answer;
     try {
-      answer = await this.pc.createAnswer();
-    } catch (error) {
-      logger.error(NAMESPACE, 'Failed to create answer', error);
-    }
-    logger.debug(NAMESPACE, 'Answer created', answer);
-    try {
+      const answer = await this.pc.createAnswer();
       const localDescription = await this.pc.setLocalDescription(answer);
-      logger.debug(NAMESPACE, 'Local description set', localDescription);
+      logger.debug(NAMESPACE, 'set answer', localDescription);
+      await this.start(answer);
     } catch (error) {
-      logger.error(NAMESPACE, 'Failed to set local description', error);
+      logger.error(NAMESPACE, 'Failed to set answer', error);
     }
-    this.start(answer);
   }
 
-  start(answer) {
+  async start(jsep) {
+    logger.debug(NAMESPACE, 'start', jsep);
     const body = { request: 'start', room: this.roomId };
-    return new Promise((resolve, reject) => {
-      const jsep = answer;
-      this.transaction('message', { body, jsep }, 'event')
-        .then(param => {
-          const { data, json } = param || {};
-          logger.info(NAMESPACE, 'start: ', param);
-          resolve();
-        })
-        .catch(err => {
-          logger.error(NAMESPACE, 'start', err, jsep);
-          reject(err);
-        });
-    });
+    try {
+      await this.transaction('message', { body, jsep }, 'event');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to start', error);
+    }
   }
 
   initPcEvents() {
     logger.debug(NAMESPACE, 'initPcEvents');
-    if (this.pc) {
-      this.pc.addEventListener('icecandidate', e => {
-        logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
-        let candidate = { completed: true };
-        if (
-          !e.candidate ||
-          e.candidate.candidate.indexOf('endOfCandidates') > 0
-        ) {
-          logger.debug(NAMESPACE, 'End of candidates');
-        } else {
-          // JSON.stringify doesn't work on some WebRTC objects anymore
-          // See https://code.google.com/p/chromium/issues/detail?id=467366
-          candidate = {
-            candidate: e.candidate.candidate,
-            sdpMid: e.candidate.sdpMid,
-            sdpMLineIndex: e.candidate.sdpMLineIndex,
-          };
-        }
-        if (candidate) {
-          return this.transaction('trickle', { candidate });
-        }
-      });
+    this.pc.addEventListener('icecandidate', e => {
+      logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
+      let candidate = { completed: true };
+      if (
+        !e.candidate ||
+        e.candidate.candidate.indexOf('endOfCandidates') > 0
+      ) {
+        logger.debug(NAMESPACE, 'End of candidates');
+      } else {
+        // JSON.stringify doesn't work on some WebRTC objects anymore
+        // See https://code.google.com/p/chromium/issues/detail?id=467366
+        candidate = {
+          candidate: e.candidate.candidate,
+          sdpMid: e.candidate.sdpMid,
+          sdpMLineIndex: e.candidate.sdpMLineIndex,
+        };
+      }
+      if (candidate) {
+        return this.transaction('trickle', { candidate });
+      }
+    });
 
-      this.pc.addEventListener('track', e => {
-        if (!e.streams[0]) return;
+    this.pc.addEventListener('track', e => {
+      if (!e.streams[0]) return;
 
-        this.onTrack && this.onTrack(e.track, e.streams[0], true);
-      });
+      this.onTrack && this.onTrack(e.track, e.streams[0], true);
+    });
 
-      // Добавляем мониторинг signaling state
-      this.pc.addEventListener('signalingstatechange', () => {
-        const signalingState = this.pc?.signalingState;
-        logger.info(NAMESPACE, 'Signaling state changed:', signalingState);
-      });
+    this.pc.addEventListener('signalingstatechange', () => {
+      const signalingState = this.pc?.signalingState;
+      logger.info(NAMESPACE, 'Signaling state changed:', signalingState);
+    });
 
-      this.pc.addEventListener('connectionstatechange', () => {
-        const connectionState = this.pc?.connectionState;
-        logger.info(NAMESPACE, 'Connection state changed:', connectionState);
-      });
-
-      this.pc.addEventListener('iceconnectionstatechange', () => {
-        const iceState = this.pc?.iceConnectionState;
-        const signalingState = this.pc?.signalingState;
-        logger.info(
-          NAMESPACE,
-          'ICE connection state changed:',
-          iceState,
-          'Signaling state:',
-          signalingState
-        );
-
-        // Автоматический ICE restart при проблемах с соединением
-        if (iceState === 'failed') {
-          logger.warn(NAMESPACE, 'ICE connection failed, attempting restart');
-          this.iceRestart().catch(error => {
-            logger.error(NAMESPACE, 'ICE restart after failure failed:', error);
-          });
-        } else if (iceState === 'disconnected') {
-          // Ждём немного перед рестартом, т.к. disconnected может быть временным
-          setTimeout(() => {
-            if (this.pc?.iceConnectionState === 'disconnected') {
-              logger.warn(
-                NAMESPACE,
-                'ICE connection still disconnected, attempting restart'
-              );
-              this.iceRestart().catch(error => {
-                logger.error(
-                  NAMESPACE,
-                  'ICE restart after disconnect failed:',
-                  error
-                );
-              });
-            }
-          }, 5000); // 5 секунд задержки
-        }
-      });
-    }
+    this.pc.addEventListener('connectionstatechange', () => {
+      const connectionState = this.pc?.connectionState;
+      logger.info(NAMESPACE, 'Connection state changed:', connectionState);
+    });
+    this.pc.addEventListener('iceconnectionstatechange', () => {
+      const iceState = this.pc?.iceConnectionState;
+      logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
+    });
   }
 
   success(janus, janusHandleId) {
@@ -354,7 +294,7 @@ export class SubscriberPlugin extends EventEmitter {
   }
 
   error(cause) {
-    logger.error(NAMESPACE, 'Subscriber plugin error', cause);
+    logger.error(NAMESPACE, 'plugin error', cause);
   }
 
   onmessage(data, json) {
@@ -384,7 +324,7 @@ export class SubscriberPlugin extends EventEmitter {
 
   hangup() {
     logger.info(NAMESPACE, '- hangup - ', this.janus);
-    this.detach();
+    //this.detach();
   }
 
   slowLink(uplink, lost, mid) {
@@ -421,9 +361,8 @@ export class SubscriberPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
-      removeConnectionListener(NAMESPACE);
+      removeConnectionListener(this.id);
       this.pc.close();
-      this.removeAllListeners();
       this.pc = null;
       this.janus = null;
     }

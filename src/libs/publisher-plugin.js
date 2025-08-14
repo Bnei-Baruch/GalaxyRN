@@ -1,5 +1,4 @@
 import { STUN_SRV_GXY } from '@env';
-import { EventEmitter } from 'events';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../shared/tools';
@@ -11,9 +10,8 @@ import {
 
 const NAMESPACE = 'PublisherPlugin';
 
-export class PublisherPlugin extends EventEmitter {
+export class PublisherPlugin {
   constructor(list = [{ urls: STUN_SRV_GXY }]) {
-    super();
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
@@ -28,9 +26,17 @@ export class PublisherPlugin extends EventEmitter {
     });
     this.configure = this.configure.bind(this);
     this.iceRestart = this.iceRestart.bind(this);
+    this.mediaState = this.mediaState.bind(this);
+    this.webrtcState = this.webrtcState.bind(this);
 
-    addConnectionListener(NAMESPACE, () => {
-      this.iceRestart();
+    addConnectionListener(this.id, () => {
+      try {
+        logger.info(NAMESPACE, 'Connection listener called');
+        this.iceRestart();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error in connection listener', error);
+        useInRoomStore.getState().restartRoom();
+      }
     });
   }
 
@@ -64,6 +70,7 @@ export class PublisherPlugin extends EventEmitter {
       ptype: 'publisher',
       display: JSON.stringify(user),
     };
+    //const metadata = useUserStore.getState().user;
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
@@ -161,10 +168,11 @@ export class PublisherPlugin extends EventEmitter {
       const body = { request: 'configure', video: true, audio: true };
       const result = await this.transaction('message', { body, jsep }, 'event');
       const { json, data } = result || {};
-      if (!json?.jsep) {
-        throw new Error('No JSEP in response', result);
+      if (json?.jsep) {
+        await this.pc.setRemoteDescription(json.jsep);
+      } else {
+        logger.warn(NAMESPACE, 'No JSEP in response', result);
       }
-      await this.pc.setRemoteDescription(json.jsep);
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to run sdpActions', error);
@@ -303,8 +311,8 @@ export class PublisherPlugin extends EventEmitter {
     }
 
     try {
+      logger.debug(NAMESPACE, 'Restarting ICE');
       this.pc.restartIce();
-
       const body = { request: 'configure', restart: true };
       const result = await this.transaction('message', { body }, 'event');
 
@@ -439,7 +447,7 @@ export class PublisherPlugin extends EventEmitter {
 
   hangup() {
     logger.info(NAMESPACE, '- hangup - ', this.janus);
-    this.detach();
+    //this.detach();
   }
 
   slowLink(uplink, lost, mid) {
@@ -477,9 +485,8 @@ export class PublisherPlugin extends EventEmitter {
           transceiver.stop();
         }
       });
-      removeConnectionListener(NAMESPACE);
+      removeConnectionListener(this.id);
       this.pc.close();
-      this.removeAllListeners();
       this.pc = null;
       this.janus = null;
     }
