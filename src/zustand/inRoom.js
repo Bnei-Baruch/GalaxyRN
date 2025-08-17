@@ -200,7 +200,7 @@ export const useInRoomStore = create((set, get) => ({
         get().setFeedIds();
 
         if (subs.length > 0) await subscriber.sub(subs);
-        if (unsubs.length > 0) await subscriber.unsub(subs);
+        if (unsubs.length > 0) await subscriber.unsub(unsubs);
 
         return;
       }
@@ -561,5 +561,12 @@ export const useInRoomStore = create((set, get) => ({
     if (params.length === 0) return Promise.resolve();
 
     return subscriber.unsub(params);
+  },
+  reconnectFeeds: async () => {
+    const { feedById } = get();
+    const ids = Object.keys(feedById);
+    logger.debug(NAMESPACE, 'reconnectFeeds ids', ids);
+    await get().deactivateFeedsVideos(ids);
+    await get().activateFeedsVideos(ids);
   },
 }));

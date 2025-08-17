@@ -204,7 +204,7 @@ export const useShidurStore = create((set, get) => ({
         }
       };
 
-      await janus.init(config.token);
+      await janus.init(config?.token);
       logger.debug(NAMESPACE, 'init janus ready');
       janusReady = true;
     } catch (error) {

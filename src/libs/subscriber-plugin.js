@@ -175,34 +175,24 @@ export class SubscriberPlugin {
 
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
+
     if (this.iceRestartInProgress) {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
       return;
     }
+
     this.iceRestartInProgress = true;
 
     try {
       await this.waitForStable();
-    } catch (error) {
-      logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
-      this.iceRestartInProgress = false;
-      useInRoomStore.getState().restartRoom();
-      return;
-    }
 
-    try {
-      logger.debug(NAMESPACE, 'Restarting ICE');
-      const body = { request: 'configure', restart: true };
-      const { json } = await this.transaction('message', { body }, 'event');
-      logger.debug(NAMESPACE, 'ICE restart response');
+      await this.configure();
 
-      if (json?.jsep) {
-        await this.handleJsep(json.jsep);
-      }
-      this.iceRestartInProgress = false;
+      logger.info(NAMESPACE, 'ICE restart completed successfully');
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useInRoomStore.getState().restartRoom();
+    } finally {
       this.iceRestartInProgress = false;
     }
   };
@@ -232,6 +222,19 @@ export class SubscriberPlugin {
       await this.transaction('message', { body, jsep }, 'event');
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to start', error);
+    }
+  };
+
+  fetchParticipants = async () => {
+    try {
+      logger.info(NAMESPACE, 'listparticipants run', this.roomId);
+      const body = { request: 'listparticipants', room: this.roomId };
+      const param = await this.transaction('message', { body }, 'event');
+      logger.info(NAMESPACE, 'listparticipants result: ', param);
+      return param?.data?.participants || [];
+    } catch (error) {
+      logger.error(NAMESPACE, 'Failed to list participants', error);
+      return [];
     }
   };
 
