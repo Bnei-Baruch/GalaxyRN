@@ -70,7 +70,7 @@ export class PublisherPlugin {
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
-          logger.info(NAMESPACE, 'join: ', param);
+          logger.info(NAMESPACE, 'join success');
           const { data, json } = param;
 
           if (data) resolve(data);
@@ -88,7 +88,7 @@ export class PublisherPlugin {
       return new Promise((resolve, reject) => {
         this.transaction('message', { body }, 'event')
           .then(param => {
-            logger.info(NAMESPACE, 'leave: ', param);
+            logger.info(NAMESPACE, 'leave success');
             const { data, json } = param;
 
             if (data) resolve(data);
@@ -167,7 +167,7 @@ export class PublisherPlugin {
       if (json?.jsep) {
         await this.pc.setRemoteDescription(json.jsep);
       } else {
-        logger.warn(NAMESPACE, 'No JSEP in response', result);
+        logger.warn(NAMESPACE, 'No JSEP in response');
       }
       return data;
     } catch (error) {
@@ -210,7 +210,7 @@ export class PublisherPlugin {
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
-          logger.info(NAMESPACE, 'set bitrate: ', param);
+          logger.info(NAMESPACE, 'set bitrate success');
           const { data, json } = param;
 
           if (data) resolve(data);
@@ -250,18 +250,26 @@ export class PublisherPlugin {
   };
 
   configure = async (restart = false) => {
-    const offer = await this.pc.createOffer({ iceRestart: restart });
-    logger.debug(NAMESPACE, 'createOffer: ', offer);
+    let offer = null;
     try {
+      offer = await this.pc.createOffer({ iceRestart: restart });
+      logger.debug(NAMESPACE, 'created offer', offer);
       await this.pc.setLocalDescription(offer);
       logger.debug(NAMESPACE, 'setLocalDescription: ', offer);
     } catch (error) {
       logger.error(NAMESPACE, 'setLocalDescription: ', error);
     }
 
+    // Apply the same SDP modification as in sdpActions for consistency
+    const modifiedSdp = offer.sdp.replace(
+      /profile-level-id=[a-f0-9]{6}/g,
+      'profile-level-id=42e01f'
+    );
+    const jsep = { type: offer.type, sdp: modifiedSdp };
+
     const message = {
       body: { request: 'configure', audio: true, video: true },
-      jsep: offer,
+      jsep: jsep,
     };
     if (restart) {
       message.body.restart = true;
@@ -269,7 +277,7 @@ export class PublisherPlugin {
 
     const param = await this.transaction('message', message, 'event');
 
-    logger.debug(NAMESPACE, 'Configure respond: ', param);
+    logger.debug(NAMESPACE, 'Configure respond');
     const { json } = param || {};
     if (json?.jsep) {
       try {
@@ -277,9 +285,10 @@ export class PublisherPlugin {
         logger.debug(NAMESPACE, 'setRemoteDescription success');
       } catch (error) {
         logger.error(NAMESPACE, 'setRemoteDescription: ', error);
+        throw new Error(`Failed to set remote description: ${error.message}`);
       }
     }
-    logger.debug(NAMESPACE, 'Configure respond success');
+    logger.debug(NAMESPACE, 'Configure successful');
   };
 
   waitForStable = async (attempts = 0) => {
@@ -326,7 +335,7 @@ export class PublisherPlugin {
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       this.iceRestartInProgress = false;
-      throw error;
+      useInRoomStore.getState().restartRoom();
     }
   };
 

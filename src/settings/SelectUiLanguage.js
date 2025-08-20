@@ -48,7 +48,7 @@ const SelectUiLanguage = () => {
 const styles = StyleSheet.create({
   container: {
     marginBottom: 15,
-    width: '100%',
+    flex: 1,
   },
   selected: {
     borderWidth: 1,

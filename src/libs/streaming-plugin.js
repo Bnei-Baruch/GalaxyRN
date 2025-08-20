@@ -6,7 +6,7 @@ import {
 } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString, sleep } from '../shared/tools';
-import { useInRoomStore } from '../zustand/inRoom';
+import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,
   removeConnectionListener,
@@ -36,7 +36,7 @@ export class StreamingPlugin {
         await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
-        useInRoomStore.getState().restartRoom();
+        useShidurStore.getState().restartShidur();
       }
     });
   }
@@ -116,7 +116,7 @@ export class StreamingPlugin {
     this.streamId = id;
     const body = { request: 'watch', id };
     const result = await this.transaction('message', { body }, 'event');
-    logger.debug(NAMESPACE, 'init: ', result);
+    logger.debug(NAMESPACE, 'init successful');
     const { json } = result || {};
     if (!json?.jsep) {
       logger.error(NAMESPACE, 'No JSEP received');
@@ -157,7 +157,7 @@ export class StreamingPlugin {
 
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
-      useInRoomStore.getState().restartRoom();
+      useShidurStore.getState().restartShidur();
       return;
     }
 
@@ -165,7 +165,7 @@ export class StreamingPlugin {
       await this.waitForStable();
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
-      useInRoomStore.getState().restartRoom();
+      useShidurStore.getState().restartShidur();
       this.iceRestartInProgress = false;
       return;
     }
@@ -175,7 +175,7 @@ export class StreamingPlugin {
       const body = { request: 'watch', id: this.streamId, restart: true };
       const result = await this.transaction('message', { body }, 'event');
 
-      logger.debug(NAMESPACE, 'ICE restart response: ', result?.plugindata);
+      logger.debug(NAMESPACE, 'ICE restart successful');
       const { json } = result || {};
 
       if (json?.jsep) {
@@ -189,7 +189,7 @@ export class StreamingPlugin {
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
-      useInRoomStore.getState().restartRoom();
+      useShidurStore.getState().restartShidur();
     }
   };
 
@@ -216,10 +216,10 @@ export class StreamingPlugin {
     let result = null;
     try {
       result = await this.transaction('message', message, 'event');
-      logger.debug(NAMESPACE, 'start response: ', result);
+      logger.debug(NAMESPACE, 'start successful');
     } catch (error) {
       logger.error(NAMESPACE, 'cannot start stream', error);
-      useInRoomStore.getState().restartRoom();
+      useShidurStore.getState().restartShidur();
     }
 
     return result;
@@ -228,33 +228,19 @@ export class StreamingPlugin {
   stop = () => {
     logger.debug(NAMESPACE, 'stop');
     const body = { request: 'stop' };
-    return this.transaction('message', { body }, 'event')
-      .then(({ data, json }) => {
-        logger.debug(NAMESPACE, 'stop: ', data, json);
-        return { data, json };
-      })
-      .catch(err => {
-        logger.error(
-          NAMESPACE,
-          'StreamingJanusPlugin, cannot stop stream',
-          err
-        );
-        throw err;
-      });
+    return this.transaction('message', { body }, 'event').catch(err => {
+      logger.error(NAMESPACE, 'StreamingJanusPlugin, cannot stop stream', err);
+      throw err;
+    });
   };
 
   switch = id => {
     logger.debug(NAMESPACE, 'switch: ', id);
     const body = { request: 'switch', id };
-    return this.transaction('message', { body }, 'event')
-      .then(({ data, json }) => {
-        logger.debug(NAMESPACE, 'start: ', data, json);
-        return { data, json };
-      })
-      .catch(err => {
-        logger.error(NAMESPACE, 'cannot switch stream', err);
-        throw err;
-      });
+    return this.transaction('message', { body }, 'event').catch(err => {
+      logger.error(NAMESPACE, 'cannot switch stream', err);
+      throw err;
+    });
   };
 
   success = (janus, janusHandleId) => {
@@ -281,7 +267,7 @@ export class StreamingPlugin {
 
   hangup = () => {
     logger.debug(NAMESPACE, 'Hangup called');
-    //useInRoomStore.getState().restartRoom();
+    useShidurStore.getState().restartShidur();
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -314,11 +300,6 @@ export class StreamingPlugin {
         this.pc = null;
       }
       removeConnectionListener(this.id);
-
-      // Store janus reference before clearing
-      const janusRef = this.janus;
-
-      // Clear additional properties
       this.janusHandleId = undefined;
       this.streamId = null;
       this.candidates = [];

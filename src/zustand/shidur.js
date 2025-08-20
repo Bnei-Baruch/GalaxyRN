@@ -49,6 +49,7 @@ let trlAudioJanus = null;
 let trlAudioStream = null;
 
 let config = null;
+let attempts = 0;
 
 const initStream = async (_janus, media, _janusStream) => {
   if (!_janus) return [];
@@ -56,7 +57,7 @@ const initStream = async (_janus, media, _janusStream) => {
     _janusStream.onStatus = async (srv, status) => {
       logger.warn(NAMESPACE, 'janus status: ', status);
       if (status === 'offline') {
-        useInRoomStore.getState().restartRoom();
+        get().restartShidur();
       }
     };
     const _data = await _janus.attach(_janusStream);
@@ -163,7 +164,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initJanus: async () => {
-    set({ shidurWIP: true });
+    attempts = 0;
     const { user } = useUserStore.getState();
     if (janus) {
       get().cleanJanus();
@@ -210,7 +211,7 @@ export const useShidurStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
     }
-    set({ janusReady, shidurWIP: false });
+    set({ janusReady });
   },
 
   cleanJanus: async () => {
@@ -339,6 +340,27 @@ export const useShidurStore = create((set, get) => ({
       url: null,
       isOnAir: false,
     });
+  },
+
+  restartShidur: async () => {
+    logger.debug(NAMESPACE, 'restartShidur');
+    if (get().shidurWIP) return;
+
+    set({ shidurWIP: true });
+
+    try {
+      if (attempts > 3) {
+        throw new Error('Failed to restart shidur', attempts);
+      }
+      const isPlay = get().isPlay;
+      await get().cleanShidur();
+      await get().initShidur(isPlay);
+      attempts++;
+    } catch (error) {
+      useInRoomStore.getState().restartRoom();
+      logger.error(NAMESPACE, 'Error during restartShidur:', error);
+    }
+    set({ shidurWIP: false });
   },
 
   streamGalaxy: async (isOnAir, onPlay = false) => {

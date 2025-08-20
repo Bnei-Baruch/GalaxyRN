@@ -40,7 +40,7 @@ const RoomPortrait = ({ shidur, quads, members }) => {
       >
         <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
           <WIP isReady={janusReady}>
-            <View style={[baseStyles.full, { width }]}>
+            <View style={[baseStyles.full, { width, aspectRatio: 16 / 9 }]}>
               {shidur}
               {quads}
             </View>

@@ -7,7 +7,6 @@ import { create } from 'zustand';
 // Services
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
-import { sleep } from '../shared/tools';
 
 // Auth
 import kc from '../auth/keycloak';
@@ -117,33 +116,16 @@ export const useInitsStore = create((set, get) => ({
   abortMqtt: async () => {
     logger.debug(NAMESPACE, 'abortMqtt');
 
-    try {
-      // First unsubscribe from topics
-      if (mqtt.mq && mqtt.mq.connected) {
-        await mqtt
-          .exit('galaxy/users/notification')
-          .catch(err =>
-            logger.error(NAMESPACE, 'Error exiting notification topic:', err)
-          );
-        await mqtt
-          .exit('galaxy/users/broadcast')
-          .catch(err =>
-            logger.error(NAMESPACE, 'Error exiting broadcast topic:', err)
-          );
+    if (mqtt.mq) {
+      try {
+        await Promise.all([
+          mqtt.exit('galaxy/users/notification'),
+          mqtt.exit('galaxy/users/broadcast'),
+        ]);
+        await mqtt.end();
+      } catch (err) {
+        logger.error(NAMESPACE, 'Error ending MQTT connection:', err);
       }
-
-      await sleep(100);
-
-      if (mqtt.mq) {
-        logger.debug(NAMESPACE, 'ending MQTT connection');
-        await mqtt
-          .end()
-          .catch(err =>
-            logger.error(NAMESPACE, 'Error ending MQTT connection:', err)
-          );
-      }
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error in MQTT cleanup:', error);
     }
 
     set(() => ({ mqttReady: false, configReady: false }));

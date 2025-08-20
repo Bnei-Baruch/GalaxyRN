@@ -51,7 +51,6 @@ export class SubscriberPlugin {
       handle_id: this.janusHandleId,
     });
 
-    logger.debug(NAMESPACE, 'transaction janus: ', Object.keys(this.janus));
     if (!this.janus) {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
@@ -61,10 +60,9 @@ export class SubscriberPlugin {
   sub = async subscription => {
     logger.debug(NAMESPACE, 'sub: ', subscription);
     const body = { request: 'subscribe', streams: subscription };
-    logger.debug(NAMESPACE, 'sub: ', body);
     try {
       const param = await this.transaction('message', { body }, 'event');
-      logger.info(NAMESPACE, 'Subscribe to: ', param);
+      logger.info(NAMESPACE, 'Subscribed successfully');
       const { data, json } = param;
 
       if (data?.videoroom === 'updated') {
@@ -89,7 +87,7 @@ export class SubscriberPlugin {
     try {
       const body = { request: 'unsubscribe', streams };
       const param = await this.transaction('message', { body }, 'event');
-      logger.info(NAMESPACE, 'Unsubscribe from: ', param);
+      logger.info(NAMESPACE, 'Unsubscribe successful');
       const { data, json } = param;
 
       if (data?.videoroom === 'updated') {
@@ -122,7 +120,7 @@ export class SubscriberPlugin {
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
         .then(param => {
-          logger.debug(NAMESPACE, 'joined: ', param);
+          logger.debug(NAMESPACE, 'joined successfully');
           const { data, json } = param;
 
           if (data) {
@@ -142,21 +140,23 @@ export class SubscriberPlugin {
     });
   };
 
-  configure = () => {
+  configure = async () => {
     logger.info(NAMESPACE, 'Subscriber plugin configure');
     const body = { request: 'configure', restart: true };
-    return this.transaction('message', { body }, 'event')
-      .then(param => {
-        logger.info(NAMESPACE, 'configure: ', param);
-        const { json } = param || {};
-        if (json?.jsep) {
-          logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
-          this.handleJsep(json.jsep);
-        }
-      })
-      .catch(err => {
-        logger.error(NAMESPACE, 'Subscriber plugin configure', err);
-      });
+    let param = null;
+    try {
+      param = await this.transaction('message', { body }, 'event');
+      logger.info(NAMESPACE, 'configure successful');
+    } catch (error) {
+      logger.error(NAMESPACE, 'configure failed', error);
+      throw error;
+    }
+    const { json } = param;
+    if (json?.jsep) {
+      logger.debug(NAMESPACE, 'Got jsep: ', json.jsep);
+      this.handleJsep(json.jsep);
+    }
+    return param;
   };
 
   waitForStable = async (attempts = 0) => {
@@ -230,7 +230,7 @@ export class SubscriberPlugin {
       logger.info(NAMESPACE, 'listparticipants run', this.roomId);
       const body = { request: 'listparticipants', room: this.roomId };
       const param = await this.transaction('message', { body }, 'event');
-      logger.info(NAMESPACE, 'listparticipants result: ', param);
+      logger.info(NAMESPACE, 'listparticipants successful');
       return param?.data?.participants || [];
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to list participants', error);
@@ -284,7 +284,7 @@ export class SubscriberPlugin {
   };
 
   success = (janus, janusHandleId) => {
-    logger.debug(NAMESPACE, 'Subscriber plugin success', janus, janusHandleId);
+    logger.debug(NAMESPACE, 'Subscriber plugin success', janusHandleId);
     this.janus = janus;
     this.janusHandleId = janusHandleId;
 

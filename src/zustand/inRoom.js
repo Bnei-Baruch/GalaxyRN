@@ -218,6 +218,7 @@ export const useInRoomStore = create((set, get) => ({
     const config = GxyConfig.instanceConfig(room.janus);
     logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
+    logger.debug(NAMESPACE, 'useInRoomStore joinRoom janus', janus);
 
     /**
      * Publish my video stream to the room
@@ -418,8 +419,10 @@ export const useInRoomStore = create((set, get) => ({
         return;
       });
     try {
-      await mqtt.join(`galaxy/room/${room.room}`);
-      await mqtt.join(`galaxy/room/${room.room}/chat`, true);
+      Promise.all([
+        mqtt.join(`galaxy/room/${room.room}`),
+        mqtt.join(`galaxy/room/${room.room}/chat`, true),
+      ]);
     } catch (error) {
       logger.error(NAMESPACE, 'Error joining MQTT rooms', error);
     }
@@ -467,9 +470,11 @@ export const useInRoomStore = create((set, get) => ({
       // Clean up MQTT subscriptions
       useChatStore.getState().cleanCounters();
       useChatStore.getState().cleanMessages();
-      await mqtt.exit(`galaxy/room/${room.room}`);
-      await mqtt.exit(`galaxy/room/${room.room}/chat`);
-      await useInitsStore.getState().abortMqtt();
+      await Promise.all([
+        mqtt.exit(`galaxy/room/${room.room}`),
+        mqtt.exit(`galaxy/room/${room.room}/chat`),
+      ]);
+      useInitsStore.getState().abortMqtt();
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
     }
@@ -567,6 +572,8 @@ export const useInRoomStore = create((set, get) => ({
     const ids = Object.keys(feedById);
     logger.debug(NAMESPACE, 'reconnectFeeds ids', ids);
     await get().deactivateFeedsVideos(ids);
+    logger.debug(NAMESPACE, 'reconnectFeeds videos deactivated');
     await get().activateFeedsVideos(ids);
+    logger.debug(NAMESPACE, 'reconnectFeeds videos activated');
   },
 }));
