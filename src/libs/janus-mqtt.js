@@ -116,6 +116,7 @@ export class JanusMqtt {
     }
 
     this.pluginHandles[json.data.id] = plugin;
+    plugin.isDestroyed = false;
 
     return plugin.success(this, json.data.id);
   };
@@ -147,7 +148,7 @@ export class JanusMqtt {
       plugin,
       Object.keys(this.pluginHandles)
     );
-    if (!this.pluginHandles[plugin.janusHandleId]) {
+    if (!this.findHandle(plugin.janusHandleId)) {
       throw new Error('unknown plugin');
     }
     const body = {
@@ -233,18 +234,16 @@ export class JanusMqtt {
           Object.keys(this.transactions)
         );
 
-        waitConnection().then(isConnected => {
-          if (!isConnected) {
-            return reject(new Error('Connection unavailable'));
-          }
+        if (!netIsConnected()) {
+          return reject(new Error('Connection unavailable'));
+        }
 
-          mqtt.send(
-            JSON.stringify(request),
-            false,
-            this.txTopic,
-            this.rxTopic + '/' + this.user.id
-          );
-        });
+        mqtt.send(
+          JSON.stringify(request),
+          false,
+          this.txTopic,
+          this.rxTopic + '/' + this.user.id
+        );
       } catch (error) {
         logger.error(
           NAMESPACE,
@@ -415,12 +414,8 @@ export class JanusMqtt {
         return;
       }
 
-      const pluginHandle = this.pluginHandles[sender];
+      const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${json}`
-        );
         return;
       }
       transaction.resolve({ data: pluginData.data, json });
@@ -439,12 +434,8 @@ export class JanusMqtt {
         logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
-      const pluginHandle = this.pluginHandles[sender];
+      const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${sender}`
-        );
         return;
       }
       pluginHandle.webrtcState(true);
@@ -459,12 +450,8 @@ export class JanusMqtt {
         logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
-      const pluginHandle = this.pluginHandles[sender];
+      const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${sender}`
-        );
         return;
       }
       pluginHandle.webrtcState(false, json.reason);
@@ -491,12 +478,8 @@ export class JanusMqtt {
         logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
-      const pluginHandle = this.pluginHandles[sender];
+      const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${sender}`
-        );
         return;
       }
       pluginHandle.mediaState(json.type, json.receiving);
@@ -516,12 +499,8 @@ export class JanusMqtt {
         logger.warn(NAMESPACE, 'Missing sender...');
         return;
       }
-      const pluginHandle = this.pluginHandles[sender];
+      const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${sender}`
-        );
         return;
       }
       pluginHandle.slowLink(json.uplink, json.nacks);
@@ -559,15 +538,6 @@ export class JanusMqtt {
         return;
       }
 
-      const pluginHandle = this.pluginHandles[sender];
-      if (!pluginHandle) {
-        logger.debug(
-          NAMESPACE,
-          `This handle is not attached to this session ${sender}`
-        );
-        return;
-      }
-
       const data = pluginData.data;
       const transaction = this.getTransaction(json);
       if (transaction) {
@@ -576,6 +546,11 @@ export class JanusMqtt {
         } else {
           transaction.resolve({ data, json });
         }
+        return;
+      }
+
+      const pluginHandle = this.findHandle(sender);
+      if (!pluginHandle) {
         return;
       }
 
@@ -602,5 +577,17 @@ export class JanusMqtt {
       logger.debug(NAMESPACE, 'keepAliveTimer tick');
       this.keepAlive();
     }, ms);
+  };
+  findHandle = id => {
+    const handler = this.pluginHandles[id];
+    if (!handler) {
+      logger.error(NAMESPACE, 'Handler not found', id);
+      return null;
+    }
+    if (handler.isDestroyed) {
+      logger.error(NAMESPACE, 'Handler is destroyed', id);
+      return null;
+    }
+    return handler;
   };
 }

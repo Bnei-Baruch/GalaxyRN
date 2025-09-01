@@ -1,11 +1,12 @@
 import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString, sleep } from '../shared/tools';
+import { randomString } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import {
   addConnectionListener,
   removeConnectionListener,
+  waitConnection,
 } from './connection-monitor';
 
 const NAMESPACE = 'PublisherPlugin';
@@ -21,6 +22,7 @@ export class PublisherPlugin {
     this.unsubFrom = null;
     this.talkEvent = null;
     this.iceRestartInProgress = false;
+    this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -305,7 +307,7 @@ export class PublisherPlugin {
     if (this.pc.signalingState === 'stable') {
       return true;
     }
-    await sleep(100);
+
     return await this.waitForStable(attempts + 1);
   };
 
@@ -314,6 +316,11 @@ export class PublisherPlugin {
 
     if (this.iceRestartInProgress) {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+      return;
+    }
+
+    const isConnected = await waitConnection();
+    if (!isConnected) {
       return;
     }
 
@@ -341,6 +348,7 @@ export class PublisherPlugin {
 
   initPcEvents = () => {
     this.pc.addEventListener('connectionstatechange', () => {
+      if (this.isDestroyed) return;
       logger.info(
         NAMESPACE,
         'Connection state changed:',
@@ -349,6 +357,7 @@ export class PublisherPlugin {
     });
 
     this.pc.addEventListener('iceconnectionstatechange', () => {
+      if (this.isDestroyed) return;
       const iceState = this.pc?.iceConnectionState;
       const signalingState = this.pc?.signalingState;
       logger.info(
@@ -361,6 +370,7 @@ export class PublisherPlugin {
     });
 
     this.pc.addEventListener('signalingstatechange', () => {
+      if (this.isDestroyed) return;
       logger.info(
         NAMESPACE,
         'Signaling state changed:',
@@ -369,6 +379,7 @@ export class PublisherPlugin {
     });
 
     this.pc.addEventListener('icecandidate', e => {
+      if (this.isDestroyed) return;
       logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
 
       try {
@@ -471,7 +482,6 @@ export class PublisherPlugin {
       NAMESPACE,
       `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
-    //this.emit('mediaState', medium, on)
   };
 
   webrtcState = isReady => {
@@ -485,6 +495,8 @@ export class PublisherPlugin {
   };
 
   detach = () => {
+    this.isDestroyed = true;
+
     if (this.pc) {
       this.pc.getTransceivers().forEach(transceiver => {
         if (transceiver) {

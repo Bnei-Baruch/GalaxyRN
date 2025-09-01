@@ -6,6 +6,7 @@ import { useInRoomStore } from '../zustand/inRoom';
 import {
   addConnectionListener,
   removeConnectionListener,
+  waitConnection,
 } from './connection-monitor';
 
 const NAMESPACE = 'SubscriberPlugin';
@@ -20,6 +21,7 @@ export class SubscriberPlugin {
     this.onTrack = null;
     this.onUpdate = null;
     this.iceRestartInProgress = false;
+    this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -181,6 +183,19 @@ export class SubscriberPlugin {
       return;
     }
 
+    if (
+      useInRoomStore.getState().feedIds.filter(id => id !== 'my').length === 0
+    ) {
+      logger.debug(NAMESPACE, 'No publishers in the room, skipping');
+      return;
+    }
+
+    const isConnected = await waitConnection();
+    logger.debug(NAMESPACE, 'isConnected: ', isConnected);
+    if (!isConnected) {
+      return;
+    }
+
     this.iceRestartInProgress = true;
 
     try {
@@ -241,6 +256,7 @@ export class SubscriberPlugin {
   initPcEvents = () => {
     logger.debug(NAMESPACE, 'initPcEvents');
     this.pc.addEventListener('icecandidate', e => {
+      if (this.isDestroyed) return;
       logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
       let candidate = { completed: true };
       if (
@@ -263,21 +279,25 @@ export class SubscriberPlugin {
     });
 
     this.pc.addEventListener('track', e => {
+      if (this.isDestroyed) return;
       if (!e.streams[0]) return;
 
       this.onTrack && this.onTrack(e.track, e.streams[0], true);
     });
 
     this.pc.addEventListener('signalingstatechange', () => {
+      if (this.isDestroyed) return;
       const signalingState = this.pc?.signalingState;
       logger.info(NAMESPACE, 'Signaling state changed:', signalingState);
     });
 
     this.pc.addEventListener('connectionstatechange', () => {
+      if (this.isDestroyed) return;
       const connectionState = this.pc?.connectionState;
       logger.info(NAMESPACE, 'Connection state changed:', connectionState);
     });
     this.pc.addEventListener('iceconnectionstatechange', () => {
+      if (this.isDestroyed) return;
       const iceState = this.pc?.iceConnectionState;
       logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
     });
@@ -339,7 +359,6 @@ export class SubscriberPlugin {
       NAMESPACE,
       `mediaState: Janus ${on ? 'start' : 'stop'} receiving our ${media}`
     );
-    //this.emit('mediaState', medium, on)
   };
 
   webrtcState = isReady => {
@@ -351,6 +370,8 @@ export class SubscriberPlugin {
 
   detach = () => {
     logger.debug(NAMESPACE, 'detach');
+    this.isDestroyed = true;
+
     if (this.pc) {
       this.pc.getTransceivers().forEach(transceiver => {
         if (transceiver) {

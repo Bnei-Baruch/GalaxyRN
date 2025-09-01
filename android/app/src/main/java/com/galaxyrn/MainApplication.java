@@ -18,8 +18,10 @@ import com.facebook.soloader.SoLoader;
 import io.sentry.android.core.SentryAndroid;
 import io.sentry.android.core.SentryAndroidOptions;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import android.content.Intent;
+import com.facebook.react.ReactInstanceManager;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -73,6 +75,7 @@ public class MainApplication extends Application implements ReactApplication {
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             DefaultNewArchitectureEntryPoint.load();
         }
+        initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
     }
 
     private void initializeSentry() {
@@ -96,6 +99,47 @@ public class MainApplication extends Application implements ReactApplication {
 
             options.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME + "+" + BuildConfig.VERSION_CODE);
         });
+    }
+
+    /**
+     * Loads Flipper in React Native templates. Call this in the onCreate method
+     * with something like
+     * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+     *
+     * @param context
+     * @param reactInstanceManager
+     */
+    private static void initializeFlipper(
+            Context context, ReactInstanceManager reactInstanceManager) {
+        if (BuildConfig.DEBUG) {
+            Log.d("FlipperInit", "Starting Flipper initialization...");
+            try {
+                /*
+                 * We use reflection here to pick up the class that initializes Flipper,
+                 * since Flipper library is not available in release builds
+                 */
+                Class<?> aClass = Class.forName("com.galaxyrn.ReactNativeFlipper");
+                Log.d("FlipperInit", "ReactNativeFlipper class found, calling initializeFlipper method...");
+                aClass
+                        .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
+                        .invoke(null, context, reactInstanceManager);
+                Log.d("FlipperInit", "Flipper initialization completed successfully!");
+            } catch (ClassNotFoundException e) {
+                Log.e("FlipperInit", "ClassNotFoundException: ReactNativeFlipper class not found", e);
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                Log.e("FlipperInit", "NoSuchMethodException: initializeFlipper method not found", e);
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                Log.e("FlipperInit", "IllegalAccessException: Cannot access initializeFlipper method", e);
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                Log.e("FlipperInit", "InvocationTargetException: Error calling initializeFlipper method", e);
+                e.printStackTrace();
+            }
+        } else {
+            Log.d("FlipperInit", "Skipping Flipper initialization in release build");
+        }
     }
 
     @Override

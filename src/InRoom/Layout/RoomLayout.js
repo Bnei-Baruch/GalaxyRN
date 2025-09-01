@@ -17,8 +17,9 @@ const RoomLayout = () => {
   const { cleanJanus, initJanus, initMedias } = useShidurStore();
 
   useEffect(() => {
-    initMedias();
-    initJanus();
+    initMedias().then(() => {
+      initJanus();
+    });
     return () => {
       cleanJanus();
     };

@@ -11,6 +11,7 @@ import logger from '../services/logger';
 
 // Shared modules
 import i18n, { getSystemLanguage } from '../i18n/i18n';
+import { waitConnection } from '../libs/connection-monitor';
 import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
@@ -77,6 +78,7 @@ const cleanStream = stream =>
 
 const getOptionByKey = key => {
   const _type = key.split('_')[0];
+  logger.debug(NAMESPACE, 'getOptionByKey', key, _type);
   switch (_type) {
     case 'wo':
       return {
@@ -107,6 +109,7 @@ const getAudioKey = async () => {
       audioKey = `wo_${i18n.language}`;
     }
   }
+  logger.debug(NAMESPACE, 'getAudioKey', audioKey);
   return audioKey;
 };
 
@@ -168,6 +171,11 @@ export const useShidurStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     if (janus) {
       get().cleanJanus();
+    }
+
+    const isConnected = await waitConnection();
+    if (!isConnected) {
+      return useInRoomStore.getState().restartRoom();
     }
 
     let srv = null;
@@ -235,6 +243,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initMedias: async () => {
+    logger.debug(NAMESPACE, 'initMedias');
     let video;
     if (useSettingsStore.getState().audioMode) {
       video = NO_VIDEO_OPTION_VALUE;
@@ -259,6 +268,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initShidur: async (isPlay = get().isPlay) => {
+    logger.debug(NAMESPACE, 'initShidur isPlay', isPlay);
     set({ shidurWIP: true });
     logger.debug(NAMESPACE, 'initShidur');
     if (!useSettingsStore.getState().isShidur || !isPlay) {
@@ -279,6 +289,8 @@ export const useShidurStore = create((set, get) => ({
         };
         await initStream(janus, video, videoJanus);
       }
+
+      logger.debug(NAMESPACE, 'initShidur has audioJanus', !!audioJanus);
       if (!audioJanus) {
         audioJanus = new StreamingPlugin(config?.iceServers);
         audioJanus.onTrack = stream => {
@@ -288,6 +300,7 @@ export const useShidurStore = create((set, get) => ({
         };
         await initStream(janus, audio.value, audioJanus);
       }
+      logger.debug(NAMESPACE, 'initShidur has trlAudioJanus', !!trlAudioJanus);
       if (!trlAudioJanus) {
         logger.debug(NAMESPACE, 'init trlAudioJanus');
         const audioKey = await getFromStorage('audio', null);
@@ -297,9 +310,7 @@ export const useShidurStore = create((set, get) => ({
           trlAudioJanus.onTrack = stream => {
             logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
             cleanStream(trlAudioStream);
-            trlAudioStream
-              ?.getAudioTracks()
-              ?.forEach(track => (track.enabled = false));
+            stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
             trlAudioStream = stream;
           };
           await initStream(janus, id, trlAudioJanus);
@@ -318,17 +329,19 @@ export const useShidurStore = create((set, get) => ({
   },
 
   cleanShidur: () => {
-    logger.debug(NAMESPACE, 'cleanShidur');
+    logger.debug(NAMESPACE, 'cleanShidur videoStream', videoStream);
     cleanStream(videoStream);
     videoStream = null;
     videoJanus?.detach();
     videoJanus = null;
 
+    logger.debug(NAMESPACE, 'cleanShidur audioStream', audioStream);
     cleanStream(audioStream);
     audioStream = null;
     audioJanus?.detach();
     audioJanus = null;
 
+    logger.debug(NAMESPACE, 'cleanShidur trlAudioStream', trlAudioStream);
     cleanStream(trlAudioStream);
     trlAudioStream = null;
     trlAudioJanus?.detach();
@@ -340,6 +353,7 @@ export const useShidurStore = create((set, get) => ({
       url: null,
       isOnAir: false,
     });
+    logger.debug(NAMESPACE, 'cleanShidur done');
   },
 
   restartShidur: async () => {
@@ -353,6 +367,7 @@ export const useShidurStore = create((set, get) => ({
         throw new Error('Failed to restart shidur', attempts);
       }
       const isPlay = get().isPlay;
+      logger.debug(NAMESPACE, 'restartShidur', isPlay);
       await get().cleanShidur();
       await get().initShidur(isPlay);
       attempts++;
@@ -383,10 +398,11 @@ export const useShidurStore = create((set, get) => ({
       );
 
       BackgroundTimer.setTimeout(() => {
-        get().streamGalaxy(isOnAir);
+        get().streamGalaxy(isOnAir, onPlay);
       }, 1000);
       return;
     }
+    logger.debug(NAMESPACE, 'streamGalaxy isOnAir', isOnAir, onPlay);
 
     if (isOnAir) {
       // Switch to -1 stream
@@ -395,6 +411,7 @@ export const useShidurStore = create((set, get) => ({
       audioJanus.switch(gxycol[col]);
       const _langtext = await getFromStorage('audio');
       const id = trllang[_langtext];
+      logger.debug(NAMESPACE, 'streamGalaxy trl stream id', id);
       // Don't bring translation on toggle trl stream
       if (!id) {
         logger.debug(
@@ -426,11 +443,14 @@ export const useShidurStore = create((set, get) => ({
     set({ isOnAir });
   },
 
-  toggleIsPlay: async (isPlay = !get().isPlay) => {
+  toggleIsPlay: async () => {
     const { initShidur, readyShidur, isMuted } = get();
+    const isPlay = !get().isPlay;
     logger.debug(NAMESPACE, 'toggleIsPlay', isPlay, readyShidur);
     if (!readyShidur) {
       await initShidur(isPlay);
+      set({ isPlay });
+      return;
     }
 
     videoStream?.getVideoTracks().forEach(t => (t.enabled = isPlay));
@@ -464,16 +484,22 @@ export const useShidurStore = create((set, get) => ({
   },
 
   enterAudioMode: () => {
-    if (!useSettingsStore.getState().isShidur || !get().isPlay) return;
+    logger.debug(NAMESPACE, 'enterAudioMode');
+    if (!useSettingsStore.getState().isShidur || !get().isPlay) {
+      logger.debug(NAMESPACE, 'enterAudioMode shidur not active');
+      return;
+    }
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
-    set({ url: null, trlUrl: null });
   },
 
   exitAudioMode: async () => {
     const { video: _video, setVideo, initQuad, isPlay } = get();
     await initQuad();
 
-    if (!useSettingsStore.getState().isShidur || !isPlay) return;
+    if (!useSettingsStore.getState().isShidur || !isPlay) {
+      logger.debug(NAMESPACE, 'exitAudioMode shidur not active');
+      return;
+    }
 
     const video = await getFromStorage('video', 1).then(x => Number(x));
     logger.debug(NAMESPACE, 'exitAudioMode', _video, video);
@@ -484,6 +510,7 @@ export const useShidurStore = create((set, get) => ({
 
   setAudio: async key => {
     const audio = getOptionByKey(key);
+    logger.debug(NAMESPACE, 'setAudio', audio);
     if (get().isOnAir) {
       const key = trllang[audio.key.split('_')[1]];
       if (key) {
@@ -505,6 +532,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   toggleIsOriginal: async () => {
+    logger.debug(NAMESPACE, 'toggleIsOriginal');
     const isOriginal = !(get().audio.key === 'wo_original');
     let key;
     if (isOriginal) {
@@ -512,7 +540,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       key = await getAudioKey();
     }
-
+    logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);
   },
 }));

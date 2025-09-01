@@ -24,6 +24,7 @@ export class StreamingPlugin {
     this.onStatus = null;
     this.pluginName = 'janus.plugin.streaming';
     this.iceRestartInProgress = false;
+    this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -49,6 +50,7 @@ export class StreamingPlugin {
     logger.debug(NAMESPACE, 'initPcEvents');
 
     this.pc.addEventListener('track', e => {
+      if (this.isDestroyed) return;
       const { track } = e;
       logger.info(NAMESPACE, 'track: ', track);
       if (track.kind === 'audio' || track.kind === 'video') {
@@ -58,6 +60,7 @@ export class StreamingPlugin {
     });
 
     this.pc.addEventListener('icecandidate', e => {
+      if (this.isDestroyed) return;
       logger.debug(NAMESPACE, 'ICE Candidate: ', e.candidate);
 
       try {
@@ -87,6 +90,7 @@ export class StreamingPlugin {
     });
 
     this.pc.addEventListener('iceconnectionstatechange', () => {
+      if (this.isDestroyed) return;
       const iceState = this.pc?.iceConnectionState;
       logger.info(NAMESPACE, 'ICE connection state changed:', iceState);
     });
@@ -294,6 +298,8 @@ export class StreamingPlugin {
 
   detach = () => {
     logger.debug(NAMESPACE, 'Detach called');
+    this.isDestroyed = true;
+
     if (this.janus) {
       if (this.pc) {
         this.pc.close();
