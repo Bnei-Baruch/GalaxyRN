@@ -10,6 +10,7 @@ import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,
   removeConnectionListener,
+  waitConnection,
 } from './connection-monitor';
 
 const NAMESPACE = 'StreamingPlugin';
@@ -104,6 +105,10 @@ export class StreamingPlugin {
       additionalFields,
       replyType
     );
+    const isConnected = await waitConnection();
+    if (!isConnected) {
+      return Promise.reject(new Error('Network connection unavailable'));
+    }
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -271,7 +276,7 @@ export class StreamingPlugin {
 
   hangup = () => {
     logger.debug(NAMESPACE, 'Hangup called');
-    useShidurStore.getState().restartShidur();
+    //useShidurStore.getState().restartShidur();
   };
 
   slowLink = (uplink, lost, mid) => {

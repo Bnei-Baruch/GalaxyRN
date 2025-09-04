@@ -83,8 +83,8 @@ export const waitConnection = async () => {
     await monitorNetInfo();
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorNetInfo', e);
-    useSettingsStore.getState().setNetWIP(false);
-    useInRoomStore.getState().restartRoom();
+    await useInRoomStore.getState().exitRoom();
+    await useInitsStore.getState().abortMqtt();
     return false;
   }
   logger.debug(NAMESPACE, 'monitorNetInfo success');
@@ -93,8 +93,8 @@ export const waitConnection = async () => {
     await monitorMqtt();
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorMqtt', e);
-    useSettingsStore.getState().setNetWIP(false);
-    useInRoomStore.getState().restartRoom();
+    await useInRoomStore.getState().exitRoom();
+    await useInitsStore.getState().abortMqtt();
     return false;
   }
   logger.debug(NAMESPACE, 'monitorMqtt success');

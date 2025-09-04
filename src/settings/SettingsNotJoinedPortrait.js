@@ -24,7 +24,9 @@ export const SettingsNotJoinedPortrait = () => {
     <View style={styles.container}>
       <PageHeader page={t('settings.page')} />
       <AccountSettings />
-      <SelectUiLanguage />
+      <View style={styles.width100}>
+        <SelectUiLanguage />
+      </View>
       <View style={baseStyles.full}>
         <MyVideo styles={{ aspectRatio: 9 / 16, height: '100%' }} />
       </View>
@@ -54,5 +56,8 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginVertical: 10,
+  },
+  width100: {
+    width: '100%',
   },
 });
