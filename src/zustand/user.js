@@ -100,4 +100,9 @@ export const useUserStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error sending gxydb message', error);
     }
   },
+  removeMember: async () => {
+    logger.info(NAMESPACE, 'Removing member');
+    await api.removeMember();
+    set({ user: null });
+  },
 }));

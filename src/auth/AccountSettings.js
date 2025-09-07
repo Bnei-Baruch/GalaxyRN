@@ -1,5 +1,5 @@
 import { ACCOUNT_URL } from '@env';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -9,13 +9,20 @@ import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import IconWithText from '../settings/IconWithText';
 import { useUserStore } from '../zustand/user';
+import RemoveUserModal from './RemoveUserModal';
 import kc from './keycloak';
 
 const NAMESPACE = 'AccountSettings';
 
 const AccountSettings = ({ withTitle = true }) => {
   const { t } = useTranslation();
-  const { user } = useUserStore();
+  const { user, removeMember } = useUserStore();
+  const [removeUserModalVisible, setRemoveUserModalVisible] = useState(false);
+
+  const handleRemoveMember = () => {
+    logger.info(NAMESPACE, 'User deletion confirmed');
+    removeMember();
+  };
 
   const accauntOptions = [
     {
@@ -36,16 +43,32 @@ const AccountSettings = ({ withTitle = true }) => {
       text: t('user.logout'),
       action: () => kc.logout(),
     },
+    {
+      key: 'delete',
+      value: 'delete',
+      text: t('user.delete'),
+      action: () => setRemoveUserModalVisible(true),
+      style: {
+        color: 'red',
+      },
+    },
   ];
 
   const handleSelect = item => item.action && item.action();
 
   const renderItem = item => (
-    <Text style={[baseStyles.text, baseStyles.listItem]}>{item.text}</Text>
+    <Text style={[baseStyles.text, baseStyles.listItem, item?.style]}>
+      {item.text}
+    </Text>
   );
 
   return (
     <View style={styles.container}>
+      <RemoveUserModal
+        visible={removeUserModalVisible}
+        onClose={() => setRemoveUserModalVisible(false)}
+        onConfirm={handleRemoveMember}
+      />
       {withTitle && (
         <IconWithText
           style={styles.title}

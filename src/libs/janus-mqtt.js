@@ -579,14 +579,15 @@ export class JanusMqtt {
       this.keepAlive();
     }, ms);
   };
+
   findHandle = id => {
     const handler = this.pluginHandles[id];
     if (!handler) {
-      logger.error(NAMESPACE, 'Handler not found', id);
+      logger.warn(NAMESPACE, 'Handler not found', id);
       return null;
     }
     if (handler.isDestroyed) {
-      logger.error(NAMESPACE, 'Handler is destroyed', id);
+      logger.warn(NAMESPACE, 'Handler is destroyed', id);
       return null;
     }
     return handler;

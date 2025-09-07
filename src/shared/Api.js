@@ -1,6 +1,7 @@
 import {
   API_BACKEND,
   GEO_IP_INFO,
+  KEYCLOAK_API,
   QST_BACKEND,
   STRDB_BACKEND,
   STUDY_MATERIALS,
@@ -199,6 +200,16 @@ class Api {
       logger.debug(NAMESPACE, `get geoInfo`, ex);
       return defaultInfo;
     }
+  };
+  removeMember = () => {
+    logger.info(NAMESPACE, 'Removing member');
+    const options = this.defaultOptions();
+    options.method = 'DELETE';
+
+    return this.logAndParse(
+      'remove member',
+      fetch(`${KEYCLOAK_API}/self_remove`, options)
+    );
   };
 }
 

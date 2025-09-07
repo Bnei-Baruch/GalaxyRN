@@ -29,7 +29,12 @@
     "title": "User settings",
     "name": "Screen name",
     "logout": "Logout",
-    "account": "Account"
+    "account": "Account",
+    "delete": "Delete Account",
+    "deleteConfirmTitle": "Delete Account?",
+    "deleteConfirmMessage": "This action cannot be undone. Your account and all associated data will be permanently deleted.",
+    "deleteConfirm": "Delete",
+    "cancel": "Cancel"
   },
   "topBar": {
     "materials": "Study Materials",

@@ -23,7 +23,13 @@
   "user": {
     "title": "הגדרות משתמש",
     "name": "כינוי להצגה",
-    "logout": "יציאה"
+    "logout": "יציאה",
+    "account": "חשבון",
+    "delete": "מחק חשבון",
+    "deleteConfirmTitle": "למחוק את החשבון?",
+    "deleteConfirmMessage": "לא ניתן לבטל פעולה זו. החשבון שלך וכל הנתונים הקשורים אליו יימחקו לצמיתות.",
+    "deleteConfirm": "מחק",
+    "cancel": "ביטול"
   },
   "topBar": {
     "materials": "חומר לימוד",

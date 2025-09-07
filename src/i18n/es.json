@@ -20,9 +20,15 @@
     "sendLogs": "Enviar registros"
   },
   "user": {
-    "title": "Material de estudio",
+    "title": "Configuración de usuario",
     "name": "Nombre en pantalla",
-    "logout": "Desconectar"
+    "logout": "Desconectar",
+    "account": "Cuenta",
+    "delete": "Eliminar Cuenta",
+    "deleteConfirmTitle": "¿Eliminar Cuenta?",
+    "deleteConfirmMessage": "Esta acción no se puede deshacer. Su cuenta y todos los datos asociados serán eliminados permanentemente.",
+    "deleteConfirm": "Eliminar",
+    "cancel": "Cancelar"
   },
   "topBar": {
     "materials": "Material de estudio",
