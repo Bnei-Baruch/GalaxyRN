@@ -165,7 +165,7 @@ export const useInitsStore = create((set, get) => ({
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');
             useShidurStore.getState().setAutoPlay(_isPlay);
-            useInitsStore.getState().setReadyForJoin(true);
+            get().setReadyForJoin(true);
             logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);

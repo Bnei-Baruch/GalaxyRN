@@ -32,9 +32,6 @@ const useRoomStore = create(set => ({
         logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 
         set({ room });
-        // const { autoEnterRoom } = useSettingsStore.getState();
-        // const { setReadyForJoin } = useInitsStore.getState();
-        // autoEnterRoom && setReadyForJoin(!!room);
       } catch (err) {
         logger.error(NAMESPACE, 'saved room: ', err);
       }
