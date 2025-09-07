@@ -173,7 +173,12 @@ export class JanusMqtt {
     return Promise.allSettled(promises);
   };
 
-  transaction = (type, payload, replyType = 'ack', timeoutMs) => {
+  transaction = async (type, payload, replyType = 'ack', timeoutMs) => {
+    const isConnected = await waitConnection();
+    if (!isConnected) {
+      logger.error(NAMESPACE, 'Connection unavailable');
+      return Promise.reject(new Error('Network connection unavailable'));
+    }
     logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
     const transactionId = randomString(12);
     return new Promise((resolve, reject) => {
@@ -233,10 +238,6 @@ export class JanusMqtt {
           'transaction request',
           Object.keys(this.transactions)
         );
-
-        if (!netIsConnected()) {
-          return reject(new Error('Connection unavailable'));
-        }
 
         mqtt.send(
           JSON.stringify(request),

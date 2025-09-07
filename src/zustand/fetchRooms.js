@@ -7,6 +7,7 @@ import logger from '../services/logger';
 // Shared modules
 import api from '../shared/Api';
 import { getFromStorage, setToStorage } from '../shared/tools';
+import { useInitsStore } from './inits';
 
 const NAMESPACE = 'FetchRooms';
 
@@ -39,6 +40,7 @@ const useRoomStore = create(set => ({
       return data.rooms;
     } catch (error) {
       set({ error: error.message, isLoading: false });
+      await useInitsStore.getState().abortMqtt();
       return [];
     }
   },

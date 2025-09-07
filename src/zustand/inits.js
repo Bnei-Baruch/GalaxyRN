@@ -9,7 +9,6 @@ import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
 
 // Auth
-import kc from '../auth/keycloak';
 
 // Shared modules
 import api from '../shared/Api';

@@ -41,7 +41,7 @@ export class SubscriberPlugin {
     return this.pluginName;
   };
 
-  transaction = (message, additionalFields, replyType) => {
+  transaction = async (message, additionalFields, replyType) => {
     logger.debug(
       NAMESPACE,
       'transaction: ',
@@ -49,6 +49,10 @@ export class SubscriberPlugin {
       additionalFields,
       replyType
     );
+    const isConnected = await waitConnection();
+    if (!isConnected) {
+      return Promise.reject(new Error('Network connection unavailable'));
+    }
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });

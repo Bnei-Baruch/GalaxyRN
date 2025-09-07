@@ -4,11 +4,16 @@ import { Dimensions } from 'react-native';
 import 'intl-pluralrules';
 import 'react-native-url-polyfill';
 
+import Room from '../InRoom/Room';
+import WIP from '../components/WIP';
 import '../i18n/i18n';
 
-import PrepareRoom from '../InRoom/PrepareRoom';
 import useForegroundListener from '../InRoom/useForegroundListener';
 import useScreenRotationListener from '../InRoom/useScreenRotationListener';
+import {
+  initConnectionMonitor,
+  removeConnectionMonitor,
+} from '../libs/connection-monitor';
 import { SettingsNotJoined } from '../settings/SettingsNotJoined';
 
 import useAudioDevicesStore from '../zustand/audioDevices';
@@ -19,9 +24,17 @@ import { useSubtitleStore } from '../zustand/subtitle';
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
-  const { setIsPortrait, initApp, terminateApp } = useInitsStore();
+  const {
+    setIsPortrait,
+    initApp,
+    terminateApp,
+    initMQTT,
+    abortMqtt,
+    initConfig,
+  } = useInitsStore();
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
+  const { mqttReady, configReady } = useInitsStore();
   const {
     audio: { key },
   } = useShidurStore();
@@ -46,11 +59,16 @@ const InitApp = () => {
     initApp();
     initAudioDevices();
     myInit();
+    initConfig();
+    initMQTT();
+    initConnectionMonitor();
 
     return () => {
       terminateApp();
       abortAudioDevices();
       myAbort();
+      abortMqtt();
+      removeConnectionMonitor();
     };
   }, []);
 
@@ -58,7 +76,11 @@ const InitApp = () => {
     return <SettingsNotJoined />;
   }
 
-  return <PrepareRoom />;
+  return (
+    <WIP isReady={mqttReady && configReady}>
+      <Room />
+    </WIP>
+  );
 };
 
 export default InitApp;

@@ -269,11 +269,15 @@ export const useShidurStore = create((set, get) => ({
 
   initShidur: async (isPlay = get().isPlay) => {
     logger.debug(NAMESPACE, 'initShidur isPlay', isPlay);
-    set({ shidurWIP: true });
+    set({ shidurWIP: true, isPlay });
     logger.debug(NAMESPACE, 'initShidur');
     if (!useSettingsStore.getState().isShidur || !isPlay) {
       set({ shidurWIP: false });
       return;
+    }
+    if (!janus) {
+      logger.debug(NAMESPACE, 'initShidur janus not ready');
+      await get().initJanus();
     }
 
     try {
