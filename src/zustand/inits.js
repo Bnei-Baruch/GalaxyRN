@@ -1,4 +1,5 @@
 // External libraries
+import { DeviceEventEmitter, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 
@@ -121,6 +122,10 @@ export const useInitsStore = create((set, get) => ({
           mqtt.exit('galaxy/users/notification'),
           mqtt.exit('galaxy/users/broadcast'),
         ]);
+      } catch (err) {
+        logger.error(NAMESPACE, 'Error exiting MQTT topics:', err);
+      }
+      try {
         await mqtt.end();
       } catch (err) {
         logger.error(NAMESPACE, 'Error ending MQTT connection:', err);
@@ -148,6 +153,21 @@ export const useInitsStore = create((set, get) => ({
   initApp: async () => {
     BackgroundTimer.start();
     let _isPlay = false;
+    if (Platform.OS === 'android') {
+      terminateSubscription = DeviceEventEmitter.addListener(
+        'appTerminating',
+        async event => {
+          logger.debug(NAMESPACE, 'appTerminating event: ', event);
+          logger.debug(NAMESPACE, 'appTerminating');
+          await useInRoomStore.getState().exitRoom();
+          await useInitsStore.getState().abortMqtt();
+          await useInitsStore.getState().terminateApp();
+          terminateSubscription.remove();
+          terminateSubscription = null;
+        }
+      );
+      logger.debug(NAMESPACE, 'appTerminating listener set up successfully');
+    }
     logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
     try {
       subscription = eventEmitter.addListener(
@@ -177,14 +197,30 @@ export const useInitsStore = create((set, get) => ({
   },
 
   terminateApp: () => {
-    logger.debug(NAMESPACE, 'terminateApp');
-    BackgroundTimer.stop();
-    useSettingsStore.getState().toggleIsFullscreen(false);
-    useChatStore.getState().setChatMode(modalModes.close);
-    useUserStore.getState().setVhinfo(null);
-    if (subscription) {
-      logger.debug(NAMESPACE, 'remove event listener');
-      subscription.remove();
+    logger.debug(NAMESPACE, 'terminateApp - starting comprehensive cleanup');
+
+    try {
+      BackgroundTimer.stop();
+
+      logger.debug(NAMESPACE, 'BackgroundTimer stopped successfully');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error stopping BackgroundTimer', error);
+    }
+
+    try {
+      useSettingsStore.getState().toggleIsFullscreen(false);
+      useChatStore.getState().setChatMode(modalModes.close);
+      useUserStore.getState().setVhinfo(null);
+
+      if (subscription) {
+        logger.debug(NAMESPACE, 'remove event listener');
+        subscription.remove();
+        subscription = null;
+      }
+
+      logger.debug(NAMESPACE, 'terminateApp completed successfully');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during app termination cleanup', error);
     }
   },
 }));

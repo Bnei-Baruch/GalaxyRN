@@ -566,6 +566,7 @@ export class JanusMqtt {
   };
 
   clearKeepAliveTimer = () => {
+    logger.debug(NAMESPACE, 'clearKeepAliveTimer', this.keepAliveTimer);
     if (this.keepAliveTimer) {
       BackgroundTimer.clearTimeout(this.keepAliveTimer);
       this.keepAliveTimer = null;

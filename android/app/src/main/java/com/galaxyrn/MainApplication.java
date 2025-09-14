@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import android.content.Intent;
 import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -158,6 +159,32 @@ public class MainApplication extends Application implements ReactApplication {
         app.isCleaningUp = true;
         try {
             GxyLogger.i(TAG, "Starting application-level cleanup");
+
+            // Stop RNBackgroundTimer first - this is critical for proper cleanup
+            try {
+                GxyLogger.d(TAG, "Cleaning up RNBackgroundTimer");
+
+                // As fallback, try to send signal to JS side if still available
+                if (app.getReactNativeHost() != null &&
+                        app.getReactNativeHost().getReactInstanceManager() != null &&
+                        app.getReactNativeHost().getReactInstanceManager().getCurrentReactContext() != null) {
+                    GxyLogger.d(TAG, "Cleaning up RNBackgroundTimer");
+
+                    try {
+                        // Send cleanup signal to JS side
+                        app.getReactNativeHost().getReactInstanceManager()
+                                .getCurrentReactContext()
+                                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                .emit("appTerminating", null);
+                        GxyLogger.d(TAG, "Sent termination signal to JS side as fallback");
+                    } catch (Exception e) {
+                        GxyLogger.w(TAG, "Could not send termination signal to JS (this is normal during swipe-kill)",
+                                e);
+                    }
+                }
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error stopping RNBackgroundTimer", e);
+            }
 
             // Reset audio state
             AudioManager audioManager = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
