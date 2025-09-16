@@ -2,7 +2,7 @@ import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../shared/tools';
-import { useInRoomStore } from '../zustand/inRoom';
+import { useFeedsStore } from '../zustand/feeds';
 import {
   addConnectionListener,
   removeConnectionListener,
@@ -33,7 +33,7 @@ export class PublisherPlugin {
         await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
-        useInRoomStore.getState().restartRoom();
+        useFeedsStore.getState().restartFeeds();
       }
     });
   }
@@ -50,10 +50,7 @@ export class PublisherPlugin {
       additionalFields,
       replyType
     );
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      return Promise.reject(new Error('Network connection unavailable'));
-    }
+
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -297,24 +294,6 @@ export class PublisherPlugin {
     logger.debug(NAMESPACE, 'Configure successful');
   };
 
-  waitForStable = async (attempts = 0) => {
-    if (attempts > 30) {
-      throw new Error('Failed to wait for stable state');
-    }
-    if (!this.pc || this.pc.connectionState === 'closed') {
-      throw new Error('PeerConnection not available');
-    }
-
-    if (this.pc.connectionState === 'failed') {
-      throw new Error('PeerConnection failed');
-    }
-    if (this.pc.signalingState === 'stable') {
-      return true;
-    }
-
-    return await this.waitForStable(attempts + 1);
-  };
-
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
 
@@ -322,20 +301,13 @@ export class PublisherPlugin {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
       return;
     }
-
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      return;
-    }
-
     this.iceRestartInProgress = true;
 
-    try {
-      await this.waitForStable();
-    } catch (error) {
-      logger.error(NAMESPACE, 'Failed to wait for stable state', error);
+    const isConnected = await waitConnection();
+    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
+      logger.error(NAMESPACE, 'peer connection closed');
       this.iceRestartInProgress = false;
-      useInRoomStore.getState().restartRoom();
+      useFeedsStore.getState().restartFeeds();
       return;
     }
 
@@ -346,7 +318,7 @@ export class PublisherPlugin {
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       this.iceRestartInProgress = false;
-      useInRoomStore.getState().restartRoom();
+      useFeedsStore.getState().restartFeeds();
     }
   };
 
@@ -494,7 +466,7 @@ export class PublisherPlugin {
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
     if (this.pc && !isReady) {
-      useInRoomStore.getState().restartRoom();
+      useFeedsStore.getState().restartFeeds();
     }
   };
 

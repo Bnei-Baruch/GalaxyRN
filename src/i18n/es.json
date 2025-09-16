@@ -101,6 +101,7 @@
     "sendButton": "Enviar"
   },
   "connection": {
-    "unstable": "Conexión inestable"
+    "unstable": "Conexión inestable",
+    "noConnection": "Sin conexión a internet"
   }
 }

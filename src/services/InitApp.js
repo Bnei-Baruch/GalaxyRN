@@ -5,10 +5,8 @@ import 'intl-pluralrules';
 import 'react-native-url-polyfill';
 
 import Room from '../InRoom/Room';
-import WIP from '../components/WIP';
 import '../i18n/i18n';
 
-import useForegroundListener from '../InRoom/useForegroundListener';
 import useScreenRotationListener from '../InRoom/useScreenRotationListener';
 import {
   initConnectionMonitor,
@@ -17,10 +15,13 @@ import {
 import { SettingsNotJoined } from '../settings/SettingsNotJoined';
 
 import useAudioDevicesStore from '../zustand/audioDevices';
+import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
-import { useShidurStore } from '../zustand/shidur';
-import { useSubtitleStore } from '../zustand/subtitle';
+
+import logger from './logger';
+
+const NAMESPACE = 'InitApp';
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
@@ -31,56 +32,50 @@ const InitApp = () => {
     initMQTT,
     abortMqtt,
     initConfig,
+    setIsAppInited,
+    isAppInited,
   } = useInitsStore();
   const { abortAudioDevices, initAudioDevices } = useAudioDevicesStore();
-  const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
-  const { mqttReady, configReady } = useInitsStore();
-  const {
-    audio: { key },
-  } = useShidurStore();
-  const { readyForJoin } = useInitsStore();
+  const { isInRoom } = useInRoomStore();
 
-  useEffect(() => {
-    if (key) {
-      initSubtitle();
-    }
-    return () => {
-      exitSubtitle();
-    };
-  }, [key]);
-
-  useForegroundListener();
   useScreenRotationListener();
 
   useEffect(() => {
-    const { width, height } = Dimensions.get('window');
-    setIsPortrait(height > width);
+    logger.debug(NAMESPACE, 'isAppInited useEffect', isAppInited);
+    const init = async () => {
+      if (isAppInited) return;
+      setIsAppInited(true);
 
-    initApp();
-    initAudioDevices();
-    myInit();
-    initConfig();
-    initMQTT();
-    initConnectionMonitor();
+      const { width, height } = Dimensions.get('window');
+      setIsPortrait(height > width);
+
+      initApp();
+      initAudioDevices();
+      myInit();
+      initConfig();
+      initMQTT();
+      initConnectionMonitor();
+    };
+    init();
 
     return () => {
+      logger.debug(NAMESPACE, 'terminateApp', isAppInited);
+      if (!isAppInited) return;
+
+      setIsAppInited(false);
       terminateApp();
       abortAudioDevices();
       myAbort();
       abortMqtt();
       removeConnectionMonitor();
     };
-  }, []);
+  }, [isAppInited]);
 
-  if (!readyForJoin) {
+  if (!isInRoom) {
     return <SettingsNotJoined />;
   }
 
-  return (
-    <WIP isReady={mqttReady && configReady}>
-      <Room />
-    </WIP>
-  );
+  return <Room />;
 };
 
 export default InitApp;

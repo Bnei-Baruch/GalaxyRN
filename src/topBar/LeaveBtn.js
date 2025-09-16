@@ -1,23 +1,20 @@
-import * as React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import * as React from 'react';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
-import { topMenuBtns } from "./helper";
-import { useInitsStore } from "../zustand/inits";
-import { useTranslation } from "react-i18next";
-import { baseStyles } from "../constants";
+import { useTranslation } from 'react-i18next';
+import { baseStyles } from '../constants';
+import { useInRoomStore } from '../zustand/inRoom';
+import { topMenuBtns } from './helper';
 
 export const LeaveBtn = () => {
-  const { setReadyForJoin } = useInitsStore();
+  const { exitRoom } = useInRoomStore();
   const { t } = useTranslation();
 
-  const handlePress = () => setReadyForJoin(false);
-
+  const handlePress = () => exitRoom();
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.btn}>
-      <Text style={styles.text}>
-        {t("bottomBar.leave")}
-        </Text>
+      <Text style={styles.text}>{t('bottomBar.leave')}</Text>
     </TouchableOpacity>
   );
 };
@@ -25,17 +22,17 @@ export const LeaveBtn = () => {
 const styles = StyleSheet.create({
   btn: {
     ...topMenuBtns.btn,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
 
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: "red",
+    backgroundColor: 'red',
     borderRadius: 5,
   },
   text: {
     ...baseStyles.text,
-    color: "white",
+    color: 'white',
   },
 });

@@ -1,5 +1,5 @@
 // Core React and React Native imports
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 // Third-party libraries
@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
 import logger from '../services/logger';
+import { useSubtitleStore } from '../zustand/subtitle';
 
 // Local imports
 import WIP from '../components/WIP';
@@ -26,14 +27,26 @@ import { SubtitleBtn } from './SubtitleBtn';
 const NAMESPACE = 'Shidur';
 
 const Shidur = () => {
-  const { url, isPlay, video, isOnAir, shidurWIP } = useShidurStore();
+  const { url, isPlay, video, isOnAir, audio, shidurWIP, cleanWIP } =
+    useShidurStore();
+  const audioKey = audio?.key;
+  const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
   const { showBars } = useUiActions();
 
   const { t } = useTranslation();
 
+  useEffect(() => {
+    if (audioKey) {
+      initSubtitle();
+    }
+    return () => {
+      exitSubtitle();
+    };
+  }, [audioKey]);
+
   return (
-    <View style={shidurWIP ? styles.mainContainer : {}}>
-      <WIP isReady={!shidurWIP}>
+    <View style={styles.mainContainer}>
+      <WIP isReady={!shidurWIP && !cleanWIP}>
         <View>
           {isPlay ? (
             <View>

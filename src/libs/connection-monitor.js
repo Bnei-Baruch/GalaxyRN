@@ -5,6 +5,7 @@ import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
+import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
 
 export const NET_INFO_STATE_CONNECTED = 'CONNECTED';
@@ -40,6 +41,7 @@ export const initConnectionMonitor = () => {
     const isSame = isSameNetwork(state);
     currentState = state || {};
     if (!isSame) {
+      disconnectedSeconds = 0;
       logger.debug(NAMESPACE, 'Network state was changed');
       waitICERestart();
     }
@@ -66,7 +68,10 @@ const isSameNetworkIOS = newState => {
 
 export const waitICERestart = async () => {
   logger.debug(NAMESPACE, 'waitICERestart');
-  await waitConnection();
+  const connected = await waitConnection();
+  if (!connected) {
+    return;
+  }
 
   try {
     callListeners();
@@ -83,8 +88,7 @@ export const waitConnection = async () => {
     await monitorNetInfo();
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorNetInfo', e);
-    await useInRoomStore.getState().exitRoom();
-    await useInitsStore.getState().abortMqtt();
+    await onNoNetwork();
     return false;
   }
   logger.debug(NAMESPACE, 'monitorNetInfo success');
@@ -93,8 +97,7 @@ export const waitConnection = async () => {
     await monitorMqtt();
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorMqtt', e);
-    await useInRoomStore.getState().exitRoom();
-    await useInitsStore.getState().abortMqtt();
+    await onNoNetwork();
     return false;
   }
   logger.debug(NAMESPACE, 'monitorMqtt success');
@@ -102,6 +105,16 @@ export const waitConnection = async () => {
   disconnectedSeconds = 0;
   useSettingsStore.getState().setNetWIP(false);
   return true;
+};
+
+const onNoNetwork = async () => {
+  logger.debug(NAMESPACE, 'onNoNetwork');
+  try {
+    await useInRoomStore.getState().exitRoom();
+  } catch (e) {
+    logger.error(NAMESPACE, 'Error in exitRoom', e);
+  }
+  useInitsStore.getState().setMqttIsOn(false);
 };
 
 const monitorNetInfo = async () => {

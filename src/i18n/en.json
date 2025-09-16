@@ -102,6 +102,7 @@
     "tryAgain": "Try Again"
   },
   "connection": {
-    "unstable": "Connection not stable"
+    "unstable": "Connection not stable",
+    "noConnection": "No internet connection"
   }
 }

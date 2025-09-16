@@ -1,13 +1,12 @@
-import * as React from "react";
-import { useState } from "react";
-import { TouchableOpacity, Modal, View, StyleSheet } from "react-native";
-import IconWithText from "../../settings/IconWithText";
-import { useUserStore } from "../../zustand/user";
-import { useTranslation } from "react-i18next";
-import { WebView } from "react-native-webview";
-import { baseStyles } from "../../constants";
-import { useInitsStore } from "../../zustand/inits";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import * as React from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { WebView } from 'react-native-webview';
+import { baseStyles } from '../../constants';
+import IconWithText from '../../settings/IconWithText';
+import { useUserStore } from '../../zustand/user';
 
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
@@ -20,7 +19,7 @@ export const VoteBtn = () => {
   return (
     <>
       <TouchableOpacity onPress={toggleOpen} style={baseStyles.listItem}>
-        <IconWithText iconName="thumbs-up-down" text={t("bottomBar.vote")} />
+        <IconWithText iconName="thumbs-up-down" text={t('bottomBar.vote')} />
       </TouchableOpacity>
       {open && (
         <Modal
@@ -57,21 +56,21 @@ export const VoteBtn = () => {
 const styles = StyleSheet.create({
   modal: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   conteiner: {
     width: 200,
     height: 100,
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   item: {
     width: 100,
     height: 100,
   },
   close: {
-    position: "absolute",
+    position: 'absolute',
     top: -25,
     right: -25,
     zIndex: 1,

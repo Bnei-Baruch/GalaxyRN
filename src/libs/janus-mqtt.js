@@ -18,7 +18,6 @@ export class JanusMqtt {
     this.sessionId = undefined;
     this.transactions = {};
     this.pluginHandles = {};
-    this.sendCreate = true;
     this.keeptry = 0;
     this.token = null;
     this.connect = null;
@@ -44,6 +43,11 @@ export class JanusMqtt {
       logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
       throw error;
     }
+
+    mqtt.mq.on('close', () => {
+      logger.debug(NAMESPACE, 'mqtt on close');
+      this.destroy();
+    });
     logger.debug(NAMESPACE, 'init this.srv', this.srv);
     mqtt.mq.on(this.srv, this.onMessage);
 
@@ -80,7 +84,7 @@ export class JanusMqtt {
 
           this.sessionId = json.data.id;
           this.isConnected = true;
-          this.keepAlive(false);
+          this.keepAlive();
 
           logger.debug(
             NAMESPACE,
@@ -131,13 +135,22 @@ export class JanusMqtt {
     try {
       await this._cleanupPlugins();
       logger.debug(NAMESPACE, 'destroy _cleanupPlugins done');
-      const json = await this.transaction('destroy', {}, 'success', 5000);
+    } catch (err) {
+      logger.error(NAMESPACE, 'cleanupPlugins err', err);
+    }
+
+    try {
+      await this.transaction('destroy', {}, 'success', 5000);
+    } catch (err) {
+      logger.error(NAMESPACE, 'destroy err', err);
+    }
+
+    try {
       logger.debug(NAMESPACE, 'Janus destroyed');
       await this._cleanupTransactions();
       logger.debug(NAMESPACE, 'destroy _cleanupTransactions done');
-      return json;
     } catch (err) {
-      logger.error(NAMESPACE, 'destroy err', JSON.stringify(err));
+      logger.error(NAMESPACE, 'cleanupTransactions err', err);
     }
   };
 
@@ -174,6 +187,10 @@ export class JanusMqtt {
   };
 
   transaction = async (type, payload, replyType = 'ack', timeoutMs) => {
+    if (!type) {
+      return reject(new Error('Missing transaction type'));
+    }
+
     const isConnected = await waitConnection();
     if (!isConnected) {
       logger.error(NAMESPACE, 'Connection unavailable');
@@ -189,11 +206,6 @@ export class JanusMqtt {
       }
 
       try {
-        // Validate inputs
-        if (!type) {
-          return reject(new Error('Missing transaction type'));
-        }
-
         const request = Object.assign({}, payload, {
           token: this.token,
           janus: type,
@@ -257,33 +269,43 @@ export class JanusMqtt {
     });
   };
 
-  keepAlive = () => {
+  keepAlive = async () => {
     logger.debug(NAMESPACE, 'keepAlive tick', this.keeptry);
-    if (!this.isConnected || !this.sessionId || !netIsConnected()) {
+    logger.debug(NAMESPACE, 'keepAlive isConnected', this.isConnected);
+    if (!this.isConnected) {
+      return;
+    }
+
+    logger.debug(NAMESPACE, 'keepAlive sessionId', this.sessionId);
+    if (!this.sessionId || !netIsConnected()) {
       this.setKeepAliveTimer();
       return;
     }
 
     logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
-    this.transaction('keepalive', null, 'ack', 20 * 1000)
-      .then(() => {
-        this.keeptry = 0;
-        this.setKeepAliveTimer();
-      })
-      .catch(err => {
-        logger.debug(NAMESPACE, err, this.keeptry);
-        if (this.keeptry === 3) {
-          logger.error(
-            NAMESPACE,
-            `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
-          );
-          this.isConnected = false;
-          useInRoomStore.getState().restartRoom();
-          return;
-        }
-        this.setKeepAliveTimer();
-        this.keeptry++;
-      });
+    try {
+      const json = await this.transaction('keepalive', null, 'ack', 20 * 1000);
+      logger.debug(NAMESPACE, 'keepAlive done', json);
+      this.keeptry = 0;
+      this.setKeepAliveTimer();
+    } catch (err) {
+      logger.debug(NAMESPACE, 'keepAlive error', err);
+      if (!this.isConnected) {
+        return;
+      }
+      logger.debug(NAMESPACE, err, this.keeptry);
+      if (this.keeptry === 3) {
+        logger.error(
+          NAMESPACE,
+          `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
+        );
+        this.isConnected = false;
+        useInRoomStore.getState().restartRoom();
+        return;
+      }
+      this.setKeepAliveTimer();
+      this.keeptry++;
+    }
   };
 
   getTransaction = (json, ignoreReplyType = false) => {
@@ -323,6 +345,9 @@ export class JanusMqtt {
     this.clearKeepAliveTimer();
     const promises = Object.values(this.transactions).map(t => {
       logger.debug(NAMESPACE, '_cleanupTransactions', t?.transactionId);
+      if (t.timeout) {
+        BackgroundTimer.clearTimeout(t.timeout);
+      }
       return t.reject();
     });
     await Promise.allSettled(promises);
@@ -367,11 +392,15 @@ export class JanusMqtt {
       return;
     }
 
+    if (!this.isConnected) {
+      return;
+    }
+
     if (tD === 'status' && !json.online) {
       logger.debug(NAMESPACE, 'status');
       this.isConnected = false;
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
-      useInRoomStore.getState().exitRoom();
+      useInRoomStore.getState().restartRoom();
       alert('Janus Server - ' + this.srv + ' - Offline');
       return;
     }
@@ -574,9 +603,10 @@ export class JanusMqtt {
   };
 
   setKeepAliveTimer = (ms = 20 * 1000) => {
+    logger.debug(NAMESPACE, 'setKeepAliveTimer', ms);
     this.clearKeepAliveTimer();
     this.keepAliveTimer = BackgroundTimer.setTimeout(() => {
-      logger.debug(NAMESPACE, 'keepAliveTimer tick');
+      logger.debug(NAMESPACE, 'keepAliveTimer tick', this.keepAliveTimer);
       this.keepAlive();
     }, ms);
   };

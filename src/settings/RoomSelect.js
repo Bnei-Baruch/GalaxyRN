@@ -11,10 +11,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import useRoomStore from '../zustand/fetchRooms';
+import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 
 const NAMESPACE = 'RoomSelect';
@@ -25,7 +27,8 @@ const RoomSelect = () => {
   const [open, setOpen] = useState(false);
 
   const { fetchRooms, setRoom, room } = useRoomStore();
-  const { setReadyForJoin } = useInitsStore();
+  const { joinRoom } = useInRoomStore();
+  const { mqttIsOn } = useInitsStore();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -61,6 +64,21 @@ const RoomSelect = () => {
 
   const toggleOpen = (_open = !open) => setOpen(_open);
 
+  if (mqttIsOn === false) {
+    return (
+      <View style={[styles.container, styles.noConnectionContainer]}>
+        <View style={styles.iconContainer}>
+          <Icon name="warning" size={48} color="#ff6b6b" />
+        </View>
+        <Text style={styles.text}>{t('connection.noConnection')}</Text>
+      </View>
+    );
+  }
+
+  const handleJoin = () => {
+    joinRoom();
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'position' : 'height'}
@@ -72,7 +90,7 @@ const RoomSelect = () => {
           value={room?.description}
           button={
             <TouchableOpacity
-              onPress={setReadyForJoin}
+              onPress={handleJoin}
               disabled={!room}
               style={[styles.button, !room && styles.buttonDisabled]}
             >
@@ -120,6 +138,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     paddingTop: 10,
   },
+  noConnectionContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 20,
+  },
   searchInput: {
     flex: 1,
     paddingHorizontal: 10,
@@ -158,6 +182,17 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+  },
+  iconContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  text: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 30,
+    paddingHorizontal: 20,
   },
 });
 

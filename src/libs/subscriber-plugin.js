@@ -1,8 +1,9 @@
 import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString, sleep } from '../shared/tools';
-import { useInRoomStore } from '../zustand/inRoom';
+import { randomString } from '../shared/tools';
+import { useFeedsStore } from '../zustand/feeds';
+
 import {
   addConnectionListener,
   removeConnectionListener,
@@ -32,7 +33,7 @@ export class SubscriberPlugin {
         await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
-        useInRoomStore.getState().restartRoom();
+        useFeedsStore.getState().restartFeeds();
       }
     });
   }
@@ -49,10 +50,7 @@ export class SubscriberPlugin {
       additionalFields,
       replyType
     );
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      return Promise.reject(new Error('Network connection unavailable'));
-    }
+
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -165,20 +163,6 @@ export class SubscriberPlugin {
     return param;
   };
 
-  waitForStable = async (attempts = 0) => {
-    if (attempts > 30) {
-      throw new Error('Failed to wait for stable state');
-    }
-    if (!this.pc || this.pc.connectionState === 'closed') {
-      throw new Error('PeerConnection not available');
-    }
-    if (this.pc.signalingState === 'stable') {
-      return true;
-    }
-    await sleep(100);
-    return await this.waitForStable(attempts + 1);
-  };
-
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
 
@@ -188,29 +172,28 @@ export class SubscriberPlugin {
     }
 
     if (
-      useInRoomStore.getState().feedIds.filter(id => id !== 'my').length === 0
+      useFeedsStore.getState().feedIds.filter(id => id !== 'my').length === 0
     ) {
       logger.debug(NAMESPACE, 'No publishers in the room, skipping');
       return;
     }
+    this.iceRestartInProgress = true;
 
     const isConnected = await waitConnection();
-    logger.debug(NAMESPACE, 'isConnected: ', isConnected);
-    if (!isConnected) {
+    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
+      logger.error(NAMESPACE, 'peer connection closed');
+      this.iceRestartInProgress = false;
+      useFeedsStore.getState().restartFeeds();
       return;
     }
 
-    this.iceRestartInProgress = true;
-
     try {
-      await this.waitForStable();
-
       await this.configure();
 
       logger.info(NAMESPACE, 'ICE restart completed successfully');
     } catch (error) {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
-      useInRoomStore.getState().restartRoom();
+      useFeedsStore.getState().restartFeeds();
     } finally {
       this.iceRestartInProgress = false;
     }

@@ -9,8 +9,8 @@ import { create } from 'zustand';
 import logger from '../services/logger';
 
 // Zustand stores
+import { useFeedsStore } from './feeds';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
-import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 
 const NAMESPACE = 'UiActions';
@@ -59,7 +59,7 @@ export const useUiActions = create((set, get) => ({
     isShidur = isShidur ?? _isShidur;
 
     feedLength =
-      feedLength ?? Object.keys(useInRoomStore.getState().feedById).length;
+      feedLength ?? Object.keys(useFeedsStore.getState().feedById).length;
     const num = feedLength + (hideSelf ? 0 : 1);
     logger.debug('UiActions', 'updateWidth', num);
 

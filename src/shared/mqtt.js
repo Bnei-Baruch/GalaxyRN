@@ -10,6 +10,8 @@ import { useUserStore } from '../zustand/user';
 import { isServiceID, userRolesEnum } from './enums';
 import { randomString } from './tools';
 
+import { useInitsStore } from '../zustand/inits';
+
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
 
@@ -91,9 +93,10 @@ class MqttMsg {
     this.mq.on('connect', data => {
       logger.debug(NAMESPACE, 'mqtt on connect', data);
       this.isConnected = true;
+      useInitsStore.getState().setMqttIsOn(true);
     });
     this.mq.on('reconnect', data => {
-      logger.debug(NAMESPACE, 'mqtt on reconnect', data);
+      logger.debug(NAMESPACE, 'mqtt on reconnect', data, this.mq.connected);
     });
     this.mq.on('close', () => {
       logger.debug(NAMESPACE, 'mqtt on close');
@@ -237,13 +240,18 @@ class MqttMsg {
 
   end = async () => {
     this.isConnected = false;
+
+    logger.debug(NAMESPACE, 'start of mqttend', this.mq);
     if (!this.mq) return;
+
     try {
+      logger.debug(NAMESPACE, 'end removeAllListeners', this.mq);
       this.mq.removeAllListeners();
     } catch (e) {
       logger.error(NAMESPACE, 'end removeAllListeners', e);
     }
     try {
+      logger.debug(NAMESPACE, 'endAsync', this.mq);
       await this.mq.endAsync();
     } catch (e) {
       logger.error(NAMESPACE, 'endAsync error', e);

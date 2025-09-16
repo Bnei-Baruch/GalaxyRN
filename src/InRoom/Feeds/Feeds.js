@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useFeedsStore } from '../../zustand/feeds';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useMyStreamStore } from '../../zustand/myStream';
 import { useSettingsStore } from '../../zustand/settings';
@@ -13,7 +14,8 @@ const Feeds = () => {
   const { audioMode, hideSelf, isFullscreen } = useSettingsStore();
   const { cammute } = useMyStreamStore();
   const { setFeedsPos } = useUiActions();
-  const { feedIds, isInBackground } = useInRoomStore();
+  const { isInBackground } = useInRoomStore();
+  const { feedIds } = useFeedsStore();
 
   const ref = useRef({});
 

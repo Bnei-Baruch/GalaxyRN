@@ -14,11 +14,12 @@ import GxyConfig from '../shared/janus-config';
 import { deepClone } from '../shared/tools';
 
 import useRoomStore from './fetchRooms';
-import { useMyStreamStore } from './myStream';
+import useInRoomStore from './inRoom';
+import { getStream, useMyStreamStore } from './myStream';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
-const NAMESPACE = 'Feeds';
+const NAMESPACE = 'FeedsStore';
 
 let subscriber = null;
 let videoroom = null;
@@ -89,300 +90,6 @@ export const useFeedsStore = create((set, get) => ({
     );
   },
 
-  initJanus: async () => {
-    if (janus) {
-      await janus.destroy();
-      janus = null;
-    }
-
-    const { user } = useUserStore.getState();
-    const { room } = useRoomStore.getState();
-    const { cammute } = useMyStreamStore.getState();
-
-    let _subscriberJoined = false;
-
-    const makeSubscription = async pubs => {
-      logger.debug(NAMESPACE, 'makeSubscription pubs', pubs);
-
-      const feedById = deepClone(get().feedById);
-      const subs = [];
-      const unsubs = [];
-
-      for (const pub of pubs) {
-        const { id, display } = pub;
-
-        if (!pub.streams) {
-          unsubs.push({ feed: id });
-          feedById[id] && delete feedById[id];
-          continue;
-        }
-
-        let _isSubscribed = false;
-        pub.streams
-          .filter(s => s.type === 'audio' && s.codec === 'opus')
-          .forEach(s => {
-            const _data = { feed: id, mid: s.mid };
-            if (!feedById[id]) {
-              subs.push(_data);
-              _isSubscribed = true;
-            }
-          });
-
-        // Sub video streams
-        const vStream = pub.streams.find(
-          s => s?.type === 'video' && s.codec === 'h264'
-        );
-
-        if (!feedById[id]) {
-          logger.debug(NAMESPACE, `makeSubscription new feed ${id}`);
-          const camera = !!vStream && !vStream.disabled;
-          feedById[id] = {
-            id,
-            display: JSON.parse(display),
-            camera,
-          };
-        }
-        if (!_isSubscribed && vStream) {
-          subs.push({ feed: id });
-        }
-
-        feedById[id].vMid = vStream?.mid;
-        logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
-      }
-
-      logger.debug(NAMESPACE, 'makeSubscription subs', JSON.stringify(subs));
-      logger.debug(
-        NAMESPACE,
-        'makeSubscription unsubs',
-        JSON.stringify(unsubs)
-      );
-
-      if (_subscriberJoined) {
-        logger.debug(NAMESPACE, 'makeSubscription when _subscriberJoined');
-        set({ feedById });
-        get().setFeedIds();
-
-        if (subs.length > 0) await subscriber.sub(subs);
-        if (unsubs.length > 0) await subscriber.unsub(unsubs);
-
-        return;
-      }
-
-      if (subs.length === 0) return;
-
-      await subscriber.join(subs, room.room);
-      set({ feedById });
-      get().setFeedIds();
-      _subscriberJoined = true;
-      logger.debug(NAMESPACE, 'makeSubscription end');
-      return subs.map(s => s.feed);
-    };
-
-    const config = GxyConfig.instanceConfig(room.janus);
-    logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
-    janus = new JanusMqtt(user, config.name);
-    logger.debug(NAMESPACE, 'useInRoomStore joinRoom janus', janus);
-
-    /**
-     * Publish my video stream to the room
-     */
-    videoroom = new PublisherPlugin(config.iceServers);
-    videoroom.subTo = async pubs => {
-      logger.debug(NAMESPACE, 'videoroom.subTo start');
-      try {
-        await makeSubscription(pubs);
-      } catch (error) {
-        logger.error(NAMESPACE, 'Error subscribing to publishers', error);
-      }
-      logger.debug(NAMESPACE, 'videoroom.subTo sendUserState');
-      useUserStore.getState().sendUserState();
-      useUiActions.getState().updateWidth();
-    };
-
-    videoroom.unsubFrom = async ids => {
-      const params = [];
-      ids.forEach(id => {
-        const feed = get().feedById[id];
-        if (!feed) return;
-
-        params.push({ feed: parseInt(feed.id) });
-        logger.info(
-          NAMESPACE,
-          `Feed ${feed.id} ${JSON.stringify(feed)} has left the room, detaching`
-        );
-      });
-
-      // Send an unsubscribe request
-      try {
-        if (_subscriberJoined && params.length > 0) {
-          await subscriber.unsub(params);
-        }
-      } catch (error) {
-        logger.error(NAMESPACE, 'Error unsubscribing from publishers', error);
-      }
-
-      set(
-        produce(state => {
-          ids.forEach(id => {
-            state.feedById[id] && delete state.feedById[id];
-          });
-        })
-      );
-
-      useUiActions.getState().updateWidth();
-    };
-
-    videoroom.talkEvent = (id, talking) => {
-      set(
-        produce(state => {
-          if (state.feedById[id]) {
-            state.feedById[id].talking = talking;
-          }
-        })
-      );
-    };
-
-    /**
-     * Subscribe to members of the room
-     */
-    subscriber = new SubscriberPlugin(config.iceServers);
-    subscriber.onTrack = (track, stream, on) => {
-      const { id } = stream;
-      logger.info(
-        NAMESPACE,
-        `>> This track is coming from feed ${id}: ${JSON.stringify(track)}`
-      );
-      if (on && track.kind === 'video') {
-        let url;
-        try {
-          url = stream.toURL();
-        } catch (error) {
-          logger.error(NAMESPACE, 'Error setting feed url', error);
-          url = null;
-        }
-        set(
-          produce(state => {
-            state.feedById[id].vOn = true;
-            state.feedById[id].vWIP = false;
-            state.feedById[id].url = url;
-          })
-        );
-      }
-    };
-
-    subscriber.onUpdate = streams => {
-      logger.debug(NAMESPACE, 'subscriber.onUpdate streams', streams);
-      if (!streams) return;
-
-      const _videosByFeed = {};
-      for (const s of streams) {
-        if (s.type !== 'video' || !s.active) continue;
-        _videosByFeed[s.feed_id] = s;
-      }
-      logger.debug(NAMESPACE, 'Updated _videosByFeed', _videosByFeed);
-      set(
-        produce(state => {
-          for (const k in state.feedById) {
-            const f = state.feedById[k];
-            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[k]', f);
-            if (f && !_videosByFeed[f.id]) {
-              f.url = null;
-              f.vOn = false;
-              f.vWIP = false;
-            }
-          }
-        })
-      );
-    };
-
-    janus
-      .init(config.token)
-      .then(data => {
-        logger.info(NAMESPACE, 'joinRoom on janus.init', data, janus);
-        janus.attach(videoroom).then(data => {
-          AudioBridge.activateAudioOutput();
-          logger.info(NAMESPACE, 'Publisher Handle: ', data);
-          const timestamp = new Date().getTime();
-
-          const { id, role, username } = user;
-          const d = {
-            id,
-            timestamp,
-            role,
-            display: `${username} 📱`,
-            is_group: false,
-            is_desktop: false,
-          };
-          logger.info(
-            NAMESPACE,
-            `Videoroom init: d - ${d} room - ${room.room}`
-          );
-
-          videoroom
-            .join(room.room, d)
-            .then(async data => {
-              logger.info(NAMESPACE, 'Joined respond:', data);
-
-              useUserStore.getState().setJannusInfo({
-                session: janus.sessionId,
-                handle: videoroom.janusHandleId,
-                rfid: data.id,
-                timestamp,
-              });
-
-              // Feeds count with user role
-              let feeds_count = data.publishers.filter(
-                feed => feed.display.role === userRolesEnum.user
-              ).length;
-              if (feeds_count > 25) {
-                alert(i18n.t('messages.maxUsersInRoom'));
-                throw new Error('Max users in room');
-              }
-
-              await makeSubscription(
-                data.publishers.filter(p => p.id !== data.id)
-              );
-              useUserStore.getState().sendUserState();
-              const stream = await getStream();
-              if (!stream) {
-                logger.error(NAMESPACE, 'Stream is null');
-                throw new Error('Stream is null');
-              }
-              stream.getVideoTracks().forEach(track => {
-                track.enabled = !cammute;
-              });
-              return videoroom
-                .publish(stream)
-                .then(json => {
-                  useUserStore.getState().setExtraInfo({
-                    streams: json.streams,
-                    isGroup: false,
-                  });
-                  logger.debug(NAMESPACE, 'videoroom published', json);
-                  attempts = 0;
-                })
-                .catch(err => {
-                  logger.error(NAMESPACE, 'Publish error :', err);
-                  throw new Error('Publish error: ' + err);
-                });
-            })
-            .catch(err => {
-              logger.error(NAMESPACE, 'Join error:', err);
-              throw new Error('Join error: ' + err);
-            });
-        });
-
-        janus.attach(subscriber).then(data => {
-          logger.info(NAMESPACE, 'Subscriber Handle: ', data);
-        });
-      })
-      .catch(err => {
-        logger.error(NAMESPACE, 'Janus init error', err);
-        get().restartRoom();
-        return;
-      });
-  },
-
   initFeeds: async () => {
     logger.debug(NAMESPACE, 'initFeeds');
 
@@ -390,9 +97,9 @@ export const useFeedsStore = create((set, get) => ({
     const { room } = useRoomStore.getState();
 
     const config = GxyConfig.instanceConfig(room.janus);
-    logger.debug(NAMESPACE, 'useInRoomStore joinRoom config', config);
+    logger.debug(NAMESPACE, 'joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
-    logger.debug(NAMESPACE, 'useInRoomStore joinRoom janus', janus);
+    logger.debug(NAMESPACE, 'joinRoom janus', janus);
 
     try {
       await janus.init(config.token);
@@ -402,7 +109,7 @@ export const useFeedsStore = create((set, get) => ({
       await Promise.all([get().initSubscriber(), get().initPublisher()]);
     } catch (err) {
       logger.error(NAMESPACE, 'Janus init error', err);
-      await get().restartRoom();
+      await useInRoomStore.getState().restartRoom();
       return;
     }
   },
@@ -685,11 +392,12 @@ export const useFeedsStore = create((set, get) => ({
   },
 
   restartFeeds: async () => {
-    logger.debug(NAMESPACE, 'useInRoomStore restartFeeds', restartWIP);
+    logger.debug(NAMESPACE, 'restartFeeds', restartWIP);
 
     if (restartWIP || exitWIP) return;
+    restartWIP = true;
     await get().cleanFeeds();
-    await get().joinRoom();
+    await get().initFeeds();
 
     restartWIP = false;
   },
@@ -697,7 +405,7 @@ export const useFeedsStore = create((set, get) => ({
   cleanFeeds: async () => {
     // Clean up Janus
     if (janus) {
-      logger.info(NAMESPACE, 'useInRoomStore exitRoom janus', janus);
+      logger.info(NAMESPACE, 'exitRoom janus', janus);
       try {
         await janus.destroy();
       } catch (error) {
@@ -758,6 +466,7 @@ export const useFeedsStore = create((set, get) => ({
 
     return subscriber.unsub(params);
   },
+
   reconnectFeeds: async () => {
     const { feedById } = get();
     const ids = Object.keys(feedById);

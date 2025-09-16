@@ -178,11 +178,42 @@ class Api {
     );
   };
 
-  fetchVHInfo = () =>
-    this.logAndParse(
-      `fetch vh info`,
-      fetch(this.urlFor('/v2/vhinfo'), this.defaultOptions())
-    );
+  fetchVHInfo = async () => {
+    try {
+      logger.debug(NAMESPACE, 'fetchVHInfo');
+      const res = await fetch(this.urlFor('/v2/vhinfo'), this.defaultOptions());
+
+      if (!res.ok) {
+        logger.error(
+          NAMESPACE,
+          'fetchVHInfo HTTP error:',
+          res.status,
+          res.statusText
+        );
+
+        if (res.status === 401 || res.status === 403) {
+          return null;
+        } else if (res.status >= 500 && res.status < 600) {
+          throw new Error('SERVER_ERROR');
+        } else if (
+          res.status === 0 ||
+          res.status === 408 ||
+          res.status === 429
+        ) {
+          throw new Error('NETWORK_ERROR');
+        } else {
+          throw new Error(`HTTP_${res.status}`);
+        }
+      }
+
+      const data = await res.json();
+      logger.debug(NAMESPACE, 'fetchVHInfo data:', data);
+      return data;
+    } catch (e) {
+      logger.error(NAMESPACE, 'fetchVHInfo error:', e);
+      throw e;
+    }
+  };
 
   fetchGeoInfo = async () => {
     const defaultInfo = {

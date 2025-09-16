@@ -1,19 +1,11 @@
 import * as React from 'react';
-import { useEffect } from 'react';
-import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useShidurStore } from '../zustand/shidur';
 
 export const PlayPauseOverlay = () => {
-  const { toggleIsPlay, isAutoPlay, setAutoPlay } = useShidurStore();
-  const handleToggleIsPlay                        = () => toggleIsPlay();
-
-  useEffect(() => {
-    if (isAutoPlay) {
-      toggleIsPlay();
-      setAutoPlay(false);
-    }
-  }, []);
+  const { toggleIsPlay } = useShidurStore();
+  const handleToggleIsPlay = () => toggleIsPlay();
 
   return (
     <TouchableWithoutFeedback onPress={handleToggleIsPlay}>
@@ -26,10 +18,10 @@ export const PlayPauseOverlay = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width          : '100%',
-    alignItems     : 'center',
-    justifyContent : 'center',
-    aspectRatio    : 16 / 9,
-    backgroundColor: 'black'
-  }
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    aspectRatio: 16 / 9,
+    backgroundColor: 'black',
+  },
 });

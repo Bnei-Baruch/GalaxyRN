@@ -5,7 +5,7 @@ import {
   RTCSessionDescription,
 } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString, sleep } from '../shared/tools';
+import { randomString } from '../shared/tools';
 import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,
@@ -105,10 +105,7 @@ export class StreamingPlugin {
       additionalFields,
       replyType
     );
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      return Promise.reject(new Error('Network connection unavailable'));
-    }
+
     const payload = Object.assign({}, additionalFields, {
       handle_id: this.janusHandleId,
     });
@@ -134,27 +131,6 @@ export class StreamingPlugin {
     await this.sdpExchange(json.jsep);
   };
 
-  waitForStable = async (attempts = 0) => {
-    logger.debug(
-      NAMESPACE,
-      'waitForStable: ',
-      this.pc?.connectionState,
-      this.pc?.signalingState
-    );
-    if (attempts > 30) {
-      throw new Error('Failed to wait for stable state');
-    }
-    if (!this.pc || this.pc.connectionState === 'closed') {
-      throw new Error('PeerConnection not available');
-    }
-    if (this.pc.signalingState === 'stable') {
-      return true;
-    }
-    await sleep(100);
-    logger.debug(NAMESPACE, 'waitForStable loop: ', this.pc?.connectionState);
-    return this.waitForStable(attempts + 1);
-  };
-
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
 
@@ -170,12 +146,11 @@ export class StreamingPlugin {
       return;
     }
 
-    try {
-      await this.waitForStable();
-    } catch (error) {
-      logger.error(NAMESPACE, 'Failed to wait for stable state:', error);
-      useShidurStore.getState().restartShidur();
+    const isConnected = await waitConnection();
+    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
+      logger.error(NAMESPACE, 'peer connection closed');
       this.iceRestartInProgress = false;
+      useShidurStore.getState().restartShidur();
       return;
     }
 

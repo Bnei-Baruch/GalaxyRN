@@ -4,7 +4,7 @@ import { RTCView } from 'react-native-webrtc';
 import logger from '../../services/logger';
 
 import WIP from '../../components/WIP';
-import { useInRoomStore } from '../../zustand/inRoom';
+import { useFeedsStore } from '../../zustand/feeds';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
 import FeedDisplay from './FeedDisplay';
@@ -21,7 +21,7 @@ const RTCViewWrapper = memo(
 
 const Feed = ({ id }) => {
   const { feedById, activateFeedsVideos, deactivateFeedsVideos } =
-    useInRoomStore();
+    useFeedsStore();
   const { borders, width } = useUiActions();
 
   const feed = feedById[id];

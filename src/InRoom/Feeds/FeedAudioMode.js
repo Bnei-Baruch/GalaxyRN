@@ -1,9 +1,9 @@
 import React from 'react';
-import { useInRoomStore } from '../../zustand/inRoom';
+import { useFeedsStore } from '../../zustand/feeds';
 import FeedAudioModeView from './FeedAudioModeView';
 
 const FeedAudioMode = ({ id }) => {
-  const { feedById } = useInRoomStore();
+  const { feedById } = useFeedsStore();
 
   const feed = feedById[id];
   if (!feed) return null;

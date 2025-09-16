@@ -200,6 +200,7 @@ public class MainApplication extends Application implements ReactApplication {
             // Stop foreground service
             try {
                 app.stopService(new Intent(app, ForegroundService.class));
+                app.isCleaningUp = false;
             } catch (Exception e) {
                 GxyLogger.e(TAG, "Error stopping foreground service", e);
             }

@@ -102,6 +102,7 @@
     "sendButton": "שלח"
   },
   "connection": {
-    "unstable": "החיבור אינו יציב"
+    "unstable": "החיבור אינו יציב",
+    "noConnection": "אין חיבור לאינטרנט"
   }
 }

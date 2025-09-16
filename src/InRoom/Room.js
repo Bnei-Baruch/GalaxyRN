@@ -2,17 +2,14 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomBar } from '../bottomBar/BottomBar';
 import { TopBar } from '../topBar/TopBar';
-
-import RoomLayout from './Layout/RoomLayout';
-
 import { useInRoomStore } from '../zustand/inRoom';
+import RoomLayout from './Layout/RoomLayout';
+import useForegroundListener from './useForegroundListener';
 
 const Room = () => {
-  const { joinRoom, exitRoom } = useInRoomStore();
-
+  const { exitRoom } = useInRoomStore();
+  useForegroundListener();
   useEffect(() => {
-    joinRoom();
-
     return () => {
       exitRoom();
     };

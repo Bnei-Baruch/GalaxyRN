@@ -380,18 +380,12 @@ class Keycloak {
       useUserStore.getState().setVhinfo(vhinfo);
 
       const isAuthorized = !!vhinfo.active && role === userRolesEnum.user;
-      logger.debug(NAMESPACE, 'Authorization result:', isAuthorized, {
-        active: !!vhinfo.active,
-        roleMatches: role === userRolesEnum.user,
-        role,
-        expectedRole: userRolesEnum.user,
-      });
+      logger.debug(NAMESPACE, 'Authorization result:', isAuthorized);
 
       return isAuthorized;
     } catch (err) {
       logger.error(NAMESPACE, 'Error in permission check:', err);
-      useUserStore.getState().setVhinfo({ active: false, error: err });
-      return false;
+      throw err;
     }
   };
 

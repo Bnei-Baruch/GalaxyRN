@@ -12,6 +12,7 @@ import logger from '../services/logger';
 // Auth
 
 // Shared modules
+import kc from '../auth/keycloak';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
@@ -19,6 +20,7 @@ import mqtt from '../shared/mqtt';
 
 // Zustand stores
 import { useChatStore } from './chat';
+import { useFeedsStore } from './feeds';
 import { modalModes } from './helper';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
@@ -49,11 +51,13 @@ let subscription = null;
 export const useInitsStore = create((set, get) => ({
   permissionsReady: false,
   setPermissionsReady: (permissionsReady = true) => set({ permissionsReady }),
+  isAppInited: false,
+  setIsAppInited: (isAppInited = true) => set({ isAppInited }),
 
-  mqttReady: false,
+  mqttIsOn: null,
+  setMqttIsOn: (mqttIsOn = true) => set({ mqttIsOn }),
+
   configReady: false,
-  readyForJoin: false,
-  setReadyForJoin: (readyForJoin = true) => set({ readyForJoin }),
 
   isPortrait: true,
   setIsPortrait: isPortrait => {
@@ -63,24 +67,24 @@ export const useInitsStore = create((set, get) => ({
 
   initMQTT: async () => {
     const { user } = useUserStore.getState();
-    const { restartRoom, exitRoom } = useInRoomStore.getState();
+    const { restartRoom } = useInRoomStore.getState();
 
     try {
       await mqtt.init();
       logger.debug(NAMESPACE, 'MQTT initialized');
       await mqtt.join('galaxy/users/notification');
       await mqtt.join('galaxy/users/broadcast');
-      set(() => ({ mqttReady: true }));
+      set({ mqttIsOn: true });
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing MQTT:', error);
-      restartRoom();
+      get().abortMqtt();
       return;
     }
 
     const { toggleCammute, toggleMute } = useMyStreamStore.getState();
     const { streamGalaxy } = useShidurStore.getState();
     const { toggleQuestion } = useSettingsStore.getState();
-    const { updateDisplayById } = useInRoomStore.getState();
+    const { updateDisplayById } = useFeedsStore.getState();
 
     mqtt.watch(data => {
       const { type, id, bitrate } = data;
@@ -125,14 +129,16 @@ export const useInitsStore = create((set, get) => ({
       } catch (err) {
         logger.error(NAMESPACE, 'Error exiting MQTT topics:', err);
       }
+
       try {
         await mqtt.end();
+        logger.debug(NAMESPACE, 'MQTT connection ended');
       } catch (err) {
         logger.error(NAMESPACE, 'Error ending MQTT connection:', err);
       }
     }
 
-    set(() => ({ mqttReady: false, configReady: false }));
+    set(() => ({ mqttIsOn: false }));
     logger.debug(NAMESPACE, 'abortMqtt done');
   },
 
@@ -183,8 +189,8 @@ export const useInitsStore = create((set, get) => ({
             logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');
-            useShidurStore.getState().setAutoPlay(_isPlay);
-            get().setReadyForJoin(true);
+            useShidurStore.getState().initShidur(_isPlay);
+            useInRoomStore.getState().joinRoom();
             logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
