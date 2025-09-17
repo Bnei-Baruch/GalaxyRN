@@ -118,9 +118,6 @@ public class MainActivity extends ReactActivity {
             // Stop foreground services
             stopForegroundServices();
 
-            // Ensure application-level cleanup
-            MainApplication.performCleanup();
-
             // Final cleanup log
             GxyLogger.i(TAG, "Activity cleanup completed");
 

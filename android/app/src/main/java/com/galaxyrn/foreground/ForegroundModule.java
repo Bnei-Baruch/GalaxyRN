@@ -1,11 +1,18 @@
 package com.galaxyrn.foreground;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import com.galaxyrn.logger.GxyLogger;import android.view.WindowManager;
+import com.galaxyrn.logger.GxyLogger;
+import android.view.WindowManager;
+
+import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -15,6 +22,8 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+
+import com.galaxyrn.MainApplication;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 
@@ -30,9 +39,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
     private final ForegroundService foregroundService;
     private final Handler mainHandler;
     private boolean isServiceRunning = false;
-    private static final long DEBOUNCE_TIME_MS = 500;
-    private long lastBackgroundTime = 0;
-    private long lastForegroundTime = 0;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -63,84 +69,37 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         mainHandler.post(() -> {
             ProcessLifecycleOwner.get().getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
                 if (event == Lifecycle.Event.ON_STOP) {
-                    GxyLogger.d(TAG, "App entered background (ProcessLifecycleOwner)");
+                    GxyLogger.d(TAG, "App entered background");
                     handleAppBackgrounded(reactContext);
                 } else if (event == Lifecycle.Event.ON_START) {
-                    GxyLogger.d(TAG, "App entered foreground (ProcessLifecycleOwner)");
+                    GxyLogger.d(TAG, "App entered foreground");
                     handleAppForegrounded(reactContext);
                 } else if (event == Lifecycle.Event.ON_DESTROY) {
-                    GxyLogger.d(TAG, "App is being destroyed (ProcessLifecycleOwner)");
+                    GxyLogger.w(TAG, "App destruction detected - performing cleanup");
                     ensureServiceStopped(reactContext);
+                    performCleanup(reactContext);
                 }
             });
         });
     }
 
     /**
-     * Check if we should debounce the background transition
-     */
-    private boolean shouldDebounceBackground() {
-        long now = System.currentTimeMillis();
-
-        if (now - lastForegroundTime < DEBOUNCE_TIME_MS) {
-            GxyLogger.d(TAG, "Debouncing background transition - too soon after foreground");
-            return true;
-        }
-        lastBackgroundTime = now;
-        return false;
-    }
-
-    /**
-     * Check if we should debounce the foreground transition
-     */
-    private boolean shouldDebounceForeground() {
-        long now = System.currentTimeMillis();
-
-        if (now - lastBackgroundTime < DEBOUNCE_TIME_MS) {
-            GxyLogger.d(TAG, "Debouncing foreground transition - too soon after background");
-            return true;
-        }
-        lastForegroundTime = now;
-        return false;
-    }
-
-    /**
      * Handles actions when app goes to background
-     *
-     * @param context The React application context
      */
     private void handleAppBackgrounded(ReactApplicationContext context) {
-        if (shouldDebounceBackground()) {
-            return;
-        }
-
         if (!isServiceRunning) {
-            mainHandler.postDelayed(() -> {
-                // Double-check we're still in background before starting service
-                if (!isServiceRunning) {
-                    foregroundService.start(context);
-                    isServiceRunning = true;
-                    GxyLogger.d(TAG, "Started foreground service, service running: " + isServiceRunning);
-                }
-            }, 250); // Small delay to avoid race conditions
+            foregroundService.start(context);
+            isServiceRunning = true;
+            GxyLogger.d(TAG, "Started foreground service");
         }
         disableKeepScreenOn();
     }
 
     private void handleAppForegrounded(ReactApplicationContext context) {
-        if (shouldDebounceForeground()) {
-            return;
-        }
-
         if (isServiceRunning) {
-            mainHandler.postDelayed(() -> {
-                // Double-check we're still in foreground before stopping service
-                if (isServiceRunning) {
-                    foregroundService.stop(context);
-                    isServiceRunning = false;
-                    GxyLogger.d(TAG, "Stopped foreground service, service running: " + isServiceRunning);
-                }
-            }, 250); // Small delay to avoid race conditions
+            foregroundService.stop(context);
+            isServiceRunning = false;
+            GxyLogger.d(TAG, "Stopped foreground service");
         }
         enableKeepScreenOn();
     }
@@ -191,9 +150,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
 
     @Override
     public void onHostDestroy() {
-        GxyLogger.d(TAG, "onHostDestroy - Cleanup resources");
-        // App is being destroyed
-        ensureServiceStopped(getReactApplicationContext());
+        GxyLogger.d(TAG, "onHostDestroy");
+        performCleanup(getReactApplicationContext());
     }
 
     /**
@@ -233,5 +191,72 @@ public class ForegroundModule extends ReactContextBaseJavaModule implements Life
         }
 
         activity.runOnUiThread(() -> activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+    }
+
+    private void performCleanup(ReactApplicationContext context) {
+        GxyLogger.i(TAG, "Starting cleanup");
+
+        // 1. Notify JS side and destroy React Native context
+        try {
+            MainApplication app = MainApplication.getInstance();
+            if (app != null && app.getReactNativeHost() != null) {
+                ReactInstanceManager rim = app.getReactNativeHost().getReactInstanceManager();
+                if (rim != null) {
+                    try {
+                        if (context != null) {
+                            rim.getCurrentReactContext()
+                                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                    .emit("appTerminating", null);
+                            GxyLogger.d(TAG, "Sent termination signal to JS");
+                            Thread.sleep(1000);
+                        }
+                    } catch (Exception jsError) {
+                        GxyLogger.w(TAG, "Could not send JS signal (normal during swipe-kill)", jsError);
+                    }
+
+                    GxyLogger.i(TAG, "Destroying React Native context");
+                    rim.destroy();
+                }
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error destroying React Native context", e);
+        }
+
+        // 2. Reset audio state
+        try {
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.abandonAudioFocus(null);
+                am.setMode(AudioManager.MODE_NORMAL);
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error resetting audio", e);
+        }
+
+        // 3. Flush Sentry
+        try {
+            io.sentry.Sentry.flush(1000); // Reduced timeout
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error flushing Sentry", e);
+        }
+
+        // 4. Force cleanup system resources
+        try {
+            GxyLogger.i(TAG, "Forcing garbage collection");
+            System.gc();
+            System.runFinalization();
+
+            Thread.sleep(500);
+
+            GxyLogger.i(TAG, "Cleanup completed - terminating process");
+
+            // More aggressive process termination
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error during final cleanup", e);
+            System.exit(1);
+        }
     }
 }

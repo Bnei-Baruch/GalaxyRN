@@ -5,12 +5,13 @@ import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
+
+import { netIsConnected } from '../libs/connection-monitor';
+import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { isServiceID, userRolesEnum } from './enums';
 import { randomString } from './tools';
-
-import { useInitsStore } from '../zustand/inits';
 
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
@@ -109,14 +110,14 @@ class MqttMsg {
   };
 
   join = async (topic, chat) => {
-    if (!this.mq) return;
+    if (!netIsConnected()) return;
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = chat ? { qos: 0, nl: false } : { qos: 1, nl: true };
     return this.mq.subscribeAsync(topic, { ...options });
   };
 
   sub = (topic, qos) => {
-    if (!this.mq) return;
+    if (!netIsConnected()) return;
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = { qos, nl: true };
     return this.mq.subscribeAsync(topic, { ...options });
@@ -124,7 +125,7 @@ class MqttMsg {
 
   exit = async topic => {
     logger.debug(NAMESPACE, `Unsubscribe from: ${topic}`);
-    if (!this.mq) return;
+    if (!netIsConnected()) return;
     let options = {};
     logger.info(NAMESPACE, `Unsubscribe from: ${topic}`);
     return this.mq.unsubscribeAsync(topic, { ...options });
@@ -132,7 +133,7 @@ class MqttMsg {
 
   send = (message, retain, topic, rxTopic) => {
     logger.debug(NAMESPACE, `Send message to: ${topic}`);
-    if (!this.mq) return;
+    if (!netIsConnected()) return;
     const { user } = useUserStore.getState();
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? ` | transaction: ${correlationData}` : '';
