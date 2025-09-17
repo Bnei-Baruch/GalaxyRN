@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import com.galaxyrn.R;
+import com.galaxyrn.MainApplication;
 
 public class ForegroundService extends Service {
     private static final String TAG = "ForegroundService";
@@ -56,12 +57,16 @@ public class ForegroundService extends Service {
             }
 
             if (componentName == null) {
-                GxyLogger.w(TAG, "Foreground service not started");
+                GxyLogger.w(TAG, "Foreground service not started - component name is null");
             } else {
-                GxyLogger.i(TAG, "Foreground service started successfully");
+                GxyLogger.i(TAG, "Foreground service started successfully: " + componentName.toString());
             }
+        } catch (SecurityException e) {
+            GxyLogger.e(TAG, "Security exception when starting foreground service", e);
+        } catch (IllegalStateException e) {
+            GxyLogger.e(TAG, "Illegal state when starting foreground service", e);
         } catch (RuntimeException e) {
-            GxyLogger.w(TAG, "Failed to start foreground service", e);
+            GxyLogger.e(TAG, "Runtime exception when starting foreground service", e);
         }
     }
 
@@ -73,28 +78,49 @@ public class ForegroundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        GxyLogger.i(TAG, "ForegroundService: onStartCommand");
+        GxyLogger.i(TAG, "ForegroundService: onStartCommand - starting immediately");
 
         try {
             Notification notification = buildNotification(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                GxyLogger.i(TAG, "Successfully started as foreground service with MEDIA_PLAYBACK type");
             } else {
                 startForeground(NOTIFICATION_ID, notification);
+                GxyLogger.i(TAG, "Successfully started as foreground service (legacy)");
             }
             mIsServiceStarted = true;
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error starting foreground", e);
         }
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        GxyLogger.i(TAG, "ForegroundService: onTaskRemoved");
-        cleanup();
-        stopSelf();
+        GxyLogger.i(TAG, "ForegroundService: onTaskRemoved - app swiped away from recent tasks");
+
+        try {
+            // cleanup on swipe close from background
+            MainApplication app = MainApplication.getInstance();
+            if (app != null) {
+                GxyLogger.i(TAG, "Performing MainApplication cleanup");
+                MainApplication.performCleanup();
+            }
+
+            // Perform service cleanup
+            GxyLogger.i(TAG, "Performing service cleanup");
+            cleanup();
+
+            // Stop the service
+            GxyLogger.i(TAG, "Stopping service after task removal");
+            stopSelf();
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error in onTaskRemoved", e);
+            // Still try to stop the service even if cleanup fails
+            stopSelf();
+        }
     }
 
     @Override

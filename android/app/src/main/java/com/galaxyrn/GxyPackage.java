@@ -46,10 +46,10 @@ public class GxyPackage implements ReactPackage {
         try {
             GxyLogger.i(TAG, "Adding standard modules");
             modules.add(new LoggerModule(reactContext));
+            modules.add(new ForegroundModule(reactContext));
 
             modules.add(new PermissionsModule(reactContext));
             modules.add(new WakeLockModule(reactContext));
-            modules.add(new ForegroundModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
             modules.add(new CallListenerModule(reactContext));
         } catch (Exception e) {

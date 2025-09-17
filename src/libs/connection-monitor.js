@@ -163,7 +163,7 @@ const monitorMqtt = async () => {
   return new Promise(resolve => {
     timeout = BackgroundTimer.setTimeout(() => {
       try {
-        //mqtt.mq.reconnect();
+        mqtt.mq.reconnect();
         logger.debug(NAMESPACE, 'mqtt reconnect triggered');
       } catch (e) {
         logger.error(NAMESPACE, 'mqtt reconnect error', e);

@@ -81,7 +81,7 @@ const RoomSelect = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'position' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'position' : 'padding'}
       keyboardVerticalOffset={45}
     >
       <View style={styles.container}>

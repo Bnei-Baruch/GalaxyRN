@@ -26,20 +26,6 @@ import com.galaxyrn.logger.GxyLoggerUtils;
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
     private PermissionHelper permissionHelper;
-    private static volatile boolean isCleanupInProgress = false;
-
-    private synchronized boolean startCleanup() {
-        if (isCleanupInProgress) {
-            GxyLogger.w(TAG, "Cleanup already in progress, skipping");
-            return false;
-        }
-        isCleanupInProgress = true;
-        return true;
-    }
-
-    private void finishCleanup() {
-        isCleanupInProgress = false;
-    }
 
     /**
      * Returns the name of the main component registered from JavaScript.
@@ -82,65 +68,15 @@ public class MainActivity extends ReactActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        GxyLogger.d(TAG, "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        GxyLogger.d(TAG, "onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        GxyLogger.d(TAG, "onStop");
-    }
-
-    @Override
     protected void onDestroy() {
         GxyLogger.d(TAG, "onDestroy - ensuring all services are stopped");
-
-        if (!startCleanup()) {
-            super.onDestroy();
-            return;
-        }
+        super.onDestroy();
 
         try {
-            // Clear screen lock flag first
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-            // Reset volume control stream
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-
-            // Stop foreground services
-            stopForegroundServices();
-
-            // Final cleanup log
             GxyLogger.i(TAG, "Activity cleanup completed");
-
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during activity cleanup", e);
-        } finally {
-            finishCleanup();
-            super.onDestroy();
-            GxyLogger.d(TAG, "onDestroy completed");
-        }
-    }
-
-    private void stopForegroundServices() {
-        try {
-            GxyLogger.d(TAG, "Stopping foreground services");
-
-            // Stop the foreground service
-            Intent serviceIntent = new Intent(this, ForegroundService.class);
-            boolean stopped = stopService(serviceIntent);
-            GxyLogger.d(TAG, "ForegroundService stopped: " + stopped);
-
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error stopping foreground services", e);
         }
     }
 

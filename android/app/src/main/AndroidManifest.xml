@@ -64,7 +64,7 @@
             android:name=".foreground.ForegroundService"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="true"
+            android:stopWithTask="false"
             android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>
