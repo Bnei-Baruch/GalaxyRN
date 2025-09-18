@@ -61,8 +61,8 @@ export const useInRoomStore = create((set, get) => ({
     const { room } = useRoomStore.getState();
     try {
       Promise.all([
-        mqtt.join(`galaxy/room/${room.room}`),
-        mqtt.join(`galaxy/room/${room.room}/chat`, true),
+        mqtt.sub(`galaxy/room/${room.room}`),
+        mqtt.sub(`galaxy/room/${room.room}/chat`, { qos: 0, nl: false }),
       ]);
     } catch (error) {
       logger.error(NAMESPACE, 'Error joining MQTT rooms', error);

@@ -1,6 +1,6 @@
 import mqtt from 'mqtt';
 //import GxyConfig from "./janus-utils";
-import { MQTT_URL, MSG_URL } from '@env';
+import { MSG_URL } from '@env';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 
@@ -10,7 +10,8 @@ import { netIsConnected } from '../libs/connection-monitor';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
-import { isServiceID, userRolesEnum } from './enums';
+import { useVersionStore } from '../zustand/version';
+import { isServiceID } from './enums';
 import { randomString } from './tools';
 
 const mqttTimeout = 30; // Seconds
@@ -78,13 +79,9 @@ class MqttMsg {
       };
     }
 
-    const url =
-      user.role !== userRolesEnum.user && !service && user?.isClient
-        ? MQTT_URL
-        : MSG_URL;
-    logger.debug(NAMESPACE, 'Connecting to MQTT:', url);
+    logger.debug(NAMESPACE, 'Connecting to MQTT:', MSG_URL);
     try {
-      this.mq = await mqtt.connectAsync(`wss://${url}`, options);
+      this.mq = await mqtt.connectAsync(`wss://${MSG_URL}`, options);
     } catch (error) {
       logger.error(NAMESPACE, 'Error connecting to MQTT:', error);
       throw error;
@@ -109,17 +106,10 @@ class MqttMsg {
     return this.mq;
   };
 
-  join = async (topic, chat) => {
+  sub = (topic, opt = {}) => {
     if (!netIsConnected()) return;
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
-    let options = chat ? { qos: 0, nl: false } : { qos: 1, nl: true };
-    return this.mq.subscribeAsync(topic, { ...options });
-  };
-
-  sub = (topic, qos) => {
-    if (!netIsConnected()) return;
-    logger.info(NAMESPACE, `Subscribe to: ${topic}`);
-    let options = { qos, nl: true };
+    let options = { qos: 1, nl: true, ...opt };
     return this.mq.subscribeAsync(topic, { ...options });
   };
 
@@ -179,6 +169,17 @@ class MqttMsg {
             useSubtitleStore.getState().onMessage(data);
           } catch (e) {
             logger.error(NAMESPACE, e);
+          }
+          break;
+        case 'mobile':
+          if (service === 'releases') {
+            try {
+              logger.debug(NAMESPACE, `On mobile msg from topic ${topic}`);
+              const msg = JSON.parse(data.toString());
+              useVersionStore.getState().onMessage(msg);
+            } catch (e) {
+              logger.error(NAMESPACE, e);
+            }
           }
           break;
         case 'galaxy':

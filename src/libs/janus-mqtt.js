@@ -35,9 +35,9 @@ export class JanusMqtt {
     logger.debug(NAMESPACE, 'init this.user', this.user);
     try {
       await Promise.all([
-        mqtt.sub(this.rxTopic + '/' + this.user.id, 0),
-        mqtt.sub(this.rxTopic, 0),
-        mqtt.sub(this.stTopic, 1),
+        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 0 }),
+        mqtt.sub(this.rxTopic, { qos: 0 }),
+        mqtt.sub(this.stTopic, { qos: 1 }),
       ]);
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);

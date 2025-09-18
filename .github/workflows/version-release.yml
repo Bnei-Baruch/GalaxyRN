@@ -1,0 +1,66 @@
+name: Version Release Notification
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  notify-version-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get versions from all platforms
+        id: version_check
+        run: |
+          # Get version from package.json
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "Package.json version: $PACKAGE_VERSION"
+
+          # Get Android version and build code
+          ANDROID_VERSION_NAME=$(grep -o 'versionName "[^"]*"' android/app/build.gradle | sed 's/versionName "//;s/"//')
+          ANDROID_VERSION_CODE=$(grep -o 'versionCode [0-9]*' android/app/build.gradle | sed 's/versionCode //')
+          echo "android_version_name=$ANDROID_VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "android_version_code=$ANDROID_VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "Android version: $ANDROID_VERSION_NAME ($ANDROID_VERSION_CODE)"
+
+          # Get iOS version and build number
+          IOS_MARKETING_VERSION=$(grep -o 'MARKETING_VERSION = [^;]*;' ios/GalaxyRN.xcodeproj/project.pbxproj | head -1 | sed 's/MARKETING_VERSION = //;s/;//')
+          IOS_CURRENT_PROJECT_VERSION=$(grep -o 'CURRENT_PROJECT_VERSION = [^;]*;' ios/GalaxyRN.xcodeproj/project.pbxproj | head -1 | sed 's/CURRENT_PROJECT_VERSION = //;s/;//')
+          echo "ios_marketing_version=$IOS_MARKETING_VERSION" >> $GITHUB_OUTPUT
+          echo "ios_current_project_version=$IOS_CURRENT_PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "iOS version: $IOS_MARKETING_VERSION ($IOS_CURRENT_PROJECT_VERSION)"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install dotenv
+        run: yarn add dotenv
+
+      - name: Send MQTT notification
+        env:
+          MQTT_TOKEN: ${{ secrets.MQTT_TOKEN }}
+        run: |
+          node scripts/send-mqtt-notification.js \
+            "${{ steps.version_check.outputs.package_version }}" \
+            "${{ steps.version_check.outputs.android_version_name }}" \
+            "${{ steps.version_check.outputs.android_version_code }}" \
+            "${{ steps.version_check.outputs.ios_marketing_version }}" \
+            "${{ steps.version_check.outputs.ios_current_project_version }}"
+
+      - name: Log notification result
+        run: |
+          echo "✅ MQTT notification sent successfully!"
+          echo "Package.json: ${{ steps.version_check.outputs.package_version }}"
+          echo "Android: ${{ steps.version_check.outputs.android_version_name }} (build ${{ steps.version_check.outputs.android_version_code }})"
+          echo "iOS: ${{ steps.version_check.outputs.ios_marketing_version }} (build ${{ steps.version_check.outputs.ios_current_project_version }})"

@@ -55,8 +55,8 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     try {
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-      mqtt.join(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+      mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
+      mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
     } catch (e) {
       logger.error(NAMESPACE, `Error joining topics:`, e);
     }

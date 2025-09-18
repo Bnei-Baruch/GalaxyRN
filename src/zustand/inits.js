@@ -72,11 +72,21 @@ export const useInitsStore = create((set, get) => ({
     try {
       await mqtt.init();
       logger.debug(NAMESPACE, 'MQTT initialized');
-      await mqtt.join('galaxy/users/notification');
-      await mqtt.join('galaxy/users/broadcast');
       set({ mqttIsOn: true });
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing MQTT:', error);
+      get().abortMqtt();
+      return;
+    }
+
+    try {
+      await Promise.all([
+        mqtt.sub('galaxy/users/notification'),
+        mqtt.sub('galaxy/users/broadcast'),
+        mqtt.sub('mobile/releases', { rap: true }),
+      ]);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
       get().abortMqtt();
       return;
     }
@@ -125,6 +135,7 @@ export const useInitsStore = create((set, get) => ({
         await Promise.all([
           mqtt.exit('galaxy/users/notification'),
           mqtt.exit('galaxy/users/broadcast'),
+          mqtt.exit('mobile/releases'),
         ]);
       } catch (err) {
         logger.error(NAMESPACE, 'Error exiting MQTT topics:', err);

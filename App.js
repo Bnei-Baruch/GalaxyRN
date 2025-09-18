@@ -15,7 +15,6 @@ import CheckAuthentication from './src/auth/CheckAuthentication';
 import SentryErrorBoundary from './src/libs/sentry/SentryErrorBoundary';
 import AndroidPermissions from './src/services/AndroidPermissions';
 import InitApp from './src/services/InitApp';
-import VersionCheck from './src/services/VersionCheck';
 import logger from './src/services/logger';
 
 Sentry.init({
@@ -42,13 +41,11 @@ const App = () => {
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
         <SentryErrorBoundary>
-          <VersionCheck>
-            <AndroidPermissions>
-              <CheckAuthentication>
-                <InitApp />
-              </CheckAuthentication>
-            </AndroidPermissions>
-          </VersionCheck>
+          <AndroidPermissions>
+            <CheckAuthentication>
+              <InitApp />
+            </CheckAuthentication>
+          </AndroidPermissions>
         </SentryErrorBoundary>
       </SafeAreaView>
     </SafeAreaProvider>

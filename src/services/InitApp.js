@@ -18,13 +18,15 @@ import useAudioDevicesStore from '../zustand/audioDevices';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
-
+import { useVersionStore } from '../zustand/version';
+import RequiredUpdate from './RequiredUpdate';
 import logger from './logger';
 
 const NAMESPACE = 'InitApp';
 
 const InitApp = () => {
   const { myInit, myAbort } = useMyStreamStore();
+  const { forceUpdate } = useVersionStore();
   const {
     setIsPortrait,
     initApp,
@@ -70,6 +72,10 @@ const InitApp = () => {
       removeConnectionMonitor();
     };
   }, [isAppInited]);
+
+  if (forceUpdate) {
+    return <RequiredUpdate />;
+  }
 
   if (!isInRoom) {
     return <SettingsNotJoined />;
