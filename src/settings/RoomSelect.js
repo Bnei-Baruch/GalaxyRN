@@ -28,7 +28,7 @@ const RoomSelect = () => {
 
   const { fetchRooms, setRoom, room } = useRoomStore();
   const { joinRoom } = useInRoomStore();
-  const { mqttIsOn } = useInitsStore();
+  const { mqttIsOn, abortMqtt, initMQTT } = useInitsStore();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -65,12 +65,20 @@ const RoomSelect = () => {
   const toggleOpen = (_open = !open) => setOpen(_open);
 
   if (mqttIsOn === false) {
+    const handleRestartMqtt = async () => {
+      await abortMqtt();
+      await initMQTT();
+    };
+
     return (
       <View style={[styles.container, styles.noConnectionContainer]}>
         <View style={styles.iconContainer}>
           <Icon name="warning" size={48} color="#ff6b6b" />
         </View>
         <Text style={styles.text}>{t('connection.noConnection')}</Text>
+        <TouchableOpacity style={styles.button} onPress={handleRestartMqtt}>
+          <Text style={styles.buttonText}>{t('settings.tryConnect')}</Text>
+        </TouchableOpacity>
       </View>
     );
   }

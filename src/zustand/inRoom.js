@@ -24,6 +24,7 @@ export const useInRoomStore = create((set, get) => ({
   setIsInRoom: (isInRoom = true) => set({ isInRoom }),
 
   joinRoom: async (isPlay = false) => {
+    logger.debug(NAMESPACE, 'joinRoom', isPlay);
     if (get().isInRoom) {
       logger.debug(NAMESPACE, 'already in room');
       return;
@@ -43,7 +44,6 @@ export const useInRoomStore = create((set, get) => ({
       AudioBridge.requestAudioFocus();
       await WakeLockBridge.keepScreenOn();
       useMyStreamStore.getState().toggleMute(true);
-      set({ isInBackground: false });
     } catch (error) {
       logger.error(NAMESPACE, 'audio focus or keeping screen on', error);
       return get().exitRoom();

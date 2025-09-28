@@ -6,7 +6,6 @@ import { useFeedsStore } from '../zustand/feeds';
 import {
   addConnectionListener,
   removeConnectionListener,
-  waitConnection,
 } from './connection-monitor';
 
 const NAMESPACE = 'PublisherPlugin';
@@ -303,8 +302,7 @@ export class PublisherPlugin {
     }
     this.iceRestartInProgress = true;
 
-    const isConnected = await waitConnection();
-    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
+    if (!this.pc || this.pc.connectionState === 'closed') {
       logger.error(NAMESPACE, 'peer connection closed');
       this.iceRestartInProgress = false;
       useFeedsStore.getState().restartFeeds();

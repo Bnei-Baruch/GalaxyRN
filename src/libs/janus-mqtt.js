@@ -3,7 +3,7 @@ import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { randomString } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
-import { netIsConnected, waitConnection } from './connection-monitor';
+import { waitConnection } from './connection-monitor';
 
 const NAMESPACE = 'JanusMqtt';
 
@@ -27,8 +27,8 @@ export class JanusMqtt {
   }
 
   init = async token => {
-    const isConnected = await waitConnection();
-    if (!isConnected) {
+    if (!(await waitConnection())) {
+      logger.warn(NAMESPACE, 'Connection unavailable in init');
       return;
     }
     this.token = token;
@@ -44,10 +44,6 @@ export class JanusMqtt {
       throw error;
     }
 
-    mqtt.mq.on('close', () => {
-      logger.debug(NAMESPACE, 'mqtt on close');
-      this.destroy();
-    });
     logger.debug(NAMESPACE, 'init this.srv', this.srv);
     mqtt.mq.on(this.srv, this.onMessage);
 
@@ -107,7 +103,7 @@ export class JanusMqtt {
   };
 
   attach = async plugin => {
-    logger.debug(NAMESPACE, 'attach', plugin);
+    logger.debug(NAMESPACE, 'attach', plugin?.getPluginName());
     const name = plugin.getPluginName();
     const body = { plugin: name, opaque_id: this.user.id };
     logger.debug(NAMESPACE, 'attach body', body);
@@ -191,10 +187,9 @@ export class JanusMqtt {
       return reject(new Error('Missing transaction type'));
     }
 
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      logger.error(NAMESPACE, 'Connection unavailable');
-      return Promise.reject(new Error('Network connection unavailable'));
+    if (!(await waitConnection())) {
+      logger.warn(NAMESPACE, 'Connection unavailable in transaction');
+      return;
     }
     logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
     const transactionId = randomString(12);
@@ -229,22 +224,6 @@ export class JanusMqtt {
           request,
         };
 
-        if (timeoutMs) {
-          this.transactions[transactionId].timeout = BackgroundTimer.setTimeout(
-            () => {
-              logger.debug(NAMESPACE, 'transaction timeout', transactionId);
-              // Clean up transaction on timeout
-              if (this.transactions[transactionId]) {
-                delete this.transactions[transactionId];
-                reject(
-                  new Error(`Transaction timed out after ${timeoutMs} ms`)
-                );
-              }
-            },
-            timeoutMs
-          );
-        }
-
         logger.debug(
           NAMESPACE,
           'transaction request',
@@ -275,9 +254,13 @@ export class JanusMqtt {
     if (!this.isConnected) {
       return;
     }
+    if (!(await waitConnection())) {
+      logger.warn(NAMESPACE, 'Connection unavailable in keepAlive');
+      return;
+    }
 
     logger.debug(NAMESPACE, 'keepAlive sessionId', this.sessionId);
-    if (!this.sessionId || !netIsConnected()) {
+    if (!this.sessionId) {
       this.setKeepAliveTimer();
       return;
     }
@@ -323,7 +306,6 @@ export class JanusMqtt {
       (ignoreReplyType || this.transactions[transactionId].replyType === type)
     ) {
       const ret = this.transactions[transactionId];
-      BackgroundTimer.clearTimeout(ret.timeout);
       delete this.transactions[transactionId];
       return ret;
     }
@@ -345,9 +327,6 @@ export class JanusMqtt {
     this.clearKeepAliveTimer();
     const promises = Object.values(this.transactions).map(t => {
       logger.debug(NAMESPACE, '_cleanupTransactions', t?.transactionId);
-      if (t.timeout) {
-        BackgroundTimer.clearTimeout(t.timeout);
-      }
       return t.reject();
     });
     await Promise.allSettled(promises);

@@ -6,12 +6,11 @@ import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
 
-import { netIsConnected } from '../libs/connection-monitor';
+import { waitConnection } from '../libs/connection-monitor';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
-import { isServiceID } from './enums';
 import { randomString } from './tools';
 
 const mqttTimeout = 30; // Seconds
@@ -24,24 +23,20 @@ class MqttMsg {
     this.user = null;
     this.mq = null;
     this.mit = null;
-    this.isConnected = false;
     this.room = null;
     this.token = null;
   }
 
   init = async () => {
     const { user } = useUserStore.getState();
-    const service = isServiceID(user.id);
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
-    const token = service ? svc_token : this.token;
-    const id = service ? user.id : user.id + '-' + randomString(3);
+    const token = this.token;
+    const id = user.id + '-' + randomString(3);
     logger.debug(NAMESPACE, 'MQTT init', user);
 
     const transformUrl = (url, options, client) => {
-      client.options.clientId = service
-        ? user.id
-        : user.id + '-' + randomString(3);
-      client.options.password = service ? svc_token : this.token;
+      client.options.clientId = id;
+      client.options.password = token;
       return url;
     };
 
@@ -50,8 +45,8 @@ class MqttMsg {
       clientId: id,
       protocolId: 'MQTT',
       protocolVersion: 5,
-      reconnectPeriod: 1000,
-      clean: true,
+      reconnectPeriod: 0,
+      clean: false,
       username: user.email,
       password: token,
       transformWsUrl: transformUrl,
@@ -69,16 +64,6 @@ class MqttMsg {
       },
     };
 
-    if (service) {
-      options.will = {
-        qos: 2,
-        retain: true,
-        topic: 'galaxy/service/' + user.role,
-        payload: JSON.stringify({ type: 'event', [user.role]: false }),
-        properties: { userProperties: user },
-      };
-    }
-
     logger.debug(NAMESPACE, 'Connecting to MQTT:', MSG_URL);
     try {
       this.mq = await mqtt.connectAsync(`wss://${MSG_URL}`, options);
@@ -90,24 +75,46 @@ class MqttMsg {
 
     this.mq.on('connect', data => {
       logger.debug(NAMESPACE, 'mqtt on connect', data);
-      this.isConnected = true;
+      logger.debug(NAMESPACE, 'session present:', data.sessionPresent);
       useInitsStore.getState().setMqttIsOn(true);
+
+      if (!data.sessionPresent) {
+        logger.error(NAMESPACE, 'Session not restored, resubscribing...');
+      }
     });
+
     this.mq.on('reconnect', data => {
       logger.debug(NAMESPACE, 'mqtt on reconnect', data, this.mq.connected);
+      logger.debug(
+        NAMESPACE,
+        'reconnect - timestamp:',
+        new Date().toISOString()
+      );
+    });
+
+    this.mq.on('offline', data => {
+      logger.debug(NAMESPACE, 'mqtt on offline', data);
     });
     this.mq.on('close', () => {
       logger.debug(NAMESPACE, 'mqtt on close');
-      this.isConnected = false;
     });
+    this.mq.on('disconnect', data => {
+      logger.debug(NAMESPACE, 'mqtt on disconnect', data);
+    });
+    this.mq.on('end', data => {
+      logger.debug(NAMESPACE, 'mqtt on end', data);
+    });
+
     this.mq.on('error', error => {
       logger.error(NAMESPACE, 'mqtt on error', error);
     });
     return this.mq;
   };
 
-  sub = (topic, opt = {}) => {
-    if (!netIsConnected()) return;
+  sub = async (topic, opt = {}) => {
+    if (!(await waitConnection())) {
+      return;
+    }
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = { qos: 1, nl: true, ...opt };
     return this.mq.subscribeAsync(topic, { ...options });
@@ -115,15 +122,19 @@ class MqttMsg {
 
   exit = async topic => {
     logger.debug(NAMESPACE, `Unsubscribe from: ${topic}`);
-    if (!netIsConnected()) return;
+    if (!(await waitConnection())) {
+      return;
+    }
     let options = {};
     logger.info(NAMESPACE, `Unsubscribe from: ${topic}`);
     return this.mq.unsubscribeAsync(topic, { ...options });
   };
 
-  send = (message, retain, topic, rxTopic) => {
+  send = async (message, retain, topic, rxTopic) => {
     logger.debug(NAMESPACE, `Send message to: ${topic}`);
-    if (!netIsConnected()) return;
+    if (!(await waitConnection())) {
+      return;
+    }
     const { user } = useUserStore.getState();
     let correlationData = JSON.parse(message)?.transaction;
     let cd = correlationData ? ` | transaction: ${correlationData}` : '';
@@ -145,7 +156,9 @@ class MqttMsg {
   };
 
   watch = callback => {
+    logger.debug(NAMESPACE, 'watch');
     this.mq.on('message', (topic, data, packet) => {
+      logger.debug(NAMESPACE, 'message received at:', new Date().toISOString());
       logger.debug(NAMESPACE, 'message', topic, {
         ...packet,
         payload: packet.payload?.type,
@@ -241,8 +254,6 @@ class MqttMsg {
   };
 
   end = async () => {
-    this.isConnected = false;
-
     logger.debug(NAMESPACE, 'start of mqttend', this.mq);
     if (!this.mq) return;
 
@@ -264,15 +275,4 @@ class MqttMsg {
 }
 
 const defaultMqtt = new MqttMsg();
-
-const restartMqtt = async () => {
-  logger.debug(NAMESPACE, 'restartMqtt');
-  try {
-    await defaultMqtt.end();
-    defaultMqtt.mq = await defaultMqtt.init();
-  } catch (e) {
-    logger.error(NAMESPACE, 'restartMqtt error', e);
-  }
-};
-
 export default defaultMqtt;

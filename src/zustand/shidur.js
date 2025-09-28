@@ -166,9 +166,9 @@ export const useShidurStore = create((set, get) => ({
 
     const { user } = useUserStore.getState();
 
-    const isConnected = await waitConnection();
-    if (!isConnected) {
-      return useInRoomStore.getState().restartRoom();
+    if (!(await waitConnection())) {
+      logger.warn(NAMESPACE, 'Connection unavailable in initJanus');
+      return;
     }
 
     let srv = null;

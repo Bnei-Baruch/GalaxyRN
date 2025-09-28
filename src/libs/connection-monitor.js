@@ -15,6 +15,7 @@ const NAMESPACE = 'ConnectionMonitor';
 const MAX_CONNECTION_TIMEOUT = 20;
 
 let netInfoUnsubscribe, listeners, timeout, currentState, disconnectedSeconds;
+const waitConnectionListeners = [];
 
 export const initConnectionMonitor = () => {
   prevState = null;
@@ -35,7 +36,7 @@ export const initConnectionMonitor = () => {
     if (!state.isConnected) {
       logger.debug(NAMESPACE, 'Network disconnected');
       currentState = state;
-      waitICERestart();
+      waitConnectionRestart();
       return;
     }
     const isSame = isSameNetwork(state);
@@ -43,7 +44,7 @@ export const initConnectionMonitor = () => {
     if (!isSame) {
       disconnectedSeconds = 0;
       logger.debug(NAMESPACE, 'Network state was changed');
-      waitICERestart();
+      waitConnectionRestart();
     }
   });
 };
@@ -66,9 +67,10 @@ const isSameNetworkIOS = newState => {
   return currentState.details?.ipAddress === newState?.details?.ipAddress;
 };
 
-export const waitICERestart = async () => {
+const waitConnectionRestart = async () => {
   logger.debug(NAMESPACE, 'waitICERestart');
-  const connected = await waitConnection();
+  const connected = await waitAndRestart();
+  callWaitConnectionListeners(connected);
   if (!connected) {
     return;
   }
@@ -81,8 +83,8 @@ export const waitICERestart = async () => {
   }
 };
 
-export const waitConnection = async () => {
-  logger.debug(NAMESPACE, 'waitConnection');
+const waitAndRestart = async () => {
+  logger.debug(NAMESPACE, 'waitAndRestart');
   useSettingsStore.getState().setNetWIP(true);
   try {
     await monitorNetInfo();
@@ -162,16 +164,29 @@ const monitorMqtt = async () => {
   logger.debug(NAMESPACE, 'monitorMqtt run timeout', disconnectedSeconds);
   return new Promise(resolve => {
     timeout = BackgroundTimer.setTimeout(() => {
-      try {
-        mqtt.mq.reconnect();
-        logger.debug(NAMESPACE, 'mqtt reconnect triggered');
-      } catch (e) {
-        logger.error(NAMESPACE, 'mqtt reconnect error', e);
-      } finally {
-        resolve(monitorMqtt());
+      if (mqtt.mq?.connected) {
+        return resolve(true);
       }
+      mqttReconnect()
+        .catch(e => {
+          logger.error(NAMESPACE, 'mqtt reconnect error', e);
+        })
+        .then(() => {
+          logger.debug(NAMESPACE, 'mqtt reconnect done', disconnectedSeconds);
+        })
+        .finally(() => {
+          resolve(monitorMqtt());
+        });
     }, 1000);
   });
+};
+
+const mqttReconnect = async () => {
+  logger.debug(NAMESPACE, 'MQTT reconnect', mqtt.mq.reconnecting);
+  if (!mqtt.mq.reconnecting) {
+    logger.debug(NAMESPACE, 'mqtt reconnect triggered');
+    mqtt.mq.reconnect();
+  }
 };
 
 const callListeners = async () => {
@@ -187,6 +202,41 @@ const callListeners = async () => {
   }
 };
 
+export const waitConnection = async () => {
+  logger.debug(NAMESPACE, 'waitConnection');
+
+  if (
+    (currentState?.details?.isInternetReachable || currentState?.isConnected) &&
+    mqtt.mq?.connected
+  ) {
+    return true;
+  }
+
+  return new Promise(resolve => {
+    waitConnectionListeners.push(resolve);
+  });
+};
+
+const callWaitConnectionListeners = connected => {
+  logger.debug(
+    NAMESPACE,
+    'callWaitConnectionListeners',
+    connected,
+    waitConnectionListeners.length
+  );
+  if (!connected) {
+    clearWaitConnectionListeners();
+    return;
+  }
+
+  if (disconnectedSeconds < 10) {
+    waitConnectionListeners.forEach(resolve => resolve(true));
+  } else {
+    waitConnectionListeners.forEach(resolve => resolve(false));
+  }
+  waitConnectionListeners.length = 0;
+};
+
 export const addConnectionListener = (key, listener) => {
   logger.debug(NAMESPACE, 'addListener', key);
   listeners[key] = listener;
@@ -199,8 +249,15 @@ export const removeConnectionListener = key => {
   }
 };
 
+export const clearWaitConnectionListeners = () => {
+  logger.debug(NAMESPACE, 'clearWaitConnectionListeners');
+  waitConnectionListeners.forEach(resolve => resolve(false));
+  waitConnectionListeners.length = 0;
+};
+
 export const removeConnectionMonitor = () => {
   listeners = {};
+  clearWaitConnectionListeners();
   if (netInfoUnsubscribe) {
     netInfoUnsubscribe();
     netInfoUnsubscribe = null;

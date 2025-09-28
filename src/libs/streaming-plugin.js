@@ -10,7 +10,6 @@ import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,
   removeConnectionListener,
-  waitConnection,
 } from './connection-monitor';
 
 const NAMESPACE = 'StreamingPlugin';
@@ -142,14 +141,6 @@ export class StreamingPlugin {
 
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
-      useShidurStore.getState().restartShidur();
-      return;
-    }
-
-    const isConnected = await waitConnection();
-    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
-      logger.error(NAMESPACE, 'peer connection closed');
-      this.iceRestartInProgress = false;
       useShidurStore.getState().restartShidur();
       return;
     }
