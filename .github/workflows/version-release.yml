@@ -49,7 +49,7 @@ jobs:
 
       - name: Send MQTT notification
         env:
-          MQTT_TOKEN: ${{ secrets.MQTT_TOKEN }}
+          MQTT_TOKEN: ${{ secrets.MQTT_PASS }}
         run: |
           node scripts/send-mqtt-notification.js \
             "${{ steps.version_check.outputs.package_version }}" \
