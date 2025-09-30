@@ -1,14 +1,11 @@
-// External libraries
+import { NativeModules, Platform } from 'react-native';
 import { mediaDevices } from 'react-native-webrtc';
 import { create } from 'zustand';
 
-// Services
 import logger from '../services/logger';
 
-// Shared modules
 import { getFromStorage, setToStorage } from '../shared/tools';
 
-// Zustand stores
 import { useUserStore } from './user';
 
 const NAMESPACE = 'MyStream';
@@ -70,6 +67,18 @@ export const useMyStreamStore = create((set, get) => ({
   toggleMute: (mute = !get().mute) => {
     stream?.getAudioTracks().forEach(track => (track.enabled = !mute));
     set(() => ({ mute }));
+
+    if (Platform.OS !== 'android') return;
+    logger.debug(NAMESPACE, 'toggleMute', mute);
+    try {
+      if (mute) {
+        NativeModules.ForegroundModule?.setMicOff();
+      } else {
+        NativeModules.ForegroundModule?.setMicOn();
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error toggling mute:', error);
+    }
   },
 
   toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {

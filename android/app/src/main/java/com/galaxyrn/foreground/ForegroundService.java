@@ -24,7 +24,8 @@ public class ForegroundService extends Service {
     private static final String NOTIFICATION_CHANNEL_ID = "GxyNotificationChannel";
     public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
 
-    private volatile boolean mIsServiceStarted = false;
+    private static boolean mIsServiceStarted = false;
+    private static boolean mIsMicOn = false;
     private static ForegroundService sInstance;
 
     @Nullable
@@ -41,6 +42,12 @@ public class ForegroundService extends Service {
     }
 
     public void start(@NonNull Context context) {
+        GxyLogger.i(TAG, "Starting foreground service. Service started: " + ForegroundService.mIsServiceStarted);
+        if (ForegroundService.mIsServiceStarted) {
+            GxyLogger.d(TAG, "Foreground service already started");
+            return;
+        }
+
         Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(APP_TO_FOREGROUND_ACTION);
 
@@ -71,25 +78,53 @@ public class ForegroundService extends Service {
     }
 
     public void stop(@NonNull Context context) {
+        GxyLogger.i(TAG, "Stopping foreground service. Service started: " + ForegroundService.mIsServiceStarted);
+        if (!ForegroundService.mIsServiceStarted) {
+            GxyLogger.d(TAG, "Foreground service not started");
+            return;
+        }
+
         GxyLogger.i(TAG, "Stopping foreground service");
         Intent intent = new Intent(context, ForegroundService.class);
         context.stopService(intent);
     }
 
+    public void setMicOn(@NonNull Context context) {
+        GxyLogger.i(TAG, "setMicOn called. Previous mIsMicOn=" + ForegroundService.mIsMicOn);
+        ForegroundService.mIsMicOn = true;
+        start(context);
+    }
+
+    public void setMicOff(@NonNull Context context) {
+        GxyLogger.i(TAG, "setMicOff called. Previous mIsMicOn=" + ForegroundService.mIsMicOn);
+        ForegroundService.mIsMicOn = false;
+        stop(context);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        GxyLogger.i(TAG, "ForegroundService: onStartCommand - starting immediately");
+        GxyLogger.i(TAG,
+                "ForegroundService: onStartCommand. mIsMicOn=" + ForegroundService.mIsMicOn);
 
         try {
             Notification notification = buildNotification(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-                GxyLogger.i(TAG, "Successfully started as foreground service with MEDIA_PLAYBACK type");
+                int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ForegroundService.mIsMicOn) {
+                    serviceType |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
+                    GxyLogger.i(TAG, "Starting with MEDIA_PLAYBACK + MICROPHONE types");
+                } else {
+                    GxyLogger.i(TAG, "Starting with MEDIA_PLAYBACK type ONLY (mIsMicOn=false)");
+                }
+                startForeground(NOTIFICATION_ID, notification, serviceType);
+                GxyLogger.i(TAG, "Successfully started as foreground service");
             } else {
                 startForeground(NOTIFICATION_ID, notification);
                 GxyLogger.i(TAG, "Successfully started as foreground service (legacy)");
             }
-            mIsServiceStarted = true;
+
+            ForegroundService.mIsServiceStarted = true;
+            GxyLogger.i(TAG, "Foreground service ready");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error starting foreground", e);
         }
@@ -131,18 +166,20 @@ public class ForegroundService extends Service {
     }
 
     private void cleanup() {
-        if (!mIsServiceStarted) {
+        if (!ForegroundService.mIsServiceStarted) {
             return;
         }
 
         try {
-            mIsServiceStarted = false;
+            ForegroundService.mIsServiceStarted = false;
+            ForegroundService.mIsMicOn = false;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);
             } else {
                 stopForeground(true);
             }
             sInstance = null;
+            GxyLogger.d(TAG, "Foreground service cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during cleanup", e);
         }

@@ -135,4 +135,22 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
         activity.runOnUiThread(() -> activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
     }
+
+    /**
+     * On setMicOn, start the foreground service with microphone access
+     */
+    @ReactMethod
+    public void setMicOn() {
+        GxyLogger.d(TAG, "setMicOn");
+        foregroundService.setMicOn(this.context);
+    }
+
+    /**
+     * On setMicOff, stop the foreground service
+     */
+    @ReactMethod
+    public void setMicOff() {
+        GxyLogger.d(TAG, "setMicOff");
+        foregroundService.setMicOff(this.context);
+    }
 }
