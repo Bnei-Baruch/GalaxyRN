@@ -88,6 +88,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
      * Handles actions when app goes to background
      */
     private void handleAppBackgrounded() {
+        if (foregroundService == null) {
+            GxyLogger.w(TAG, "Cannot start foreground service: not initialized");
+            return;
+        }
         try {
             foregroundService.start(this.context);
             GxyLogger.d(TAG, "Started foreground service");
@@ -98,6 +102,11 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     }
 
     private void handleAppForegrounded() {
+        if (foregroundService == null) {
+            GxyLogger.w(TAG, "Cannot stop foreground service: not initialized");
+            enableKeepScreenOn();
+            return;
+        }
         foregroundService.stop(this.context);
         GxyLogger.d(TAG, "Stopped foreground service");
         enableKeepScreenOn();
@@ -142,6 +151,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
+        if (foregroundService == null) {
+            GxyLogger.w(TAG, "Cannot setMicOn: ForegroundService not initialized (permissions not granted yet)");
+            return;
+        }
         foregroundService.setMicOn(this.context);
     }
 
@@ -151,6 +164,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
+        if (foregroundService == null) {
+            GxyLogger.w(TAG, "Cannot setMicOff: ForegroundService not initialized (permissions not granted yet)");
+            return;
+        }
         foregroundService.setMicOff(this.context);
     }
 }

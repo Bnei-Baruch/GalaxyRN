@@ -146,8 +146,9 @@ export class PublisherPlugin {
 
     this.initPcEvents();
 
-    await this.sdpActions();
-    return true;
+    const json = await this.sdpActions();
+    logger.debug(NAMESPACE, 'publish: sdpActions', json);
+    return json?.streams;
   };
 
   sdpActions = async () => {

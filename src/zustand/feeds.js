@@ -236,12 +236,12 @@ export const useFeedsStore = create((set, get) => ({
       track.enabled = !cammute;
     });
 
-    const json = await videoroom.publish(stream);
+    const streams = await videoroom.publish(stream);
     useUserStore.getState().setExtraInfo({
-      streams: json.streams,
+      streams: streams,
       isGroup: false,
     });
-    logger.debug(NAMESPACE, 'videoroom published', json);
+    logger.debug(NAMESPACE, 'videoroom published', streams);
     attempts = 0;
   },
 
@@ -451,6 +451,7 @@ export const useFeedsStore = create((set, get) => ({
 
     return subscriber.sub(params);
   },
+
   deactivateFeedsVideos: ids => {
     const { feedById } = get();
     const params = [];
