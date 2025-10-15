@@ -86,6 +86,7 @@ const waitConnectionRestart = async () => {
 const waitAndRestart = async () => {
   logger.debug(NAMESPACE, 'waitAndRestart');
   useSettingsStore.getState().setNetWIP(true);
+
   try {
     await monitorNetInfo();
   } catch (e) {
@@ -198,7 +199,7 @@ const callListeners = async () => {
     } catch (error) {
       logger.error(NAMESPACE, 'Error in listener', key, error);
     }
-    await sleep(1000);
+    await sleep(100);
   }
 };
 

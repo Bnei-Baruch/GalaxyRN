@@ -48,6 +48,7 @@ export const useUiActions = create((set, get) => ({
 
   width: 0,
   updateWidth: (isShidur, feedLength) => {
+    logger.debug(NAMESPACE, 'updateWidth', isShidur, feedLength);
     let { height, width } = Dimensions.get('window');
 
     if (height >= width) {

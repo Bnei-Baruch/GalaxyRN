@@ -544,7 +544,7 @@ export const useShidurStore = create((set, get) => ({
       return;
     }
 
-    const video = await getFromStorage('video', -1).then(x => Number(x));
+    const video = await getFromStorage('video', 1).then(x => Number(x));
     if (video !== currentVideo) {
       setVideo(video, false);
     }

@@ -182,24 +182,14 @@ class Keycloak {
    * Refreshes the access token when needed
    */
   refreshToken = async () => {
-    if (!this.session) {
-      logger.debug(NAMESPACE, 'No session to refresh');
-      return;
+    logger.debug(NAMESPACE, 'Refreshing token', AUTH_CONFIG_ISSUER);
+    // Check if session payload is valid
+    if (!this.session?.payload?.exp) {
+      logger.warn(NAMESPACE, 'Invalid session payload');
+      throw new Error('Invalid session payload');
     }
 
-    logger.debug(
-      NAMESPACE,
-      'Starting token refresh, expiry:',
-      this.session.payload.exp
-    );
-
     try {
-      // Check if session payload is valid
-      if (!this.session?.payload?.exp) {
-        logger.error(NAMESPACE, 'Invalid session payload');
-        return this.logout();
-      }
-
       const timeToRefresh = this.calculateTimeUntilRefresh();
       logger.debug(NAMESPACE, 'Time until refresh:', timeToRefresh, 'ms');
       this.clearTimeout();
@@ -221,12 +211,13 @@ class Keycloak {
       const refreshData = await refresh(AUTH_CONFIG, {
         refreshToken: this.session.refreshToken,
       });
-      logger.debug(NAMESPACE, 'Token refresh successful');
+      logger.debug(NAMESPACE, 'Token refresh successful', refreshData);
 
       const session = this.setSession(refreshData);
       if (!session) {
-        logger.debug(NAMESPACE, 'Failed to set session after refresh');
-        return this.logout();
+        const msg = 'Failed to set session after refresh';
+        logger.debug(NAMESPACE, msg);
+        throw new Error(msg);
       }
 
       this.saveUser(session.payload);

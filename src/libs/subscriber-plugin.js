@@ -66,6 +66,9 @@ export class SubscriberPlugin {
     const body = { request: 'subscribe', streams: subscription };
     try {
       const param = await this.transaction('message', { body }, 'event');
+      if (!param) {
+        return param;
+      }
       logger.info(NAMESPACE, 'Subscribed successfully');
       const { data, json } = param;
 

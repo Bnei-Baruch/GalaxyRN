@@ -61,8 +61,10 @@ export const useInitsStore = create((set, get) => ({
 
   isPortrait: true,
   setIsPortrait: isPortrait => {
-    useUiActions.getState().updateWidth();
-    set({ isPortrait });
+    if (get().isPortrait !== isPortrait) {
+      useUiActions.getState().updateWidth();
+      set({ isPortrait });
+    }
   },
 
   initMQTT: async () => {

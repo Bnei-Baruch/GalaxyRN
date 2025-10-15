@@ -16,8 +16,6 @@ class Api {
 
   constructor() {
     this.accessToken = null;
-    this.username = null;
-    this.password = null;
   }
 
   static makeParams = params =>
@@ -55,13 +53,9 @@ class Api {
   urlFor = path => API_BACKEND + path;
 
   defaultOptions = () => {
-    const auth = this.accessToken
-      ? `Bearer ${this.accessToken}`
-      : `Basic ${btoa(`${this.username}:${this.password}`)}`;
-
     return {
       headers: {
-        Authorization: auth,
+        Authorization: `Bearer ${this.accessToken}`,
       },
     };
   };
@@ -106,6 +100,7 @@ class Api {
   };
 
   setAccessToken = token => {
+    logger.debug(NAMESPACE, 'setAccessToken', token);
     this.accessToken = token;
     mqtt.setToken(token);
   };
@@ -192,7 +187,7 @@ class Api {
         );
 
         if (res.status === 401 || res.status === 403) {
-          return null;
+          throw new Error('UNAUTHORIZED');
         } else if (res.status >= 500 && res.status < 600) {
           throw new Error('SERVER_ERROR');
         } else if (
