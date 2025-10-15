@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { useTranslation } from 'react-i18next';
+import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';

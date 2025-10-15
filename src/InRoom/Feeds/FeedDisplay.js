@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from '../../components/CustomText';
 const FeedDisplay = ({ display, talking }) => (
   <View style={styles.container}>
     {!talking && (
-      <Icon name={"mic-off"} color={"red"} size={14} style={styles.icon} />
+      <Icon name={'mic-off'} color={'red'} size={14} style={styles.icon} />
     )}
     <Text style={styles.text}>{display}</Text>
   </View>
@@ -13,25 +14,25 @@ export default FeedDisplay;
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     top: 0,
-    backgroundColor: "rgba(34, 34, 34, .7)",
-    flexDirection: "row",
-    flexWrap: "wrap",
+    backgroundColor: 'rgba(34, 34, 34, .7)',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: 4,
     zIndex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mark: {
-    color: "red",
+    color: 'red',
     fontSize: 30,
     lineHeight: 18,
     paddingRight: 5,
   },
   text: {
-    color: "white",
+    color: 'white',
   },
   icon: {
     marginRight: 4,

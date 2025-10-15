@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 
+import Text from '../components/CustomText';
 import { useShidurStore } from '../zustand/shidur';
 
 export const OriginalSwitch = () => {

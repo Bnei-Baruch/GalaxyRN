@@ -1,8 +1,9 @@
 import { ACCOUNT_URL } from '@env';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';

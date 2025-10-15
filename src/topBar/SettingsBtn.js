@@ -1,10 +1,11 @@
-import * as React from "react";
-import { useState } from "react";
-import { TouchableOpacity, Text, Modal, StyleSheet } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { topMenuBtns } from "./helper";
-import { SettingsJoined } from "../settings/SettingsJoined";
-import { useTranslation } from "react-i18next";
+import * as React from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, StyleSheet, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from '../components/CustomText';
+import { SettingsJoined } from '../settings/SettingsJoined';
+import { topMenuBtns } from './helper';
 
 export const SettingsBtn = () => {
   const [visible, setVisible] = useState(false);
@@ -16,7 +17,7 @@ export const SettingsBtn = () => {
     <>
       <TouchableOpacity onPress={toggleVisible} style={topMenuBtns.btn}>
         <Icon name="settings" size={30} color="white" />
-        <Text style={topMenuBtns.menuItemText}>{t("topBar.settings")}</Text>
+        <Text style={topMenuBtns.menuItemText}>{t('topBar.settings')}</Text>
       </TouchableOpacity>
       <Modal
         animationType="slide"
@@ -33,6 +34,6 @@ export const SettingsBtn = () => {
 
 const styles = StyleSheet.create({
   bg: {
-    backgroundColor: "black",
+    backgroundColor: 'black',
   },
 });

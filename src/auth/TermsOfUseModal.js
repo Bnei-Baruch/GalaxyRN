@@ -4,10 +4,10 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Text from '../components/CustomText';
 
 const TermsOfUseModal = ({ visible, onClose }) => {
   const { t } = useTranslation();

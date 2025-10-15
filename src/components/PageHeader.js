@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
 
 import { baseStyles } from '../constants';
+import Text from './CustomText';
 
 const PageHeader = ({ page }) => {
   const { t } = useTranslation();
@@ -17,21 +18,21 @@ const PageHeader = ({ page }) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10
+    padding: 10,
   },
-  title    : {
-    fontSize     : 14,
-    textAlign    : 'center',
+  title: {
+    fontSize: 14,
+    textAlign: 'center',
     textTransform: 'capitalize',
-    width        : '100%'
+    width: '100%',
   },
-  page     : {
-    fontWeight   : 'bold',
-    fontSize     : 14,
-    textAlign    : 'center',
+  page: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    textAlign: 'center',
     textTransform: 'capitalize',
-    width        : '100%'
-  }
+    width: '100%',
+  },
 });
 
 export default PageHeader;

@@ -1,13 +1,12 @@
-import { View, StyleSheet, Text } from "react-native";
+import { StyleSheet, View } from 'react-native';
 
-
-import { useChatStore } from "../zustand/chat";
+import Text from '../components/CustomText';
+import { useChatStore } from '../zustand/chat';
 
 export const ChatCounter = () => {
-  const {  chatNewMsgs} = useChatStore();
-  
-  if(chatNewMsgs <= 0)
-    return null;
+  const { chatNewMsgs } = useChatStore();
+
+  if (chatNewMsgs <= 0) return null;
 
   return (
     <View style={styles.container}>
@@ -34,5 +33,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     lineHeight: 20,
-  },  
+  },
 });

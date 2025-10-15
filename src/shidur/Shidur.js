@@ -1,11 +1,12 @@
 // Core React and React Native imports
 import React, { memo, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 // Third-party libraries
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
+import Text from '../components/CustomText';
 import logger from '../services/logger';
 import { useSubtitleStore } from '../zustand/subtitle';
 

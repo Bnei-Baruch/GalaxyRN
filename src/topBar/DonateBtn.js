@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Text, TouchableOpacity } from 'react-native';
+import { Linking, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from '../components/CustomText';
 import { topMenuBtns } from './helper';
 
 const PARAMS =

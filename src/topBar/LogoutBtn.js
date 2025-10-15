@@ -1,13 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import kc from '../auth/keycloak';
-import { useUserStore } from '../zustand/user';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { topMenuBtns } from './helper';
 import { useTranslation } from 'react-i18next';
+import { TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import kc from '../auth/keycloak';
+import Text from '../components/CustomText';
+import { topMenuBtns } from './helper';
 
 const LogoutBtn = () => {
-  const { t }       = useTranslation();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     kc.logout();
@@ -21,4 +21,3 @@ const LogoutBtn = () => {
 };
 
 export default LogoutBtn;
-

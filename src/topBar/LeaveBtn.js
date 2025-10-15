@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
+import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import { useInRoomStore } from '../zustand/inRoom';
 import { topMenuBtns } from './helper';

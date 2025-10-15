@@ -59,7 +59,6 @@ export const useInitsStore = create((set, get) => ({
 
   configReady: false,
 
-  isPortrait: true,
   setIsPortrait: isPortrait => {
     if (get().isPortrait !== isPortrait) {
       useUiActions.getState().updateWidth();

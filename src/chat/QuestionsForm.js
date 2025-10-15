@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Text from '../components/CustomText';
+import TextInput from '../components/CustomTextInput';
 import { useChatStore } from '../zustand/chat';
 import useRoomStore from '../zustand/fetchRooms';
 import { useUserStore } from '../zustand/user';

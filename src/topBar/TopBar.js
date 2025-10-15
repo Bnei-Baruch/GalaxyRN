@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 
+import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import useRoomStore from '../zustand/fetchRooms';
 import { useSettingsStore } from '../zustand/settings';

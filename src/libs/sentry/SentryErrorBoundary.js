@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/react-native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, View } from 'react-native';
+import Text from '../../components/CustomText';
 import logger from '../../services/logger';
 import DebugMode from '../../settings/DebugMode';
 

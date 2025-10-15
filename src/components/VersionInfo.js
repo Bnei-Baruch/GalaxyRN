@@ -1,9 +1,10 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { baseStyles } from "../constants";
-import { useVersionStore } from "../zustand/version";
-import { topMenuBtns } from "../topBar/helper";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { baseStyles } from '../constants';
+import { topMenuBtns } from '../topBar/helper';
+import { useVersionStore } from '../zustand/version';
+import Text from './CustomText';
 const VersionInfo = () => {
   const { t } = useTranslation();
   const { currentVersion, latestVersion, updateAvailable, openAppStore } =
@@ -15,18 +16,18 @@ const VersionInfo = () => {
     <>
       <View style={[topMenuBtns.btn, styles.container]}>
         <Text style={[styles.text, baseStyles.text]}>
-          {t("update.currentVersion")}: {currentVersion}
+          {t('update.currentVersion')}: {currentVersion}
         </Text>
       </View>
 
       {updateAvailable && (
         <View style={[topMenuBtns.btn, styles.container]}>
           <Text style={[styles.text, baseStyles.text]}>
-            {t("update.latestVersion")}: {latestVersion}
+            {t('update.latestVersion')}: {latestVersion}
           </Text>
           <TouchableOpacity onPress={openAppStore}>
             <Text style={[styles.download, baseStyles.text]}>
-              {t("update.updateNow")}
+              {t('update.updateNow')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   },
   download: {
     fontSize: 10,
-    backgroundColor: "blue",
+    backgroundColor: 'blue',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,

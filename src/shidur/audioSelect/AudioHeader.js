@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from '../../components/CustomText';
 import { baseStyles } from '../../constants';
 
 const AudioHeader = ({ icon, text, description }) => {

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import logo from '../../android/app/src/main/res/mipmap-xxxhdpi/arvut.png'; // eslint-disable-line
+import Text from '../components/CustomText';
 import WIP from '../components/WIP';
 import logger from '../services/logger';
 import UserPermissions from '../services/UserPermissions';

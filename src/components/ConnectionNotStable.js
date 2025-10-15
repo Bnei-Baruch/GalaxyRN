@@ -4,10 +4,10 @@ import {
   ActivityIndicator,
   SafeAreaView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { useSettingsStore } from '../zustand/settings';
+import Text from './CustomText';
 
 const ConnectionNotStable = () => {
   const { t } = useTranslation();

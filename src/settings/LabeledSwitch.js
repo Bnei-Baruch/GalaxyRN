@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
+import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 
 const LabeledSwitch = ({ label, value, onValueChange }) => {
@@ -21,13 +22,13 @@ const LabeledSwitch = ({ label, value, onValueChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection    : 'row',
-    alignItems       : 'center',
-    justifyContent   : 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingVertical  : 5,
+    paddingVertical: 5,
   },
-  label    : {
+  label: {
     fontSize: 16,
   },
 });

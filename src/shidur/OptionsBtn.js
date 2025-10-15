@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import { baseStyles } from '../constants';
 import { topMenuBtns } from '../topBar/helper';

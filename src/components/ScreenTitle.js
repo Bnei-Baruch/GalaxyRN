@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from './CustomText';
 
 const ScreenTitle = ({ text, close }) => {
   return (
@@ -21,19 +22,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     paddingVertical: 5,
   },
-  header   : {
+  header: {
     fontSize: 13,
     color: 'white',
   },
-  title     : {
-    fontSize  : 14,
+  title: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'white',
   },
-  exit     : {
+  exit: {
     position: 'absolute',
-    right   : 5,
-    top     : 5
-  }
+    right: 5,
+    top: 5,
+  },
 });
-

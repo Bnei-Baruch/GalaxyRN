@@ -1,13 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Linking,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import AccountSettings from '../auth/AccountSettings';
+import Text from '../components/CustomText';
 import DebugMode from '../settings/DebugMode';
 import { useUserStore } from '../zustand/user';
 
