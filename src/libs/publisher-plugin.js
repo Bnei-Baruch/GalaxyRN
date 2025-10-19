@@ -464,9 +464,9 @@ export class PublisherPlugin {
       NAMESPACE,
       `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
     );
-    if (this.pc && !isReady) {
-      useFeedsStore.getState().restartFeeds();
-    }
+    //if (this.pc && !isReady && !this.isDestroyed) {
+    //  useFeedsStore.getState().restartFeeds();
+    //}
   };
 
   detach = () => {

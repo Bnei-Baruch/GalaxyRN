@@ -355,6 +355,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   cleanShidur: async () => {
+    logger.debug(NAMESPACE, 'cleanShidur');
     await Promise.all([get().cleanVideoHandle(), get().cleanAudioHandles()]);
 
     set({ readyShidur: false, isPlay: false, url: null });

@@ -403,6 +403,7 @@ export const useFeedsStore = create((set, get) => ({
   },
 
   cleanFeeds: async () => {
+    logger.debug(NAMESPACE, 'cleanFeeds');
     // Clean up Janus
     if (janus) {
       logger.info(NAMESPACE, 'exitRoom janus', janus);

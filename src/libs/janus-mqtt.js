@@ -325,10 +325,12 @@ export class JanusMqtt {
   _cleanupTransactions = async () => {
     logger.debug(NAMESPACE, '_cleanupTransactions');
     this.clearKeepAliveTimer();
-    const promises = Object.values(this.transactions).map(t => {
-      logger.debug(NAMESPACE, '_cleanupTransactions', t?.transactionId);
-      return t.reject();
-    });
+    const promises = Object.values(this.transactions)
+      .filter(t => !!t)
+      .map(t => {
+        logger.debug(NAMESPACE, '_cleanupTransactions', t.transactionId);
+        return t.reject();
+      });
     await Promise.allSettled(promises);
     logger.debug(NAMESPACE, '_cleanupTransactions done');
     this.transactions = {};
