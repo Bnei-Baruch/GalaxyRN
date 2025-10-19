@@ -27,6 +27,7 @@ import { getFromStorage, setToStorage } from '../shared/tools';
 // Zustand stores
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
+import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
 const NAMESPACE = 'Shidur';
@@ -491,6 +492,7 @@ export const useShidurStore = create((set, get) => ({
     if (!readyShidur) {
       set({ isPlay });
       await Promise.all([initVideoHandle(), initAudioHandles()]);
+      useUiActions.getState().toggleShowBars();
       return;
     }
 
