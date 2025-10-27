@@ -141,6 +141,7 @@ export class StreamingPlugin {
 
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
+      this.iceRestartInProgress = false;
       useShidurStore.getState().restartShidur();
       return;
     }
@@ -163,6 +164,14 @@ export class StreamingPlugin {
       this.iceRestartInProgress = false;
       return result;
     } catch (error) {
+      this.iceRestartInProgress = false;
+      const errorCode = error?.data?.error_code;
+      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      if (errorCode === 460 || errorCode === 436) {
+        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
+        return;
+      }
+
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useShidurStore.getState().restartShidur();
     }

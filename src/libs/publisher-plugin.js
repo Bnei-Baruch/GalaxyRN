@@ -315,8 +315,16 @@ export class PublisherPlugin {
       await this.configure(true);
       this.iceRestartInProgress = false;
     } catch (error) {
-      logger.error(NAMESPACE, 'ICE restart failed:', error);
       this.iceRestartInProgress = false;
+
+      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      const errorCode = error?.data?.error_code;
+      if (errorCode === 460 || errorCode === 436) {
+        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
+        return;
+      }
+
+      logger.error(NAMESPACE, 'ICE restart failed:', error);
       useFeedsStore.getState().restartFeeds();
     }
   };

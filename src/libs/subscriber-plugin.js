@@ -189,9 +189,15 @@ export class SubscriberPlugin {
 
     try {
       await this.configure();
-
       logger.info(NAMESPACE, 'ICE restart completed successfully');
     } catch (error) {
+      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      const errorCode = error?.data?.error_code;
+      if (errorCode === 460 || errorCode === 436) {
+        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
+        return;
+      }
+
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useFeedsStore.getState().restartFeeds();
     } finally {
