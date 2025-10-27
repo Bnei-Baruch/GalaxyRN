@@ -15,9 +15,7 @@
     "search": "Search...",
     "join": "Unirse a la sala",
     "selectRoom": "Seleccionar Ten",
-    "backToTen": "Volver a Ten",
-    "debugMode": "Modo de depuración",
-    "sendLogs": "Enviar registros"
+    "backToTen": "Volver a Ten"
   },
   "user": {
     "title": "Configuración de usuario",

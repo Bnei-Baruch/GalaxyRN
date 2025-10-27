@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import AccountSettings from '../auth/AccountSettings';
 import Text from '../components/CustomText';
-import DebugMode from '../settings/DebugMode';
 import { useUserStore } from '../zustand/user';
 
 const UserPermissions = () => {
@@ -26,7 +25,6 @@ const UserPermissions = () => {
           <Text style={styles.sendText}>{t('permissions.sendButton')}</Text>
         </TouchableOpacity>
         {vhinfo.error && <Text>{vhinfo?.error?.message}</Text>}
-        <DebugMode />
       </View>
     </View>
   );

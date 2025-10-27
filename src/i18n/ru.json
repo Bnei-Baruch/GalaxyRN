@@ -17,9 +17,7 @@
     "search": "Search...",
     "join": "Войти в комнату",
     "selectRoom": "Выбрать 10",
-    "backToTen": "Назад к 10",
-    "debugMode": "Режим отладки",
-    "sendLogs": "Отправить логи"
+    "backToTen": "Назад к 10"
   },
   "user": {
     "title": "Пользовательские настройки",

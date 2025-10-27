@@ -11,7 +11,6 @@ import com.facebook.flipper.plugins.inspector.InspectorFlipperPlugin;
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin;
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor;
 import com.facebook.flipper.plugins.sharedpreferences.SharedPreferencesFlipperPlugin;
-import com.facebook.flipper.plugins.leakcanary2.LeakCanary2FlipperPlugin;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.network.NetworkingModule;
@@ -38,10 +37,6 @@ public class ReactNativeFlipper {
             client.addPlugin(new DatabasesFlipperPlugin(context));
             client.addPlugin(new SharedPreferencesFlipperPlugin(context));
             client.addPlugin(CrashReporterPlugin.getInstance());
-
-            // LeakCanary integration
-            android.util.Log.d("ReactNativeFlipper", "Adding LeakCanary plugin...");
-            client.addPlugin(new LeakCanary2FlipperPlugin());
 
             // Network plugin with React Native integration
             android.util.Log.d("ReactNativeFlipper", "Adding Network plugin...");

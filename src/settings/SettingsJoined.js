@@ -8,7 +8,6 @@ import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
-import DebugMode from './DebugMode';
 import LabeledSwitch from './LabeledSwitch';
 import SelectUiLanguage from './SelectUiLanguage';
 
@@ -41,7 +40,6 @@ export const SettingsJoined = ({ toggleVisible }) => {
             value={audioMode}
             onValueChange={handleToggleAudioMode}
           />
-          <DebugMode />
           <View style={baseStyles.full} />
           <View style={styles.containerBack}>
             <Button title={t('settings.backToTen')} onPress={toggleVisible} />

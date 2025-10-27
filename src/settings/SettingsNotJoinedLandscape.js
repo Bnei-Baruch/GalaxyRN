@@ -8,7 +8,6 @@ import PageHeader from '../components/PageHeader';
 import { baseStyles } from '../constants';
 import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
-import DebugMode from './DebugMode';
 import LabeledSwitch from './LabeledSwitch';
 import RoomSelect from './RoomSelect';
 
@@ -44,7 +43,6 @@ export const SettingsNotJoinedLandscape = () => {
             value={audioMode}
             onValueChange={handleToggleAudioMode}
           />
-          <DebugMode />
           <View style={baseStyles.full} />
           <RoomSelect />
         </View>

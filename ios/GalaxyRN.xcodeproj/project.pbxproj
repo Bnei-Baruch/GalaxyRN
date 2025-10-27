@@ -10,8 +10,6 @@
 		374C51002DFAD10E00DAE8D9 /* GxyLoggerUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */; };
 		374C51012DFAD10E00DAE8D9 /* SentryUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */; };
 		374C51022DFAD10E00DAE8D9 /* GxyLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */; };
-		374C51032DFAD10E00DAE8D9 /* LoggerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FD2DFAD10E00DAE8D9 /* LoggerModule.swift */; };
-		374C51042DFAD10E00DAE8D9 /* LoggerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FC2DFAD10E00DAE8D9 /* LoggerModule.m */; };
 		376193362D9D5C5700F52320 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193172D9D5C5600F52320 /* AudioManager.m */; };
 		376193372D9D5C5700F52320 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193182D9D5C5600F52320 /* AudioManager.swift */; };
 		376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */; };
@@ -39,9 +37,6 @@
 		2DF3B0EE911E3CBA2541EFA1 /* Pods-GalaxyRN.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.release.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.release.xcconfig"; sourceTree = "<group>"; };
 		374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLogger.swift; sourceTree = "<group>"; };
 		374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLoggerUtils.swift; sourceTree = "<group>"; };
-		374C50FB2DFAD10E00DAE8D9 /* LoggerModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoggerModule.h; sourceTree = "<group>"; };
-		374C50FC2DFAD10E00DAE8D9 /* LoggerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LoggerModule.m; sourceTree = "<group>"; };
-		374C50FD2DFAD10E00DAE8D9 /* LoggerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerModule.swift; sourceTree = "<group>"; };
 		374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentryUtils.swift; sourceTree = "<group>"; };
 		376193162D9D5C5600F52320 /* AudioManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioManager.h; sourceTree = "<group>"; };
 		376193172D9D5C5600F52320 /* AudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioManager.m; sourceTree = "<group>"; };
@@ -100,9 +95,6 @@
 			children = (
 				374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */,
 				374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */,
-				374C50FB2DFAD10E00DAE8D9 /* LoggerModule.h */,
-				374C50FC2DFAD10E00DAE8D9 /* LoggerModule.m */,
-				374C50FD2DFAD10E00DAE8D9 /* LoggerModule.swift */,
 				374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */,
 			);
 			path = Logger;
@@ -355,8 +347,6 @@
 				374C51002DFAD10E00DAE8D9 /* GxyLoggerUtils.swift in Sources */,
 				374C51012DFAD10E00DAE8D9 /* SentryUtils.swift in Sources */,
 				374C51022DFAD10E00DAE8D9 /* GxyLogger.swift in Sources */,
-				374C51032DFAD10E00DAE8D9 /* LoggerModule.swift in Sources */,
-				374C51042DFAD10E00DAE8D9 /* LoggerModule.m in Sources */,
 				3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */,
 				3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */,
 				376193362D9D5C5700F52320 /* AudioManager.m in Sources */,
@@ -385,6 +375,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 63;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -405,6 +397,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bb.arvut;
 				PRODUCT_NAME = GalaxyRN;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -417,6 +410,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 63;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -436,6 +431,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.bb.arvut;
 				PRODUCT_NAME = GalaxyRN;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -514,10 +510,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -589,10 +582,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

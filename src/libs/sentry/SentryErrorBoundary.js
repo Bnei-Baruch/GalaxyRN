@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Button, StyleSheet, View } from 'react-native';
 import Text from '../../components/CustomText';
 import logger from '../../services/logger';
-import DebugMode from '../../settings/DebugMode';
 
 const NAMESPACE = 'SentryErrorBoundary';
 
@@ -71,7 +70,6 @@ const ErrorFallback = ({ error, resetError }) => {
     <View style={styles.container}>
       <Text style={styles.title}>{t('errorBoundary.title')}</Text>
       <Text style={styles.message}>{t('errorBoundary.message')}</Text>
-      <DebugMode />
       {__DEV__ && error && (
         <Text style={styles.errorDetails}>{error.toString()}</Text>
       )}

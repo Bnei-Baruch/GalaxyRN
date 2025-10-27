@@ -133,12 +133,10 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
     implementation 'io.sentry:sentry-android:6.9.0'   
     implementation 'com.facebook.soloader:soloader:0.10.5'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
 
     // Flipper dependencies
     debugImplementation("com.facebook.flipper:flipper:${rootProject.ext.flipperVersion}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${rootProject.ext.flipperVersion}")
-    debugImplementation("com.facebook.flipper:flipper-leakcanary2-plugin:${rootProject.ext.flipperVersion}")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

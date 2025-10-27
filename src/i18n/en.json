@@ -16,9 +16,7 @@
     "search": "Search...",
     "join": "Join Room",
     "selectRoom": "Select Ten",
-    "backToTen": "Back To Ten",
-    "debugMode": "Debug Mode",
-    "sendLogs": "Send Logs"
+    "backToTen": "Back To Ten"
   },
   "permissions": {
     "title": "User Permission",

@@ -21,7 +21,6 @@ import com.galaxyrn.foreground.ForegroundModule;
 import com.galaxyrn.permissions.PermissionsModule;
 import com.galaxyrn.WakeLockModule;
 import com.galaxyrn.SendEventToClient;
-import com.galaxyrn.logger.LoggerModule;
 
 /**
  * React Native package that registers Galaxy native modules
@@ -45,9 +44,7 @@ public class GxyPackage implements ReactPackage {
         // Add modules
         try {
             GxyLogger.i(TAG, "Adding standard modules");
-            modules.add(new LoggerModule(reactContext));
             modules.add(new ForegroundModule(reactContext));
-
             modules.add(new PermissionsModule(reactContext));
             modules.add(new WakeLockModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
