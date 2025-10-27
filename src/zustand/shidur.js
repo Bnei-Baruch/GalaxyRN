@@ -128,13 +128,12 @@ export const useShidurStore = create((set, get) => ({
   cleanWIP: false,
 
   setIsMuted: (isMuted = !get().isMuted) => {
-    [
-      ...(audioStream?.getAudioTracks() || []),
-      ...(trlAudioStream?.getAudioTracks() || []),
-    ].forEach(t => {
-      t.enabled = !isMuted;
-      !isMuted && t._setVolume(0.8);
-    });
+    const { isOnAir } = get();
+    const tracks = isOnAir
+      ? trlAudioStream?.getAudioTracks()
+      : audioStream?.getAudioTracks();
+
+    tracks?.forEach(t => (t.enabled = !isMuted));
     set({ isMuted });
   },
 
