@@ -47,9 +47,12 @@ jobs:
       - name: Install dotenv
         run: yarn add dotenv
 
+      - name: Create .env file
+        run: |
+          echo "MQTT_TOKEN=${{ secrets.MQTT_PASS }}" >> .env
+          echo "MQTT_URL=${{ secrets.MQTT_URL }}" >> .env
+
       - name: Send MQTT notification
-        env:
-          MQTT_TOKEN: ${{ secrets.MQTT_PASS }}
         run: |
           node scripts/send-mqtt-notification.js \
             "${{ steps.version_check.outputs.package_version }}" \

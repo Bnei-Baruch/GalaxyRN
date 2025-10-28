@@ -1,6 +1,6 @@
 import mqtt from 'mqtt';
 //import GxyConfig from "./janus-utils";
-import { MSG_URL } from '@env';
+import { MQTT_URL } from '@env';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 
@@ -64,9 +64,9 @@ class MqttMsg {
       },
     };
 
-    logger.debug(NAMESPACE, 'Connecting to MQTT:', MSG_URL);
+    logger.debug(NAMESPACE, 'Connecting to MQTT:', MQTT_URL);
     try {
-      this.mq = await mqtt.connectAsync(`wss://${MSG_URL}`, options);
+      this.mq = await mqtt.connectAsync(`wss://${MQTT_URL}`, options);
     } catch (error) {
       logger.error(NAMESPACE, 'Error connecting to MQTT:', error);
       throw error;
