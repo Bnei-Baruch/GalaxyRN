@@ -53,7 +53,6 @@ jobs:
           echo "MQTT_URL=${{ secrets.MQTT_URL }}" >> .env
 
       - name: Send MQTT notification
-        continue-on-error: true
         timeout-minutes: 1
         run: |
           node scripts/send-mqtt-notification.js \

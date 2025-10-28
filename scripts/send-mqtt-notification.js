@@ -17,6 +17,7 @@ require('dotenv').config({
 });
 
 const mqtt = require('mqtt');
+const WebSocket = require('ws');
 
 // Get arguments
 const packageVersion = process.argv[2];
@@ -51,7 +52,7 @@ if (!mqttToken || !mqttUrl) {
   process.exit(1);
 }
 
-// Construct MQTT URL
+// Construct MQTT URL - same as in mobile app
 const brokerUrl = `wss://${mqttUrl}`;
 
 console.log(`Connecting to MQTT broker: ${mqttUrl}`);
@@ -59,8 +60,10 @@ console.log(`Full URL: ${brokerUrl}`);
 console.log(`Version: ${packageVersion}`);
 console.log(`Client ID: arvut_mobile_release`);
 console.log(`Username: arvut_mobile`);
+console.log(`Password length: ${mqttToken ? mqttToken.length : 0} chars`);
 
 let options = {
+  keepalive: 10,
   clientId: 'arvut_mobile_release',
   protocolId: 'MQTT',
   protocolVersion: 5,
@@ -68,12 +71,41 @@ let options = {
   password: mqttToken,
   reconnectPeriod: 0, // Don't auto-reconnect in CI
   connectTimeout: 30 * 1000, // 30 seconds
-  rejectUnauthorized: false, // Don't verify SSL certificate in CI (might help)
-  clean: true, // Clean session
+  rejectUnauthorized: false, // Don't verify SSL certificate in CI
+  clean: false, // Same as mobile app
+  wsOptions: {
+    rejectUnauthorized: false,
+  },
+  properties: {
+    sessionExpiryInterval: 30,
+    maximumPacketSize: 256000,
+    requestResponseInformation: true,
+    requestProblemInformation: true,
+  },
+  // WebSocket transform
+  transformWsUrl: (url, options, client) => {
+    console.log('🔄 Transform WebSocket URL:', url);
+    console.log('🔄 Transform options:', {
+      protocolVersion: options.protocolVersion,
+      clientId: options.clientId,
+    });
+    return url;
+  },
 };
 
 console.log('Attempting connection...');
+console.log('Creating MQTT client...');
+
 const client = mqtt.connect(brokerUrl, options);
+
+// Add WebSocket-specific logging
+client.stream?.on('connect', () => {
+  console.log('🌐 WebSocket connected');
+});
+
+client.stream?.on('error', err => {
+  console.error('🌐 WebSocket error:', err);
+});
 
 client.on('connect', data => {
   console.log('✅ Connected to MQTT broker');
@@ -106,12 +138,15 @@ client.on('connect', data => {
     err => {
       if (err) {
         console.error('❌ Error publishing message:', err);
+        clearTimeout(timeoutId);
         process.exit(1);
       } else {
         console.log(`✅ Successfully sent version notification`);
         console.log(`📱 Android: v${androidVersion} (${androidBuild})`);
         console.log(`🍎 iOS: v${iosVersion} (${iosBuild})`);
+        clearTimeout(timeoutId);
         client.end();
+        process.exit(0);
       }
     }
   );
@@ -124,6 +159,7 @@ client.on('error', err => {
     code: err.code,
     syscall: err.syscall,
   });
+  clearTimeout(timeoutId);
   process.exit(1);
 });
 
@@ -132,12 +168,11 @@ client.on('offline', () => {
 });
 
 client.on('close', () => {
-  console.log('🔌 Connection closed');
-  console.log('⚠️  Connection was closed before successful publish');
+  // Connection closed - this is normal after successful publish
 });
 
 client.on('end', () => {
-  console.log('🔚 Client ended');
+  // Client ended - this is normal after successful publish
 });
 
 client.on('disconnect', packet => {
@@ -157,7 +192,7 @@ client.on('reconnect', () => {
 });
 
 // Timeout after 15 seconds (reduced for CI)
-setTimeout(() => {
+const timeoutId = setTimeout(() => {
   console.error('❌ MQTT connection timeout (15s)');
   console.error('⚠️  This might be due to:');
   console.error('   - GitHub Actions runner cannot reach MQTT broker');
