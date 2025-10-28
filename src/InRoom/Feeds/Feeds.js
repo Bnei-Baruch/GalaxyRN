@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { withProfiler } from '../../libs/sentry/sentryHOC';
 import logger from '../../services/logger';
 import { useFeedsStore } from '../../zustand/feeds';
 import { useInRoomStore } from '../../zustand/inRoom';
@@ -56,7 +57,7 @@ const Feeds = () => {
   );
 };
 
-export default Feeds;
+export default withProfiler(Feeds, { name: 'Feeds' });
 
 const styles = StyleSheet.create({
   container: {

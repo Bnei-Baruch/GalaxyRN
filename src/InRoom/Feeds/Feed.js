@@ -4,6 +4,7 @@ import { RTCView } from 'react-native-webrtc';
 import logger from '../../services/logger';
 
 import WIP from '../../components/WIP';
+import { withProfiler } from '../../libs/sentry/sentryHOC';
 import { useFeedsStore } from '../../zustand/feeds';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
@@ -88,7 +89,8 @@ const Feed = ({ id }) => {
     </View>
   );
 };
-export default Feed;
+
+export default withProfiler(Feed, { name: 'Feed' });
 
 const styles = StyleSheet.create({
   container: {

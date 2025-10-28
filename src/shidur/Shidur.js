@@ -13,6 +13,7 @@ import { useSubtitleStore } from '../zustand/subtitle';
 // Local imports
 import WIP from '../components/WIP';
 import { baseStyles, SHIDUR_BAR_ZINDEX } from '../constants';
+import { withProfiler } from '../libs/sentry/sentryHOC';
 import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
@@ -152,4 +153,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Shidur;
+export default withProfiler(Shidur, { name: 'Shidur' });
