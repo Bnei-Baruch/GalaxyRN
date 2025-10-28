@@ -99,7 +99,8 @@ public class MainApplication extends Application implements ReactApplication {
                 options.setEnvironment("production");
             }
 
-            options.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME + "+" + BuildConfig.VERSION_CODE);
+            options.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME);
+            options.setDist("android");
         });
     }
 

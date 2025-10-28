@@ -13,6 +13,20 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// Load .env file for Sentry DSN
+def envFile = rootProject.file("../.env")
+def sentryDsn = ""
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        if (line.startsWith("SENTRY_DSN=")) {
+            sentryDsn = line.substring("SENTRY_DSN=".length()).trim()
+        }
+    }
+}
+// Fallback to environment variable or keystore.properties
+if (sentryDsn.isEmpty()) {
+    sentryDsn = System.getenv("SENTRY_DSN") ?: keystoreProperties['SENTRY_DSN'] ?: ""
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -116,7 +130,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            buildConfigField "String", "SENTRY_DSN", keystoreProperties['SENTRY_DSN']
+            buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -124,7 +138,7 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            buildConfigField "String", "SENTRY_DSN", keystoreProperties['SENTRY_DSN']
+            buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
         }
     }
 }

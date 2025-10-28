@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { register } from '@formatjs/intl-pluralrules';
@@ -15,7 +16,6 @@ import CheckAuthentication from './src/auth/CheckAuthentication';
 import SentryErrorBoundary from './src/libs/sentry/SentryErrorBoundary';
 import AndroidPermissions from './src/services/AndroidPermissions';
 import InitApp from './src/services/InitApp';
-import logger from './src/services/logger';
 
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -24,15 +24,11 @@ Sentry.init({
   environment: process.env.NODE_ENV,
   attachStacktrace: true,
   release: `GalaxyRN@${require('./package.json').version}`,
+  dist: Platform.OS, // 'android' or 'ios'
   enableAutoSessionTracking: true,
   sessionTrackingIntervalMillis: 30000,
   maxBreadcrumbs: 100,
   autoInitializeNativeSdk: true,
-  beforeSend: event => {
-    //console.log('Sentry beforeSend', event);
-    logger.sendFile();
-    return event;
-  },
 });
 if (!Intl.PluralRules) register();
 

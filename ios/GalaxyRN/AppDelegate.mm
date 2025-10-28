@@ -44,8 +44,8 @@
       
       // Get app version for release name
       NSString *version = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
-      NSString *build = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
-      options.releaseName = [NSString stringWithFormat:@"GalaxyRN@%@+%@", version, build];
+      options.releaseName = [NSString stringWithFormat:@"GalaxyRN@%@", version];
+      options.dist = @"ios";
     }];
   }
   // Initialize Crisp SDK with website ID - move to background thread
