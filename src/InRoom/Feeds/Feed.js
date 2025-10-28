@@ -13,19 +13,21 @@ import QuestionOverlay from './QuestionOverlay';
 const NAMESPACE = 'Feed';
 
 const RTCViewWrapper = memo(
-  ({ streamURL }) => <RTCView streamURL={streamURL} style={styles.rtcView} />,
+  ({ streamURL }) => {
+    logger.debug(NAMESPACE, 'RTCViewWrapper render');
+    return <RTCView streamURL={streamURL} style={styles.rtcView} />;
+  },
   (prevProps, nextProps) => {
     return prevProps.streamURL === nextProps.streamURL;
   }
 );
 
 const Feed = ({ id }) => {
-  const { feedById, activateFeedsVideos, deactivateFeedsVideos } =
-    useFeedsStore();
+  const feed = useFeedsStore(state => state.feedById[id]);
+  const { activateFeedsVideos, deactivateFeedsVideos } = useFeedsStore();
   const { borders, width } = useUiActions();
 
-  const feed = feedById[id];
-  logger.debug(NAMESPACE, 'Feed render', feed);
+  logger.debug(NAMESPACE, 'Feed render');
 
   const {
     display: { display } = {},
@@ -66,7 +68,6 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    logger.debug(NAMESPACE, 'renderContent', vOn, url);
     if (!vOn || !url) return <WIP isReady={false} />;
 
     return (

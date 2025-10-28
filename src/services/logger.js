@@ -11,6 +11,7 @@ class Logger {
       //tag === 'JanusMqtt' ||
       //tag === 'Mqtt' ||
       //tag === 'Shidur'
+      //tag === 'Feeds' || tag === 'Feed' || tag === 'RoomLayout'
       true
     );
   }

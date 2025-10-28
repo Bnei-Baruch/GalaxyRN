@@ -120,14 +120,29 @@ export class StreamingPlugin {
     logger.info(NAMESPACE, 'watch: ', id);
     this.streamId = id;
     const body = { request: 'watch', id };
-    const result = await this.transaction('message', { body }, 'event');
-    logger.debug(NAMESPACE, 'init successful');
-    const { json } = result || {};
-    if (!json?.jsep) {
-      logger.error(NAMESPACE, 'No JSEP received');
-      throw new Error('No JSEP received');
+
+    try {
+      const result = await this.transaction('message', { body }, 'event');
+      logger.debug(NAMESPACE, 'init successful');
+      const { json } = result || {};
+      if (!json?.jsep) {
+        logger.error(NAMESPACE, 'No JSEP received');
+        throw new Error('No JSEP received');
+      }
+      await this.sdpExchange(json.jsep);
+    } catch (error) {
+      const errorCode = error?.data?.error_code;
+
+      if (errorCode === 455) {
+        logger.error(
+          NAMESPACE,
+          `Stream ${id} not found on Janus server (error 455)`
+        );
+        throw new Error(`Stream ${id} not found on Janus server`);
+      }
+
+      throw error;
     }
-    await this.sdpExchange(json.jsep);
   };
 
   iceRestart = async () => {
@@ -166,6 +181,17 @@ export class StreamingPlugin {
     } catch (error) {
       this.iceRestartInProgress = false;
       const errorCode = error?.data?.error_code;
+
+      // Handle "No such mountpoint/stream" error (455)
+      if (errorCode === 455) {
+        logger.error(
+          NAMESPACE,
+          `Stream ${this.streamId} not found during ICE restart (error 455)`
+        );
+        useShidurStore.getState().restartShidur();
+        return;
+      }
+
       // Handle "Already in room" or similar Janus errors (460, 436, etc.)
       if (errorCode === 460 || errorCode === 436) {
         logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
@@ -222,7 +248,23 @@ export class StreamingPlugin {
     logger.debug(NAMESPACE, 'switch: ', id);
     const body = { request: 'switch', id };
     return this.transaction('message', { body }, 'event').catch(err => {
-      logger.error(NAMESPACE, 'cannot switch stream', err);
+      const errorCode = err?.data?.error_code;
+      logger.error(
+        NAMESPACE,
+        `cannot switch stream to ${id}, error code: ${errorCode}`,
+        err
+      );
+
+      // Handle "No such mountpoint/stream" error (455)
+      if (errorCode === 455) {
+        logger.warn(
+          NAMESPACE,
+          `Stream ${id} not found on Janus server, skipping switch`
+        );
+        // Don't throw, just log the error
+        return Promise.resolve({ error: 'Stream not found', code: 455 });
+      }
+
       throw err;
     });
   };

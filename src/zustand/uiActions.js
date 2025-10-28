@@ -18,7 +18,7 @@ const NAMESPACE = 'UiActions';
 let lastTimestemp = 0;
 let showBarTimeout = null;
 
-const getBorders = async (scrollPos, feedsPos) => {
+const getBorders = async (scrollPos, feedsPos, currentBorders) => {
   lastTimestemp = Date.now();
   const currentTimestamp = lastTimestemp;
   await new Promise(r => BackgroundTimer.setTimeout(r, 500));
@@ -28,6 +28,10 @@ const getBorders = async (scrollPos, feedsPos) => {
   let top = scrollPos - feedsPos;
   let bottom = top + Dimensions.get('window').height;
 
+  if (currentBorders.top === top && currentBorders.bottom === bottom) {
+    return null;
+  }
+
   return { top, bottom };
 };
 
@@ -36,13 +40,21 @@ export const useUiActions = create((set, get) => ({
 
   feedsScrollY: 0,
   setFeedsScrollY: async feedsScrollY => {
-    const borders = await getBorders(feedsScrollY, get().feedsPos);
+    const borders = await getBorders(
+      feedsScrollY,
+      get().feedsPos,
+      get().borders
+    );
     if (borders) set({ feedsScrollY, borders });
   },
 
   feedsPos: 0,
   setFeedsPos: async feedsPos => {
-    const borders = await getBorders(get().feedsScrollY, feedsPos);
+    const borders = await getBorders(
+      get().feedsScrollY,
+      feedsPos,
+      get().borders
+    );
     if (borders) set({ feedsPos, borders });
   },
 
@@ -50,35 +62,38 @@ export const useUiActions = create((set, get) => ({
   updateWidth: (isShidur, feedLength) => {
     logger.debug(NAMESPACE, 'updateWidth', isShidur, feedLength);
     let { height, width } = Dimensions.get('window');
+    let newWidth;
 
     if (height >= width) {
-      set({ width: parseInt(width / 2, 10) });
-      return;
+      newWidth = parseInt(width / 2, 10);
+    } else {
+      const { isShidur: _isShidur, hideSelf } = useSettingsStore.getState();
+      isShidur = isShidur ?? _isShidur;
+
+      feedLength =
+        feedLength ?? Object.keys(useFeedsStore.getState().feedById).length;
+      const num = feedLength + (hideSelf ? 0 : 1);
+      logger.debug('UiActions', 'updateWidth', num);
+
+      if (isShidur) {
+        newWidth = parseInt(((height / 4) * 16) / 9, 10);
+      } else {
+        width = width - 56;
+
+        if (num <= 4) {
+          newWidth = parseInt(((height / 2) * 16) / 9, 10);
+        } else if (num <= 9) {
+          newWidth = parseInt(((height / 3) * 16) / 9, 10);
+        } else {
+          newWidth = parseInt(width / 4, 10);
+        }
+      }
     }
 
-    const { isShidur: _isShidur, hideSelf } = useSettingsStore.getState();
-    isShidur = isShidur ?? _isShidur;
-
-    feedLength =
-      feedLength ?? Object.keys(useFeedsStore.getState().feedById).length;
-    const num = feedLength + (hideSelf ? 0 : 1);
-    logger.debug('UiActions', 'updateWidth', num);
-
-    if (isShidur) {
-      set({ width: parseInt(((height / 4) * 16) / 9, 10) });
-      return;
+    // Обновляем только если значение изменилось
+    if (get().width !== newWidth) {
+      set({ width: newWidth });
     }
-    width = width - 56;
-
-    if (num <= 4) {
-      set({ width: parseInt(((height / 2) * 16) / 9, 10) });
-      return;
-    }
-    if (num <= 9) {
-      set({ width: parseInt(((height / 3) * 16) / 9, 10) });
-      return;
-    }
-    set({ width: parseInt(width / 4, 10) });
   },
 
   showBars: true,

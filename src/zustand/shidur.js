@@ -555,14 +555,32 @@ export const useShidurStore = create((set, get) => ({
   setAudio: async key => {
     const audio = getOptionByKey(key);
     logger.debug(NAMESPACE, 'setAudio', audio);
-    if (get().isOnAir) {
-      const key = trllang[audio.key.split('_')[1]];
-      if (key) {
-        await trlAudioJanus.switch(id);
+
+    try {
+      if (get().isOnAir) {
+        const key = trllang[audio.key.split('_')[1]];
+        if (key) {
+          const switchResult = await trlAudioJanus.switch(key);
+          if (switchResult?.error) {
+            logger.warn(
+              NAMESPACE,
+              `Failed to switch trl audio to ${key}, error: ${switchResult.error}`
+            );
+          }
+        }
+      } else {
+        const switchResult = await audioJanus?.switch(audio.value);
+        if (switchResult?.error) {
+          logger.warn(
+            NAMESPACE,
+            `Failed to switch audio to ${audio.value}, error: ${switchResult.error}`
+          );
+        }
       }
-    } else {
-      await audioJanus?.switch(audio.value);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error in setAudio', error);
     }
+
     logger.debug(NAMESPACE, 'set audio', audio);
     const isOriginal = audio.key === 'wo_original';
     if (!isOriginal) {

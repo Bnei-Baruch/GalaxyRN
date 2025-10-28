@@ -240,7 +240,21 @@ class MqttMsg {
               service;
             this.mq.emit(mit, data, id);
           } catch (e) {
-            logger.error(NAMESPACE, e);
+            logger.debug(
+              NAMESPACE,
+              'janus data type:',
+              typeof data,
+              'isBuffer:',
+              Buffer.isBuffer(data)
+            );
+            logger.debug(NAMESPACE, 'janus data length:', data?.length);
+            logger.debug(
+              NAMESPACE,
+              'janus data toString:',
+              data?.toString ? data.toString() : 'no toString method'
+            );
+            logger.error(NAMESPACE, 'Error parsing janus message:', e.message);
+            logger.error(NAMESPACE, 'janus data raw:', data);
           }
           break;
         default:

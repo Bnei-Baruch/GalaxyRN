@@ -9,7 +9,7 @@ export const OriginalSwitch = () => {
   const { toggleIsOriginal, audio } = useShidurStore();
 
   const { t } = useTranslation();
-  const isOriginal = audio.key === 'wo_original';
+  const isOriginal = audio?.key === 'wo_original';
 
   const toggle = () => toggleIsOriginal();
 

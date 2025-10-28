@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
+import logger from '../../services/logger';
 import { useFeedsStore } from '../../zustand/feeds';
 import { useInRoomStore } from '../../zustand/inRoom';
 import { useMyStreamStore } from '../../zustand/myStream';
@@ -10,12 +11,14 @@ import FeedAudioMode from './FeedAudioMode';
 import MyAudioMode from './MyAudioMode';
 import MyRoomMedia from './MyRoomVideo';
 
+const NAMESPACE = 'Feeds';
+
 const Feeds = () => {
   const { audioMode, hideSelf, isFullscreen } = useSettingsStore();
-  const { cammute } = useMyStreamStore();
-  const { setFeedsPos } = useUiActions();
-  const { isInBackground } = useInRoomStore();
-  const { feedIds } = useFeedsStore();
+  const cammute = useMyStreamStore(state => state.cammute);
+  const setFeedsPos = useUiActions(state => state.setFeedsPos);
+  const isInBackground = useInRoomStore(state => state.isInBackground);
+  const feedIds = useFeedsStore(state => state.feedIds);
 
   const ref = useRef({});
 
@@ -45,6 +48,7 @@ const Feeds = () => {
     return <Feed key={id} id={id} />;
   };
 
+  logger.debug(NAMESPACE, 'render', feedIds.length);
   return (
     <View style={styles.container} onLayout={handleLayout} ref={ref}>
       {feedIds.length > 0 ? feedIds.map(renderFeed) : renderMy()}

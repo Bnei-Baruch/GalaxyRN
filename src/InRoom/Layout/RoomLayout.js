@@ -1,6 +1,7 @@
 import React from 'react';
 
 import ConnectionNotStable from '../../components/ConnectionNotStable';
+import logger from '../../services/logger';
 import { Quads } from '../../shidur/Quads';
 import Shidur from '../../shidur/Shidur';
 import { useInitsStore } from '../../zustand/inits';
@@ -10,6 +11,8 @@ import RoomFullscreen from './RoomFullscreen';
 import RoomLandscape from './RoomLandscape';
 import RoomPortrait from './RoomPortrait';
 
+const NAMESPACE = 'RoomLayout';
+
 const RoomLayout = () => {
   const { isPortrait } = useInitsStore();
   const { isShidur, showGroups, isFullscreen } = useSettingsStore();
@@ -17,6 +20,8 @@ const RoomLayout = () => {
   const shidur = isShidur && <Shidur />;
   const quads = showGroups && <Quads />;
   const members = <Feeds key="members" />;
+
+  logger.debug(NAMESPACE, 'render');
 
   let content;
   if (isFullscreen)
