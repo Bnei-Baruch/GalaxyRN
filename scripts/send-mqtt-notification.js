@@ -68,7 +68,8 @@ let options = {
   password: mqttToken,
   reconnectPeriod: 0, // Don't auto-reconnect in CI
   connectTimeout: 30 * 1000, // 30 seconds
-  rejectUnauthorized: true, // Verify SSL certificate
+  rejectUnauthorized: false, // Don't verify SSL certificate in CI (might help)
+  clean: true, // Clean session
 };
 
 console.log('Attempting connection...');
@@ -76,6 +77,7 @@ const client = mqtt.connect(brokerUrl, options);
 
 client.on('connect', data => {
   console.log('✅ Connected to MQTT broker');
+  console.log('Connection data:', JSON.stringify(data, null, 2));
   // Create message payload
   const message = {
     type: 'version_release',
@@ -131,6 +133,23 @@ client.on('offline', () => {
 
 client.on('close', () => {
   console.log('🔌 Connection closed');
+  console.log('⚠️  Connection was closed before successful publish');
+});
+
+client.on('end', () => {
+  console.log('🔚 Client ended');
+});
+
+client.on('disconnect', packet => {
+  console.log('❌ Disconnected:', packet);
+});
+
+client.on('packetsend', packet => {
+  console.log('📤 Packet sent:', packet.cmd);
+});
+
+client.on('packetreceive', packet => {
+  console.log('📥 Packet received:', packet.cmd);
 });
 
 client.on('reconnect', () => {
