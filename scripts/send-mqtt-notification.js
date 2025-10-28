@@ -28,7 +28,7 @@ const iosBuild = process.argv[6];
 
 // Get environment variables
 const mqttToken = process.env.MQTT_TOKEN;
-const mqttUrl = process.env.MQTT_URL;
+const mqttUrl = process.env.MSG_URL;
 
 // Validate required parameters
 if (
@@ -48,7 +48,7 @@ if (
 // Validate environment variables
 if (!mqttToken || !mqttUrl) {
   console.error('Error: Missing required MQTT environment variables');
-  console.log('Required: MQTT_TOKEN, MQTT_URL');
+  console.log('Required: MQTT_TOKEN, MSG_URL');
   process.exit(1);
 }
 
