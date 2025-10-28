@@ -51,8 +51,14 @@ if (!mqttToken || !mqttUrl) {
   process.exit(1);
 }
 
+// Construct MQTT URL
+const brokerUrl = `wss://${mqttUrl}`;
+
 console.log(`Connecting to MQTT broker: ${mqttUrl}`);
+console.log(`Full URL: ${brokerUrl}`);
 console.log(`Version: ${packageVersion}`);
+console.log(`Client ID: arvut_mobile_release`);
+console.log(`Username: arvut_mobile`);
 
 let options = {
   clientId: 'arvut_mobile_release',
@@ -60,9 +66,13 @@ let options = {
   protocolVersion: 5,
   username: 'arvut_mobile',
   password: mqttToken,
+  reconnectPeriod: 0, // Don't auto-reconnect in CI
+  connectTimeout: 30 * 1000, // 30 seconds
+  rejectUnauthorized: true, // Verify SSL certificate
 };
 
-const client = mqtt.connect(`wss://${mqttUrl}`, options);
+console.log('Attempting connection...');
+const client = mqtt.connect(brokerUrl, options);
 
 client.on('connect', data => {
   console.log('✅ Connected to MQTT broker');
@@ -107,12 +117,34 @@ client.on('connect', data => {
 
 client.on('error', err => {
   console.error('❌ MQTT connection error:', err);
+  console.error('Error details:', {
+    message: err.message,
+    code: err.code,
+    syscall: err.syscall,
+  });
   process.exit(1);
 });
 
-// Timeout after 30 seconds
+client.on('offline', () => {
+  console.log('⚠️  Client went offline');
+});
+
+client.on('close', () => {
+  console.log('🔌 Connection closed');
+});
+
+client.on('reconnect', () => {
+  console.log('🔄 Attempting to reconnect...');
+});
+
+// Timeout after 15 seconds (reduced for CI)
 setTimeout(() => {
-  console.error('❌ MQTT connection timeout (30s)');
+  console.error('❌ MQTT connection timeout (15s)');
+  console.error('⚠️  This might be due to:');
+  console.error('   - GitHub Actions runner cannot reach MQTT broker');
+  console.error('   - Firewall or network restrictions');
+  console.error('   - MQTT broker requires IP whitelisting');
+  console.error(`   - Broker URL: ${mqttUrl}`);
   client.end();
   process.exit(1);
-}, 30000);
+}, 15000);
