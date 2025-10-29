@@ -12,6 +12,8 @@ import logger from '../services/logger';
 // Shared modules
 import i18n, { getSystemLanguage } from '../i18n/i18n';
 import { waitConnection } from '../libs/connection-monitor';
+import { ROOM_SESSION } from '../libs/sentry/constants';
+import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
 import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
@@ -138,8 +140,14 @@ export const useShidurStore = create((set, get) => ({
   },
 
   setVideo: async (video, updateState = true) => {
+    const span = addSpan(ROOM_SESSION, 'shidur.setVideo', {
+      video,
+      updateState,
+    });
     logger.debug(NAMESPACE, 'setVideo', video, updateState);
-    if (!janus) return;
+    if (!janus) {
+      return;
+    }
 
     if (updateState) {
       await setToStorage('video', video);
@@ -157,10 +165,13 @@ export const useShidurStore = create((set, get) => ({
     }
     logger.debug(NAMESPACE, 'setVideo done', videoStream?.toURL(), video);
     set({ url: videoStream?.toURL(), video });
+    finishSpan(span, 'ok');
   },
 
   initJanus: async () => {
+    const span = addSpan(ROOM_SESSION, 'shidur.initJanus');
     if (janus) {
+      finishSpan(span, 'duplicate');
       return;
     }
 
@@ -199,11 +210,13 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
       janus = new JanusMqtt(user, srv);
       janus.onStatus = (srv, status) => {
+        const span = addSpan(ROOM_SESSION, 'shidur.janusStatus', { status });
         logger.debug(NAMESPACE, 'janus status: ', status);
         if (status === 'offline') {
           logger.warn(NAMESPACE, 'janus status: ', status);
           useInRoomStore.getState().restartRoom();
         }
+        finishSpan(span, 'ok');
       };
 
       await janus.init(config?.token);
@@ -211,12 +224,18 @@ export const useShidurStore = create((set, get) => ({
       janusReady = true;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
+      finishSpan(span, 'internal_error');
     }
     set({ janusReady });
+    finishSpan(span, 'ok');
   },
 
   cleanJanus: async () => {
-    if (!janus || get().cleanWIP) return;
+    const span = addSpan(ROOM_SESSION, 'shidur.cleanJanus');
+    if (!janus || get().cleanWIP) {
+      finishSpan(span, 'duplicate');
+      return;
+    }
     set({ cleanWIP: true });
     try {
       await Promise.all([get().cleanShidur(), get().cleanQuads()]);
@@ -226,9 +245,11 @@ export const useShidurStore = create((set, get) => ({
       janus = null;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanJanus:', error);
+      finishSpan(span, 'internal_error');
     }
     set({ janusReady: false });
     set({ cleanWIP: false });
+    finishSpan(span, 'ok');
   },
 
   initMedias: async () => {
