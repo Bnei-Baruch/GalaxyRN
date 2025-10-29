@@ -9,6 +9,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
 import { CONNECTION } from './sentry/constants';
 import {
+  addFinishSpan,
   addSpan,
   finishSpan,
   finishTransaction,
@@ -263,11 +264,11 @@ export const waitConnection = async () => {
       if (!connected) {
         logger.debug(NAMESPACE, 'waitConnection false', currentState, mqtt.mq);
 
-        addSpan(CONNECTION, 'connectionMonitor.waitConnection', {
+        addFinishSpan(CONNECTION, 'connectionMonitor.waitConnection', {
           isInternetReachable: currentState?.details?.isInternetReachable,
           isConnected: currentState?.isConnected,
           mqttConnected: mqtt.mq?.connected,
-        }).finish('ok');
+        });
       }
       resolve(connected);
     });

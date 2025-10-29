@@ -8,7 +8,11 @@ import { useChatStore } from '../zustand/chat';
 
 import { waitConnection } from '../libs/connection-monitor';
 import { CONNECTION } from '../libs/sentry/constants';
-import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
+import {
+  addFinishSpan,
+  addSpan,
+  finishSpan,
+} from '../libs/sentry/sentryHelper';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
@@ -99,32 +103,32 @@ class MqttMsg {
     });
 
     this.mq.on('reconnect', data => {
-      addSpan(CONNECTION, 'mqtt.reconnect').finishSpan('ok');
+      addFinishSpan(CONNECTION, 'mqtt.reconnect');
       logger.debug(NAMESPACE, 'mqtt on reconnect', data, this.mq.connected);
     });
 
     this.mq.on('offline', data => {
-      addSpan(CONNECTION, 'mqtt.offline').finishSpan('ok');
+      addFinishSpan(CONNECTION, 'mqtt.offline');
       logger.debug(NAMESPACE, 'mqtt on offline', data);
     });
 
     this.mq.on('close', () => {
-      addSpan(CONNECTION, 'mqtt.close').finishSpan('ok');
+      addFinishSpan(CONNECTION, 'mqtt.close');
       logger.debug(NAMESPACE, 'mqtt on close');
     });
 
     this.mq.on('disconnect', data => {
-      addSpan(CONNECTION, 'mqtt.disconnect').finishSpan('ok');
+      addFinishSpan(CONNECTION, 'mqtt.disconnect');
       logger.debug(NAMESPACE, 'mqtt on disconnect', data);
     });
 
     this.mq.on('end', data => {
-      addSpan(CONNECTION, 'mqtt.end').finishSpan('ok');
+      addFinishSpan(CONNECTION, 'mqtt.end');
       logger.debug(NAMESPACE, 'mqtt on end', data);
     });
 
     this.mq.on('error', error => {
-      addSpan(CONNECTION, 'mqtt.error').finishSpan('internal_error');
+      addFinishSpan(CONNECTION, 'mqtt.error');
       logger.error(NAMESPACE, 'mqtt on error', error);
     });
 
@@ -197,6 +201,16 @@ class MqttMsg {
         ...packet,
         payload: packet.payload?.type,
       });
+      if (!data?.toString) {
+        logger.warn(NAMESPACE, 'message data has no toString method');
+        addFinishSpan(
+          CONNECTION,
+          'mqtt.message',
+          { topic, data, packet },
+          'no_data_toString'
+        );
+        return;
+      }
 
       let cd = packet?.properties?.correlationData
         ? ` | transaction: ${packet?.properties?.correlationData?.toString()}`
@@ -274,19 +288,11 @@ class MqttMsg {
               service;
             this.mq.emit(mit, data, id);
           } catch (e) {
-            logger.debug(
-              NAMESPACE,
-              'janus data type:',
-              typeof data,
-              'isBuffer:',
-              Buffer.isBuffer(data)
-            );
+            logger.debug(NAMESPACE, 'janus data type:', typeof data);
             logger.debug(NAMESPACE, 'janus data length:', data?.length);
-            logger.debug(
-              NAMESPACE,
-              'janus data toString:',
-              data?.toString ? data.toString() : 'no toString method'
-            );
+            if (data?.toString) {
+              logger.debug(NAMESPACE, 'janus data toString:', data?.toString());
+            }
             logger.error(NAMESPACE, 'Error parsing janus message:', e.message);
             logger.error(NAMESPACE, 'janus data raw:', data);
           }

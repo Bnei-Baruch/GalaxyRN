@@ -82,7 +82,7 @@ const activeSessions = new Map();
 /**
  * Start a named session that can be accessed from different parts of the app
  * Uses Sentry.startSpanManual() for long-running operations with manual control
- * 
+ *
  * @param {string} key - Unique key to identify this session (e.g., ROOM_SESSION)
  * @param {string} name - Session name (e.g., 'Join Room')
  * @param {string} op - Operation type (e.g., 'navigation', 'connection')
@@ -100,13 +100,13 @@ export const startTransaction = (key, name, op) => {
 /**
  * Add a child span to an active session
  * Uses Sentry.startSpan() which automatically attaches to active parent span
- * 
+ *
  * @param {string} key - Key of the parent session
  * @param {string} operation - Span operation name (e.g., 'device.setup', 'janus.init')
  * @param {Object} attributes - Additional attributes for the span
  * @returns {Span|null} - Sentry span or null if session not found
  */
-export const addSpan = (key, op, attributes={}) => {
+export const addSpan = (key, op, attributes = {}) => {
   const session = activeSessions.get(key);
 
   if (!session) {
@@ -123,6 +123,12 @@ export const addSpan = (key, op, attributes={}) => {
 
   logger.debug(NAMESPACE, `Added span to ${key}: ${op}`);
   return childSpan;
+};
+
+export const addFinishSpan = (key, op, attributes = {}, status = 'ok') => {
+  const span = addSpan(key, op, attributes);
+  span.setStatus(status);
+  span.end();
 };
 
 /**

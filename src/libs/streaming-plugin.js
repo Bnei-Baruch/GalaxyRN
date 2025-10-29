@@ -12,7 +12,7 @@ import {
   removeConnectionListener,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addSpan, finishSpan } from './sentry/sentryHelper';
+import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
 
 const NAMESPACE = 'StreamingPlugin';
 
@@ -112,10 +112,7 @@ export class StreamingPlugin {
     this.pc.addEventListener('iceconnectionstatechange', () => {
       if (this.isDestroyed) return;
       const iceState = this.pc?.iceConnectionState;
-      const iceStateSpan = addSpan(CONNECTION, 'streaming.iceState').finishSpan(
-        iceStateSpan,
-        status
-      );
+      addFinishSpan(CONNECTION, 'streaming.iceState', { iceState });
     });
   };
 
@@ -336,21 +333,21 @@ export class StreamingPlugin {
   };
 
   hangup = () => {
-    addSpan(CONNECTION, 'streaming.hangup', {
+    addFinishSpan(CONNECTION, 'streaming.hangup', {
       destroyed: this.isDestroyed,
-    }).finishSpan('ok');
+    });
     logger.debug(NAMESPACE, 'Hangup called');
   };
 
   slowLink = (uplink, lost, mid) => {
-    addSpan(CONNECTION, 'streaming.slowLink', {
+    addFinishSpan(CONNECTION, 'streaming.slowLink', {
       uplink,
       lost,
       mid,
       streamId: this.streamId,
       handleId: this.janusHandleId,
       iceConnectionState: this.pc?.iceConnectionState,
-    }).finishSpan('ok');
+    });
     logger.warn(NAMESPACE, 'SlowLink detected:', {
       uplink,
       lost,
@@ -359,19 +356,19 @@ export class StreamingPlugin {
   };
 
   mediaState = (media, on) => {
-    addSpan(CONNECTION, 'streaming.mediaState', { media, on }).finishSpan('ok');
+    addFinishSpan(CONNECTION, 'streaming.mediaState', { media, on });
 
     logger.info(NAMESPACE, `mediaState: Janus ${on} ${media}`);
   };
 
   webrtcState = isReady => {
-    addSpan(CONNECTION, 'streaming.webrtcState', { isReady }).finishSpan('ok');
+    addFinishSpan(CONNECTION, 'streaming.webrtcState', { isReady });
 
     logger.info(NAMESPACE, `webrtcState: RTCPeerConnection is: ${isReady}`);
   };
 
   detach = () => {
-    addSpan(CONNECTION, 'streaming.detach').finishSpan('ok');
+    const detachSpan = addSpan(CONNECTION, 'streaming.detach');
     logger.debug(NAMESPACE, 'Detach called');
     this.isDestroyed = true;
 
