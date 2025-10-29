@@ -155,6 +155,7 @@ export const useInitsStore = create((set, get) => ({
   },
 
   initConfig: async () => {
+    logger.debug(NAMESPACE, 'initConfig');
     useUserStore.getState().setGeoInfo();
 
     try {
@@ -166,9 +167,11 @@ export const useInitsStore = create((set, get) => ({
     } catch (err) {
       logger.error(NAMESPACE, 'error initializing app', err);
     }
+    logger.debug(NAMESPACE, 'initConfig done');
   },
 
   initApp: async () => {
+    logger.debug(NAMESPACE, 'initApp');
     BackgroundTimer.start();
     let _isPlay = false;
     if (Platform.OS === 'android') {
@@ -187,11 +190,13 @@ export const useInitsStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'appTerminating listener set up successfully');
     }
     logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
+
     try {
       subscription = eventEmitter.addListener(
         'onCallStateChanged',
         async data => {
           logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
+          const span = addSpan(ROOM_SESSION, 'onCallStateChanged', data);
 
           if (data.state === 'ON_START_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_START_CALL');
@@ -207,6 +212,7 @@ export const useInitsStore = create((set, get) => ({
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
           }
+          finishSpan(span, 'ok');
         }
       );
     } catch (error) {

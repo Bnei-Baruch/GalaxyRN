@@ -7,6 +7,13 @@ import { sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
+import { CONNECTION } from './sentry/constants';
+import {
+  addSpan,
+  finishSpan,
+  finishTransaction,
+  startTransaction,
+} from './sentry/sentryHelper';
 
 export const NET_INFO_STATE_CONNECTED = 'CONNECTED';
 export const NET_INFO_STATE_DISCONNECTED = 'DISCONNECTED';
@@ -24,18 +31,32 @@ export const initConnectionMonitor = () => {
   timeout = null;
   disconnectedSeconds = 0;
 
+  // Start CONNECTION transaction
+  startTransaction(CONNECTION, 'Connection Monitor', 'connection');
+
   netInfoUnsubscribe = NetInfo.addEventListener(async state => {
+    const networkStateSpan = addSpan(
+      CONNECTION,
+      'connectionMonitor.networkState',
+      {
+        isConnected: state.isConnected,
+        type: state.type,
+        isInternetReachable: state.details?.isInternetReachable,
+      }
+    );
     logger.debug(NAMESPACE, 'Network state:', state);
 
     if (!currentState) {
       currentState = state;
       logger.debug(NAMESPACE, 'First network state');
+      finishSpan(networkStateSpan, 'ok');
       return;
     }
 
     if (!state.isConnected) {
       logger.debug(NAMESPACE, 'Network disconnected');
       currentState = state;
+      finishSpan(networkStateSpan, 'ok');
       waitConnectionRestart();
       return;
     }
@@ -44,8 +65,11 @@ export const initConnectionMonitor = () => {
     if (!isSame) {
       disconnectedSeconds = 0;
       logger.debug(NAMESPACE, 'Network state was changed');
+      finishSpan(networkStateSpan, 'ok');
       waitConnectionRestart();
+      return;
     }
+    finishSpan(networkStateSpan, 'ok');
   });
 };
 
@@ -68,45 +92,56 @@ const isSameNetworkIOS = newState => {
 };
 
 const waitConnectionRestart = async () => {
+  const restartSpan = addSpan(
+    CONNECTION,
+    'connectionMonitor.waitConnectionRestart'
+  );
   logger.debug(NAMESPACE, 'waitICERestart');
   const connected = await waitAndRestart();
   callWaitConnectionListeners(connected);
   if (!connected) {
+    finishSpan(restartSpan, 'internal_error');
     return;
   }
 
   try {
     callListeners();
+    finishSpan(restartSpan, 'ok');
   } catch (e) {
     logger.error(NAMESPACE, 'Error calling listeners', e);
+    finishSpan(restartSpan, 'internal_error');
     useInRoomStore.getState().restartRoom();
   }
 };
 
 const waitAndRestart = async () => {
+  const span = addSpan(CONNECTION, 'connectionMonitor.waitAndRestart');
   logger.debug(NAMESPACE, 'waitAndRestart');
   useSettingsStore.getState().setNetWIP(true);
 
   try {
     await monitorNetInfo();
+    logger.debug(NAMESPACE, 'monitorNetInfo success');
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorNetInfo', e);
+    finishSpan(span, 'net_error');
     await onNoNetwork();
     return false;
   }
-  logger.debug(NAMESPACE, 'monitorNetInfo success');
 
   try {
     await monitorMqtt();
+    logger.debug(NAMESPACE, 'monitorMqtt success');
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorMqtt', e);
+    finishSpan(span, 'mqtt_error');
     await onNoNetwork();
     return false;
   }
-  logger.debug(NAMESPACE, 'monitorMqtt success');
 
   disconnectedSeconds = 0;
   useSettingsStore.getState().setNetWIP(false);
+  finishSpan(span, 'ok');
   return true;
 };
 
@@ -207,33 +242,50 @@ export const waitConnection = async () => {
   logger.debug(NAMESPACE, 'waitConnection');
 
   if (
-    (currentState?.details?.isInternetReachable || currentState?.isConnected) &&
-    mqtt.mq?.connected
+    currentState &&
+    mqtt.mq?.connected &&
+    (currentState.details?.isInternetReachable || currentState.isConnected)
   ) {
     return true;
   }
 
+  logger.debug(NAMESPACE, 'waitConnection false', currentState, mqtt.mq);
+
   return new Promise(resolve => {
-    waitConnectionListeners.push(resolve);
+    logger.debug(
+      NAMESPACE,
+      'waitConnection push listener',
+      currentState,
+      mqtt.mq
+    );
+    waitConnectionListeners.push(connected => {
+      logger.debug(NAMESPACE, 'waitConnection listener', connected);
+      if (!connected) {
+        logger.debug(NAMESPACE, 'waitConnection false', currentState, mqtt.mq);
+
+        addSpan(CONNECTION, 'connectionMonitor.waitConnection', {
+          isInternetReachable: currentState?.details?.isInternetReachable,
+          isConnected: currentState?.isConnected,
+          mqttConnected: mqtt.mq?.connected,
+        }).finish('ok');
+      }
+      resolve(connected);
+    });
   });
 };
 
 const callWaitConnectionListeners = connected => {
-  logger.debug(
-    NAMESPACE,
-    'callWaitConnectionListeners',
-    connected,
-    waitConnectionListeners.length
-  );
+  logger.debug(NAMESPACE, 'callWaitConnectionListeners', connected);
+
   if (!connected) {
     clearWaitConnectionListeners();
     return;
   }
 
   if (disconnectedSeconds < 10) {
-    waitConnectionListeners.forEach(resolve => resolve(true));
+    waitConnectionListeners.forEach(listener => listener(true));
   } else {
-    waitConnectionListeners.forEach(resolve => resolve(false));
+    waitConnectionListeners.forEach(listener => listener(false));
   }
   waitConnectionListeners.length = 0;
 };
@@ -257,6 +309,9 @@ export const clearWaitConnectionListeners = () => {
 };
 
 export const removeConnectionMonitor = () => {
+  // Finish CONNECTION transaction
+  finishTransaction(CONNECTION, 'ok');
+
   listeners = {};
   clearWaitConnectionListeners();
   if (netInfoUnsubscribe) {

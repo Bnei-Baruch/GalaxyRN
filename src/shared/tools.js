@@ -13,7 +13,7 @@ export const getFromStorage = async (key, def) => {
     res = await RNSecureStorage.getItem(key);
   } catch (err) {
     res = def;
-    logger.warn(NAMESPACE, 'RNSecureStorage getFromStorage', err);
+    logger.debug(NAMESPACE, 'RNSecureStorage getFromStorage', err);
   }
   return res;
 };
@@ -343,4 +343,12 @@ export const reduceVideoComplexity = sdp => {
   });
 
   return modifiedLines.join('\n');
+};
+
+export const rejectTimeoutPromise = (promise, time = 10000) => {
+  const timer = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`Timeout after ${time}ms`)), time);
+  });
+
+  return Promise.race([promise, timer]);
 };

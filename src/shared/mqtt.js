@@ -7,11 +7,13 @@ import logger from '../services/logger';
 import { useChatStore } from '../zustand/chat';
 
 import { waitConnection } from '../libs/connection-monitor';
+import { CONNECTION } from '../libs/sentry/constants';
+import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
-import { randomString } from './tools';
+import { randomString, rejectTimeoutPromise } from './tools';
 
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
@@ -28,6 +30,8 @@ class MqttMsg {
   }
 
   init = async () => {
+    const initSpan = addSpan(CONNECTION, 'mqtt.init');
+
     const { user } = useUserStore.getState();
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
     const token = this.token;
@@ -64,50 +68,67 @@ class MqttMsg {
       },
     };
 
+    const connectSpan = addSpan(CONNECTION, 'mqtt.connect');
     logger.debug(NAMESPACE, 'Connecting to MQTT:', MQTT_URL);
     try {
-      this.mq = await mqtt.connectAsync(`wss://${MQTT_URL}`, options);
+      this.mq = await rejectTimeoutPromise(
+        mqtt.connectAsync(`wss://${MQTT_URL}`, options),
+        2000
+      );
+      logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
+      finishSpan(connectSpan, 'ok');
     } catch (error) {
       logger.error(NAMESPACE, 'Error connecting to MQTT:', error);
+      finishSpan(connectSpan, 'internal_error');
+      finishSpan(initSpan, 'internal_error');
       throw error;
     }
     this.mq.setMaxListeners(50);
 
     this.mq.on('connect', data => {
       logger.debug(NAMESPACE, 'mqtt on connect', data);
-      logger.debug(NAMESPACE, 'session present:', data.sessionPresent);
+
+      const connectOkSpan = addSpan(CONNECTION, 'mqtt.connectEvent');
+
       useInitsStore.getState().setMqttIsOn(true);
 
       if (!data.sessionPresent) {
         logger.error(NAMESPACE, 'Session not restored, resubscribing...');
       }
+      finishSpan(connectOkSpan, 'ok');
     });
 
     this.mq.on('reconnect', data => {
+      addSpan(CONNECTION, 'mqtt.reconnect').finishSpan('ok');
       logger.debug(NAMESPACE, 'mqtt on reconnect', data, this.mq.connected);
-      logger.debug(
-        NAMESPACE,
-        'reconnect - timestamp:',
-        new Date().toISOString()
-      );
     });
 
     this.mq.on('offline', data => {
+      addSpan(CONNECTION, 'mqtt.offline').finishSpan('ok');
       logger.debug(NAMESPACE, 'mqtt on offline', data);
     });
+
     this.mq.on('close', () => {
+      addSpan(CONNECTION, 'mqtt.close').finishSpan('ok');
       logger.debug(NAMESPACE, 'mqtt on close');
     });
+
     this.mq.on('disconnect', data => {
+      addSpan(CONNECTION, 'mqtt.disconnect').finishSpan('ok');
       logger.debug(NAMESPACE, 'mqtt on disconnect', data);
     });
+
     this.mq.on('end', data => {
+      addSpan(CONNECTION, 'mqtt.end').finishSpan('ok');
       logger.debug(NAMESPACE, 'mqtt on end', data);
     });
 
     this.mq.on('error', error => {
+      addSpan(CONNECTION, 'mqtt.error').finishSpan('internal_error');
       logger.error(NAMESPACE, 'mqtt on error', error);
     });
+
+    finishSpan(initSpan, 'ok');
     return this.mq;
   };
 
@@ -115,9 +136,16 @@ class MqttMsg {
     if (!(await waitConnection())) {
       return;
     }
+
     logger.info(NAMESPACE, `Subscribe to: ${topic}`);
     let options = { qos: 1, nl: true, ...opt };
-    return this.mq.subscribeAsync(topic, { ...options });
+    try {
+      const result = await this.mq.subscribeAsync(topic, { ...options });
+      return result;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error subscribing to topic:', topic, error);
+      throw error;
+    }
   };
 
   exit = async topic => {
@@ -152,7 +180,13 @@ class MqttMsg {
 
     logger.debug(NAMESPACE, 'send properties', properties);
     let options = { qos: 1, retain, properties };
-    return this.mq.publishAsync(topic, message, { ...options });
+    try {
+      const result = await this.mq.publishAsync(topic, message, { ...options });
+      return result;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error sending message:', error);
+      throw error;
+    }
   };
 
   watch = callback => {
@@ -268,20 +302,27 @@ class MqttMsg {
   };
 
   end = async () => {
+    const endSpan = addSpan(CONNECTION, 'mqtt.end');
     logger.debug(NAMESPACE, 'start of mqttend', this.mq);
-    if (!this.mq) return;
+    if (!this.mq) {
+      finishSpan(endSpan, 'ok');
+      return;
+    }
 
     try {
       logger.debug(NAMESPACE, 'end removeAllListeners', this.mq);
       this.mq.removeAllListeners();
     } catch (e) {
       logger.error(NAMESPACE, 'end removeAllListeners', e);
+      finishSpan(endSpan, 'internal_error');
     }
     try {
       logger.debug(NAMESPACE, 'endAsync', this.mq);
       await this.mq.endAsync();
+      finishSpan(endSpan, 'ok');
     } catch (e) {
       logger.error(NAMESPACE, 'endAsync error', e);
+      finishSpan(endSpan, 'internal_error');
     }
     this.mq = null;
     return true;

@@ -3,6 +3,8 @@
 // External libraries
 import { create } from 'zustand';
 
+import { ROOM_SESSION } from '../libs/sentry/constants';
+import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
 // Constants
 
 // Services
@@ -66,6 +68,7 @@ const useAudioDevicesStore = create((set, get) => ({
         'updateAudioDevice',
         async data => {
           logger.debug(NAMESPACE, 'updateAudioDevice event received', data);
+          const span = addSpan(ROOM_SESSION, 'updateAudioDevice', data);
 
           const devices = Object.values(data)
             .map(deviceInfoToOption)
@@ -78,6 +81,7 @@ const useAudioDevicesStore = create((set, get) => ({
           logger.debug(NAMESPACE, 'Selected device:', selected);
 
           set({ devices, selected, wip: false });
+          finishSpan(span, 'ok');
         }
       );
 

@@ -45,18 +45,30 @@ const InitApp = () => {
   useEffect(() => {
     logger.debug(NAMESPACE, 'isAppInited useEffect', isAppInited);
     const init = async () => {
+      logger.debug(NAMESPACE, 'init');
       if (isAppInited) return;
       setIsAppInited(true);
 
       const { width, height } = Dimensions.get('window');
       setIsPortrait(height > width);
-
-      initApp();
-      initAudioDevices();
-      myInit();
-      initConfig();
-      initMQTT();
-      initConnectionMonitor();
+      try {
+        logger.debug(NAMESPACE, 'initConnectionMonitor');
+        initConnectionMonitor();
+        logger.debug(NAMESPACE, 'initApp');
+        await initApp();
+        logger.debug(NAMESPACE, 'initAudioDevices');
+        await initAudioDevices();
+        logger.debug(NAMESPACE, 'myInit');
+        await myInit();
+        logger.debug(NAMESPACE, 'initConfig');
+        await initConfig();
+        logger.debug(NAMESPACE, 'initMQTT');
+        await initMQTT();
+        logger.debug(NAMESPACE, 'init done');
+      } catch (error) {
+        setIsAppInited(false);
+        logger.error(NAMESPACE, 'Error initializing app', error);
+      }
     };
     init();
 
