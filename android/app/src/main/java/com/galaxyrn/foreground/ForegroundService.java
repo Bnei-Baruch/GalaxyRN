@@ -27,6 +27,8 @@ public class ForegroundService extends Service {
     private static boolean mIsServiceStarted = false;
     private static boolean mIsMicOn = false;
     private static ForegroundService sInstance;
+    private static long lastStartRequestTime = 0;
+    private static final long MIN_START_INTERVAL_MS = 1000; // Minimum 1 second between start requests
 
     @Nullable
     @Override
@@ -43,10 +45,21 @@ public class ForegroundService extends Service {
 
     public void start(@NonNull Context context) {
         GxyLogger.i(TAG, "Starting foreground service. Service started: " + ForegroundService.mIsServiceStarted);
+
+        // Check if service already started
         if (ForegroundService.mIsServiceStarted) {
             GxyLogger.d(TAG, "Foreground service already started");
             return;
         }
+
+        // Prevent rapid repeated start requests (debouncing)
+        long currentTime = System.currentTimeMillis();
+        long timeSinceLastStart = currentTime - lastStartRequestTime;
+        if (timeSinceLastStart < MIN_START_INTERVAL_MS) {
+            GxyLogger.w(TAG, "Ignoring rapid start request (time since last: " + timeSinceLastStart + "ms)");
+            return;
+        }
+        lastStartRequestTime = currentTime;
 
         Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(APP_TO_FOREGROUND_ACTION);
