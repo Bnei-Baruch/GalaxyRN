@@ -34,7 +34,7 @@ export const initConnectionMonitor = () => {
   disconnectedSeconds = 0;
 
   // Start CONNECTION transaction
-  startTransaction(CONNECTION, 'Connection Monitor', 'connection');
+  startTransaction(CONNECTION, 'Connection Monitor');
 
   netInfoUnsubscribe = NetInfo.addEventListener(async state => {
     const networkStateSpan = addSpan(
