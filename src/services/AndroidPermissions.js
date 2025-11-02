@@ -1,27 +1,23 @@
-import React, { useEffect } from "react";
-import WIP from "../components/WIP";
-import { Platform } from "react-native";
-import { useAndroidPermissionsStore } from "../zustand/androidPermissions";
+import { useEffect } from 'react';
+import { Platform, View } from 'react-native';
+import { baseStyles } from '../constants';
+import { useAndroidPermissionsStore } from '../zustand/androidPermissions';
 import logger from './logger';
 
-const isAndroid = Platform.OS === "android";
+const isAndroid = Platform.OS === 'android';
 
 const NAMESPACE = 'AndroidPermissions';
 
 const AndroidPermissions = ({ children }) => {
-  const {
-    permissionsReady,
-    initPermissions,
-    terminatePermissions,
-  } = useAndroidPermissionsStore();
-
-  logger.debug(NAMESPACE, "AndroidPermissions permissionsReady: ", permissionsReady);
+  const permReady = useAndroidPermissionsStore(state => state.permReady);
 
   useEffect(() => {
     if (!isAndroid) {
       return;
     }
 
+    const { initPermissions, terminatePermissions } =
+      useAndroidPermissionsStore.getState();
     initPermissions();
 
     return () => {
@@ -29,11 +25,12 @@ const AndroidPermissions = ({ children }) => {
     };
   }, []);
 
-  if (!isAndroid) {
-    return children;
+  if (isAndroid && !permReady) {
+    logger.debug(NAMESPACE, 'Permissions not ready, waiting...');
+    return null;
   }
 
-  return <WIP isReady={permissionsReady}>{children}</WIP>;
+  return <View style={baseStyles.full}>{children}</View>;
 };
 
 export default AndroidPermissions;

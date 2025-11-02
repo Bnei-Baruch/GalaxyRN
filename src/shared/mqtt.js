@@ -31,10 +31,12 @@ class MqttMsg {
     this.mit = null;
     this.room = null;
     this.token = null;
+    this.initialized = false;
   }
 
   init = async () => {
     const initSpan = addSpan(CONNECTION, 'mqtt.init');
+    this.initialized = true;
 
     const { user } = useUserStore.getState();
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;

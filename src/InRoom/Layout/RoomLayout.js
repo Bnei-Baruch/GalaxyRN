@@ -1,6 +1,5 @@
 import React from 'react';
 
-import ConnectionNotStable from '../../components/ConnectionNotStable';
 import logger from '../../services/logger';
 import { Quads } from '../../shidur/Quads';
 import Shidur from '../../shidur/Shidur';
@@ -23,21 +22,11 @@ const RoomLayout = () => {
 
   logger.debug(NAMESPACE, 'render');
 
-  let content;
   if (isFullscreen)
-    content = (
-      <RoomFullscreen shidur={shidur} quads={quads} members={members} />
-    );
+    return <RoomFullscreen shidur={shidur} quads={quads} members={members} />;
   else if (isPortrait)
-    content = <RoomPortrait shidur={shidur} quads={quads} members={members} />;
-  else
-    content = <RoomLandscape shidur={shidur} quads={quads} members={members} />;
+    return <RoomPortrait shidur={shidur} quads={quads} members={members} />;
 
-  return (
-    <>
-      {content}
-      <ConnectionNotStable />
-    </>
-  );
+  return <RoomLandscape shidur={shidur} quads={quads} members={members} />;
 };
 export default RoomLayout;

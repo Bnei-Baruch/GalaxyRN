@@ -65,17 +65,10 @@ export class StreamingPlugin {
     this.pc.addEventListener('track', e => {
       if (this.isDestroyed) return;
       const { track } = e;
-      const trackSpan = addSpan(CONNECTION, 'streaming.track', {
-        trackKind: track?.kind,
-        trackId: track?.id,
-      });
       logger.info(NAMESPACE, 'track: ', track);
       if (track.kind === 'audio' || track.kind === 'video') {
         const stream = new MediaStream([track]);
         this.onTrack(stream);
-        finishSpan(trackSpan, 'ok');
-      } else {
-        finishSpan(trackSpan, 'ok');
       }
     });
 

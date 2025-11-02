@@ -179,3 +179,34 @@ export const setTransactionTags = (key, tags) => {
     session.span.setTag(tagKey, tags[tagKey]);
   });
 };
+
+/**
+ * Set attributes on a session span
+ * @param {string} key - Key of the session
+ * @param {Object} attributes - Object with attribute key-value pairs
+ */
+export const setTransactionAttributes = (key, attributes) => {
+  const session = activeSessions.get(key);
+  if (!session) {
+    logger.warn(NAMESPACE, `Session ${key} not found, cannot set attributes`);
+    return;
+  }
+
+  // Используем setAttributes для установки всех атрибутов одновременно
+  session.span.setAttributes(attributes);
+  logger.debug(NAMESPACE, `Set attributes on ${key}:`, attributes);
+};
+
+/**
+ * Set attributes on a span directly
+ * @param {Span} span - The span to set attributes on
+ * @param {Object} attributes - Attributes to set
+ */
+export const setSpanAttributes = (span, attributes) => {
+  if (!span) {
+    logger.warn(NAMESPACE, 'Span not found, cannot set attributes');
+    return;
+  }
+
+  span.setAttributes(attributes);
+};

@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { Dimensions } from 'react-native';
 import { useInitsStore } from '../zustand/inits';
 
-const useScreenRotationListener = () => {
-  const { setIsPortrait } = useInitsStore();
+const ScreenOrientation = () => {
+  const setIsPortrait = useInitsStore(state => state.setIsPortrait);
 
   useEffect(() => {
     const handleOrientationChange = ({ window }) => {
@@ -25,4 +25,4 @@ const useScreenRotationListener = () => {
   return null;
 };
 
-export default useScreenRotationListener;
+export default ScreenOrientation;

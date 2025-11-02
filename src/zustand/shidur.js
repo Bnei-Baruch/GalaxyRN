@@ -24,7 +24,11 @@ import {
   workShopOptions,
 } from '../shared/consts';
 import GxyConfig from '../shared/janus-config';
-import { getFromStorage, setToStorage } from '../shared/tools';
+import {
+  getFromStorage,
+  rejectTimeoutPromise,
+  setToStorage,
+} from '../shared/tools';
 
 // Zustand stores
 import { useInRoomStore } from './inRoom';
@@ -210,13 +214,11 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
       janus = new JanusMqtt(user, srv);
       janus.onStatus = (srv, status) => {
-        const span = addSpan(ROOM_SESSION, 'shidur.janusStatus', { status });
         logger.debug(NAMESPACE, 'janus status: ', status);
         if (status === 'offline') {
           logger.warn(NAMESPACE, 'janus status: ', status);
           useInRoomStore.getState().restartRoom();
         }
-        finishSpan(span, 'ok');
       };
 
       await janus.init(config?.token);
@@ -224,7 +226,6 @@ export const useShidurStore = create((set, get) => ({
       janusReady = true;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
-      finishSpan(span, 'internal_error');
     }
     set({ janusReady });
     finishSpan(span, 'ok');
@@ -241,12 +242,12 @@ export const useShidurStore = create((set, get) => ({
       await Promise.all([get().cleanShidur(), get().cleanQuads()]);
 
       logger.debug(NAMESPACE, 'cleanJanus');
-      await janus.destroy();
-      janus = null;
+      await rejectTimeoutPromise(janus.destroy(), 2000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanJanus:', error);
       finishSpan(span, 'internal_error');
     }
+    janus = null;
     set({ janusReady: false });
     set({ cleanWIP: false });
     finishSpan(span, 'ok');
@@ -312,11 +313,13 @@ export const useShidurStore = create((set, get) => ({
       videoJanus = new StreamingPlugin(config?.iceServers);
       videoJanus.onTrack = stream => {
         logger.info(NAMESPACE, 'videoStream got track: ', stream);
-        logger.debug(NAMESPACE, 'videoStream got track url: ', videoStream);
+        logger.debug(NAMESPACE, 'videoStream previous stream: ', videoStream);
         cleanStream(videoStream);
         videoStream = stream;
+        const url = videoStream?.toURL();
+        logger.debug(NAMESPACE, 'videoStream got track url: ', url);
         set({
-          url: videoStream?.toURL(),
+          url,
           readyShidur: true,
           shidurWIP: false,
         });
@@ -388,7 +391,7 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(videoStream);
     videoStream = null;
     try {
-      await videoJanus?.detach();
+      await rejectTimeoutPromise(videoJanus?.detach(), 2000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanVideoHandle:', error);
     }
@@ -400,7 +403,7 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(audioStream);
     audioStream = null;
     try {
-      await audioJanus?.detach();
+      await rejectTimeoutPromise(audioJanus?.detach(), 2000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
     }
@@ -410,7 +413,7 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(trlAudioStream);
     trlAudioStream = null;
     try {
-      await trlAudioJanus?.detach();
+      await rejectTimeoutPromise(trlAudioJanus?.detach(), 2000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
     }
@@ -538,10 +541,14 @@ export const useShidurStore = create((set, get) => ({
     set({ isQuad: true });
   },
 
-  cleanQuads: (updateState = true) => {
+  cleanQuads: async (updateState = true) => {
     cleanStream(quadStream);
     quadStream = null;
-    quadJanus?.detach();
+    try {
+      await rejectTimeoutPromise(quadJanus?.detach(), 2000);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during cleanQuads:', error);
+    }
     quadJanus = null;
 
     if (updateState) set({ quadUrl: null, isQuad: false });

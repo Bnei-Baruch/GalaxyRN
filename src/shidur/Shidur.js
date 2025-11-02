@@ -94,7 +94,7 @@ const Shidur = () => {
 // Memoized RTCView component
 const MemoizedRTCView = memo(
   ({ streamURL }) => {
-    logger.debug(NAMESPACE, `MemoizedRTCView render`);
+    logger.debug(NAMESPACE, `MemoizedRTCView render`, streamURL);
     return (
       <RTCView
         streamURL={streamURL}

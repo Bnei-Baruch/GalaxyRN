@@ -49,12 +49,15 @@ try {
 let subscription = null;
 
 export const useInitsStore = create((set, get) => ({
-  permissionsReady: false,
-  setPermissionsReady: (permissionsReady = true) => set({ permissionsReady }),
+  permReady: false,
+  setPermReady: (permReady = true) => set({ permReady }),
   isAppInited: false,
   setIsAppInited: (isAppInited = true) => set({ isAppInited }),
 
-  mqttIsOn: null,
+  netIsOn: false,
+  setNetIsOn: (netIsOn = true) => set({ netIsOn }),
+
+  mqttIsOn: false,
   setMqttIsOn: (mqttIsOn = true) => set({ mqttIsOn }),
 
   configReady: false,

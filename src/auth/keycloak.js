@@ -126,6 +126,7 @@ class Keycloak {
     }
 
     useUserStore.getState().setUser(null);
+    useUserStore.getState().setVhinfo(null);
   };
 
   /**
@@ -375,7 +376,11 @@ class Keycloak {
 
       return isAuthorized;
     } catch (err) {
-      logger.error(NAMESPACE, 'Error in permission check:', err);
+      logger.error(NAMESPACE, 'Error in permission check:', err?.message);
+      if (err?.message === 'UNAUTHORIZED') {
+        useUserStore.getState().setVhinfo({ active: false });
+        return false;
+      }
       throw err;
     }
   };
