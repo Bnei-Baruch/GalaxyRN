@@ -145,7 +145,7 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-    implementation 'io.sentry:sentry-android:6.9.0'   
+    implementation 'io.sentry:sentry-android:7.4.0'   
     implementation 'com.facebook.soloader:soloader:0.10.5'
 
     // Flipper dependencies
