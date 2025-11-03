@@ -19,6 +19,8 @@ import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
 import { randomString, rejectTimeoutPromise } from './tools';
 
+import { Buffer } from 'buffer';
+
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
 
@@ -282,8 +284,10 @@ class MqttMsg {
           break;
         case 'janus':
           try {
-            logger.debug(NAMESPACE, 'janus', id);
-            const json = JSON.parse(data);
+            logger.debug(NAMESPACE, 'janus');
+            const dataStr = Buffer.isBuffer(data) ? data.toString() : data;
+            const json = JSON.parse(dataStr);
+            logger.debug(NAMESPACE, 'janus json:', json);
             const mit =
               json?.session_id ||
               packet?.properties?.userProperties?.mit ||
@@ -295,8 +299,7 @@ class MqttMsg {
             if (data?.toString) {
               logger.debug(NAMESPACE, 'janus data toString:', data?.toString());
             }
-            logger.error(NAMESPACE, 'Error parsing janus message:', e.message);
-            logger.error(NAMESPACE, 'janus data raw:', data);
+            logger.error(NAMESPACE, 'Error parsing message:', e.message, data);
           }
           break;
         default:

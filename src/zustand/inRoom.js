@@ -7,6 +7,7 @@ import { rejectTimeoutPromise } from '../shared/tools';
 
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
+  addFinishSpan,
   addSpan,
   finishSpan,
   finishTransaction,
@@ -191,19 +192,17 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   enterBackground: async () => {
-    const span = addSpan(ROOM_SESSION, 'background');
     set({ isInBackground: true });
     get().enterAudioMode();
-    finishSpan(span, 'ok');
+    addFinishSpan(ROOM_SESSION, 'background');
   },
 
   enterForeground: async () => {
-    const span = addSpan(ROOM_SESSION, 'foreground');
     set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
     }
-    finishSpan(span, 'ok');
+    addFinishSpan(ROOM_SESSION, 'foreground');
   },
 
   enterAudioMode: async () => {

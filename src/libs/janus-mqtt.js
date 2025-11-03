@@ -6,6 +6,7 @@ import { useInRoomStore } from '../zustand/inRoom';
 import { waitConnection } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
 import {
+  addFinishSpan,
   addSpan,
   finishSpan,
   setTransactionAttributes,
@@ -124,7 +125,7 @@ export class JanusMqtt {
   };
 
   disconnect = async json => {
-    addSpan(this.sentrySession, 'janus.disconnect').finish();
+    addFinishSpan(this.sentrySession, 'janus.disconnect');
     logger.debug(NAMESPACE, 'disconnect', json);
     try {
       await this._cleanupTransactions();
@@ -354,7 +355,7 @@ export class JanusMqtt {
   };
 
   onClose = () => {
-    addSpan(this.sentrySession, 'janus.onClose').finish();
+    addFinishSpan(this.sentrySession, 'janus.onClose');
     logger.debug(NAMESPACE, 'onClose');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -411,7 +412,7 @@ export class JanusMqtt {
     logger.debug(NAMESPACE, 'On message: ', json, tD);
 
     if (tD === 'status' && json.online) {
-      addSpan(this.sentrySession, 'janus.statusOnline').finish();
+      addFinishSpan(this.sentrySession, 'janus.statusOnline');
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Online`);
       this.connect();
       return;
@@ -422,7 +423,7 @@ export class JanusMqtt {
     }
 
     if (tD === 'status' && !json.online) {
-      addSpan(this.sentrySession, 'janus.statusOffline').finish();
+      addFinishSpan(this.sentrySession, 'janus.statusOffline');
       logger.debug(NAMESPACE, 'status');
       this.isConnected = false;
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
@@ -583,10 +584,10 @@ export class JanusMqtt {
 
     if (janus === 'error') {
       // Oops, something wrong happened
-      addSpan(this.sentrySession, 'janus.error', {
+      addFinishSpan(this.sentrySession, 'janus.error', {
         errorCode: json.error?.code,
         error: json.error?.reason || JSON.stringify(json.error),
-      }).finish();
+      });
       logger.error(NAMESPACE, `Janus error response ${json}`);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
