@@ -961,10 +961,10 @@ PODS:
     - React-Core
   - react-native-safe-area-context (4.14.1):
     - React-Core
-  - react-native-webrtc (124.0.5):
+  - react-native-webrtc (124.0.7):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
-  - react-native-webview (13.14.1):
+  - react-native-webview (13.16.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1216,7 +1216,7 @@ PODS:
     - React-utils (= 0.74.5)
   - RNSecureStorage (3.0.1):
     - React
-  - RNSentry (6.14.0):
+  - RNSentry (7.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1237,9 +1237,9 @@ PODS:
     - React-utils
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.50.2)
+    - Sentry/HybridSDK (= 8.57.0)
     - Yoga
-  - RNVectorIcons (10.2.0):
+  - RNVectorIcons (10.3.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1260,7 +1260,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - Sentry/HybridSDK (8.50.2)
+  - Sentry/HybridSDK (8.57.0)
   - SocketRocket (0.7.0)
   - Yoga (0.0.0)
 
@@ -1518,8 +1518,8 @@ SPEC CHECKSUMS:
   react-native-orientation-locker: 5819fd23ca89cbac0d736fb4314745f62716d517
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 141eca0fd4e4191288dfc8b96a7c7e1c2983447a
-  react-native-webrtc: 0f1c94069ff1eb9d8fb1618c2dc71f73542c8cfa
-  react-native-webview: e46aae957071bc695ae2ff2765dd203b162deca9
+  react-native-webrtc: b5062b745a26c99835efdf0d6c027c9b2ee7ddbc
+  react-native-webview: 1c05162e52ea9aa6e61ac4dcc84efefc95f726fe
   React-nativeconfig: ba9a2e54e2f0882cf7882698825052793ed4c851
   React-NativeModulesApple: 8d11ff8955181540585c944cf48e9e7236952697
   React-perflogger: ed4e0c65781521e0424f2e5e40b40cc7879d737e
@@ -1544,9 +1544,9 @@ SPEC CHECKSUMS:
   React-utils: f242eb7e7889419d979ca0e1c02ccc0ea6e43b29
   ReactCommon: f7da14a8827b72704169a48c929bcde802698361
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
-  RNSentry: 250b0ab4152bee0195e67368afc930d6144678f7
-  RNVectorIcons: 845eda5c7819bd29699cafd0fc98c9d4afe28c96
-  Sentry: d95f5f3b32d01324b3e27d3c52747005302cc026
+  RNSentry: aa71e0e75fc9f02735e7fcc303eca5b1f760ff83
+  RNVectorIcons: 2596f3ea0f2dd121af9ae13a8f6f5d973ae9baf5
+  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 2246eea72aaf1b816a68a35e6e4b74563653ae09
 
