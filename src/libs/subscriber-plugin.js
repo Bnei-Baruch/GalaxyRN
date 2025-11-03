@@ -81,8 +81,11 @@ export class SubscriberPlugin {
 
       return data;
     } catch (error) {
-      logger.error(NAMESPACE, 'Subscribe to: ', error);
-      throw error;
+      if (error?.data?.error_code === 428) {
+        logger.warn(NAMESPACE, 'Subscribe to: ', JSON.stringify(error.data));
+        return;
+      }
+      logger.error(NAMESPACE, 'Subscribe to: ', JSON.stringify(error));
     }
   };
 
@@ -107,7 +110,6 @@ export class SubscriberPlugin {
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'Unsubscribe from: ', error);
-      throw error;
     }
   };
 
@@ -153,7 +155,6 @@ export class SubscriberPlugin {
       logger.info(NAMESPACE, 'configure successful');
     } catch (error) {
       logger.error(NAMESPACE, 'configure failed', error);
-      throw error;
     }
     const { json } = param;
     if (json?.jsep) {

@@ -175,7 +175,6 @@ export class PublisherPlugin {
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to run sdpActions', error);
-      throw error;
     }
   };
 

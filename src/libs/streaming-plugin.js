@@ -246,7 +246,6 @@ export class StreamingPlugin {
       await this.start(answer);
     } catch (error) {
       logger.error(NAMESPACE, 'SDP exchange error:', error);
-      throw error;
     }
   };
 

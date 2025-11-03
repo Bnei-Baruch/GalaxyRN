@@ -459,7 +459,7 @@ export class JanusMqtt {
 
       const pluginData = json.plugindata;
       logger.debug(NAMESPACE, 'pluginData', pluginData);
-      if (pluginData === undefined || pluginData === null) {
+      if (!pluginData) {
         transaction.resolve(json);
         return;
       }

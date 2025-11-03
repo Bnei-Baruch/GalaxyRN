@@ -152,7 +152,6 @@ class MqttMsg {
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to topic:', topic, error);
-      throw error;
     }
   };
 
@@ -193,7 +192,6 @@ class MqttMsg {
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'Error sending message:', error);
-      throw error;
     }
   };
 
@@ -294,11 +292,6 @@ class MqttMsg {
               service;
             this.mq.emit(mit, data, id);
           } catch (e) {
-            logger.debug(NAMESPACE, 'janus data type:', typeof data);
-            logger.debug(NAMESPACE, 'janus data length:', data?.length);
-            if (data?.toString) {
-              logger.debug(NAMESPACE, 'janus data toString:', data?.toString());
-            }
             logger.error(NAMESPACE, 'Error parsing message:', e.message, data);
           }
           break;
