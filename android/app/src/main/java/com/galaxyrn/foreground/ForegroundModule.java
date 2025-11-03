@@ -47,6 +47,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         GxyLogger.d(TAG, "ForegroundModule constructor called - context: " + reactContext);
 
         this.context = reactContext;
+        this.isMicOn = false;
     }
 
     public void initializeAfterPermissions() {
@@ -59,6 +60,11 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         }
 
         this.foregroundService = new ForegroundService();
+        if (this.isMicOn) {
+            this.foregroundService.setMicOff(this.context);
+        } else {
+            this.foregroundService.setMicOn(this.context);
+        }
         this.mainHandler = new Handler(Looper.getMainLooper());
         initLifecycleObserver();
         isInitialized = true;
@@ -187,7 +193,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
         if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot setMicOn: ForegroundService not initialized (permissions not granted yet)");
+            GxyLogger.d(TAG, "Cannot setMicOn: ForegroundService not initialized");
+            this.isMicOn = true;
             return;
         }
         foregroundService.setMicOn(this.context);
@@ -200,7 +207,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
         if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot setMicOff: ForegroundService not initialized (permissions not granted yet)");
+            GxyLogger.d(TAG, "Cannot setMicOff: ForegroundService not initialized");
+            this.isMicOn = false;
             return;
         }
         foregroundService.setMicOff(this.context);

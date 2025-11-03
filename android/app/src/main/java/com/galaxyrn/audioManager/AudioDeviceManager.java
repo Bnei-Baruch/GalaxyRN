@@ -43,7 +43,7 @@ public class AudioDeviceManager {
         this.notificationRunnable = this::notifyDeviceStateChangedInternal;
 
         if (!isContextReady()) {
-            GxyLogger.w(TAG, "React context not ready, waiting for initialization");
+            GxyLogger.d(TAG, "React context not ready, waiting for initialization");
             handler.postDelayed(() -> {
                 if (isContextReady()) {
                     GxyLogger.d(TAG, "React context ready, initializing audio manager");
