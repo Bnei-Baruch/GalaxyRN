@@ -108,8 +108,8 @@ android {
         applicationId "com.galaxyrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 64
-        versionName "1.0.64"
+        versionCode 65
+        versionName "1.1.0"
         renderscriptTargetApi rootProject.ext.targetSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
