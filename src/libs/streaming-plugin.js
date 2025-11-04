@@ -324,11 +324,12 @@ export class StreamingPlugin {
     logger.debug(NAMESPACE, 'Detached from plugin');
   };
 
-  hangup = () => {
+  hangup = reason => {
     addFinishSpan(CONNECTION, 'streaming.hangup', {
-      destroyed: this.isDestroyed,
+      reason,
+      isDestroyed: this.isDestroyed,
     });
-    logger.debug(NAMESPACE, 'Hangup called');
+    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
     if (!this.isDestroyed) {
       useShidurStore.getState().restartShidur();
     }
@@ -354,12 +355,6 @@ export class StreamingPlugin {
     addFinishSpan(CONNECTION, 'streaming.mediaState', { media, on });
 
     logger.info(NAMESPACE, `mediaState: Janus ${on} ${media}`);
-  };
-
-  webrtcState = isReady => {
-    addFinishSpan(CONNECTION, 'streaming.webrtcState', { isReady });
-
-    logger.info(NAMESPACE, `webrtcState: RTCPeerConnection is: ${isReady}`);
   };
 
   detach = () => {

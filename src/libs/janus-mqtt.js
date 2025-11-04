@@ -498,8 +498,26 @@ export class JanusMqtt {
         finishSpan(webrtcUpSpan, 'internal_error');
         return;
       }
-      pluginHandle.webrtcState(true);
       finishSpan(webrtcUpSpan, 'ok');
+      return;
+    }
+    if (janus === 'ice-failed') {
+      logger.debug(NAMESPACE, 'ice-failed', json);
+      // The PeerConnection with the gateway is down! Notify this
+      const iceFailedSpan = addSpan(this.sentrySession, 'janus.iceFailed');
+      const sender = json.sender;
+      if (!sender) {
+        logger.warn(NAMESPACE, 'Missing sender...');
+        finishSpan(iceFailedSpan, 'no_sender');
+        return;
+      }
+      const pluginHandle = this.findHandle(sender);
+      if (!pluginHandle) {
+        finishSpan(iceFailedSpan, 'no_plugin_handle');
+        return;
+      }
+      pluginHandle.iceFailed && pluginHandle.iceFailed();
+      finishSpan(iceFailedSpan, 'ok');
       return;
     }
 
@@ -520,8 +538,7 @@ export class JanusMqtt {
         finishSpan(hangupSpan, 'internal_error');
         return;
       }
-      pluginHandle.webrtcState(false, json.reason);
-      pluginHandle.hangup();
+      pluginHandle.hangup && pluginHandle.hangup(json.reason);
       finishSpan(hangupSpan, 'ok');
       return;
     }

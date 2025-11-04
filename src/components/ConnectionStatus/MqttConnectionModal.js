@@ -17,7 +17,7 @@ const MqttConnectionModal = () => {
   const { mqttIsOn, abortMqtt, initMQTT } = useInitsStore();
   const netWIP = useSettingsStore(state => state.netWIP);
 
-  logger.debug(NAMESPACE, 'render', mqttIsOn, netWIP);
+  logger.debug(NAMESPACE, 'render', mqttIsOn, netWIP, mqtt.mq?.connected);
 
   if (netWIP) {
     return <ConnectionNotStable />;

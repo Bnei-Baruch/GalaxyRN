@@ -7,6 +7,8 @@ import {
   addConnectionListener,
   removeConnectionListener,
 } from './connection-monitor';
+import { CONNECTION } from './sentry/constants';
+import { addFinishSpan } from './sentry/sentryHelper';
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -433,23 +435,39 @@ export class PublisherPlugin {
     }
   };
 
+  // PeerConnection with the plugin closed, clean the UI
+  // The plugin handle is still valid so we can create a new one
   oncleanup = () => {
-    logger.info(NAMESPACE, '- oncleanup - ');
-    // PeerConnection with the plugin closed, clean the UI
-    // The plugin handle is still valid so we can create a new one
+    addFinishSpan(CONNECTION, 'publisher.oncleanup', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
+  // Connection with the plugin closed, get rid of its features
+  // The plugin handle is not valid anymore
   detached = () => {
-    logger.info(NAMESPACE, '- detached - ');
-    // Connection with the plugin closed, get rid of its features
-    // The plugin handle is not valid anymore
+    addFinishSpan(CONNECTION, 'publisher.detached', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
-  hangup = () => {
-    logger.debug(NAMESPACE, 'Hangup called');
+  iceFailed = () => {
+    logger.debug(NAMESPACE, 'ICE failed');
+    logger.debug(NAMESPACE, 'isDestroyed', this.isDestroyed);
     if (!this.isDestroyed) {
-      addFinishSpan(CONNECTION, 'publisher.hangup');
+      addFinishSpan(CONNECTION, 'publisher.iceFailed');
       useFeedsStore.getState().restartFeeds();
+    }
+  };
+
+  hangup = reason => {
+    addFinishSpan(CONNECTION, 'publisher.hangup', {
+      reason,
+      isDestroyed: this.isDestroyed,
+    });
+    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
+    if (!this.isDestroyed && reason === 'ICE failed') {
+      //useFeedsStore.getState().restartFeeds();
     }
   };
 
@@ -469,17 +487,8 @@ export class PublisherPlugin {
     );
   };
 
-  webrtcState = isReady => {
-    logger.info(
-      NAMESPACE,
-      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
-    );
-    //if (this.pc && !isReady && !this.isDestroyed) {
-    //  useFeedsStore.getState().restartFeeds();
-    //}
-  };
-
   detach = () => {
+    addFinishSpan(CONNECTION, 'publisher.detach');
     this.isDestroyed = true;
 
     if (this.pc) {

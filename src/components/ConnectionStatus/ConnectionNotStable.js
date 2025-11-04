@@ -20,7 +20,7 @@ const ConnectionNotStable = () => {
     <Modal
       visible={true}
       animationType="fade"
-      transparent={false}
+      transparent={true}
       statusBarTranslucent={true}
     >
       <View style={baseStyles.full}>
@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     color: '#3a2f00',

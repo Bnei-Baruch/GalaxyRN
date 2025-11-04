@@ -118,7 +118,7 @@ class MqttMsg {
 
     this.mq.on('close', () => {
       addFinishSpan(CONNECTION, 'mqtt.close');
-      logger.debug(NAMESPACE, 'mqtt on close');
+      useInitsStore.getState().setMqttIsOn(false);
     });
 
     this.mq.on('disconnect', data => {

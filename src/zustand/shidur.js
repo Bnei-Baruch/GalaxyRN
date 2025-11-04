@@ -390,8 +390,11 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'cleanShidur videoStream', videoStream);
     cleanStream(videoStream);
     videoStream = null;
+
     try {
-      await rejectTimeoutPromise(videoJanus?.detach(), 2000);
+      if (videoJanus) {
+        await rejectTimeoutPromise(videoJanus?.detach(), 2000);
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanVideoHandle:', error);
     }
@@ -403,7 +406,9 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(audioStream);
     audioStream = null;
     try {
-      await rejectTimeoutPromise(audioJanus?.detach(), 2000);
+      if (audioJanus) {
+        await rejectTimeoutPromise(audioJanus?.detach(), 2000);
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
     }
@@ -413,7 +418,9 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(trlAudioStream);
     trlAudioStream = null;
     try {
-      await rejectTimeoutPromise(trlAudioJanus?.detach(), 2000);
+      if (trlAudioJanus) {
+        await rejectTimeoutPromise(trlAudioJanus?.detach(), 2000);
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
     }
@@ -545,7 +552,9 @@ export const useShidurStore = create((set, get) => ({
     cleanStream(quadStream);
     quadStream = null;
     try {
-      await rejectTimeoutPromise(quadJanus?.detach(), 2000);
+      if (quadJanus) {
+        await rejectTimeoutPromise(quadJanus?.detach(), 2000);
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanQuads:', error);
     }

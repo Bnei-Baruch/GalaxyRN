@@ -15,6 +15,7 @@ import WIP from '../components/WIP';
 import { baseStyles, SHIDUR_BAR_ZINDEX } from '../constants';
 import { withProfiler } from '../libs/sentry/sentryHOC';
 import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
+import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
@@ -34,7 +35,7 @@ const Shidur = () => {
   const audioKey = audio?.key;
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
   const { showBars } = useUiActions();
-
+  const netWIP = useSettingsStore(state => state.netWIP);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const Shidur = () => {
 
   return (
     <View style={styles.mainContainer}>
-      <WIP isReady={!shidurWIP && !cleanWIP}>
+      <WIP isReady={!shidurWIP && !cleanWIP && !netWIP}>
         <View>
           {isPlay ? (
             <View>

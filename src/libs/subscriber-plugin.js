@@ -3,12 +3,13 @@ import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../shared/tools';
 import { useFeedsStore } from '../zustand/feeds';
-
 import {
   addConnectionListener,
   removeConnectionListener,
   waitConnection,
 } from './connection-monitor';
+import { CONNECTION } from './sentry/constants';
+import { addFinishSpan } from './sentry/sentryHelper';
 
 const NAMESPACE = 'SubscriberPlugin';
 
@@ -322,24 +323,32 @@ export class SubscriberPlugin {
     }
   };
 
+  // PeerConnection with the plugin closed, clean the UI
+  // The plugin handle is still valid so we can create a new one
   oncleanup = () => {
-    logger.info(NAMESPACE, '- oncleanup - ');
-    // PeerConnection with the plugin closed, clean the UI
-    // The plugin handle is still valid so we can create a new one
+    addFinishSpan(CONNECTION, 'subscriber.oncleanup', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
+  // Connection with the plugin closed, get rid of its features
+  // The plugin handle is not valid anymore
   detached = () => {
-    logger.info(NAMESPACE, '- detached - ');
-    // Connection with the plugin closed, get rid of its features
-    // The plugin handle is not valid anymore
+    addFinishSpan(CONNECTION, 'subscriber.detached', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
-  hangup = () => {
-    logger.debug(NAMESPACE, 'Hangup called');
+  iceFailed = () => {
+    logger.debug(NAMESPACE, 'ICE failed');
     if (!this.isDestroyed) {
-      addFinishSpan(CONNECTION, 'subscriber.hangup');
+      addFinishSpan(CONNECTION, 'subscriber.iceFailed');
       useFeedsStore.getState().restartFeeds();
     }
+  };
+
+  hangup = reason => {
+    addFinishSpan(CONNECTION, 'subscriber.hangup', { reason });
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -348,7 +357,6 @@ export class SubscriberPlugin {
       NAMESPACE,
       `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
-    //this.emit('slowlink')
   };
 
   mediaState = (media, on) => {
@@ -358,15 +366,9 @@ export class SubscriberPlugin {
     );
   };
 
-  webrtcState = isReady => {
-    logger.info(
-      NAMESPACE,
-      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
-    );
-  };
-
   detach = () => {
-    logger.debug(NAMESPACE, 'detach');
+    addFinishSpan(CONNECTION, 'subscriber.detach');
+    logger.debug(NAMESPACE, 'Detach called', this.isDestroyed);
     this.isDestroyed = true;
 
     if (this.pc) {
