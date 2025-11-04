@@ -13,7 +13,9 @@
     "bundle:ios": "mkdir -p ios/main/assets && react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios/main/assets/ --sourcemap-output ios/main.jsbundle.map",
     "release:a": "cd android && ./gradlew clean && cd .. && npm run bundle:android && cd android && ./gradlew bundleRelease",
     "release:i": "npm run bundle:ios && npm run sentry:ios",
+    "archive:ios": "npm run release:i && cd ios && xcodebuild -workspace GalaxyRN.xcworkspace -scheme 'GalaxyRN Release' -configuration Release -destination 'generic/platform=iOS' -archivePath build/GalaxyRN.xcarchive archive | xcpretty || xcodebuild -workspace GalaxyRN.xcworkspace -scheme 'GalaxyRN Release' -configuration Release -destination 'generic/platform=iOS' -archivePath build/GalaxyRN.xcarchive archive",
     "sentry:ios": "npx -y dotenv -e .env -- sh -c 'sentry-cli sourcemaps inject --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" ./ios/main.jsbundle ./ios/main.jsbundle.map && sentry-cli sourcemaps upload --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" --dist ios ./ios/main.jsbundle ./ios/main.jsbundle.map'",
+    "sentry:upload-dsym": "cd ios && npx -y dotenv -e ../.env -- sh -c 'sentry-cli upload-dif --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" build/GalaxyRN.xcarchive/dSYMs'",
     "vbump": "node ./scripts/version-bump.js"
   },
   "dependencies": {
