@@ -467,7 +467,7 @@ export class PublisherPlugin {
     });
     logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
     if (!this.isDestroyed && reason === 'ICE failed') {
-      //useFeedsStore.getState().restartFeeds();
+      useFeedsStore.getState().restartFeeds();
     }
   };
 
@@ -477,7 +477,6 @@ export class PublisherPlugin {
       NAMESPACE,
       `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
-    //this.emit('slowlink')
   };
 
   mediaState = (media, on) => {
