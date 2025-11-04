@@ -145,8 +145,10 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-    implementation 'io.sentry:sentry-android:7.4.0'   
-    implementation 'com.facebook.soloader:soloader:0.10.5'
+    // Sentry Android native SDK - version is managed by @sentry/react-native
+    // implementation 'io.sentry:sentry-android:7.4.0'   
+    // SoLoader - version is managed by React Native automatically
+    // implementation 'com.facebook.soloader:soloader:0.10.5'
 
     // Flipper dependencies
     debugImplementation("com.facebook.flipper:flipper:${rootProject.ext.flipperVersion}")

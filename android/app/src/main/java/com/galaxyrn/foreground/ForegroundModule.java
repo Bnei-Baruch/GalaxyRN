@@ -41,6 +41,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private final ReactApplicationContext context;
     private LifecycleEventObserver lifecycleObserver;
     private boolean isInitialized = false;
+    private boolean isMicOn = false;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
