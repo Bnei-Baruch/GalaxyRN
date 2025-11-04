@@ -329,6 +329,9 @@ export class StreamingPlugin {
       destroyed: this.isDestroyed,
     });
     logger.debug(NAMESPACE, 'Hangup called');
+    if (!this.isDestroyed) {
+      useShidurStore.getState().restartShidur();
+    }
   };
 
   slowLink = (uplink, lost, mid) => {

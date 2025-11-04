@@ -5,8 +5,10 @@ import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import logo from '../../android/app/src/main/res/mipmap-xxxhdpi/arvut.png'; // eslint-disable-line
 import NetConnectionModal from '../components/ConnectionStatus/NetConnectionModal';
 import Text from '../components/CustomText';
+import WIP from '../components/WIP';
 import logger from '../services/logger';
 import SelectUiLanguage from '../settings/SelectUiLanguage';
+import { useUserStore } from '../zustand/user';
 import TermsOfUseModal from './TermsOfUseModal';
 import kc from './keycloak';
 
@@ -15,6 +17,11 @@ const NAMESPACE = 'LoginScreen';
 const LoginScreen = () => {
   const { t } = useTranslation();
   const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
+
+  const wip = useUserStore(state => state.wip);
+  if (wip) {
+    return <WIP isReady={false} />;
+  }
 
   const handleTermsPress = () => {
     setIsTermsModalVisible(true);

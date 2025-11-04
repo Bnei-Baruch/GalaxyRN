@@ -8,7 +8,6 @@ import {
 } from '../../libs/connection-monitor';
 import logger from '../../services/logger';
 import { useInitsStore } from '../../zustand/inits';
-import { useUserStore } from '../../zustand/user';
 import Text from '../CustomText';
 
 const NAMESPACE = 'NetConnectionModal';
@@ -16,7 +15,7 @@ const NAMESPACE = 'NetConnectionModal';
 const NetConnectionModal = () => {
   const { t } = useTranslation();
   const { netIsOn } = useInitsStore();
-  const hasUser = useUserStore(state => !!state.user);
+  const isAppInited = useInitsStore(state => state.isAppInited);
 
   useEffect(() => {
     initConnectionMonitor();
@@ -25,8 +24,8 @@ const NetConnectionModal = () => {
     };
   }, []);
 
-  if (netIsOn || hasUser) {
-    logger.debug(NAMESPACE, 'render null', netIsOn, hasUser);
+  if (netIsOn || isAppInited) {
+    logger.debug(NAMESPACE, 'render null', netIsOn, isAppInited);
     return null;
   }
 

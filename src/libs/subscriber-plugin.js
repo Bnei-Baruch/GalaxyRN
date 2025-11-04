@@ -335,8 +335,11 @@ export class SubscriberPlugin {
   };
 
   hangup = () => {
-    logger.info(NAMESPACE, '- hangup - ', this.janus);
-    //this.detach();
+    logger.debug(NAMESPACE, 'Hangup called');
+    if (!this.isDestroyed) {
+      addFinishSpan(CONNECTION, 'subscriber.hangup');
+      useFeedsStore.getState().restartFeeds();
+    }
   };
 
   slowLink = (uplink, lost, mid) => {

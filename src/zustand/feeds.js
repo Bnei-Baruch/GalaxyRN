@@ -11,8 +11,7 @@ import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import { userRolesEnum } from '../shared/enums';
 import GxyConfig from '../shared/janus-config';
-import { deepClone } from '../shared/tools';
-
+import { deepClone, rejectTimeoutPromise } from '../shared/tools';
 import useRoomStore from './fetchRooms';
 import useInRoomStore from './inRoom';
 import { getStream, useMyStreamStore } from './myStream';
@@ -396,8 +395,12 @@ export const useFeedsStore = create((set, get) => ({
 
     if (restartWIP || exitWIP) return;
     restartWIP = true;
-    await get().cleanFeeds();
-    await get().initFeeds();
+    try {
+      await get().cleanFeeds();
+      await rejectTimeoutPromise(get().initFeeds(), 2000);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error restarting feeds', error);
+    }
 
     restartWIP = false;
   },
@@ -408,7 +411,7 @@ export const useFeedsStore = create((set, get) => ({
     if (janus) {
       logger.info(NAMESPACE, 'exitRoom janus', janus);
       try {
-        await janus.destroy();
+        await rejectTimeoutPromise(janus.destroy(), 2000);
       } catch (error) {
         logger.error(NAMESPACE, 'Error destroying janus', error);
       }

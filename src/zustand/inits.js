@@ -54,7 +54,7 @@ export const useInitsStore = create((set, get) => ({
   isAppInited: false,
   setIsAppInited: (isAppInited = true) => set({ isAppInited }),
 
-  netIsOn: false,
+  netIsOn: true,
   setNetIsOn: (netIsOn = true) => set({ netIsOn }),
 
   mqttIsOn: false,
