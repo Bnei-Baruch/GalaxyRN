@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomBar } from '../bottomBar/BottomBar';
+import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
+import ForegroundListener from './ForegroundListener';
 import RoomLayout from './Layout/RoomLayout';
-import useForegroundListener from './useForegroundListener';
 
 const Room = () => {
   const { exitRoom } = useInRoomStore();
-  useForegroundListener();
   useEffect(() => {
     return () => {
       exitRoom();
@@ -20,6 +20,8 @@ const Room = () => {
       <TopBar />
       <RoomLayout />
       <BottomBar />
+      <ConnectionNotStable />
+      <ForegroundListener />
     </View>
   );
 };

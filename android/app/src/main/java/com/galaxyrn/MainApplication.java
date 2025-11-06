@@ -15,9 +15,6 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
 
-import io.sentry.android.core.SentryAndroid;
-import io.sentry.android.core.SentryAndroidOptions;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import android.content.Intent;
@@ -70,38 +67,12 @@ public class MainApplication extends Application implements ReactApplication {
         super.onCreate();
         instance = this;
 
-        initializeSentry();
-
         SoLoader.init(this, false);
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
             DefaultNewArchitectureEntryPoint.load();
         }
         initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
         isCleaningUp = false;
-    }
-
-    private void initializeSentry() {
-        SentryAndroid.init(this, options -> {
-            options.setDsn(BuildConfig.SENTRY_DSN);
-            options.setDebug(BuildConfig.DEBUG);
-            options.setTracesSampleRate(0.2);
-            options.setProfilesSampleRate(0.1);
-            options.setEnableAutoSessionTracking(true);
-            options.setAttachScreenshot(true);
-            options.setAttachViewHierarchy(true);
-            options.setAttachStacktrace(true);
-            options.setMaxBreadcrumbs(100);
-            options.setSessionTrackingIntervalMillis(30000);
-
-            if (BuildConfig.DEBUG) {
-                options.setEnvironment("development");
-            } else {
-                options.setEnvironment("production");
-            }
-
-            options.setRelease("GalaxyRN@" + BuildConfig.VERSION_NAME);
-            options.setDist("android");
-        });
     }
 
     /**

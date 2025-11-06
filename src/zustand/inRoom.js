@@ -3,9 +3,11 @@ import AudioBridge from '../services/AudioBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
+import { rejectTimeoutPromise } from '../shared/tools';
 
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
+  addFinishSpan,
   addSpan,
   finishSpan,
   finishTransaction,
@@ -112,7 +114,32 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     exitWIP = true;
+    try {
+      await rejectTimeoutPromise(get().exitNetResources(), 2000);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during exitNetResources:', error);
+    }
 
+    const deviceCleanupSpan = addSpan(ROOM_SESSION, 'device.cleanup');
+
+    logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
+    try {
+      AudioBridge.abandonAudioFocus();
+      WakeLockBridge.releaseScreenOn();
+      finishSpan(deviceCleanupSpan, 'ok');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error cleaning up device states', error);
+      finishSpan(deviceCleanupSpan, 'internal_error');
+    }
+
+    // Finish the room session transaction
+    finishTransaction(ROOM_SESSION, 'ok');
+
+    exitWIP = false;
+    set({ isInRoom: false });
+  },
+
+  exitNetResources: async () => {
     // Step 1: Clean Janus connections
     const janusCleanupSpan = addSpan(ROOM_SESSION, 'janus.cleanup');
 
@@ -145,25 +172,6 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
       finishSpan(mqttCleanupSpan, 'internal_error');
     }
-
-    // Step 3: Release device resources
-    const deviceCleanupSpan = addSpan(ROOM_SESSION, 'device.cleanup');
-
-    logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
-    try {
-      AudioBridge.abandonAudioFocus();
-      WakeLockBridge.releaseScreenOn();
-      finishSpan(deviceCleanupSpan, 'ok');
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error cleaning up device states', error);
-      finishSpan(deviceCleanupSpan, 'internal_error');
-    }
-
-    // Finish the room session transaction
-    finishTransaction(ROOM_SESSION, 'ok');
-
-    exitWIP = false;
-    set({ isInRoom: false });
   },
 
   restartRoom: async () => {
@@ -184,19 +192,17 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   enterBackground: async () => {
-    const span = addSpan(ROOM_SESSION, 'background');
     set({ isInBackground: true });
     get().enterAudioMode();
-    finishSpan(span, 'ok');
+    addFinishSpan(ROOM_SESSION, 'background');
   },
 
   enterForeground: async () => {
-    const span = addSpan(ROOM_SESSION, 'foreground');
     set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
     }
-    finishSpan(span, 'ok');
+    addFinishSpan(ROOM_SESSION, 'foreground');
   },
 
   enterAudioMode: async () => {

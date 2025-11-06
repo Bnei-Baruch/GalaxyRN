@@ -19,6 +19,8 @@ import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
 import { randomString, rejectTimeoutPromise } from './tools';
 
+import { Buffer } from 'buffer';
+
 const mqttTimeout = 30; // Seconds
 const mqttKeepalive = 10; // Seconds
 
@@ -31,10 +33,12 @@ class MqttMsg {
     this.mit = null;
     this.room = null;
     this.token = null;
+    this.initialized = false;
   }
 
   init = async () => {
     const initSpan = addSpan(CONNECTION, 'mqtt.init');
+    this.initialized = true;
 
     const { user } = useUserStore.getState();
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
@@ -113,8 +117,10 @@ class MqttMsg {
     });
 
     this.mq.on('close', () => {
-      addFinishSpan(CONNECTION, 'mqtt.close');
-      logger.debug(NAMESPACE, 'mqtt on close');
+      addFinishSpan(CONNECTION, 'mqtt.close', {
+        connected: this.mq?.connected,
+      });
+      useInitsStore.getState().setMqttIsOn(!this.mq?.connected);
     });
 
     this.mq.on('disconnect', data => {
@@ -148,7 +154,6 @@ class MqttMsg {
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to topic:', topic, error);
-      throw error;
     }
   };
 
@@ -189,7 +194,6 @@ class MqttMsg {
       return result;
     } catch (error) {
       logger.error(NAMESPACE, 'Error sending message:', error);
-      throw error;
     }
   };
 
@@ -280,21 +284,17 @@ class MqttMsg {
           break;
         case 'janus':
           try {
-            logger.debug(NAMESPACE, 'janus', id);
-            const json = JSON.parse(data);
+            logger.debug(NAMESPACE, 'janus');
+            const dataStr = Buffer.isBuffer(data) ? data.toString() : data;
+            const json = JSON.parse(dataStr);
+            logger.debug(NAMESPACE, 'janus json:', json);
             const mit =
               json?.session_id ||
               packet?.properties?.userProperties?.mit ||
               service;
             this.mq.emit(mit, data, id);
           } catch (e) {
-            logger.debug(NAMESPACE, 'janus data type:', typeof data);
-            logger.debug(NAMESPACE, 'janus data length:', data?.length);
-            if (data?.toString) {
-              logger.debug(NAMESPACE, 'janus data toString:', data?.toString());
-            }
-            logger.error(NAMESPACE, 'Error parsing janus message:', e.message);
-            logger.error(NAMESPACE, 'janus data raw:', data);
+            logger.error(NAMESPACE, 'Error parsing message:', e.message, data);
           }
           break;
         default:

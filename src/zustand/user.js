@@ -22,7 +22,7 @@ export const useUserStore = create((set, get) => ({
   wip: false,
   setWIP: wip => set({ wip }),
 
-  user: null,
+  // on init user is undefined
   setUser: user => set({ user, wip: false }),
 
   vhinfo: null,

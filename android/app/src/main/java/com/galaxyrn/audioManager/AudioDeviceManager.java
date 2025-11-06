@@ -17,6 +17,9 @@ import com.galaxyrn.logger.GxyLogger;
 import com.facebook.react.bridge.ReactApplicationContext;
 import android.bluetooth.BluetoothProfile;
 
+import com.galaxyrn.logger.SentrySpanHelper;
+import io.sentry.SpanStatus;
+
 import java.util.Arrays;
 
 public class AudioDeviceManager {
@@ -43,7 +46,7 @@ public class AudioDeviceManager {
         this.notificationRunnable = this::notifyDeviceStateChangedInternal;
 
         if (!isContextReady()) {
-            GxyLogger.w(TAG, "React context not ready, waiting for initialization");
+            GxyLogger.d(TAG, "React context not ready, waiting for initialization");
             handler.postDelayed(() -> {
                 if (isContextReady()) {
                     GxyLogger.d(TAG, "React context ready, initializing audio manager");
@@ -59,11 +62,16 @@ public class AudioDeviceManager {
     }
 
     private void initializeAudioManager() {
-        GxyLogger.d(TAG, "Initializing AudioDeviceManager");
+        SentrySpanHelper span = SentrySpanHelper.start("audio.manager.init")
+                .setDescription("Initialize AudioDeviceManager");
+
         try {
+            GxyLogger.d(TAG, "Initializing AudioDeviceManager");
+
             // Check if already initialized
             if (audioManager != null) {
                 GxyLogger.w(TAG, "AudioDeviceManager already initialized");
+                span.finish(SpanStatus.ALREADY_EXISTS);
                 return;
             }
 
@@ -71,6 +79,7 @@ public class AudioDeviceManager {
             audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
             if (audioManager == null) {
                 GxyLogger.e(TAG, "Failed to get AudioManager service");
+                span.finish(SpanStatus.INTERNAL_ERROR);
                 return;
             }
 
@@ -83,8 +92,10 @@ public class AudioDeviceManager {
             registerBroadcastReceiver();
 
             GxyLogger.d(TAG, "AudioDeviceManager initialized successfully");
+            span.finishOk();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to initialize AudioDeviceManager", e);
+            span.finishWithError(e);
             // Cleanup in case of partial initialization
             stop();
         }
@@ -138,12 +149,17 @@ public class AudioDeviceManager {
     }
 
     private void registerAudioDeviceCallback() {
+        SentrySpanHelper span = SentrySpanHelper.start("audio.callback.register")
+                .setDescription("Register audio device callback");
+
         try {
             if (audioManager != null && audioCallback != null) {
                 audioManager.registerAudioDeviceCallback(audioCallback, handler);
             }
+            span.finishOk();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to register audio device callback", e);
+            span.finishWithError(e);
         }
     }
 
@@ -233,30 +249,44 @@ public class AudioDeviceManager {
     }
 
     private void enableBluetoothSco() {
+        SentrySpanHelper span = SentrySpanHelper.start("audio.bluetooth.enable_sco")
+                .setDescription("Enable Bluetooth SCO");
+
         try {
             if (audioManager != null) {
                 audioManager.startBluetoothSco();
             }
+            span.finishOk();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to start Bluetooth SCO", e);
+            span.finishWithError(e);
         }
     }
 
     private void disableBluetoothSco() {
+        SentrySpanHelper span = SentrySpanHelper.start("audio.bluetooth.disable_sco")
+                .setDescription("Disable Bluetooth SCO");
+
         try {
             if (audioManager != null) {
                 if (audioManager.isBluetoothScoOn()) {
                     audioManager.stopBluetoothSco();
                 }
             }
+            span.finishOk();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to stop Bluetooth SCO", e);
+            span.finishWithError(e);
         }
     }
 
     private void registerBroadcastReceiver() {
+        SentrySpanHelper span = SentrySpanHelper.start("audio.receiver.register")
+                .setDescription("Register broadcast receiver");
+
         if (reactContext == null || receiver == null) {
             GxyLogger.d(TAG, "Cannot register receiver - context or receiver is null");
+            span.finish(SpanStatus.FAILED_PRECONDITION);
             return;
         }
 
@@ -267,8 +297,10 @@ public class AudioDeviceManager {
             } else {
                 reactContext.registerReceiver(receiver, filter);
             }
+            span.finishOk();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to register receiver", e);
+            span.finishWithError(e);
         }
     }
 

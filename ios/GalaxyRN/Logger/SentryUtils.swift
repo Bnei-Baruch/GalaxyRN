@@ -24,21 +24,19 @@ class SentryUtils {
             if let error = error {
                 os_log("Reporting exception to Sentry with message", log: OSLog.default, type: .debug)
                 // Report exception with message
-                SentrySDK.configureScope { scope in
-                    scope.setTag(value: tag, key: "logger_tag")
-                    scope.setLevel(level)
-                    scope.setExtra(value: sentryMessage, key: "formatted_message")
-                }
-                SentrySDK.capture(error: error)
+                let event = Event(error: error)
+                event.tags = ["logger_tag": tag]
+                event.level = level
+                event.extra = ["formatted_message": sentryMessage]
+                SentrySDK.capture(event: event)
                 os_log("Successfully reported exception to Sentry", log: OSLog.default, type: .info)
             } else {
                 os_log("Reporting message-only to Sentry", log: OSLog.default, type: .debug)
                 // Report message only
-                SentrySDK.configureScope { scope in
-                    scope.setTag(value: tag, key: "logger_tag")
-                    scope.setLevel(level)
-                }
-                SentrySDK.capture(message: sentryMessage)
+                let event = Event(level: level)
+                event.message = SentryMessage(formatted: sentryMessage)
+                event.tags = ["logger_tag": tag]
+                SentrySDK.capture(event: event)
                 os_log("Successfully reported message to Sentry", log: OSLog.default, type: .info)
             }
         } catch {
@@ -66,17 +64,18 @@ class SentryUtils {
             let criticalMessage = "CRITICAL: [\(tag)] \(message)"
             os_log("Formatted critical message: %@", log: OSLog.default, type: .debug, criticalMessage)
 
-            SentrySDK.configureScope { scope in
-                scope.setTag(value: tag, key: "logger_tag")
-                scope.setTag(value: "critical", key: "severity")
-                scope.setLevel(.fatal)
-                scope.setExtra(value: criticalMessage, key: "formatted_message")
-            }
-
             if let error = error {
-                SentrySDK.capture(error: error)
+                let event = Event(error: error)
+                event.tags = ["logger_tag": tag, "severity": "critical"]
+                event.level = .fatal
+                event.extra = ["formatted_message": criticalMessage]
+                SentrySDK.capture(event: event)
             } else {
-                SentrySDK.capture(message: criticalMessage)
+                let event = Event(level: .fatal)
+                event.message = SentryMessage(formatted: criticalMessage)
+                event.tags = ["logger_tag": tag, "severity": "critical"]
+                event.extra = ["formatted_message": criticalMessage]
+                SentrySDK.capture(event: event)
             }
 
             os_log("Successfully reported critical error to Sentry", log: OSLog.default, type: .info)

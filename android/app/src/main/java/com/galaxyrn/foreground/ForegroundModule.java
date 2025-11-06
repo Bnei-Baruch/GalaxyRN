@@ -39,20 +39,36 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private ForegroundService foregroundService;
     private Handler mainHandler;
     private final ReactApplicationContext context;
+    private LifecycleEventObserver lifecycleObserver;
+    private boolean isInitialized = false;
+    private boolean isMicOn = false;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
         GxyLogger.d(TAG, "ForegroundModule constructor called - context: " + reactContext);
 
         this.context = reactContext;
+        this.isMicOn = false;
     }
 
     public void initializeAfterPermissions() {
         GxyLogger.d(TAG, "Initializing ForegroundModule after permissions granted");
 
+        // Prevent multiple initializations
+        if (isInitialized) {
+            GxyLogger.w(TAG, "ForegroundModule already initialized, skipping re-initialization");
+            return;
+        }
+
         this.foregroundService = new ForegroundService();
+        if (this.isMicOn) {
+            this.foregroundService.setMicOff(this.context);
+        } else {
+            this.foregroundService.setMicOn(this.context);
+        }
         this.mainHandler = new Handler(Looper.getMainLooper());
         initLifecycleObserver();
+        isInitialized = true;
         GxyLogger.d(TAG, "ForegroundModule initialized");
 
     }
@@ -70,7 +86,18 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
      */
     private void initLifecycleObserver() {
         mainHandler.post(() -> {
-            ProcessLifecycleOwner.get().getLifecycle().addObserver((LifecycleEventObserver) (source, event) -> {
+            // Remove old observer if exists (safety check)
+            if (lifecycleObserver != null) {
+                try {
+                    ProcessLifecycleOwner.get().getLifecycle().removeObserver(lifecycleObserver);
+                    GxyLogger.d(TAG, "Removed old lifecycle observer");
+                } catch (Exception e) {
+                    GxyLogger.e(TAG, "Error removing old observer", e);
+                }
+            }
+
+            // Create and add new observer
+            lifecycleObserver = (source, event) -> {
                 GxyLogger.d(TAG, "ProcessLifecycleOwner event: " + event);
 
                 if (event == Lifecycle.Event.ON_STOP) {
@@ -80,7 +107,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
                     GxyLogger.d(TAG, "App entered foreground");
                     handleAppForegrounded();
                 }
-            });
+            };
+
+            ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
+            GxyLogger.d(TAG, "Lifecycle observer added successfully");
         });
     }
 
@@ -115,6 +145,18 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @Override
     public void invalidate() {
         super.invalidate();
+
+        // Remove lifecycle observer
+        if (lifecycleObserver != null) {
+            try {
+                mainHandler.post(() -> {
+                    ProcessLifecycleOwner.get().getLifecycle().removeObserver(lifecycleObserver);
+                    GxyLogger.d(TAG, "Lifecycle observer removed on invalidate");
+                });
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error removing observer on invalidate", e);
+            }
+        }
 
         disableKeepScreenOn();
     }
@@ -152,7 +194,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
         if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot setMicOn: ForegroundService not initialized (permissions not granted yet)");
+            GxyLogger.d(TAG, "Cannot setMicOn: ForegroundService not initialized");
+            this.isMicOn = true;
             return;
         }
         foregroundService.setMicOn(this.context);
@@ -165,7 +208,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
         if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot setMicOff: ForegroundService not initialized (permissions not granted yet)");
+            GxyLogger.d(TAG, "Cannot setMicOff: ForegroundService not initialized");
+            this.isMicOn = false;
             return;
         }
         foregroundService.setMicOff(this.context);

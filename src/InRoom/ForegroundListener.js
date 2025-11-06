@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useInRoomStore } from '../zustand/inRoom';
 
-const useForegroundListener = () => {
+const ForegroundListener = () => {
   const { enterBackground, enterForeground } = useInRoomStore();
 
   useEffect(() => {
@@ -27,4 +27,4 @@ const useForegroundListener = () => {
   return null;
 };
 
-export default useForegroundListener;
+export default ForegroundListener;

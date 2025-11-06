@@ -16,19 +16,29 @@ let subscription;
 
 // Export the store
 export const useAndroidPermissionsStore = create((set, get) => ({
-  permissionsReady: false,
+  permReady: false,
+  setPermReady: (permReady = true) => set({ permReady }),
 
   initPermissions: async () => {
+    logger.debug(NAMESPACE, 'initPermissions');
     if (!permissionsModule) {
       logger.debug(NAMESPACE, 'Permissions module not found');
       return;
     }
 
-    const permissionsReady = await permissionsModule.getPermissionStatus();
-    logger.info(NAMESPACE, 'permissionsReady: ', permissionsReady);
+    // Clean up existing subscription if any
+    if (subscription) {
+      logger.debug(NAMESPACE, 'Removing existing subscription');
+      subscription.remove();
+      subscription = null;
+    }
 
-    if (permissionsReady) {
-      set({ permissionsReady: true });
+    const permReady = await permissionsModule.getPermissionStatus();
+    logger.info(NAMESPACE, 'Permission status:', permReady);
+
+    if (permReady) {
+      set({ permReady: true });
+      logger.debug(NAMESPACE, 'permReady: already true');
       return;
     }
 
@@ -40,7 +50,7 @@ export const useAndroidPermissionsStore = create((set, get) => ({
           logger.debug(NAMESPACE, 'initAndroidPermissions eventEmitter', event);
           if (event && event.allGranted) {
             logger.info(NAMESPACE, 'All Android permissions granted!');
-            set({ permissionsReady: true });
+            set({ permReady: true });
           }
         }
       );
@@ -54,12 +64,15 @@ export const useAndroidPermissionsStore = create((set, get) => ({
         'Error setting up permissions event emitter:',
         error
       );
-      set({ permissionsReady: true });
+      set({ permReady: true });
     }
   },
 
   terminatePermissions: () => {
     logger.debug(NAMESPACE, 'terminatePermissions');
-    if (subscription) subscription.remove();
+    if (subscription) {
+      subscription.remove();
+      subscription = null;
+    }
   },
 }));

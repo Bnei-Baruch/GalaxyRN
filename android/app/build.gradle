@@ -1,6 +1,10 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+
+// Sentry plugin for automatic source map upload and native symbol upload
+apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+
 project.ext.vectoricons = [
         iconFontNames: ['MaterialIcons.ttf']
 ]
@@ -11,21 +15,6 @@ def keystoreProperties = new Properties()
 
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
-// Load .env file for Sentry DSN
-def envFile = rootProject.file("../.env")
-def sentryDsn = ""
-if (envFile.exists()) {
-    envFile.eachLine { line ->
-        if (line.startsWith("SENTRY_DSN=")) {
-            sentryDsn = line.substring("SENTRY_DSN=".length()).trim()
-        }
-    }
-}
-// Fallback to environment variable or keystore.properties
-if (sentryDsn.isEmpty()) {
-    sentryDsn = System.getenv("SENTRY_DSN") ?: keystoreProperties['SENTRY_DSN'] ?: ""
 }
 
 /**
@@ -108,8 +97,8 @@ android {
         applicationId "com.galaxyrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 63
-        versionName "1.0.63"
+        versionCode 65
+        versionName "1.1.0"
         renderscriptTargetApi rootProject.ext.targetSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
@@ -130,7 +119,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -138,15 +126,16 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            buildConfigField "String", "SENTRY_DSN", "\"${sentryDsn}\""
         }
     }
 }
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-    implementation 'io.sentry:sentry-android:6.9.0'   
-    implementation 'com.facebook.soloader:soloader:0.10.5'
+    // Sentry Android native SDK - version is managed by @sentry/react-native
+    // implementation 'io.sentry:sentry-android:7.4.0'   
+    // SoLoader - version is managed by React Native automatically
+    // implementation 'com.facebook.soloader:soloader:0.10.5'
 
     // Flipper dependencies
     debugImplementation("com.facebook.flipper:flipper:${rootProject.ext.flipperVersion}")

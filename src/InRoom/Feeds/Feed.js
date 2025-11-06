@@ -6,9 +6,11 @@ import logger from '../../services/logger';
 import WIP from '../../components/WIP';
 import { withProfiler } from '../../libs/sentry/sentryHOC';
 import { useFeedsStore } from '../../zustand/feeds';
+import { useSettingsStore } from '../../zustand/settings';
 import { useUiActions } from '../../zustand/uiActions';
 import CammutedFeed from './CammutedFeed';
 import FeedDisplay from './FeedDisplay';
+
 import QuestionOverlay from './QuestionOverlay';
 
 const NAMESPACE = 'Feed';
@@ -27,6 +29,7 @@ const Feed = ({ id }) => {
   const feed = useFeedsStore(state => state.feedById[id]);
   const { activateFeedsVideos, deactivateFeedsVideos } = useFeedsStore();
   const { borders, width } = useUiActions();
+  const netWIP = useSettingsStore(state => state.netWIP);
 
   logger.debug(NAMESPACE, 'Feed render');
 
@@ -66,6 +69,10 @@ const Feed = ({ id }) => {
   };
 
   const renderContent = () => {
+    if (netWIP) {
+      return <WIP isReady={false} />;
+    }
+
     if (!camera) {
       return <CammutedFeed display={display} />;
     }

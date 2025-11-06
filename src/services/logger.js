@@ -4,15 +4,22 @@ class Logger {
   hasTag(tag) {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
 
+    return true;
     return (
       //tag === 'Shidur' || tag === 'Inits' || tag === 'CallsBridge'
-      // ||tag === 'Settings'
-      //tag === 'StreamingPlugin'
+      tag === 'StreamingPlugin' ||
       //tag === 'JanusMqtt' ||
+      //tag === 'ConnectionMonitor' ||
+      tag === 'PublisherPlugin' ||
+      tag === 'SubscriberPlugin' ||
       //tag === 'Mqtt' ||
-      //tag === 'Shidur'
-      //tag === 'Feeds' || tag === 'Feed' || tag === 'RoomLayout'
-      true
+      //tag === 'MqttConnectionModal' ||
+      //tag === 'ConnectionNotStable' ||
+      tag === 'ConnectionMonitor' ||
+      //tag === 'FeedsStore' ||
+      //tag === 'Feed' ||
+      //tag === 'SentryHelper'
+      tag === 'xxx'
     );
   }
 

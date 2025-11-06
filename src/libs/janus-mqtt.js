@@ -5,7 +5,13 @@ import { randomString } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { waitConnection } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addSpan, finishSpan } from './sentry/sentryHelper';
+import {
+  addFinishSpan,
+  addSpan,
+  finishSpan,
+  setTransactionAttributes,
+  startTransaction,
+} from './sentry/sentryHelper';
 
 const NAMESPACE = 'JanusMqtt';
 
@@ -25,11 +31,13 @@ export class JanusMqtt {
     this.connect = null;
     this.isJanusInitialized = false;
     this.keepAliveTimer = null;
+    this.sentrySession = `${CONNECTION}.${srv}`;
+
     // Стрелочные функции автоматически связывают this
   }
 
   init = async token => {
-    const initSpan = addSpan(CONNECTION, 'janus.init', { srv: this.srv });
+    const initSpan = startTransaction(this.sentrySession, 'janus.init');
     if (!(await waitConnection())) {
       logger.warn(NAMESPACE, 'Connection unavailable in init');
       finishSpan(initSpan, 'no_connection');
@@ -38,7 +46,7 @@ export class JanusMqtt {
     this.token = token;
     logger.debug(NAMESPACE, 'init this.user', this.user);
 
-    const subscribeSpan = addSpan(CONNECTION, 'janus.subscribeTopics', {
+    const subscribeSpan = addSpan(this.sentrySession, 'janus.subscribeTopics', {
       rxTopic: this.rxTopic,
       stTopic: this.stTopic,
     });
@@ -63,14 +71,10 @@ export class JanusMqtt {
     const msg = { janus: 'create', transaction, token };
 
     this.connect = () => {
-      const connectSpan = addSpan(CONNECTION, 'janus.connect', {
-        srv: this.srv,
-        isJanusInitialized: this.isJanusInitialized,
-      });
+      finishSpan(initSpan, 'ok');
       logger.debug(NAMESPACE, 'connect', this.isJanusInitialized);
       this.isConnected = true;
       if (this.isJanusInitialized) {
-        finishSpan(connectSpan, 'ok');
         return;
       }
 
@@ -81,7 +85,6 @@ export class JanusMqtt {
         this.txTopic,
         this.rxTopic + '/' + this.user.id
       );
-      finishSpan(connectSpan, 'ok');
       return sendResult;
     };
 
@@ -90,20 +93,17 @@ export class JanusMqtt {
 
       this.transactions[transaction] = {
         resolve: json => {
-          const resolveSpan = addSpan(CONNECTION, 'janus.initResolve', {
-            janus: json.janus,
-            srv: this.srv,
-          });
           logger.debug(NAMESPACE, 'transaction resolve', json);
           if (json.janus !== 'success') {
             logger.error(NAMESPACE, 'Cannot connect to Janus', json);
-            finishSpan(resolveSpan, 'internal_error');
-            finishSpan(initSpan, 'internal_error');
             reject(json);
             return;
           }
 
           this.sessionId = json.data.id;
+          setTransactionAttributes(this.sentrySession, {
+            sessionId: this.sessionId,
+          });
           this.isConnected = true;
           this.keepAlive();
 
@@ -114,17 +114,9 @@ export class JanusMqtt {
           );
           mqtt.mq.on(this.sessionId, this.onMessage);
 
-          finishSpan(resolveSpan, 'ok');
-          finishSpan(initSpan, 'ok');
           resolve(this);
         },
         reject: error => {
-          const rejectSpan = addSpan(CONNECTION, 'janus.initReject', {
-            srv: this.srv,
-            error: error?.message || JSON.stringify(error),
-          });
-          finishSpan(rejectSpan, 'internal_error');
-          finishSpan(initSpan, 'internal_error');
           reject(error);
         },
         replyType: 'success',
@@ -133,19 +125,12 @@ export class JanusMqtt {
   };
 
   disconnect = async json => {
-    const disconnectSpan = addSpan(CONNECTION, 'janus.disconnect', {
-      srv: this.srv,
-      isConnected: this.isConnected,
-      sessionId: this.sessionId,
-      json: json ? JSON.stringify(json) : null,
-    });
+    addFinishSpan(this.sentrySession, 'janus.disconnect');
     logger.debug(NAMESPACE, 'disconnect', json);
     try {
       await this._cleanupTransactions();
-      finishSpan(disconnectSpan, 'ok');
     } catch (error) {
       logger.error(NAMESPACE, 'Error in disconnect:', error);
-      finishSpan(disconnectSpan, 'internal_error');
     }
   };
 
@@ -169,11 +154,7 @@ export class JanusMqtt {
   };
 
   destroy = async () => {
-    const destroySpan = addSpan(CONNECTION, 'janus.destroy', {
-      srv: this.srv,
-      isConnected: this.isConnected,
-      sessionId: this.sessionId,
-    });
+    const destroySpan = addSpan(this.sentrySession, 'janus.destroy');
     logger.debug(NAMESPACE, 'destroy', this.isConnected);
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -249,20 +230,11 @@ export class JanusMqtt {
       return;
     }
 
-    const transactionSpan = addSpan(CONNECTION, 'janus.transaction', {
-      type,
-      replyType,
-      srv: this.srv,
-      sessionId: this.sessionId,
-      timeoutMs,
-    });
-
     logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
     const transactionId = randomString(12);
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'transaction promise', transactionId);
       if (!this.isConnected) {
-        finishSpan(transactionSpan, 'internal_error');
         reject(new Error('Janus is not connected'));
         return;
       }
@@ -286,11 +258,9 @@ export class JanusMqtt {
 
         this.transactions[request.transaction] = {
           resolve: result => {
-            finishSpan(transactionSpan, 'ok');
             resolve(result);
           },
           reject: error => {
-            finishSpan(transactionSpan, 'internal_error');
             reject(error);
           },
           replyType,
@@ -316,35 +286,25 @@ export class JanusMqtt {
           error?.message || JSON.stringify(error) || 'undefined'
         );
         delete this.transactions[transactionId];
-        finishSpan(transactionSpan, 'internal_error');
         reject(error || new Error('Unknown transaction error'));
       }
     });
   };
 
   keepAlive = async () => {
-    const keepAliveSpan = addSpan(CONNECTION, 'janus.keepAlive', {
-      keeptry: this.keeptry,
-      isConnected: this.isConnected,
-      srv: this.srv,
-      sessionId: this.sessionId,
-    });
     logger.debug(NAMESPACE, 'keepAlive tick', this.keeptry);
     logger.debug(NAMESPACE, 'keepAlive isConnected', this.isConnected);
     if (!this.isConnected) {
-      finishSpan(keepAliveSpan, 'ok');
       return;
     }
     if (!(await waitConnection())) {
       logger.warn(NAMESPACE, 'Connection unavailable in keepAlive');
-      finishSpan(keepAliveSpan, 'no_connection');
       return;
     }
 
     logger.debug(NAMESPACE, 'keepAlive sessionId', this.sessionId);
     if (!this.sessionId) {
       this.setKeepAliveTimer();
-      finishSpan(keepAliveSpan, 'ok');
       return;
     }
 
@@ -354,11 +314,9 @@ export class JanusMqtt {
       logger.debug(NAMESPACE, 'keepAlive done', json);
       this.keeptry = 0;
       this.setKeepAliveTimer();
-      finishSpan(keepAliveSpan, 'ok');
     } catch (err) {
       logger.debug(NAMESPACE, 'keepAlive error', err);
       if (!this.isConnected) {
-        finishSpan(keepAliveSpan, 'ok');
         return;
       }
       logger.debug(NAMESPACE, err, this.keeptry);
@@ -368,13 +326,11 @@ export class JanusMqtt {
           `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
         );
         this.isConnected = false;
-        finishSpan(keepAliveSpan, 'no_connection');
         useInRoomStore.getState().restartRoom();
         return;
       }
       this.setKeepAliveTimer();
       this.keeptry++;
-      finishSpan(keepAliveSpan, 'timeout_retry');
     }
   };
 
@@ -399,21 +355,15 @@ export class JanusMqtt {
   };
 
   onClose = () => {
-    const onCloseSpan = addSpan(CONNECTION, 'janus.onClose', {
-      srv: this.srv,
-      isConnected: this.isConnected,
-      sessionId: this.sessionId,
-    });
+    addFinishSpan(this.sentrySession, 'janus.onClose');
     logger.debug(NAMESPACE, 'onClose');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
-      finishSpan(onCloseSpan, 'ok');
       return;
     }
 
     this.isConnected = false;
     logger.error(NAMESPACE, 'Lost connection to the gateway (is it down?)');
-    finishSpan(onCloseSpan, 'ok');
   };
 
   _cleanupTransactions = async () => {
@@ -462,13 +412,9 @@ export class JanusMqtt {
     logger.debug(NAMESPACE, 'On message: ', json, tD);
 
     if (tD === 'status' && json.online) {
-      const statusOnlineSpan = addSpan(CONNECTION, 'janus.statusOnline', {
-        srv: this.srv,
-        isJanusInitialized: this.isJanusInitialized,
-      });
+      addFinishSpan(this.sentrySession, 'janus.statusOnline');
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Online`);
       this.connect();
-      finishSpan(statusOnlineSpan, 'ok');
       return;
     }
 
@@ -477,13 +423,10 @@ export class JanusMqtt {
     }
 
     if (tD === 'status' && !json.online) {
-      const statusOfflineSpan = addSpan(CONNECTION, 'janus.statusOffline', {
-        srv: this.srv,
-      });
+      addFinishSpan(this.sentrySession, 'janus.statusOffline');
       logger.debug(NAMESPACE, 'status');
       this.isConnected = false;
       logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
-      finishSpan(statusOfflineSpan, 'ok');
       useInRoomStore.getState().restartRoom();
       alert('Janus Server - ' + this.srv + ' - Offline');
       return;
@@ -516,7 +459,7 @@ export class JanusMqtt {
 
       const pluginData = json.plugindata;
       logger.debug(NAMESPACE, 'pluginData', pluginData);
-      if (pluginData === undefined || pluginData === null) {
+      if (!pluginData) {
         transaction.resolve(json);
         return;
       }
@@ -543,11 +486,7 @@ export class JanusMqtt {
 
     if (janus === 'webrtcup') {
       // The PeerConnection with the gateway is up! Notify this
-      const webrtcUpSpan = addSpan(CONNECTION, 'janus.webrtcUp', {
-        srv: this.srv,
-        sessionId: this.sessionId,
-        sender: json.sender,
-      });
+      const webrtcUpSpan = addSpan(this.sentrySession, 'janus.webrtcUp');
       const sender = json.sender;
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
@@ -559,16 +498,31 @@ export class JanusMqtt {
         finishSpan(webrtcUpSpan, 'internal_error');
         return;
       }
-      pluginHandle.webrtcState(true);
       finishSpan(webrtcUpSpan, 'ok');
+      return;
+    }
+    if (janus === 'ice-failed') {
+      logger.debug(NAMESPACE, 'ice-failed', json);
+      // The PeerConnection with the gateway is down! Notify this
+      const iceFailedSpan = addSpan(this.sentrySession, 'janus.iceFailed');
+      const sender = json.sender;
+      if (!sender) {
+        logger.warn(NAMESPACE, 'Missing sender...');
+        finishSpan(iceFailedSpan, 'no_sender');
+        return;
+      }
+      const pluginHandle = this.findHandle(sender);
+      if (!pluginHandle) {
+        finishSpan(iceFailedSpan, 'no_plugin_handle');
+        return;
+      }
+      pluginHandle.iceFailed && pluginHandle.iceFailed();
+      finishSpan(iceFailedSpan, 'ok');
       return;
     }
 
     if (janus === 'hangup') {
-      const hangupSpan = addSpan(CONNECTION, 'janus.hangup', {
-        srv: this.srv,
-        sessionId: this.sessionId,
-        sender: json.sender,
+      const hangupSpan = addSpan(this.sentrySession, 'janus.hangup', {
         reason: json.reason,
       });
       logger.debug(NAMESPACE, 'hangup');
@@ -584,8 +538,7 @@ export class JanusMqtt {
         finishSpan(hangupSpan, 'internal_error');
         return;
       }
-      pluginHandle.webrtcState(false, json.reason);
-      pluginHandle.hangup();
+      pluginHandle.hangup && pluginHandle.hangup(json.reason);
       finishSpan(hangupSpan, 'ok');
       return;
     }
@@ -618,9 +571,7 @@ export class JanusMqtt {
     }
 
     if (janus === 'slowlink') {
-      const slowlinkSpan = addSpan(CONNECTION, 'janus.slowlink', {
-        srv: this.srv,
-        sessionId: this.sessionId,
+      const slowlinkSpan = addSpan(this.sentrySession, 'janus.slowlink', {
         sender: json.sender,
         uplink: json.uplink,
         nacks: json.nacks,
@@ -650,9 +601,7 @@ export class JanusMqtt {
 
     if (janus === 'error') {
       // Oops, something wrong happened
-      const errorSpan = addSpan(CONNECTION, 'janus.error', {
-        srv: this.srv,
-        sessionId: this.sessionId,
+      addFinishSpan(this.sentrySession, 'janus.error', {
         errorCode: json.error?.code,
         error: json.error?.reason || JSON.stringify(json.error),
       });
@@ -667,10 +616,13 @@ export class JanusMqtt {
             json
           );
         }
-        finishSpan(errorSpan, 'error_response');
         transaction.reject(json);
       } else {
-        finishSpan(errorSpan, 'ok');
+        logger.error(
+          NAMESPACE,
+          'No transaction found for error response',
+          json
+        );
       }
       return;
     }
@@ -679,32 +631,22 @@ export class JanusMqtt {
       logger.debug(NAMESPACE, 'Got event', json);
       const sender = json.sender;
       const transaction = this.getTransaction(json);
-      const eventSpan = addSpan(CONNECTION, 'janus.event', {
-        srv: this.srv,
-        sessionId: this.sessionId,
-        sender,
-        hasTransaction: !!transaction,
-      });
 
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
-        finishSpan(eventSpan, 'no_sender');
         return;
       }
       const pluginData = json.plugindata;
       if (pluginData === undefined || pluginData === null) {
         logger.error(NAMESPACE, 'Missing plugindata...');
-        finishSpan(eventSpan, 'no_plugindata');
         return;
       }
 
       const data = pluginData.data;
       if (transaction) {
         if (data.error_code) {
-          finishSpan(eventSpan, 'error_response');
           transaction.reject({ data, json });
         } else {
-          finishSpan(eventSpan, 'ok');
           transaction.resolve({ data, json });
         }
         return;
@@ -712,12 +654,10 @@ export class JanusMqtt {
 
       const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        finishSpan(eventSpan, 'no_plugin_handle');
         return;
       }
 
       pluginHandle.onmessage(data, json);
-      finishSpan(eventSpan, 'ok');
       return;
     }
 

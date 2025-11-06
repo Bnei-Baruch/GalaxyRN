@@ -65,17 +65,10 @@ export class StreamingPlugin {
     this.pc.addEventListener('track', e => {
       if (this.isDestroyed) return;
       const { track } = e;
-      const trackSpan = addSpan(CONNECTION, 'streaming.track', {
-        trackKind: track?.kind,
-        trackId: track?.id,
-      });
       logger.info(NAMESPACE, 'track: ', track);
       if (track.kind === 'audio' || track.kind === 'video') {
         const stream = new MediaStream([track]);
         this.onTrack(stream);
-        finishSpan(trackSpan, 'ok');
-      } else {
-        finishSpan(trackSpan, 'ok');
       }
     });
 
@@ -253,7 +246,6 @@ export class StreamingPlugin {
       await this.start(answer);
     } catch (error) {
       logger.error(NAMESPACE, 'SDP exchange error:', error);
-      throw error;
     }
   };
 
@@ -332,11 +324,15 @@ export class StreamingPlugin {
     logger.debug(NAMESPACE, 'Detached from plugin');
   };
 
-  hangup = () => {
+  hangup = reason => {
     addFinishSpan(CONNECTION, 'streaming.hangup', {
-      destroyed: this.isDestroyed,
+      reason,
+      isDestroyed: this.isDestroyed,
     });
-    logger.debug(NAMESPACE, 'Hangup called');
+    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
+    if (!this.isDestroyed) {
+      useShidurStore.getState().restartShidur();
+    }
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -359,12 +355,6 @@ export class StreamingPlugin {
     addFinishSpan(CONNECTION, 'streaming.mediaState', { media, on });
 
     logger.info(NAMESPACE, `mediaState: Janus ${on} ${media}`);
-  };
-
-  webrtcState = isReady => {
-    addFinishSpan(CONNECTION, 'streaming.webrtcState', { isReady });
-
-    logger.info(NAMESPACE, `webrtcState: RTCPeerConnection is: ${isReady}`);
   };
 
   detach = () => {

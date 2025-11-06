@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import TextInput from '../components/CustomTextInput';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
@@ -63,25 +62,6 @@ const RoomSelect = () => {
   };
 
   const toggleOpen = (_open = !open) => setOpen(_open);
-
-  if (mqttIsOn === false) {
-    const handleRestartMqtt = async () => {
-      await abortMqtt();
-      await initMQTT();
-    };
-
-    return (
-      <View style={[styles.container, styles.noConnectionContainer]}>
-        <View style={styles.iconContainer}>
-          <Icon name="warning" size={48} color="#ff6b6b" />
-        </View>
-        <Text style={styles.text}>{t('connection.noConnection')}</Text>
-        <TouchableOpacity style={styles.button} onPress={handleRestartMqtt}>
-          <Text style={styles.buttonText}>{t('settings.tryConnect')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   const handleJoin = () => {
     joinRoom();
@@ -146,12 +126,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     paddingTop: 10,
   },
-  noConnectionContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: 20,
-  },
   searchInput: {
     flex: 1,
     paddingHorizontal: 10,
@@ -190,17 +164,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  text: {
-    color: 'white',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
   },
 });
 

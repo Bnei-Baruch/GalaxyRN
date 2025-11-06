@@ -1,9 +1,10 @@
 import NetInfo from '@react-native-community/netinfo';
 import { Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
+import kc from '../auth/keycloak';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
-import { sleep } from '../shared/tools';
+import { rejectTimeoutPromise, sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
@@ -26,48 +27,59 @@ let netInfoUnsubscribe, listeners, timeout, currentState, disconnectedSeconds;
 const waitConnectionListeners = [];
 
 export const initConnectionMonitor = () => {
-  prevState = null;
+  logger.debug(NAMESPACE, 'initConnectionMonitor');
   listeners = {};
   netInfoUnsubscribe = null;
   timeout = null;
   disconnectedSeconds = 0;
 
   // Start CONNECTION transaction
-  startTransaction(CONNECTION, 'Connection Monitor', 'connection');
+  startTransaction(CONNECTION, 'Connection Monitor');
 
   netInfoUnsubscribe = NetInfo.addEventListener(async state => {
     const networkStateSpan = addSpan(
       CONNECTION,
       'connectionMonitor.networkState',
       {
-        isConnected: state.isConnected,
+        netConnected: isNetConnected(state),
         type: state.type,
-        isInternetReachable: state.details?.isInternetReachable,
       }
     );
+
     logger.debug(NAMESPACE, 'Network state:', state);
 
     if (!currentState) {
       currentState = state;
       logger.debug(NAMESPACE, 'First network state');
+      useInitsStore.getState().setNetIsOn(isNetConnected(state));
       finishSpan(networkStateSpan, 'ok');
       return;
     }
 
-    if (!state.isConnected) {
+    if (!isNetConnected(state)) {
       logger.debug(NAMESPACE, 'Network disconnected');
       currentState = state;
       finishSpan(networkStateSpan, 'ok');
-      waitConnectionRestart();
-      return;
+      await waitConnectionRestart();
+
+      if (!isNetConnected()) {
+        onNoNetwork();
+        return;
+      }
     }
+
+    logger.debug(NAMESPACE, 'Network connected', state);
+    useInitsStore.getState().setNetIsOn(true);
     const isSame = isSameNetwork(state);
+    logger.debug(NAMESPACE, 'isSameNetwork', isSame);
     currentState = state || {};
+    disconnectedSeconds = 0;
+
     if (!isSame) {
-      disconnectedSeconds = 0;
       logger.debug(NAMESPACE, 'Network state was changed');
       finishSpan(networkStateSpan, 'ok');
-      waitConnectionRestart();
+      await waitConnectionRestart();
+      useInitsStore.getState().setMqttIsOn(mqtt.mq?.connected);
       return;
     }
     finishSpan(networkStateSpan, 'ok');
@@ -148,12 +160,17 @@ const waitAndRestart = async () => {
 
 const onNoNetwork = async () => {
   logger.debug(NAMESPACE, 'onNoNetwork');
+
   try {
-    await useInRoomStore.getState().exitRoom();
+    await rejectTimeoutPromise(useInRoomStore.getState().exitRoom(), 2000);
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
+  const _netIsOn = isNetConnected();
   useInitsStore.getState().setMqttIsOn(false);
+  useSettingsStore.getState().setNetWIP(false);
+  useInitsStore.getState().setNetIsOn(_netIsOn);
+  kc.logout();
 };
 
 const monitorNetInfo = async () => {
@@ -165,11 +182,7 @@ const monitorNetInfo = async () => {
     return false;
   }
 
-  if (currentState.details?.isInternetReachable) {
-    return true;
-  }
-
-  if (currentState.isConnected) {
+  if (isNetConnected()) {
     return true;
   }
 
@@ -188,6 +201,9 @@ const monitorNetInfo = async () => {
 const monitorMqtt = async () => {
   logger.debug(NAMESPACE, 'monitorMqtt');
   BackgroundTimer.clearTimeout(timeout);
+  if (!mqtt.mq) {
+    return false;
+  }
 
   if (disconnectedSeconds > MAX_CONNECTION_TIMEOUT) {
     throw new Error('MQTT disconnected');
@@ -242,31 +258,26 @@ const callListeners = async () => {
 export const waitConnection = async () => {
   logger.debug(NAMESPACE, 'waitConnection');
 
-  if (
-    currentState &&
-    mqtt.mq?.connected &&
-    (currentState.details?.isInternetReachable || currentState.isConnected)
-  ) {
+  if (isNetConnected() && mqtt.mq?.connected) {
     return true;
   }
 
-  logger.debug(NAMESPACE, 'waitConnection false', currentState, mqtt.mq);
+  logger.debug(
+    NAMESPACE,
+    'waitConnection not connected',
+    isNetConnected(),
+    mqtt.mq?.connected
+  );
 
   return new Promise(resolve => {
-    logger.debug(
-      NAMESPACE,
-      'waitConnection push listener',
-      currentState,
-      mqtt.mq
-    );
     waitConnectionListeners.push(connected => {
       logger.debug(NAMESPACE, 'waitConnection listener', connected);
       if (!connected) {
-        logger.debug(NAMESPACE, 'waitConnection false', currentState, mqtt.mq);
+        const netConnected = isNetConnected();
+        logger.debug(NAMESPACE, 'called waitConnection: ', netConnected);
 
         addFinishSpan(CONNECTION, 'connectionMonitor.waitConnection', {
-          isInternetReachable: currentState?.details?.isInternetReachable,
-          isConnected: currentState?.isConnected,
+          netConnected,
           mqttConnected: mqtt.mq?.connected,
         });
       }
@@ -323,8 +334,10 @@ export const removeConnectionMonitor = () => {
   timeout = null;
 };
 
-export const netIsConnected = () => {
-  logger.debug(NAMESPACE, 'netIsConnected', currentState, mqtt.mq?.connected);
+const isNetConnected = (state = currentState) => {
+  if (!state) {
+    return false;
+  }
 
-  return currentState?.isConnected && mqtt.mq?.connected;
+  return state.isConnected;
 };

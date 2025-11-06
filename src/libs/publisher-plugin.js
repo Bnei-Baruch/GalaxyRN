@@ -7,6 +7,8 @@ import {
   addConnectionListener,
   removeConnectionListener,
 } from './connection-monitor';
+import { CONNECTION } from './sentry/constants';
+import { addFinishSpan } from './sentry/sentryHelper';
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -175,7 +177,6 @@ export class PublisherPlugin {
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to run sdpActions', error);
-      throw error;
     }
   };
 
@@ -434,21 +435,40 @@ export class PublisherPlugin {
     }
   };
 
+  // PeerConnection with the plugin closed, clean the UI
+  // The plugin handle is still valid so we can create a new one
   oncleanup = () => {
-    logger.info(NAMESPACE, '- oncleanup - ');
-    // PeerConnection with the plugin closed, clean the UI
-    // The plugin handle is still valid so we can create a new one
+    addFinishSpan(CONNECTION, 'publisher.oncleanup', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
+  // Connection with the plugin closed, get rid of its features
+  // The plugin handle is not valid anymore
   detached = () => {
-    logger.info(NAMESPACE, '- detached - ');
-    // Connection with the plugin closed, get rid of its features
-    // The plugin handle is not valid anymore
+    addFinishSpan(CONNECTION, 'publisher.detached', {
+      isDestroyed: this.isDestroyed,
+    });
   };
 
-  hangup = () => {
-    logger.info(NAMESPACE, '- hangup - ', this.janus);
-    //this.detach();
+  iceFailed = () => {
+    logger.debug(NAMESPACE, 'ICE failed');
+    logger.debug(NAMESPACE, 'isDestroyed', this.isDestroyed);
+    if (!this.isDestroyed) {
+      addFinishSpan(CONNECTION, 'publisher.iceFailed');
+      useFeedsStore.getState().restartFeeds();
+    }
+  };
+
+  hangup = reason => {
+    addFinishSpan(CONNECTION, 'publisher.hangup', {
+      reason,
+      isDestroyed: this.isDestroyed,
+    });
+    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
+    if (!this.isDestroyed && reason === 'ICE failed') {
+      useFeedsStore.getState().restartFeeds();
+    }
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -457,7 +477,6 @@ export class PublisherPlugin {
       NAMESPACE,
       `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
     );
-    //this.emit('slowlink')
   };
 
   mediaState = (media, on) => {
@@ -467,17 +486,8 @@ export class PublisherPlugin {
     );
   };
 
-  webrtcState = isReady => {
-    logger.info(
-      NAMESPACE,
-      `webrtcState: RTCPeerConnection is: ${isReady ? 'up' : 'down'}`
-    );
-    //if (this.pc && !isReady && !this.isDestroyed) {
-    //  useFeedsStore.getState().restartFeeds();
-    //}
-  };
-
   detach = () => {
+    addFinishSpan(CONNECTION, 'publisher.detach');
     this.isDestroyed = true;
 
     if (this.pc) {
