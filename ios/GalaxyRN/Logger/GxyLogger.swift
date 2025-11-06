@@ -83,7 +83,6 @@ class GxyLogger {
     
     static func w(_ tag: String, _ message: String) {
         os_log("%@", log: OSLog.default, type: .default, GxyLoggerUtils.formatMessage(message))
-        SentryUtils.reportToSentry(level: .warning, tag: tag, message: message, error: nil)
     }
     
     static func w(_ tag: String, _ message: String, _ error: Error?) {
@@ -93,7 +92,6 @@ class GxyLogger {
         } else {
             os_log("%@", log: OSLog.default, type: .default, formattedMessage)
         }
-        SentryUtils.reportToSentry(level: .warning, tag: tag, message: message, error: error)
     }
     
     // MARK: - ERROR level logging
@@ -104,7 +102,6 @@ class GxyLogger {
     
     static func e(_ tag: String, _ message: String) {
         os_log("%@", log: OSLog.default, type: .error, GxyLoggerUtils.formatMessage(message))
-        SentryUtils.reportToSentry(level: .error, tag: tag, message: message, error: nil)
     }
     
     static func e(_ tag: String, _ message: String, _ error: Error?) {
@@ -114,6 +111,5 @@ class GxyLogger {
         } else {
             os_log("%@", log: OSLog.default, type: .error, formattedMessage)
         }
-        SentryUtils.reportToSentry(level: .error, tag: tag, message: message, error: error)
     }
 }

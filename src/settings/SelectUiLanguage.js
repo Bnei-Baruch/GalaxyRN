@@ -38,7 +38,7 @@ const SelectUiLanguage = () => {
             selected={selected?.text}
             onSelect={handleLangChange}
             renderItem={renderItem}
-            trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
+            // trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
           />
         }
       />

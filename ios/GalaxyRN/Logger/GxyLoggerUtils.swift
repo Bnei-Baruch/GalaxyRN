@@ -3,8 +3,8 @@ import UIKit
 import os.log
 
 /**
- * Utility class for GxyLogger containing Sentry integration,
- * message formatting, and other helper functionality
+ * Utility class for GxyLogger containing message formatting
+ * and other helper functionality
  */
 class GxyLoggerUtils {
     
