@@ -1,14 +1,13 @@
-import * as React from "react";
-import Icon from "react-native-vector-icons/MaterialIcons";
-import { StudyMaterialsBtn } from "./StudyMaterialsBtn";
-import { DonateBtn } from "./DonateBtn";
-import { SupportBtn } from "./SupportBtn";
-import { SettingsBtn } from "./SettingsBtn";
-import LogoutBtn from "./LogoutBtn";
-import ListInModal from "../components/ListInModal";
-import { useUiActions } from "../zustand/uiActions";
-import VersionInfo from "../components/VersionInfo";
-import { StyleSheet } from "react-native";
+import * as React from 'react';
+import { StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import ListInModal from '../components/ListInModal';
+import VersionInfo from '../components/VersionInfo';
+import { useUiActions } from '../zustand/uiActions';
+import { DonateBtn } from './DonateBtn';
+import LogoutBtn from './LogoutBtn';
+import { SettingsBtn } from './SettingsBtn';
+import { StudyMaterialsBtn } from './StudyMaterialsBtn';
 
 export const TopMenuBtn = () => {
   const { toggleShowBars } = useUiActions();
@@ -21,7 +20,7 @@ export const TopMenuBtn = () => {
     { component: <VersionInfo />, key: 5 },
   ];
 
-  const renderItem = (item) => item.component;
+  const renderItem = item => item.component;
 
   const handlePress = () => toggleShowBars(false, true);
 

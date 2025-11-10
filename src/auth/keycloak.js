@@ -6,7 +6,6 @@ import RNSecureStorage from 'rn-secure-storage';
 import {
   addBreadcrumb,
   clearUser as clearSentryUser,
-  sendSentry,
   setUser as setSentryUser,
 } from '../libs/sentry/sentryHelper';
 import logger from '../services/logger';
@@ -226,7 +225,6 @@ class Keycloak {
       this.scheduleNextRefresh();
     } catch (err) {
       logger.error(NAMESPACE, 'Refresh Token failed', err);
-      sendSentry('Refresh token failed: ' + err.message);
       this.logout();
     }
   };

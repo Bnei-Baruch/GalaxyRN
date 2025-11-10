@@ -84,13 +84,8 @@ export const useInitsStore = create((set, get) => ({
     }
 
     try {
-      await Promise.all([
-        mqtt.sub('galaxy/users/notification'),
-        mqtt.sub('galaxy/users/broadcast'),
-        mqtt.sub('mobile/releases', { rap: true }),
-      ]);
+      get().subscribeMqtt();
     } catch (error) {
-      logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
       get().abortMqtt();
       return;
     }
@@ -129,6 +124,18 @@ export const useInitsStore = create((set, get) => ({
         updateDisplayById(data.user);
       }
     });
+  },
+  subscribeMqtt: async () => {
+    try {
+      await Promise.all([
+        mqtt.sub('galaxy/users/notification'),
+        mqtt.sub('galaxy/users/broadcast'),
+        mqtt.sub('mobile/releases', { rap: true }),
+      ]);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
+      throw error;
+    }
   },
 
   abortMqtt: async () => {

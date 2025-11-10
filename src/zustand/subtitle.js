@@ -1,19 +1,11 @@
-// External libraries
-import { create } from 'zustand';
-
-// Environment variables
 import { SUBTITLES_TOPIC } from '@env';
-
-// Shared modules
-import { subtitle_options } from '../shared/consts';
-
-// Services
-import logger from '../services/logger';
-import { useShidurStore } from './shidur';
-
-// Zustand stores
+import { create } from 'zustand';
 import i18n from '../i18n/i18n';
+import logger from '../services/logger';
+import { subtitle_options } from '../shared/consts';
 import mqtt from '../shared/mqtt';
+import { rejectTimeoutPromise } from '../shared/tools';
+import { useShidurStore } from './shidur';
 
 const NAMESPACE = 'Subtitle';
 
@@ -55,8 +47,10 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Initializing with language: ${subLang}`);
     try {
-      mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-      mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+      await Promise.all([
+        mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`),
+        mqtt.sub(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`),
+      ]);
     } catch (e) {
       logger.error(NAMESPACE, `Error joining topics:`, e);
     }
@@ -70,8 +64,13 @@ export const useSubtitleStore = create((set, get) => ({
 
     logger.info(NAMESPACE, `Exiting and clearing messages`);
     try {
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`);
-      await mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`);
+      await rejectTimeoutPromise(
+        Promise.all([
+          mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`),
+          mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`),
+        ]),
+        2000
+      );
     } catch (e) {
       logger.error(NAMESPACE, `Error exiting topics:`, e);
     }

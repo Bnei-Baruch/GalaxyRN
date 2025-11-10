@@ -1,33 +1,7 @@
-import { SENTRY_LEVEL } from '@env';
 import * as Sentry from '@sentry/react-native';
 import logger from '../../services/logger';
 
-const NAMESPACE = 'SentryHelper';
-
-export const sendSentry = (msg, level = 'info') => {
-  if (!__DEV__ && SENTRY_LEVEL === 'error') return;
-  Sentry.captureMessage(msg, { level });
-};
-
-/**
- * Capture an exception and send to Sentry
- * @param {Error} error - The error to capture
- * @param {Object} extraData - Additional data to include
- */
-export const captureException = (error, extraData = {}) => {
-  if (!__DEV__) {
-    Sentry.withScope(scope => {
-      if (extraData) {
-        Object.keys(extraData).forEach(key => {
-          scope.setExtra(key, extraData[key]);
-        });
-      }
-      Sentry.captureException(error);
-    });
-  } else {
-    logger.error(NAMESPACE, 'Error', error);
-  }
-};
+const DEFAULT_NAMESPACE = 'SentryHelper';
 
 /**
  * Set user information for Sentry tracking
@@ -88,7 +62,12 @@ const activeSessions = new Map();
  * @param {string} op - Operation type (e.g., 'navigation', 'connection')
  * @returns {Span} - Sentry span
  */
-export const startTransaction = (key, name, op) => {
+export const startTransaction = (
+  key,
+  name,
+  op,
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
   logger.debug(NAMESPACE, 'startTransaction', key, name, op);
 
   return Sentry.startSpanManual({ name, op }, (span, finish) => {
@@ -106,7 +85,13 @@ export const startTransaction = (key, name, op) => {
  * @param {Object} attributes - Additional attributes for the span
  * @returns {Span|null} - Sentry span or null if session not found
  */
-export const addSpan = (key, op, attributes = {}) => {
+export const addSpan = (
+  key,
+  op,
+  attributes = {},
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
+  logger.debug(NAMESPACE, 'addSpan', key, op, attributes);
   const session = activeSessions.get(key);
 
   if (!session) {
@@ -125,8 +110,15 @@ export const addSpan = (key, op, attributes = {}) => {
   return childSpan;
 };
 
-export const addFinishSpan = (key, op, attributes = {}, status = 'ok') => {
-  const span = addSpan(key, op, attributes);
+export const addFinishSpan = (
+  key,
+  op,
+  attributes = {},
+  status = 'ok',
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
+  logger.debug(NAMESPACE, 'addFinishSpan', key, op, attributes, status);
+  const span = addSpan(key, op, attributes, NAMESPACE);
   span.setStatus(status);
   span.end();
 };
@@ -136,7 +128,12 @@ export const addFinishSpan = (key, op, attributes = {}, status = 'ok') => {
  * @param {Span} span - The span to finish
  * @param {string} status - Status: 'ok', 'cancelled', 'internal_error', etc.
  */
-export const finishSpan = (span, status = 'ok') => {
+export const finishSpan = (
+  span,
+  status = 'ok',
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
+  logger.debug(NAMESPACE, 'finishSpan', status);
   if (!span) return;
   span.setStatus(status);
   span.end();
@@ -147,7 +144,11 @@ export const finishSpan = (span, status = 'ok') => {
  * @param {string} key - Key of the session to finish
  * @param {string} status - Status: 'ok', 'cancelled', 'internal_error', etc.
  */
-export const finishTransaction = (key, status = 'ok') => {
+export const finishTransaction = (
+  key,
+  status = 'ok',
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
   const session = activeSessions.get(key);
 
   if (!session) {
@@ -167,9 +168,13 @@ export const finishTransaction = (key, status = 'ok') => {
  * @param {string} key - Key of the session
  * @param {Object} tags - Object with tag key-value pairs
  */
-export const setTransactionTags = (key, tags) => {
+export const setTransactionTags = (
+  key,
+  tags,
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
   const session = activeSessions.get(key);
-
+  logger.debug(NAMESPACE, 'setTransactionTags', key, tags);
   if (!session) {
     logger.warn(NAMESPACE, `Session ${key} not found, cannot set tags`);
     return;
@@ -185,7 +190,11 @@ export const setTransactionTags = (key, tags) => {
  * @param {string} key - Key of the session
  * @param {Object} attributes - Object with attribute key-value pairs
  */
-export const setTransactionAttributes = (key, attributes) => {
+export const setTransactionAttributes = (
+  key,
+  attributes,
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
   const session = activeSessions.get(key);
   if (!session) {
     logger.warn(NAMESPACE, `Session ${key} not found, cannot set attributes`);
@@ -202,11 +211,35 @@ export const setTransactionAttributes = (key, attributes) => {
  * @param {Span} span - The span to set attributes on
  * @param {Object} attributes - Attributes to set
  */
-export const setSpanAttributes = (span, attributes) => {
+export const setSpanAttributes = (
+  span,
+  attributes,
+  NAMESPACE = DEFAULT_NAMESPACE
+) => {
   if (!span) {
     logger.warn(NAMESPACE, 'Span not found, cannot set attributes');
     return;
   }
 
   span.setAttributes(attributes);
+  logger.debug(NAMESPACE, 'Set attributes on span:', attributes);
+};
+
+export const captureException = args => {
+  const key = args[args.length - 1];
+
+  let activeSpan = activeSessions.get(key);
+  if (!activeSpan) {
+    activeSpan = Sentry.getActiveSpan();
+  } else {
+    args = args.slice(0, -1);
+  }
+
+  if (activeSpan) {
+    Sentry.withActiveSpan(activeSpan, () => {
+      Sentry.captureException(new Error(args.join(', ')));
+    });
+  } else {
+    Sentry.captureException(new Error(args.join(', ')));
+  }
 };

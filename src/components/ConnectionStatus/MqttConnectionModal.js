@@ -27,7 +27,7 @@ const MqttConnectionModal = () => {
     return null;
   }
 
-  if (!mqtt.initialized) {
+  if (!mqtt.wasConnected) {
     return (
       <Modal
         visible={true}

@@ -460,13 +460,16 @@ export class PublisherPlugin {
     }
   };
 
-  hangup = reason => {
-    addFinishSpan(CONNECTION, 'publisher.hangup', {
-      reason,
-      isDestroyed: this.isDestroyed,
-    });
-    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
-    if (!this.isDestroyed && reason === 'ICE failed') {
+  hangup = () => {
+    addFinishSpan(
+      CONNECTION,
+      'publisher.hangup',
+      {
+        isDestroyed: this.isDestroyed,
+      },
+      NAMESPACE
+    );
+    if (!this.isDestroyed) {
       useFeedsStore.getState().restartFeeds();
     }
   };

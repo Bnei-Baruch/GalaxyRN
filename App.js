@@ -53,7 +53,7 @@ const App = () => {
   logger.debug(NAMESPACE, 'render');
   useEffect(() => {
     logger.debug(NAMESPACE, 'startTransaction');
-    startTransaction(APP_SESSION);
+    startTransaction(APP_SESSION, 'App Session', 'app.lifecycle');
     return () => {
       logger.debug(NAMESPACE, 'finishTransaction');
       finishTransaction(APP_SESSION);

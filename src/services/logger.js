@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react-native';
+import { captureException } from '../libs/sentry/sentryHelper';
 
 class Logger {
   hasTag(tag) {
@@ -7,12 +7,12 @@ class Logger {
     return true;
     return (
       //tag === 'Shidur' || tag === 'Inits' || tag === 'CallsBridge'
-      tag === 'StreamingPlugin' ||
+      //tag === 'StreamingPlugin' ||
       //tag === 'JanusMqtt' ||
       //tag === 'ConnectionMonitor' ||
-      tag === 'PublisherPlugin' ||
-      tag === 'SubscriberPlugin' ||
-      //tag === 'Mqtt' ||
+      //tag === 'PublisherPlugin' ||
+      //tag === 'SubscriberPlugin' ||
+      tag === 'Mqtt' ||
       //tag === 'MqttConnectionModal' ||
       //tag === 'ConnectionNotStable' ||
       tag === 'ConnectionMonitor' ||
@@ -51,7 +51,7 @@ class Logger {
     if (!this.hasTag(args[0])) return;
 
     console.error(args);
-    Sentry.captureException(new Error(args.join(', ')));
+    captureException(args);
   }
 
   prepareConsoleMsg(args) {

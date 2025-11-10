@@ -15,6 +15,12 @@ const config = {
   resolver: {
     // Add any custom resolver settings if needed
     sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
+    // Exclude android and ios native resources from being resolved as modules
+    blockList: [
+      /android\/app\/src\/main\/res\/.*/,
+      /android\/app\/build\/.*/,
+      /ios\/build\/.*/,
+    ],
   },
 };
 

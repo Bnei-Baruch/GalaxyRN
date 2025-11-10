@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import logo from '../../android/app/src/main/res/mipmap-xxxhdpi/arvut.png'; // eslint-disable-line
+import logo from '../assets/arvut.png';
 import NetConnectionModal from '../components/ConnectionStatus/NetConnectionModal';
 import Text from '../components/CustomText';
 import WIP from '../components/WIP';

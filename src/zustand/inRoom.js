@@ -35,9 +35,6 @@ export const useInRoomStore = create((set, get) => ({
   joinRoom: async (isPlay = false) => {
     logger.debug(NAMESPACE, 'joinRoom', isPlay);
 
-    const { room } = useRoomStore.getState();
-
-    // Start Sentry transaction at the very beginning of joinRoom
     startTransaction(ROOM_SESSION, 'Join Room', 'navigation');
 
     // Early exit checks
@@ -88,9 +85,20 @@ export const useInRoomStore = create((set, get) => ({
       return get().restartRoom();
     }
 
-    // Step 3: Subscribe to MQTT topics
-    const mqttSubscribeSpan = addSpan(ROOM_SESSION, 'mqtt.subscribe');
+    try {
+      get().subscribeMqtt();
+    } catch (error) {
+      return get().restartRoom();
+    }
 
+    attempts = 0;
+    // Note: Transaction will be finished when exitRoom is called
+  },
+
+  subscribeMqtt: async () => {
+    logger.debug(NAMESPACE, 'subscribeMqtt');
+    const { room } = useRoomStore.getState();
+    const mqttSubscribeSpan = addSpan(ROOM_SESSION, 'mqtt.subscribe');
     try {
       await Promise.all([
         mqtt.sub(`galaxy/room/${room.room}`),
@@ -98,12 +106,9 @@ export const useInRoomStore = create((set, get) => ({
       ]);
       finishSpan(mqttSubscribeSpan, 'ok');
     } catch (error) {
-      logger.error(NAMESPACE, 'Error joining MQTT rooms', error);
-      finishSpan(mqttSubscribeSpan, 'internal_error');
+      logger.error(NAMESPACE, 'Error subscribing to MQTT rooms', error);
+      throw error;
     }
-
-    attempts = 0;
-    // Note: Transaction will be finished when exitRoom is called
   },
 
   exitRoom: async () => {

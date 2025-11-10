@@ -6,13 +6,14 @@ import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
 
-import { waitConnection } from '../libs/connection-monitor';
+import { resetLastReconnect, waitConnection } from '../libs/connection-monitor';
 import { CONNECTION } from '../libs/sentry/constants';
 import {
   addFinishSpan,
   addSpan,
   finishSpan,
 } from '../libs/sentry/sentryHelper';
+import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
@@ -21,10 +22,12 @@ import { randomString, rejectTimeoutPromise } from './tools';
 
 import { Buffer } from 'buffer';
 
-const mqttTimeout = 30; // Seconds
-const mqttKeepalive = 10; // Seconds
+const mqttTimeout = 5 * 60;
+const mqttKeepalive = 15;
 
 const NAMESPACE = 'Mqtt';
+
+const clientIdPrefix = randomString(3);
 
 class MqttMsg {
   constructor() {
@@ -34,21 +37,27 @@ class MqttMsg {
     this.room = null;
     this.token = null;
     this.initialized = false;
+    this.wasConnected = false;
   }
 
   init = async () => {
     const initSpan = addSpan(CONNECTION, 'mqtt.init');
+
+    if (this.mq) {
+      finishSpan(initSpan, 'error_already_initialized');
+      return this.mq;
+    }
+
     this.initialized = true;
 
     const { user } = useUserStore.getState();
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
-    const token = this.token;
-    const id = user.id + '-' + randomString(3);
+    const id = user.id + '-' + clientIdPrefix;
     logger.debug(NAMESPACE, 'MQTT init', user);
 
     const transformUrl = (url, options, client) => {
       client.options.clientId = id;
-      client.options.password = token;
+      client.options.password = this.token;
       return url;
     };
 
@@ -60,7 +69,7 @@ class MqttMsg {
       reconnectPeriod: 0,
       clean: false,
       username: user.email,
-      password: token,
+      password: this.token,
       transformWsUrl: transformUrl,
       properties: {
         sessionExpiryInterval: mqttTimeout,
@@ -95,15 +104,29 @@ class MqttMsg {
 
     this.mq.on('connect', data => {
       logger.debug(NAMESPACE, 'mqtt on connect', data);
+      resetLastReconnect();
 
-      const connectOkSpan = addSpan(CONNECTION, 'mqtt.connectEvent');
+      const connectSpan = addSpan(CONNECTION, 'mqtt.connectEvent');
 
-      useInitsStore.getState().setMqttIsOn(true);
-
-      if (!data.sessionPresent) {
-        logger.error(NAMESPACE, 'Session not restored, resubscribing...');
+      if (!data.sessionPresent && this.wasConnected) {
+        addFinishSpan(CONNECTION, 'mqtt.connectEvent.resubscribe', data);
+        Promise.all([
+          useInRoomStore.getState().subscribeMqtt(),
+          useInitsStore.getState().subscribeMqtt(),
+        ])
+          .then(() => {
+            useInitsStore.getState().setMqttIsOn(true);
+          })
+          .catch(error => {
+            logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
+            useInitsStore.getState().setMqttIsOn(false);
+          });
+      } else {
+        useInitsStore.getState().setMqttIsOn(true);
       }
-      finishSpan(connectOkSpan, 'ok');
+
+      this.wasConnected = true;
+      finishSpan(connectSpan, 'ok');
     });
 
     this.mq.on('reconnect', data => {
@@ -126,6 +149,10 @@ class MqttMsg {
     this.mq.on('disconnect', data => {
       addFinishSpan(CONNECTION, 'mqtt.disconnect');
       logger.debug(NAMESPACE, 'mqtt on disconnect', data);
+
+      if (data?.reasonCode === 142) {
+        logger.warn(NAMESPACE, 'Session taken over by another client', data);
+      }
     });
 
     this.mq.on('end', data => {
@@ -331,6 +358,7 @@ class MqttMsg {
       finishSpan(endSpan, 'internal_error');
     }
     this.mq = null;
+    this.wasConnected = false;
     return true;
   };
 }

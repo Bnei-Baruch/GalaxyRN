@@ -9,6 +9,8 @@ import {
   addFinishSpan,
   addSpan,
   finishSpan,
+  finishTransaction,
+  setSpanAttributes,
   setTransactionAttributes,
   startTransaction,
 } from './sentry/sentryHelper';
@@ -37,10 +39,10 @@ export class JanusMqtt {
   }
 
   init = async token => {
-    const initSpan = startTransaction(this.sentrySession, 'janus.init');
+    startTransaction(this.sentrySession, 'Janus Init', 'janus.init');
     if (!(await waitConnection())) {
       logger.warn(NAMESPACE, 'Connection unavailable in init');
-      finishSpan(initSpan, 'no_connection');
+      finishTransaction(this.sentrySession, 'no_connection');
       return;
     }
     this.token = token;
@@ -60,7 +62,7 @@ export class JanusMqtt {
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
       finishSpan(subscribeSpan, 'internal_error');
-      finishSpan(initSpan, 'internal_error');
+      finishTransaction(this.sentrySession, 'internal_error');
       throw error;
     }
 
@@ -70,11 +72,17 @@ export class JanusMqtt {
     const transaction = randomString(12);
     const msg = { janus: 'create', transaction, token };
 
+    // Create connectSpan in the init scope so it can be accessed in the promise chain
+    const connectSpan = addSpan(this.sentrySession, 'janus.connect');
+
     this.connect = () => {
-      finishSpan(initSpan, 'ok');
       logger.debug(NAMESPACE, 'connect', this.isJanusInitialized);
       this.isConnected = true;
       if (this.isJanusInitialized) {
+        setSpanAttributes(connectSpan, {
+          isJanusInitialized: this.isJanusInitialized,
+        });
+        finishSpan(connectSpan, 'ok');
         return;
       }
 
@@ -121,7 +129,15 @@ export class JanusMqtt {
         },
         replyType: 'success',
       };
-    });
+    })
+      .then(result => {
+        finishSpan(connectSpan, 'ok');
+        return result;
+      })
+      .catch(error => {
+        finishSpan(connectSpan, 'internal_error');
+        throw error;
+      });
   };
 
   disconnect = async json => {
@@ -186,6 +202,7 @@ export class JanusMqtt {
       logger.error(NAMESPACE, 'cleanupTransactions err', err);
       finishSpan(destroySpan, 'internal_error');
     }
+    finishTransaction(this.sentrySession, 'ok');
   };
 
   detach = async plugin => {
@@ -475,6 +492,7 @@ export class JanusMqtt {
       if (!pluginHandle) {
         return;
       }
+
       transaction.resolve({ data: pluginData.data, json });
       return;
     }
@@ -538,7 +556,7 @@ export class JanusMqtt {
         finishSpan(hangupSpan, 'internal_error');
         return;
       }
-      pluginHandle.hangup && pluginHandle.hangup(json.reason);
+      pluginHandle.hangup && pluginHandle.hangup();
       finishSpan(hangupSpan, 'ok');
       return;
     }
@@ -688,6 +706,10 @@ export class JanusMqtt {
     const handler = this.pluginHandles[id];
     if (!handler) {
       logger.warn(NAMESPACE, 'Handler not found', id);
+      return null;
+    }
+    if (!handler.pc || handler.pc.connectionState === 'closed') {
+      logger.warn(NAMESPACE, 'PeerConnection closed');
       return null;
     }
     if (handler.isDestroyed) {

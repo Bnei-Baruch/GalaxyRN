@@ -144,11 +144,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   setVideo: async (video, updateState = true) => {
-    const span = addSpan(ROOM_SESSION, 'shidur.setVideo', {
-      video,
-      updateState,
-    });
-    logger.debug(NAMESPACE, 'setVideo', video, updateState);
+    const span = addSpan(ROOM_SESSION, 'shidur.setVideo', {}, NAMESPACE);
     if (!janus) {
       return;
     }
@@ -169,13 +165,13 @@ export const useShidurStore = create((set, get) => ({
     }
     logger.debug(NAMESPACE, 'setVideo done', videoStream?.toURL(), video);
     set({ url: videoStream?.toURL(), video });
-    finishSpan(span, 'ok');
+    finishSpan(span, 'ok', NAMESPACE);
   },
 
   initJanus: async () => {
-    const span = addSpan(ROOM_SESSION, 'shidur.initJanus');
+    const span = addSpan(ROOM_SESSION, 'shidur.initJanus', {}, NAMESPACE);
     if (janus) {
-      finishSpan(span, 'duplicate');
+      finishSpan(span, 'duplicate', NAMESPACE);
       return;
     }
 
@@ -228,13 +224,13 @@ export const useShidurStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error during init janus:', error);
     }
     set({ janusReady });
-    finishSpan(span, 'ok');
+    finishSpan(span, 'ok', NAMESPACE);
   },
 
   cleanJanus: async () => {
-    const span = addSpan(ROOM_SESSION, 'shidur.cleanJanus');
+    const span = addSpan(ROOM_SESSION, 'shidur.cleanJanus', {}, NAMESPACE);
     if (!janus || get().cleanWIP) {
-      finishSpan(span, 'duplicate');
+      finishSpan(span, 'duplicate', NAMESPACE);
       return;
     }
     set({ cleanWIP: true });
@@ -245,12 +241,12 @@ export const useShidurStore = create((set, get) => ({
       await rejectTimeoutPromise(janus.destroy(), 2000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanJanus:', error);
-      finishSpan(span, 'internal_error');
+      finishSpan(span, 'internal_error', NAMESPACE);
     }
     janus = null;
     set({ janusReady: false });
     set({ cleanWIP: false });
-    finishSpan(span, 'ok');
+    finishSpan(span, 'ok', NAMESPACE);
   },
 
   initMedias: async () => {
