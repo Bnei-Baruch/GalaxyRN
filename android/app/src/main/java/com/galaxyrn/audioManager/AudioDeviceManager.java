@@ -35,28 +35,11 @@ public class AudioDeviceManager {
     private final Handler handler;
     private final Runnable notificationRunnable;
 
-    private boolean isContextReady() {
-        return reactContext != null && reactContext.hasActiveCatalystInstance();
-    }
-
     public AudioDeviceManager(ReactApplicationContext context, UpdateAudioDeviceCallback callback) {
         this.reactContext = context;
         this.callback = callback;
         this.handler = new Handler(Looper.getMainLooper());
         this.notificationRunnable = this::notifyDeviceStateChangedInternal;
-
-        if (!isContextReady()) {
-            GxyLogger.d(TAG, "React context not ready, waiting for initialization");
-            handler.postDelayed(() -> {
-                if (isContextReady()) {
-                    GxyLogger.d(TAG, "React context ready, initializing audio manager");
-                    initializeAudioManager();
-                } else {
-                    GxyLogger.e(TAG, "React context still not ready after delay");
-                }
-            }, 1000);
-            return;
-        }
 
         initializeAudioManager();
     }

@@ -70,7 +70,7 @@ public class AudioFocusManager {
      */
     public boolean abandonAudioFocus() {
         if (audioManager == null || audioFocusRequest == null) {
-            GxyLogger.w(TAG, "Cannot abandon audio focus: AudioManager or AudioFocusRequest is null");
+            GxyLogger.d(TAG, "Cannot abandon audio focus: AudioManager or AudioFocusRequest is null");
             return false;
         }
 

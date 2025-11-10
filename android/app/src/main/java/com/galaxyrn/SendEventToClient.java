@@ -14,33 +14,29 @@ public class SendEventToClient {
     static ReactContext context = null;
 
     static public void init(ReactContext context) {
-        if (SendEventToClient.context == null) {
-            SendEventToClient.context = context;
-        }
+        SendEventToClient.context = context;
     }
 
     public static void sendEvent(final String eventName, @Nullable WritableMap params) {
         try {
-            if (SendEventToClient.context != null && SendEventToClient.context.hasActiveCatalystInstance()) {
-                GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName);
-                SendEventToClient.context
-                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                        .emit(eventName, params);
-                GxyLogger.d(TAG, "Event emitted successfully: " + eventName);
-            } else {
-                GxyLogger.w(SendEventToClient.TAG, "sendEvent() BLOCKED. EventName: " + eventName);
-                if (SendEventToClient.context == null) {
-                    GxyLogger.d(SendEventToClient.TAG, "ReactContext is NULL");
-                } else {
-                    GxyLogger.d(SendEventToClient.TAG, "CatalystInstance is NOT active");
-                }
+            if (SendEventToClient.context == null) {
+                GxyLogger.w(TAG, "sendEvent() BLOCKED - ReactContext is NULL. EventName: " + eventName);
+                return;
             }
-        } catch (RuntimeException e) {
-            GxyLogger.e(SendEventToClient.TAG,
-                    "sendEvent() RuntimeException for event '" + eventName + "': " + e.getMessage(), e);
+
+            if (!SendEventToClient.context.hasActiveCatalystInstance()) {
+                GxyLogger.w(TAG, "sendEvent() BLOCKED - CatalystInstance is NOT active. EventName: " + eventName);
+                return;
+            }
+
+            GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName);
+            SendEventToClient.context
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit(eventName, params);
+            GxyLogger.d(TAG, "Event emitted successfully: " + eventName);
+
         } catch (Exception e) {
-            GxyLogger.e(SendEventToClient.TAG,
-                    "sendEvent() Exception for event '" + eventName + "': " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error sending event '" + eventName + "': ", e);
         }
     }
 }

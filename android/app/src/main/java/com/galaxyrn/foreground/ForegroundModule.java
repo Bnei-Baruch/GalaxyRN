@@ -56,7 +56,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
         // Prevent multiple initializations
         if (isInitialized) {
-            GxyLogger.w(TAG, "ForegroundModule already initialized, skipping re-initialization");
+            GxyLogger.d(TAG, "ForegroundModule already initialized, skipping re-initialization");
             return;
         }
 
@@ -171,7 +171,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        activity.runOnUiThread(() -> activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+        activity.runOnUiThread(() -> {
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added)");
+        });
     }
 
     /**
@@ -184,7 +187,10 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        activity.runOnUiThread(() -> activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+        activity.runOnUiThread(() -> {
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            GxyLogger.d(TAG, "Screen timeout enabled (FLAG_KEEP_SCREEN_ON removed)");
+        });
     }
 
     /**

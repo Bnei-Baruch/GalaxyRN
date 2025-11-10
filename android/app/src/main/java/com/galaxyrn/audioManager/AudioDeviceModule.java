@@ -164,7 +164,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
             if (audioFocusManager != null) {
                 audioFocusManager.requestAudioFocus();
             }
-            processAudioDevicesOnUiThread(null, false);
+            processAudioDevices(null, false);
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error requesting audio focus: " + e.getMessage(), e);
         }
@@ -184,18 +184,19 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
 
     @ReactMethod
     public void initAudioDevices() {
-        GxyLogger.d(TAG, "initAudioDevices()");
-        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(null, true));
+        GxyLogger.d(TAG, "initAudioDevices() on thread: " + Thread.currentThread().getName());
+        processAudioDevices(null, true);
     }
 
     @ReactMethod
     public void handleDevicesChange(Integer deviceId) {
-        GxyLogger.d(TAG, "handleDevicesChange() deviceId: " + deviceId);
-        UiThreadUtil.runOnUiThread(() -> processAudioDevicesOnUiThread(deviceId, false));
+        GxyLogger.d(TAG,
+                "handleDevicesChange() deviceId: " + deviceId + " on thread: " + Thread.currentThread().getName());
+        processAudioDevices(deviceId, false);
     }
 
-    private void processAudioDevicesOnUiThread(Integer deviceId, boolean isInitialize) {
-        GxyLogger.d(TAG, "processAudioDevicesOnUiThread() deviceId: " + deviceId);
+    private void processAudioDevices(Integer deviceId, boolean isInitialize) {
+        GxyLogger.d(TAG, "processAudioDevices() deviceId: " + deviceId);
         try {
             AudioManager audioManager = getAudioManager();
             if (audioManager == null)
