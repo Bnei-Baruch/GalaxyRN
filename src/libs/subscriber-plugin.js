@@ -82,8 +82,13 @@ export class SubscriberPlugin {
 
       return data;
     } catch (error) {
-      if (error?.data?.error_code === 428) {
-        logger.warn(NAMESPACE, 'Subscribe to: ', JSON.stringify(error.data));
+      const errorCode = error?.data?.error_code;
+      if (errorCode === 428 || errorCode === 424) {
+        logger.warn(
+          NAMESPACE,
+          `Subscribe error ${errorCode}: `,
+          JSON.stringify(error.data)
+        );
         return;
       }
       logger.error(NAMESPACE, 'Subscribe to: ', JSON.stringify(error));
@@ -193,9 +198,9 @@ export class SubscriberPlugin {
       await this.configure();
       logger.info(NAMESPACE, 'ICE restart completed successfully');
     } catch (error) {
-      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
-      if (errorCode === 460 || errorCode === 436) {
+      if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
         logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
         return;
       }

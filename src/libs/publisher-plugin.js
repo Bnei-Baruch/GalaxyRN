@@ -318,9 +318,9 @@ export class PublisherPlugin {
     } catch (error) {
       this.iceRestartInProgress = false;
 
-      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
-      if (errorCode === 460 || errorCode === 436) {
+      if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
         logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
         return;
       }
