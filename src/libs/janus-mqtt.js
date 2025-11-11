@@ -52,6 +52,7 @@ export class JanusMqtt {
       rxTopic: this.rxTopic,
       stTopic: this.stTopic,
     });
+
     try {
       await Promise.all([
         mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 0 }),
@@ -140,16 +141,6 @@ export class JanusMqtt {
       });
   };
 
-  disconnect = async json => {
-    addFinishSpan(this.sentrySession, 'janus.disconnect');
-    logger.debug(NAMESPACE, 'disconnect', json);
-    try {
-      await this._cleanupTransactions();
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error in disconnect:', error);
-    }
-  };
-
   attach = async plugin => {
     logger.debug(NAMESPACE, 'attach', plugin?.getPluginName());
     const name = plugin.getPluginName();
@@ -189,29 +180,18 @@ export class JanusMqtt {
     try {
       await this.transaction('destroy', {}, 'success', 5000);
     } catch (err) {
-      logger.error(NAMESPACE, 'destroy err', err);
-      finishSpan(destroySpan, 'internal_error');
+      addFinishSpan(this.sentrySession, 'janus.destroy', err);
     }
 
-    try {
-      logger.debug(NAMESPACE, 'Janus destroyed');
-      await this._cleanupTransactions();
-      logger.debug(NAMESPACE, 'destroy _cleanupTransactions done');
-      finishSpan(destroySpan, 'ok');
-    } catch (err) {
-      logger.error(NAMESPACE, 'cleanupTransactions err', err);
-      finishSpan(destroySpan, 'internal_error');
-    }
+    this._cleanupTransactions();
+
+    this._cleanupMqtt();
+
+    finishSpan(destroySpan, 'ok');
     finishTransaction(this.sentrySession, 'ok');
   };
 
   detach = async plugin => {
-    logger.debug(
-      NAMESPACE,
-      'detach plugin',
-      plugin,
-      Object.keys(this.pluginHandles)
-    );
     if (!this.findHandle(plugin.janusHandleId)) {
       throw new Error('unknown plugin');
     }
@@ -219,12 +199,15 @@ export class JanusMqtt {
       plugin: plugin.pluginName,
       handle_id: plugin.janusHandleId,
     };
-    const json = await this.transaction('hangup', body, 'success', 5000);
-    if (json.janus !== 'success') {
-      throw new Error('hangup failed');
+    let json;
+    try {
+      json = await this.transaction('hangup', body, 'success', 5000);
+    } catch (err) {
+      addFinishSpan(this.sentrySession, 'janus.destroy', err);
+      plugin.detach();
+      throw err;
     }
     delete this.pluginHandles[plugin.janusHandleId];
-    plugin.detach();
     return json;
   };
 
@@ -383,26 +366,23 @@ export class JanusMqtt {
     logger.error(NAMESPACE, 'Lost connection to the gateway (is it down?)');
   };
 
-  _cleanupTransactions = async () => {
+  _cleanupTransactions = () => {
     logger.debug(NAMESPACE, '_cleanupTransactions');
     this.clearKeepAliveTimer();
-    const promises = Object.values(this.transactions)
-      .filter(t => !!t)
-      .map(t => {
-        logger.debug(NAMESPACE, '_cleanupTransactions', t.transactionId);
-        return t.reject();
-      });
-    await Promise.allSettled(promises);
-    logger.debug(NAMESPACE, '_cleanupTransactions done');
     this.transactions = {};
     this.sessionId = null;
     this.isConnected = false;
+  };
 
+  _cleanupMqtt = async () => {
+    logger.debug(NAMESPACE, '_cleanupMqtt');
     try {
-      await mqtt.exit(this.rxTopic + '/' + this.user.id);
-      await mqtt.exit(this.rxTopic);
-      await mqtt.exit(this.stTopic);
-      logger.debug(NAMESPACE, '_cleanupTransactions mqtt topics exited');
+      await Promise.all([
+        mqtt.exit(this.rxTopic + '/' + this.user.id),
+        mqtt.exit(this.rxTopic),
+        mqtt.exit(this.stTopic),
+      ]);
+      logger.debug(NAMESPACE, '_cleanupMqtt mqtt topics exited');
     } catch (e) {
       logger.error(NAMESPACE, 'Error exiting MQTT topics:', e);
     }
@@ -414,7 +394,7 @@ export class JanusMqtt {
     } catch (e) {
       logger.error(NAMESPACE, 'Error removing MQTT listeners:', e);
     }
-    logger.debug(NAMESPACE, '_cleanupTransactions done');
+    logger.debug(NAMESPACE, '_cleanupMqtt done');
   };
 
   onMessage = (message, tD) => {
@@ -542,6 +522,7 @@ export class JanusMqtt {
     if (janus === 'hangup') {
       const hangupSpan = addSpan(this.sentrySession, 'janus.hangup', {
         reason: json.reason,
+        NAMESPACE,
       });
       logger.debug(NAMESPACE, 'hangup');
       // A plugin asked the core to hangup a PeerConnection on one of our handles
@@ -556,7 +537,7 @@ export class JanusMqtt {
         finishSpan(hangupSpan, 'internal_error');
         return;
       }
-      pluginHandle.hangup && pluginHandle.hangup();
+      pluginHandle.hangup && pluginHandle.hangup(json.reason);
       finishSpan(hangupSpan, 'ok');
       return;
     }

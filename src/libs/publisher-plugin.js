@@ -460,18 +460,16 @@ export class PublisherPlugin {
     }
   };
 
-  hangup = () => {
-    addFinishSpan(
-      CONNECTION,
-      'publisher.hangup',
-      {
-        isDestroyed: this.isDestroyed,
-      },
-      NAMESPACE
-    );
-    if (!this.isDestroyed) {
-      useFeedsStore.getState().restartFeeds();
+  hangup = reason => {
+    addFinishSpan(CONNECTION, 'publisher.hangup', {
+      isDestroyed: this.isDestroyed,
+      NAMESPACE,
+    });
+    if (this.isDestroyed || reason === 'Janus API') {
+      this.detach();
+      return;
     }
+    useFeedsStore.getState().restartFeeds();
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -490,21 +488,13 @@ export class PublisherPlugin {
   };
 
   detach = () => {
-    addFinishSpan(CONNECTION, 'publisher.detach');
+    if (this.isDestroyed) {
+      return;
+    }
+    addFinishSpan(CONNECTION, 'publisher.detach', { NAMESPACE });
     this.isDestroyed = true;
 
-    if (this.pc) {
-      this.pc.getTransceivers().forEach(transceiver => {
-        if (transceiver) {
-          this.pc.removeTrack(transceiver.sender);
-          transceiver.stop();
-        }
-      });
-      removeConnectionListener(this.id);
-      this.pc.close();
-      this.pc = null;
-      this.janus = null;
-    }
+    this.cleanupPc();
 
     // Clear additional properties
     this.janusHandleId = undefined;
@@ -512,5 +502,22 @@ export class PublisherPlugin {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
+  };
+
+  cleanupPc = () => {
+    if (!this.pc) {
+      return;
+    }
+    this.pc.getTransceivers().forEach(transceiver => {
+      if (transceiver) {
+        this.pc.removeTrack(transceiver.sender);
+        transceiver.stop();
+      }
+    });
+
+    removeConnectionListener(this.id);
+    this.pc.close();
+    this.pc = null;
+    this.janus = null;
   };
 }

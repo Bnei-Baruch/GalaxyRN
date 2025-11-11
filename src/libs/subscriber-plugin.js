@@ -348,7 +348,11 @@ export class SubscriberPlugin {
   };
 
   hangup = reason => {
-    addFinishSpan(CONNECTION, 'subscriber.hangup', { reason });
+    addFinishSpan(CONNECTION, 'subscriber.hangup', { reason, NAMESPACE });
+    if (this.isDestroyed || reason === 'Janus API') {
+      this.detach();
+      return;
+    }
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -367,8 +371,11 @@ export class SubscriberPlugin {
   };
 
   detach = () => {
-    addFinishSpan(CONNECTION, 'subscriber.detach');
-    logger.debug(NAMESPACE, 'Detach called', this.isDestroyed);
+    if (this.isDestroyed) {
+      return;
+    }
+
+    addFinishSpan(CONNECTION, 'subscriber.detach', { NAMESPACE });
     this.isDestroyed = true;
 
     if (this.pc) {

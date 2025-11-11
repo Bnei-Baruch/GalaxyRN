@@ -134,6 +134,7 @@ export class StreamingPlugin {
       streamId: id,
       handleId: this.janusHandleId,
     });
+
     logger.info(NAMESPACE, 'watch: ', id);
     this.streamId = id;
     const body = { request: 'watch', id };
@@ -328,11 +329,13 @@ export class StreamingPlugin {
     addFinishSpan(CONNECTION, 'streaming.hangup', {
       reason,
       isDestroyed: this.isDestroyed,
+      NAMESPACE,
     });
-    logger.debug(NAMESPACE, 'Hangup called', reason, this.isDestroyed);
-    if (!this.isDestroyed) {
-      useShidurStore.getState().restartShidur();
+    if (this.isDestroyed || reason === 'Janus API') {
+      this.detach();
+      return;
     }
+    useShidurStore.getState().restartShidur();
   };
 
   slowLink = (uplink, lost, mid) => {
@@ -358,23 +361,23 @@ export class StreamingPlugin {
   };
 
   detach = () => {
-    const detachSpan = addSpan(CONNECTION, 'streaming.detach');
+    if (this.isDestroyed) {
+      return;
+    }
+    const detachSpan = addSpan(CONNECTION, 'streaming.detach', { NAMESPACE });
     logger.debug(NAMESPACE, 'Detach called');
     this.isDestroyed = true;
 
-    if (this.janus) {
-      if (this.pc) {
-        this.pc.close();
-        this.pc = null;
-      }
-      removeConnectionListener(this.id);
-      this.janusHandleId = undefined;
-      this.streamId = null;
-      this.candidates = [];
-      this.onStatus = null;
-      this.janus = null;
+    if (this.pc) {
+      this.pc.close();
+      this.pc = null;
     }
+    removeConnectionListener(this.id);
+    this.janusHandleId = undefined;
+    this.streamId = null;
+    this.candidates = [];
+    this.onStatus = null;
+    this.janus = null;
     finishSpan(detachSpan, 'ok');
-    return Promise.resolve();
   };
 }

@@ -85,17 +85,13 @@ export const startTransaction = (
  * @param {Object} attributes - Additional attributes for the span
  * @returns {Span|null} - Sentry span or null if session not found
  */
-export const addSpan = (
-  key,
-  op,
-  attributes = {},
-  NAMESPACE = DEFAULT_NAMESPACE
-) => {
-  logger.debug(NAMESPACE, 'addSpan', key, op, attributes);
+export const addSpan = (key, op, attributes = {}) => {
+  const namespace = attributes.NAMESPACE || DEFAULT_NAMESPACE;
+  logger.debug(namespace, 'addSpan', key, op, attributes);
   const session = activeSessions.get(key);
 
   if (!session) {
-    logger.warn(NAMESPACE, `Session ${key} not found, cannot add span`);
+    logger.warn(namespace, `Session ${key} not found, cannot add span`);
     // Возвращаем инактивный span чтобы не сломать код
     return Sentry.startInactiveSpan({ name: op, op, attributes });
   }
@@ -106,19 +102,14 @@ export const addSpan = (
     childSpan = Sentry.startInactiveSpan({ name: op, op, attributes });
   });
 
-  logger.debug(NAMESPACE, `Added span to ${key}: ${op}`);
+  logger.debug(namespace, `Added span to ${key}: ${op}`);
   return childSpan;
 };
 
-export const addFinishSpan = (
-  key,
-  op,
-  attributes = {},
-  status = 'ok',
-  NAMESPACE = DEFAULT_NAMESPACE
-) => {
-  logger.debug(NAMESPACE, 'addFinishSpan', key, op, attributes, status);
-  const span = addSpan(key, op, attributes, NAMESPACE);
+export const addFinishSpan = (key, op, status = 'ok', attributes = {}) => {
+  const namespace = attributes.NAMESPACE || DEFAULT_NAMESPACE;
+  logger.debug(namespace, 'addFinishSpan', key, op, attributes, status);
+  const span = addSpan(key, op, attributes);
   span.setStatus(status);
   span.end();
 };
