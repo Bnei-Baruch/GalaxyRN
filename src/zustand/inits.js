@@ -1,24 +1,16 @@
-// External libraries
 import { DeviceEventEmitter, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
-
-// React Native modules
-
-// Services
+import kc from '../auth/keycloak';
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
-
-// Auth
-
-// Shared modules
-import kc from '../auth/keycloak';
 import api from '../shared/Api';
 import ConfigStore from '../shared/ConfigStore';
 import GxyConfig from '../shared/janus-config';
 import mqtt from '../shared/mqtt';
 
-// Zustand stores
+import { ROOM_SESSION } from '../libs/sentry/constants';
+import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
 import { modalModes } from './helper';
@@ -206,7 +198,10 @@ export const useInitsStore = create((set, get) => ({
         'onCallStateChanged',
         async data => {
           logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
-          const span = addSpan(ROOM_SESSION, 'onCallStateChanged', data);
+          addFinishSpan(ROOM_SESSION, 'onCallStateChanged', {
+            ...data,
+            NAMESPACE,
+          });
 
           if (data.state === 'ON_START_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_START_CALL');
@@ -222,7 +217,6 @@ export const useInitsStore = create((set, get) => ({
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
           }
-          finishSpan(span, 'ok');
         }
       );
     } catch (error) {
