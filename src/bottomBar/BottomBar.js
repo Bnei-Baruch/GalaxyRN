@@ -20,6 +20,7 @@ export const BottomBar = () => {
       <CammuteBtn />
       <QuestionBtn />
       <AudioModeBtn />
+      <View style={styles.devider}></View>
       <MoreBtn />
     </View>
   );
@@ -28,13 +29,21 @@ export const BottomBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 8,
+    left: 30,
+    right: 30,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical:16,
+    paddingHorizontal:12,
+    backgroundColor: '#1e1e1e',
+    borderRadius:32
+  },
+  devider:{
+    width:1,
+    backgroundColor:"#333",
+    marginLeft: 4,
+    marginRight: 4,
+    marginTop: 16,
+    marginBottom: 16
   },
 });

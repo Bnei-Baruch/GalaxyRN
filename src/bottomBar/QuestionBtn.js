@@ -1,6 +1,9 @@
 import * as React from 'react';
-import { TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
+import { Pressable } from 'react-native';
+import BottomBarIconWithText from '../settings/BottomBarIconWithText';
+// import { TouchableOpacity } from 'react-native';
+// import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
@@ -14,21 +17,28 @@ export const QuestionBtn = () => {
   const { isRoomQuestion }          = useInRoomStore();
 
   const handlePress = () => toggleQuestion();
-
+  const { t } = useTranslation();
   const disabled = !isPlay || isOnAir || isRoomQuestion;
+  
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={handlePress}
       style={bottomBar.btn}
       disabled={disabled}
     >
-      <Icon
-        name="question-mark"
+      <BottomBarIconWithText
+        iconName={'live-help'}
+        text={question ? t('bottomBar.qustionon') : t('bottomBar.qustionoff')}
+        extraStyle={disabled ? ['disabled','disabledicon'] : (question ? ['pressedalt','pressediconalt'] : ['rest','resticon'])}
+        // style={disabled ?  'opacity: 0.1' : 'opacity:1'}
+      />
+      {/* <Icon
+        name="live-help"
         size={40}
         color={question ? 'red' : 'white'}
-        style={disabled && { opacity: 0.5 }}
-      />
-    </TouchableOpacity>
+        style={disabled && { opacity: 0.1 }}
+      /> */}
+    </Pressable>
   );
 };
