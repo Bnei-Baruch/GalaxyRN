@@ -1,17 +1,32 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import BottomBarIconWithText from '../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../zustand/settings';
 import { bottomBar } from './helper';
 
 export const AudioModeBtn = () => {
   const { audioMode, toggleAudioMode } = useSettingsStore();
-
+  const { t } = useTranslation();
   const handlePress = () => toggleAudioMode();
+  let iconName, text, extraStyle;
 
+  if (!audioMode) {
+    iconName = 'hearing';
+    text = t('bottomBar.showBroadcast');
+    extraStyle = ['rest', 'resticon'];
+  } else {
+    iconName = 'hearing';
+    text = t('bottomBar.hideBroadcast');
+    extraStyle = ['pressed', 'pressedicon'];
+  }
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn}>
-      <Icon name="hearing" size={40} color={audioMode ? 'red' : 'white'} />
+      <BottomBarIconWithText
+        iconName={iconName}
+        text={text}
+        extraStyle={extraStyle}
+      />
     </Pressable>
   );
 };

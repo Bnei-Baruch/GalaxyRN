@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
@@ -38,7 +37,6 @@ const SelectUiLanguage = () => {
             selected={selected?.text}
             onSelect={handleLangChange}
             renderItem={renderItem}
-            trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
           />
         }
       />
