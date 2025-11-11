@@ -27,8 +27,6 @@ const mqttKeepalive = 15;
 
 const NAMESPACE = 'Mqtt';
 
-const clientIdPrefix = randomString(3);
-
 class MqttMsg {
   constructor() {
     this.user = null;
@@ -52,7 +50,7 @@ class MqttMsg {
 
     const { user } = useUserStore.getState();
     //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
-    const id = user.id + '-' + clientIdPrefix;
+    const id = user.id + '-' + randomString(3);
     logger.debug(NAMESPACE, 'MQTT init', user);
 
     const transformUrl = (url, options, client) => {
