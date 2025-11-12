@@ -10,7 +10,7 @@ project.ext.vectoricons = [
 ]
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 
-def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystorePropertiesFile = rootProject.file("keystore-new.properties")
 def keystoreProperties = new Properties()
 
 if (keystorePropertiesFile.exists()) {
@@ -89,12 +89,12 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.galaxyrn"
+    namespace "com.galaxy_mobile"
     defaultConfig {
         manifestPlaceholders = [
                 appAuthRedirectScheme: 'com.galaxy'
         ]
-        applicationId "com.galaxyrn"
+        applicationId "com.galaxy_mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 83
