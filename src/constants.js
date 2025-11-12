@@ -6,13 +6,17 @@ export const h = win.height;
 
 export const baseStyles = StyleSheet.create({
   text: {
-    color: 'white',
+    color: '#ddd',
   },
   full: {
     flex: 1,
   },
   listItem: {
     padding: 10,
+  },
+  listItemSelected: {
+    padding: 10,
+    backgroundColor: '#444',
   },
   videoOverlay: {
     flex: 1,

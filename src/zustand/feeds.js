@@ -136,16 +136,20 @@ export const useFeedsStore = create((set, get) => ({
 
     videoroom.unsubFrom = async ids => {
       const params = [];
-      ids.forEach(id => {
-        const feed = get().feedById[id];
-        if (!feed) return;
+      ids
+        .filter(id => id !== get().janusInfo?.rfid)
+        .forEach(id => {
+          const feed = get().feedById[id];
+          if (!feed) return;
 
-        params.push({ feed: parseInt(feed.id) });
-        logger.info(
-          NAMESPACE,
-          `Feed ${feed.id} ${JSON.stringify(feed)} has left the room, detaching`
-        );
-      });
+          params.push({ feed: parseInt(feed.id) });
+          logger.info(
+            NAMESPACE,
+            `Feed ${feed.id} ${JSON.stringify(
+              feed
+            )} has left the room, detaching`
+          );
+        });
 
       // Send an unsubscribe request
       try {
@@ -208,7 +212,7 @@ export const useFeedsStore = create((set, get) => ({
     const data = await videoroom.join(room.room, d);
     logger.info(NAMESPACE, 'Joined respond');
 
-    useUserStore.getState().setJannusInfo({
+    useUserStore.getState().setJanusInfo({
       session: janus.sessionId,
       handle: videoroom.janusHandleId,
       rfid: data.id,
@@ -409,7 +413,7 @@ export const useFeedsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'cleanFeeds');
     // Clean up Janus
     if (janus) {
-      logger.info(NAMESPACE, 'exitRoom janus', janus);
+      logger.info(NAMESPACE, 'exitRoom janus');
       try {
         await rejectTimeoutPromise(janus.destroy(), 2000);
       } catch (error) {

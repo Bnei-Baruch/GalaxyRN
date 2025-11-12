@@ -34,10 +34,10 @@ export const useUserStore = create((set, get) => ({
     set({ geoInfo });
   },
 
-  jannusInfo: {},
-  setJannusInfo: info => {
-    const jannusInfo = { ...info, timestamp: Date.now() };
-    set({ jannusInfo });
+  janusInfo: {},
+  setJanusInfo: info => {
+    const janusInfo = { ...info, timestamp: Date.now() };
+    set({ janusInfo });
   },
 
   extraInfo: {},
@@ -53,7 +53,7 @@ export const useUserStore = create((set, get) => ({
     } = useRoomStore.getState().room || {};
     const { question } = useSettingsStore.getState();
     const { cammute } = useMyStreamStore.getState();
-    const { vhinfo, user, geoInfo, extraInfo, jannusInfo } = get();
+    const { vhinfo, user, geoInfo, extraInfo, janusInfo } = get();
 
     const opts = {
       room,
@@ -67,7 +67,7 @@ export const useUserStore = create((set, get) => ({
       allowed: vhinfo?.allowed,
       extra: extraInfo,
       ...geoInfo,
-      ...jannusInfo,
+      ...janusInfo,
       ...user,
     };
 

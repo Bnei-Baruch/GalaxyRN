@@ -26,12 +26,9 @@ const AUTH_CONFIG = {
   postLogoutRedirectUrl: 'com.galaxy://callback',
 };
 
-// Base64URL decoding helper
 const base64UrlDecode = str => {
-  // Convert base64url to base64
   const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
 
-  // Add padding if needed
   const pad = base64.length % 4;
   const paddedBase64 = pad ? base64 + '='.repeat(4 - pad) : base64;
 

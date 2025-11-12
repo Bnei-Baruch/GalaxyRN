@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import TextInput from '../components/CustomTextInput';
 import mqtt from '../shared/mqtt';
@@ -10,6 +11,7 @@ import { useUserStore } from '../zustand/user';
 export const RoomChatForm = () => {
   const [value, setValue] = useState('');
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { room } = useRoomStore();
   const { user } = useUserStore();
@@ -36,7 +38,7 @@ export const RoomChatForm = () => {
     <View
       style={[
         styles.inputContainer,
-        { paddingBottom: Platform.OS === 'ios' ? 30 : 20 },
+        { paddingBottom: Math.max(insets.bottom, 10) + 10 },
       ]}
     >
       <TextInput

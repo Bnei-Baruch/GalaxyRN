@@ -36,7 +36,9 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image source={logo} style={styles.logo} />
-        <SelectUiLanguage />
+        <View style={{ flex: 1 }}>
+          <SelectUiLanguage />
+        </View>
       </View>
 
       <View style={styles.mainContent}>

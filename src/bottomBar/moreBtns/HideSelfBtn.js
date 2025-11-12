@@ -13,7 +13,7 @@ export const HideSelfBtn = () => {
   return (
     <TouchableOpacity
       onPress={toggleHideSelf}
-      style={[baseStyles.listItem, hideSelf && bottomBar.moreSelBtn]}
+      style={[baseStyles.listItem, hideSelf && baseStyles.listItemSelected]}
     >
       <IconWithText iconName="person-off" text={t('bottomBar.self')} />
     </TouchableOpacity>

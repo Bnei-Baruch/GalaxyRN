@@ -50,13 +50,13 @@ DerivedData
 **/build/
 .gradle
 local.properties
-keystore.properties
+keystore*.properties
 *.iml
 *.hprof
 .cxx/
 *.keystore
 !debug.keystore
-/android/app/keystore.jks
+/android/app/keystore*.jks
 
 # Bundle artifacts
 *.jsbundle

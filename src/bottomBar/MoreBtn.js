@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { ChatCounter } from '../chat/ChatCounter';
 import ListInModal from '../components/ListInModal';
@@ -11,6 +10,8 @@ import { GroupsBtn } from './moreBtns/GroupsBtn';
 import { HideSelfBtn } from './moreBtns/HideSelfBtn';
 import { ShidurBtn } from './moreBtns/ShidurBtn';
 import { VoteBtn } from './moreBtns/VoteBtn';
+
+import BottomBarIconWithText from '../settings/BottomBarIconWithText';
 
 export const MoreBtn = () => {
   const { toggleShowBars } = useUiActions();
@@ -34,8 +35,11 @@ export const MoreBtn = () => {
       onOpen={handlePress}
       styles={{ padding: 0, margin: 0 }}
       trigger={
-        <View style={[styles.btn, bottomBar.btnMore]}>
-          <Icon name="more-vert" size={40} color="white" />
+        <View style={bottomBar.moreSelBtn}>
+          <BottomBarIconWithText
+            iconName="more-vert"
+            extraStyle={['rest', 'resticon']}
+          />
           <ChatCounter />
         </View>
       }

@@ -2,14 +2,15 @@ import React, { useRef, useState } from 'react';
 import {
   Dimensions,
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Text from './CustomText';
 
 const ListInModal = ({
   items,
@@ -54,9 +55,9 @@ const ListInModal = ({
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity ref={tooltipRef} onPress={toggleModal}>
+      <Pressable ref={tooltipRef} onPress={toggleModal}>
         {trigger ? trigger : <Text styles={styles.itemText}>{selected}</Text>}
-      </TouchableOpacity>
+      </Pressable>
       <Modal
         animationType="slide"
         presentationStyle="overFullScreen"

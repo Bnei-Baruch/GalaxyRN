@@ -14,9 +14,9 @@ export const ShidurBtn = () => {
   return (
     <TouchableOpacity
       onPress={toggleIsShidur}
-      style={[baseStyles.listItem, isShidur && bottomBar.moreSelBtn]}
+      style={[baseStyles.listItem, isShidur && baseStyles.listItemSelected]}
     >
-      <IconWithText iconName="public" text={t('bottomBar.shidur')} />
+      <IconWithText iconName="desktop-windows" text={t('bottomBar.shidur')} />
     </TouchableOpacity>
   );
 };

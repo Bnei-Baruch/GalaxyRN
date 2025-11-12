@@ -9,13 +9,7 @@ const LabeledSwitch = ({ label, value, onValueChange }) => {
   return (
     <View style={styles.container}>
       <Text style={[styles.label, baseStyles.text]}>{label}</Text>
-      <Switch
-        trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={value ? '#f5dd4b' : '#f4f3f4'}
-        ios_backgroundColor="#3e3e3e"
-        onValueChange={toggleSwitch}
-        value={value}
-      />
+      <Switch onValueChange={toggleSwitch} value={value} />
     </View>
   );
 };

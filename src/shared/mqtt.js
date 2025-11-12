@@ -188,7 +188,6 @@ class MqttMsg {
       return;
     }
     let options = {};
-    logger.info(NAMESPACE, `Unsubscribe from: ${topic}`);
     return this.mq.unsubscribeAsync(topic, { ...options });
   };
 
@@ -313,10 +312,7 @@ class MqttMsg {
             const dataStr = Buffer.isBuffer(data) ? data.toString() : data;
             const json = JSON.parse(dataStr);
             logger.debug(NAMESPACE, 'janus json:', json);
-            const mit =
-              json?.session_id ||
-              packet?.properties?.userProperties?.mit ||
-              service;
+            const mit = json?.session_id || service;
             this.mq.emit(mit, data, id);
           } catch (e) {
             logger.error(NAMESPACE, 'Error parsing message:', e.message, data);

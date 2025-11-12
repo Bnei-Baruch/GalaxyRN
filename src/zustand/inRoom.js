@@ -120,12 +120,14 @@ export const useInRoomStore = create((set, get) => ({
 
     exitWIP = true;
     try {
-      await rejectTimeoutPromise(get().exitNetResources(), 2000);
+      await rejectTimeoutPromise(get().exitNetResources(), 5000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during exitNetResources:', error);
     }
 
-    const deviceCleanupSpan = addSpan(ROOM_SESSION, 'device.cleanup');
+    const deviceCleanupSpan = addSpan(ROOM_SESSION, 'device.cleanup', {
+      NAMESPACE,
+    });
 
     logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
     try {
@@ -146,7 +148,9 @@ export const useInRoomStore = create((set, get) => ({
 
   exitNetResources: async () => {
     // Step 1: Clean Janus connections
-    const janusCleanupSpan = addSpan(ROOM_SESSION, 'janus.cleanup');
+    const janusCleanupSpan = addSpan(ROOM_SESSION, 'janus.cleanup', {
+      NAMESPACE,
+    });
 
     try {
       await Promise.all([
@@ -160,7 +164,9 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     // Step 2: Clean chat and unsubscribe from MQTT
-    const mqttCleanupSpan = addSpan(ROOM_SESSION, 'mqtt.cleanup');
+    const mqttCleanupSpan = addSpan(ROOM_SESSION, 'mqtt.cleanup', {
+      NAMESPACE,
+    });
 
     try {
       useChatStore.getState().cleanCounters();
@@ -177,6 +183,7 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
       finishSpan(mqttCleanupSpan, 'internal_error');
     }
+    return true;
   },
 
   restartRoom: async () => {
