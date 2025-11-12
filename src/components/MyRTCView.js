@@ -1,20 +1,18 @@
 import React, { memo } from 'react';
+import { StyleSheet } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
-import { baseStyles } from '../constants';
-import { useInitsStore } from '../zustand/inits';
 import { useMyStreamStore } from '../zustand/myStream';
 
 const MyRTCView = memo(
   () => {
     const { stream } = useMyStreamStore();
-    const { isPortrait } = useInitsStore();
 
     if (!stream) return null;
 
     return (
       <RTCView
         streamURL={stream.toURL()}
-        style={[baseStyles.full, { aspectRatio: isPortrait ? 9 / 16 : 16 / 9 }]}
+        style={styles.rtcView}
         mirror={true}
         objectFit="contain"
       />
@@ -24,5 +22,12 @@ const MyRTCView = memo(
     return false;
   }
 );
+
+const styles = StyleSheet.create({
+  rtcView: {
+    flex: 1,
+    width: '100%',
+  },
+});
 
 export default MyRTCView;

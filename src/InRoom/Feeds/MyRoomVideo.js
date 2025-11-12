@@ -31,8 +31,8 @@ export default MyRoomMedia;
 const styles = StyleSheet.create({
   content: {
     aspectRatio: 16 / 9,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
+    overflow: 'hidden',
     backgroundColor: 'rgba(255,255,255,.1)',
   },
   overlay: {
