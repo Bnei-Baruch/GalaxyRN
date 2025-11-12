@@ -161,7 +161,9 @@ export class JanusMqtt {
   };
 
   destroy = async () => {
-    const destroySpan = addSpan(this.sentrySession, 'janus.destroy');
+    const destroySpan = addSpan(this.sentrySession, 'janus.destroy', {
+      NAMESPACE,
+    });
     logger.debug(NAMESPACE, 'destroy', this.isConnected);
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -186,9 +188,10 @@ export class JanusMqtt {
     this._cleanupTransactions();
 
     this._cleanupMqtt();
-
-    finishSpan(destroySpan, 'ok');
-    finishTransaction(this.sentrySession, 'ok');
+    logger.debug(NAMESPACE, 'destroy done');
+    finishSpan(destroySpan, 'ok', NAMESPACE);
+    finishTransaction(this.sentrySession, 'ok', NAMESPACE);
+    return true;
   };
 
   detach = async plugin => {
@@ -199,16 +202,15 @@ export class JanusMqtt {
       plugin: plugin.pluginName,
       handle_id: plugin.janusHandleId,
     };
-    let json;
     try {
-      json = await this.transaction('hangup', body, 'success', 5000);
+      await this.transaction('hangup', body, 'success', 5000);
     } catch (err) {
       addFinishSpan(this.sentrySession, 'janus.destroy', err);
       plugin.detach();
       throw err;
     }
     delete this.pluginHandles[plugin.janusHandleId];
-    return json;
+    return true;
   };
 
   _cleanupPlugins = () => {
@@ -222,7 +224,8 @@ export class JanusMqtt {
 
   transaction = async (type, payload, replyType = 'ack', timeoutMs) => {
     if (!type) {
-      return reject(new Error('Missing transaction type'));
+      logger.error(NAMESPACE, 'Missing transaction type');
+      return;
     }
 
     if (!(await waitConnection())) {
@@ -235,7 +238,12 @@ export class JanusMqtt {
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'transaction promise', transactionId);
       if (!this.isConnected) {
-        reject(new Error('Janus is not connected'));
+        addFinishSpan(
+          this.sentrySession,
+          'janus.transaction',
+          'not_connected',
+          { NAMESPACE }
+        );
         return;
       }
 
@@ -243,8 +251,7 @@ export class JanusMqtt {
         const request = Object.assign({}, payload, {
           token: this.token,
           janus: type,
-          session_id:
-            (payload && parseInt(payload.session_id, 10)) || this.sessionId,
+          session_id: this.sessionId,
           transaction: transactionId,
         });
 
@@ -335,14 +342,15 @@ export class JanusMqtt {
   };
 
   getTransaction = (json, ignoreReplyType = false) => {
-    logger.debug(
-      NAMESPACE,
-      'getTransaction',
-      json?.plugindata,
-      ignoreReplyType
-    );
     const type = json.janus;
     const transactionId = json.transaction;
+
+    logger.debug(NAMESPACE, 'getTransaction', {
+      type,
+      transactionId,
+      ignoreReplyType,
+    });
+
     if (
       transactionId &&
       Object.prototype.hasOwnProperty.call(this.transactions, transactionId) &&
@@ -352,6 +360,11 @@ export class JanusMqtt {
       delete this.transactions[transactionId];
       return ret;
     }
+    addFinishSpan(this.sentrySession, 'janus.getTransaction', 'not_found', {
+      ...json,
+      NAMESPACE,
+    });
+    return null;
   };
 
   onClose = () => {
