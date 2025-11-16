@@ -12,7 +12,12 @@ import {
   removeConnectionListener,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
+import {
+  addAttributes,
+  addFinishSpan,
+  addSpan,
+  finishSpan,
+} from './sentry/sentryHelper';
 
 const NAMESPACE = 'StreamingPlugin';
 
@@ -25,8 +30,8 @@ export class StreamingPlugin {
     this.candidates = [];
     this.onStatus = null;
     this.pluginName = 'janus.plugin.streaming';
-    this.iceRestartInProgress = false;
     this.isDestroyed = false;
+    this.iceRestartInProgress = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -105,7 +110,7 @@ export class StreamingPlugin {
     this.pc.addEventListener('iceconnectionstatechange', () => {
       if (this.isDestroyed) return;
       const iceState = this.pc?.iceConnectionState;
-      addFinishSpan(CONNECTION, 'streaming.iceState', { iceState });
+      addFinishSpan(CONNECTION, 'streaming.iceState', { iceState, NAMESPACE });
     });
   };
 
@@ -124,6 +129,14 @@ export class StreamingPlugin {
 
     if (!this.janus) {
       throw new Error('JanusPlugin is not connected');
+    }
+
+    if (
+      !this.pc ||
+      this.pc.connectionState === 'closed' ||
+      this.pc.signalingState === 'closed'
+    ) {
+      throw new Error('PeerConnection is closed');
     }
 
     return this.janus.transaction(message, payload, replyType);
@@ -170,19 +183,17 @@ export class StreamingPlugin {
   iceRestart = async () => {
     const iceRestartSpan = addSpan(CONNECTION, 'streaming.iceRestart');
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
-
     if (this.iceRestartInProgress) {
       logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
-      finishSpan(iceRestartSpan, 'duplicate');
       return;
     }
     this.iceRestartInProgress = true;
 
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
-      this.iceRestartInProgress = false;
       finishSpan(iceRestartSpan, 'no_stream_id');
-      useShidurStore.getState().restartShidur();
+      this.iceRestartInProgress = false;
+      await useShidurStore.getState().restartShidur();
       return;
     }
 
@@ -203,10 +214,8 @@ export class StreamingPlugin {
         finishSpan(iceRestartSpan, 'no_jsep');
       }
 
-      this.iceRestartInProgress = false;
       return result;
     } catch (error) {
-      this.iceRestartInProgress = false;
       const errorCode = error?.data?.error_code;
 
       // Handle "No such mountpoint/stream" error (455)
@@ -216,7 +225,7 @@ export class StreamingPlugin {
           `Stream ${this.streamId} not found during ICE restart (error 455)`
         );
         finishSpan(iceRestartSpan, 'bad_response');
-        useShidurStore.getState().restartShidur();
+        //useShidurStore.getState().restartShidur();
         return;
       }
 
@@ -230,6 +239,8 @@ export class StreamingPlugin {
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       finishSpan(iceRestartSpan, 'error_response');
       useShidurStore.getState().restartShidur();
+    } finally {
+      this.iceRestartInProgress = false;
     }
   };
 
@@ -331,8 +342,12 @@ export class StreamingPlugin {
       isDestroyed: this.isDestroyed,
       NAMESPACE,
     });
-    if (this.isDestroyed || reason === 'Janus API') {
-      this.detach();
+
+    if (this.isDestroyed) {
+      return;
+    }
+    this.detach();
+    if (reason === 'Janus API') {
       return;
     }
     useShidurStore.getState().restartShidur();
@@ -355,29 +370,41 @@ export class StreamingPlugin {
   };
 
   mediaState = (media, on) => {
-    addFinishSpan(CONNECTION, 'streaming.mediaState', { media, on });
-
-    logger.info(NAMESPACE, `mediaState: Janus ${on} ${media}`);
+    addFinishSpan(CONNECTION, 'streaming.mediaState', { media, on, NAMESPACE });
   };
 
   detach = () => {
     if (this.isDestroyed) {
       return;
     }
+
     const detachSpan = addSpan(CONNECTION, 'streaming.detach', { NAMESPACE });
     logger.debug(NAMESPACE, 'Detach called');
     this.isDestroyed = true;
 
     if (this.pc) {
-      this.pc.close();
-      this.pc = null;
+      try {
+        this.pc.getTransceivers().forEach(transceiver => {
+          if (transceiver) {
+            if (transceiver.receiver && transceiver.receiver.track)
+              transceiver.receiver.track.stop();
+            transceiver.stop();
+          }
+        });
+        this.pc.close();
+        this.pc = null;
+      } catch (error) {
+        addAttributes(detachSpan, { error });
+      }
     }
+
     removeConnectionListener(this.id);
     this.janusHandleId = undefined;
     this.streamId = null;
     this.candidates = [];
     this.onStatus = null;
     this.janus = null;
+    this.iceRestartInProgress = false;
     finishSpan(detachSpan, 'ok');
   };
 }

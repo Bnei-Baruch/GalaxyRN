@@ -8,7 +8,12 @@ import {
   removeConnectionListener,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addFinishSpan } from './sentry/sentryHelper';
+import {
+  addAttributes,
+  addFinishSpan,
+  addSpan,
+  finishSpan,
+} from './sentry/sentryHelper';
 
 const NAMESPACE = 'PublisherPlugin';
 
@@ -57,8 +62,17 @@ export class PublisherPlugin {
     });
 
     if (!this.janus) {
-      return Promise.reject(new Error('JanusPlugin is not connected'));
+      throw new Error('JanusPlugin is not connected');
     }
+
+    if (
+      !this.pc ||
+      this.pc.connectionState === 'closed' ||
+      this.pc.signalingState === 'closed'
+    ) {
+      throw new Error('PeerConnection is closed');
+    }
+
     return this.janus.transaction(message, payload, replyType);
   };
 
@@ -177,6 +191,7 @@ export class PublisherPlugin {
       return data;
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to run sdpActions', error);
+      return;
     }
   };
 
@@ -262,6 +277,7 @@ export class PublisherPlugin {
       logger.debug(NAMESPACE, 'setLocalDescription: ', offer);
     } catch (error) {
       logger.error(NAMESPACE, 'setLocalDescription: ', error);
+      return;
     }
 
     // Apply the same SDP modification as in sdpActions for consistency
@@ -304,20 +320,10 @@ export class PublisherPlugin {
     }
     this.iceRestartInProgress = true;
 
-    if (!this.pc || this.pc.connectionState === 'closed') {
-      logger.error(NAMESPACE, 'peer connection closed');
-      this.iceRestartInProgress = false;
-      useFeedsStore.getState().restartFeeds();
-      return;
-    }
-
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
       await this.configure(true);
-      this.iceRestartInProgress = false;
     } catch (error) {
-      this.iceRestartInProgress = false;
-
       // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
       if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
@@ -327,6 +333,8 @@ export class PublisherPlugin {
 
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       useFeedsStore.getState().restartFeeds();
+    } finally {
+      this.iceRestartInProgress = false;
     }
   };
 
@@ -400,6 +408,14 @@ export class PublisherPlugin {
     return this;
   };
 
+  error = cause => {
+    addFinishSpan(CONNECTION, 'publisher.error', { cause, NAMESPACE });
+    if (!this.isDestroyed) {
+      this.detach();
+      useFeedsStore.getState().restartFeeds();
+    }
+  };
+
   onmessage = data => {
     logger.debug(NAMESPACE, 'onmessage: ', data);
     if (data?.publishers) {
@@ -452,21 +468,21 @@ export class PublisherPlugin {
   };
 
   iceFailed = () => {
-    logger.debug(NAMESPACE, 'ICE failed');
-    logger.debug(NAMESPACE, 'isDestroyed', this.isDestroyed);
-    if (!this.isDestroyed) {
-      addFinishSpan(CONNECTION, 'publisher.iceFailed');
-      useFeedsStore.getState().restartFeeds();
-    }
+    addFinishSpan(CONNECTION, 'publisher.iceFailed', { NAMESPACE });
   };
 
   hangup = reason => {
     addFinishSpan(CONNECTION, 'publisher.hangup', {
       isDestroyed: this.isDestroyed,
+      reason,
       NAMESPACE,
     });
-    if (this.isDestroyed || reason === 'Janus API') {
-      this.detach();
+
+    if (this.isDestroyed) {
+      return;
+    }
+    this.detach();
+    if (reason === 'Janus API') {
       return;
     }
     useFeedsStore.getState().restartFeeds();
@@ -491,10 +507,14 @@ export class PublisherPlugin {
     if (this.isDestroyed) {
       return;
     }
-    addFinishSpan(CONNECTION, 'publisher.detach', { NAMESPACE });
+    const detachSpan = addSpan(CONNECTION, 'publisher.detach', { NAMESPACE });
     this.isDestroyed = true;
 
-    this.cleanupPc();
+    try {
+      this.cleanupPc();
+    } catch (error) {
+      addAttributes(detachSpan, { error });
+    }
 
     // Clear additional properties
     this.janusHandleId = undefined;
@@ -502,6 +522,8 @@ export class PublisherPlugin {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
+    this.janus = null;
+    finishSpan(detachSpan, 'ok');
   };
 
   cleanupPc = () => {
@@ -518,6 +540,5 @@ export class PublisherPlugin {
     removeConnectionListener(this.id);
     this.pc.close();
     this.pc = null;
-    this.janus = null;
   };
 }
