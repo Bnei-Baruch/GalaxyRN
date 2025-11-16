@@ -18,7 +18,7 @@ const NAMESPACE = 'Feed';
 const RTCViewWrapper = memo(
   ({ streamURL }) => {
     logger.debug(NAMESPACE, 'RTCViewWrapper render');
-    return <RTCView streamURL={streamURL} style={styles.rtcView} />;
+    return <RTCView streamURL={streamURL} style={styles.rtcView} objectFit="contain" />;
   },
   (prevProps, nextProps) => {
     return prevProps.streamURL === nextProps.streamURL;

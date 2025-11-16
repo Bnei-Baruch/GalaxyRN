@@ -106,11 +106,11 @@ export const addSpan = (key, op, attributes = {}) => {
   return childSpan;
 };
 
-export const addFinishSpan = (key, op, status = 'ok', attributes = {}) => {
+export const addFinishSpan = (key, op, attributes = {}) => {
   const namespace = attributes.NAMESPACE || DEFAULT_NAMESPACE;
-  logger.debug(namespace, 'addFinishSpan', key, op, attributes, status);
+  logger.debug(namespace, 'addFinishSpan', key, op, attributes);
   const span = addSpan(key, op, attributes);
-  span.setStatus(status);
+  span.setStatus('ok');
   span.end();
 };
 

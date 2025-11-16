@@ -360,7 +360,7 @@ export class JanusMqtt {
       delete this.transactions[transactionId];
       return ret;
     }
-    addFinishSpan(this.sentrySession, 'janus.getTransaction', 'not_found', {
+    addFinishSpan(this.sentrySession, 'janus.getTransaction', {
       ...json,
       NAMESPACE,
     });
@@ -368,7 +368,7 @@ export class JanusMqtt {
   };
 
   onClose = () => {
-    addFinishSpan(this.sentrySession, 'janus.onClose');
+    addFinishSpan(this.sentrySession, 'janus.onClose', { NAMESPACE });
     logger.debug(NAMESPACE, 'onClose');
     if (!this.isConnected) {
       this.clearKeepAliveTimer();
@@ -527,7 +527,8 @@ export class JanusMqtt {
         finishSpan(iceFailedSpan, 'no_plugin_handle');
         return;
       }
-      pluginHandle.iceFailed && pluginHandle.iceFailed();
+      //TODO: Add iceFailed to plugin handle
+      // pluginHandle.iceFailed && pluginHandle.iceFailed();
       finishSpan(iceFailedSpan, 'ok');
       return;
     }
