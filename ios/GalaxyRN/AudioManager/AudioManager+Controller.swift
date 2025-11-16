@@ -19,13 +19,13 @@ extension AudioManager {
     }
   
     @objc
-    func activateAudioOutput() {  
-        isSpeakerMode = true    
+    func activateAudioOutput() {
         NLOG("[audioDevices swift] activateAudioOutput started")
         
         let session = AVAudioSession.sharedInstance()
         
         do {
+            try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers])
             try session.setActive(true)
             NLOG("[audioDevices swift] ✅ Session activated")
         } catch {
@@ -34,7 +34,6 @@ extension AudioManager {
         
         activateOutputByGroup(.external)
         NLOG("[audioDevices swift] activateAudioOutput completed")
-        isSpeakerMode = false
     }
     
     @objc

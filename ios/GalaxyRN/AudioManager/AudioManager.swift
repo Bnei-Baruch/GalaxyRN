@@ -11,7 +11,6 @@ func NLOG(_ items: Any...) {
 class AudioManager: RCTEventEmitter {
     // MARK: - Properties
     var hasListeners: Bool = false
-    var isSpeakerMode: Bool = false
     var isMonitoringSetup: Bool = false
     
     // MARK: - Initialization
