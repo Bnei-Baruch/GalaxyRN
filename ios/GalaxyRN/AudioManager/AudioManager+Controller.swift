@@ -22,7 +22,18 @@ extension AudioManager {
     func activateAudioOutput() {  
         isSpeakerMode = true    
         NLOG("[audioDevices swift] activateAudioOutput started")
+        
+        let session = AVAudioSession.sharedInstance()
+        
+        do {
+            try session.setActive(true)
+            NLOG("[audioDevices swift] ✅ Session activated")
+        } catch {
+            NLOG("[audioDevices swift] ⚠️ Could not activate session:", error.localizedDescription)
+        }
+        
         activateOutputByGroup(.external)
+        NLOG("[audioDevices swift] activateAudioOutput completed")
         isSpeakerMode = false
     }
     
@@ -44,20 +55,15 @@ extension AudioManager {
             let resultGroup = switchToRouteGroup(group)
             NLOG("[audioDevices swift] Current group after switch:", resultGroup)
         
-            try audioSession.setActive(true, options: [])
-            NLOG("[audioDevices swift] Audio session set active: true")
-        
             // Configure audio session parameters based on the target group
             switch resultGroup {
             case .earpiece:
-                // Earpiece supports mono only
                 try audioSession.setPreferredOutputNumberOfChannels(1)
-                try audioSession.setPreferredIOBufferDuration(0.02) // 20ms for stability
+                try audioSession.setPreferredIOBufferDuration(0.02)
                 NLOG("[audioDevices swift] Earpiece audio session configured: 1 channel, 20ms buffer")
             case .speaker, .bluetooth, .headphones, .external, .carAudio:
-                // These can support stereo
                 try audioSession.setPreferredOutputNumberOfChannels(2)
-                try audioSession.setPreferredIOBufferDuration(0.01) // 10ms for better quality
+                try audioSession.setPreferredIOBufferDuration(0.01)
                 NLOG("[audioDevices swift] Stereo audio session configured: 2 channels, 10ms buffer")
             case .none:
                 // Default safe configuration
@@ -98,6 +104,7 @@ extension AudioManager {
         case .HDMI, .airPlay, .usbAudio:
             return .external
         default:
+            NLOG("[audioDevices swift] ⚠️ Unknown port type, returning .none")
             return .none
         }
     }
@@ -116,6 +123,7 @@ extension AudioManager {
             case AudioOutputGroup.speaker:
                 NLOG("[audioDevices swift] 🔊 Setting up speaker mode")
                 try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers])
+                
                 try session.overrideOutputAudioPort(.speaker)
                 try session.setPreferredInput(nil)
                 
@@ -178,7 +186,7 @@ extension AudioManager {
                 NLOG("[audioDevices swift] 🚫 None mode selected, returning")
               return .none
             }
-      
+            
             let currentGroup = getCurrentAudioOutputGroup()
             NLOG("[audioDevices swift] 🔍 After configuration - current group:", currentGroup, "target group:", group)
       
@@ -191,6 +199,11 @@ extension AudioManager {
             // Also accept if we're in speaker mode but system reports CarAudio (common in CarPlay)
             if group == .speaker && (currentGroup == .speaker || currentGroup == .carAudio) {
                 NLOG("[audioDevices swift] ✅ Speaker mode achieved (CarAudio may be reported but audio is through speaker)")
+                return .speaker
+            }
+            
+            if group == .external && currentGroup == .speaker {
+                NLOG("[audioDevices swift] ✅ External mode configured speaker successfully (no external devices) - accepting as success")
                 return .speaker
             }
             
