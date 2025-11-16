@@ -55,6 +55,7 @@ export class StreamingPlugin {
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
         finishSpan(connectionListenerSpan, 'internal_error');
+        this.detach();
         useShidurStore.getState().restartShidur();
       }
     });
@@ -192,7 +193,8 @@ export class StreamingPlugin {
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
       finishSpan(iceRestartSpan, 'no_stream_id');
-      this.iceRestartInProgress = false;
+
+      this.detach();
       await useShidurStore.getState().restartShidur();
       return;
     }
@@ -217,18 +219,6 @@ export class StreamingPlugin {
       return result;
     } catch (error) {
       const errorCode = error?.data?.error_code;
-
-      // Handle "No such mountpoint/stream" error (455)
-      if (errorCode === 455) {
-        logger.error(
-          NAMESPACE,
-          `Stream ${this.streamId} not found during ICE restart (error 455)`
-        );
-        finishSpan(iceRestartSpan, 'bad_response');
-        //useShidurStore.getState().restartShidur();
-        return;
-      }
-
       // Handle "Already in room" or similar Janus errors (460, 436, etc.)
       if (errorCode === 460 || errorCode === 436) {
         logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
@@ -238,6 +228,7 @@ export class StreamingPlugin {
 
       logger.error(NAMESPACE, 'ICE restart failed:', error);
       finishSpan(iceRestartSpan, 'error_response');
+      this.detach();
       useShidurStore.getState().restartShidur();
     } finally {
       this.iceRestartInProgress = false;
@@ -274,6 +265,7 @@ export class StreamingPlugin {
       logger.debug(NAMESPACE, 'start successful');
     } catch (error) {
       logger.error(NAMESPACE, 'cannot start stream', error);
+      this.detach();
       useShidurStore.getState().restartShidur();
     }
 

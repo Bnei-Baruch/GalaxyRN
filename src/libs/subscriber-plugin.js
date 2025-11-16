@@ -33,6 +33,7 @@ export class SubscriberPlugin {
         await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
+        this.detach();
         useFeedsStore.getState().restartFeeds();
       }
     });
@@ -206,6 +207,7 @@ export class SubscriberPlugin {
       }
 
       logger.error(NAMESPACE, 'ICE restart failed:', error);
+      this.detach();
       useFeedsStore.getState().restartFeeds();
     } finally {
       this.iceRestartInProgress = false;
