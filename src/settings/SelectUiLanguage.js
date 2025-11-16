@@ -29,19 +29,27 @@ const SelectUiLanguage = () => {
 
   return (
     <View style={styles.container}>
-      <TextDisplayWithButton
-        label={t('settings.uiLanguage')}
-        value={selected?.text}
-        button={
-          <ListInModal
-            items={languagesOptions}
-            selected={selected?.text}
-            onSelect={handleLangChange}
-            renderItem={renderItem}
-            trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
-          />
-        }
-      />
+      <TextDisplayWithButton label={t('settings.uiLanguage')}>
+        <ListInModal
+          items={languagesOptions}
+          selected={selected?.text}
+          onSelect={handleLangChange}
+          renderItem={renderItem}
+          trigger={
+            <View style={styles.triggerContainer}>
+              <View style={styles.triggerTextContainer}>
+                <Text style={styles.triggerText}>{selected?.text}</Text>
+              </View>
+              <Icon
+                name="arrow-drop-down"
+                size={30}
+                color="white"
+                style={styles.triggerIcon}
+              />
+            </View>
+          }
+        />
+      </TextDisplayWithButton>
     </View>
   );
 };
@@ -55,6 +63,26 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.23)',
     borderRadius: 5,
     padding: 10,
+  },
+  triggerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+  },
+  triggerTextContainer: {
+    justifyContent: 'center',
+    paddingVertical: 8,
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  triggerText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  triggerIcon: {
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

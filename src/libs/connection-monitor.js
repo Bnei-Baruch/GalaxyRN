@@ -1,5 +1,4 @@
 import NetInfo from '@react-native-community/netinfo';
-import { Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
@@ -95,21 +94,35 @@ const isSameNetwork = newState => {
   if (newState.isConnected !== currentState.isConnected) {
     return false;
   }
-  if (Platform.OS === 'android') {
-    return isSameNetworkAndroid(newState);
-  }
-  return isSameNetworkIOS(newState);
-};
 
-const isSameNetworkAndroid = newState => {
-  return currentState.details?.ipAddress === newState?.details?.ipAddress;
-};
-
-const isSameNetworkIOS = newState => {
   if (currentState.type !== newState.type) {
+    logger.debug(
+      NAMESPACE,
+      `Network type changed: ${currentState.type} -> ${newState.type}`
+    );
     return false;
   }
-  return currentState.details?.ipAddress === newState?.details?.ipAddress;
+
+  const currentIp = currentState.details?.ipAddress;
+  const newIp = newState?.details?.ipAddress;
+
+  if (!currentIp && !newIp) {
+    logger.debug(NAMESPACE, 'Both states have no IP address');
+    return true;
+  }
+
+  if (!currentIp || !newIp) {
+    logger.debug(NAMESPACE, `IP address changed: ${!!currentIp} -> ${!!newIp}`);
+    return false;
+  }
+
+  const currentIps = Array.isArray(currentIp) ? currentIp : [currentIp];
+  const newIps = Array.isArray(newIp) ? newIp : [newIp];
+
+  const hasCommonIp = currentIps.some(ip => newIps.includes(ip));
+
+  logger.debug(NAMESPACE, `hasCommonIp: ${hasCommonIp}`);
+  return hasCommonIp;
 };
 
 const waitConnectionRestart = async () => {

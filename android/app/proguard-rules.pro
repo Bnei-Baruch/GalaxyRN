@@ -11,10 +11,10 @@
 
 # React Native
 -keep class com.facebook.react.** { *; }
--keep class com.galaxyrn.** { *; }
+-keep class com.galaxy_mobile.** { *; }
 
 # Custom Logger - keep the class but allow method optimization
--keep class com.galaxyrn.GxyLogger {
+-keep class com.galaxy_mobile.GxyLogger {
     public static void configure(...);
     public static void setDisplayOptions(...);
     public static boolean isDebugEnabled();

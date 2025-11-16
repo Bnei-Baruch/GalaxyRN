@@ -6,7 +6,6 @@ import { useFeedsStore } from '../zustand/feeds';
 import {
   addConnectionListener,
   removeConnectionListener,
-  waitConnection,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
 import { addFinishSpan } from './sentry/sentryHelper';
@@ -34,6 +33,7 @@ export class SubscriberPlugin {
         await this.iceRestart();
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
+        this.detach();
         useFeedsStore.getState().restartFeeds();
       }
     });
@@ -59,6 +59,15 @@ export class SubscriberPlugin {
     if (!this.janus) {
       return Promise.reject(new Error('JanusPlugin is not connected'));
     }
+
+    if (
+      !this.pc ||
+      this.pc.connectionState === 'closed' ||
+      this.pc.signalingState === 'closed'
+    ) {
+      throw new Error('PeerConnection is not connected');
+    }
+
     return this.janus.transaction(message, payload, replyType);
   };
 
@@ -82,8 +91,13 @@ export class SubscriberPlugin {
 
       return data;
     } catch (error) {
-      if (error?.data?.error_code === 428) {
-        logger.warn(NAMESPACE, 'Subscribe to: ', JSON.stringify(error.data));
+      const errorCode = error?.data?.error_code;
+      if (errorCode === 428 || errorCode === 424) {
+        logger.warn(
+          NAMESPACE,
+          `Subscribe error ${errorCode}: `,
+          JSON.stringify(error.data)
+        );
         return;
       }
       logger.error(NAMESPACE, 'Subscribe to: ', JSON.stringify(error));
@@ -181,26 +195,19 @@ export class SubscriberPlugin {
     }
     this.iceRestartInProgress = true;
 
-    const isConnected = await waitConnection();
-    if (!isConnected || !this.pc || this.pc.connectionState === 'closed') {
-      logger.error(NAMESPACE, 'peer connection closed');
-      this.iceRestartInProgress = false;
-      useFeedsStore.getState().restartFeeds();
-      return;
-    }
-
     try {
       await this.configure();
       logger.info(NAMESPACE, 'ICE restart completed successfully');
     } catch (error) {
-      // Handle "Already in room" or similar Janus errors (460, 436, etc.)
+      // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
-      if (errorCode === 460 || errorCode === 436) {
+      if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
         logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
         return;
       }
 
       logger.error(NAMESPACE, 'ICE restart failed:', error);
+      this.detach();
       useFeedsStore.getState().restartFeeds();
     } finally {
       this.iceRestartInProgress = false;
@@ -214,6 +221,7 @@ export class SubscriberPlugin {
       await this.pc.setRemoteDescription(sessionDescription);
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to set remote description', error);
+      return;
     }
     try {
       const answer = await this.pc.createAnswer();
@@ -222,6 +230,7 @@ export class SubscriberPlugin {
       await this.start(answer);
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to set answer', error);
+      return;
     }
   };
 
@@ -307,7 +316,11 @@ export class SubscriberPlugin {
   };
 
   error = cause => {
-    logger.error(NAMESPACE, 'plugin error', cause);
+    addFinishSpan(CONNECTION, 'subscriber.error', { cause, NAMESPACE });
+    if (!this.isDestroyed) {
+      this.detach();
+      useFeedsStore.getState().restartFeeds();
+    }
   };
 
   onmessage = (data, json) => {
@@ -334,29 +347,37 @@ export class SubscriberPlugin {
   // Connection with the plugin closed, get rid of its features
   // The plugin handle is not valid anymore
   detached = () => {
-    addFinishSpan(CONNECTION, 'subscriber.detached', {
-      isDestroyed: this.isDestroyed,
-    });
+    addFinishSpan(CONNECTION, 'subscriber.detached', { NAMESPACE });
   };
 
   iceFailed = () => {
-    logger.debug(NAMESPACE, 'ICE failed');
-    if (!this.isDestroyed) {
-      addFinishSpan(CONNECTION, 'subscriber.iceFailed');
-      useFeedsStore.getState().restartFeeds();
-    }
+    addFinishSpan(CONNECTION, 'subscriber.iceFailed', { NAMESPACE });
   };
 
   hangup = reason => {
-    addFinishSpan(CONNECTION, 'subscriber.hangup', { reason });
+    addFinishSpan(CONNECTION, 'subscriber.hangup', {
+      reason,
+      isDestroyed: this.isDestroyed,
+      NAMESPACE,
+    });
+
+    if (this.isDestroyed) {
+      return;
+    }
+    this.detach();
+    if (reason === 'Janus API') {
+      return;
+    }
+    useFeedsStore.getState().restartFeeds();
   };
 
   slowLink = (uplink, lost, mid) => {
-    const direction = uplink ? 'sending' : 'receiving';
-    logger.info(
+    addFinishSpan(CONNECTION, 'subscriber.slowLink', {
+      uplink,
+      lost,
+      mid,
       NAMESPACE,
-      `slowLink on ${direction} packets on mid ${mid} (${lost} lost packets)`
-    );
+    });
   };
 
   mediaState = (media, on) => {
@@ -367,8 +388,11 @@ export class SubscriberPlugin {
   };
 
   detach = () => {
-    addFinishSpan(CONNECTION, 'subscriber.detach');
-    logger.debug(NAMESPACE, 'Detach called', this.isDestroyed);
+    if (this.isDestroyed) {
+      return;
+    }
+
+    addFinishSpan(CONNECTION, 'subscriber.detach', { NAMESPACE });
     this.isDestroyed = true;
 
     if (this.pc) {
@@ -390,5 +414,6 @@ export class SubscriberPlugin {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
+    this.iceRestartInProgress = false;
   };
 }

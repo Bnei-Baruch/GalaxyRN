@@ -11,7 +11,6 @@ func NLOG(_ items: Any...) {
 class AudioManager: RCTEventEmitter {
     // MARK: - Properties
     var hasListeners: Bool = false
-    var isSpeakerMode: Bool = false
     var isMonitoringSetup: Bool = false
     
     // MARK: - Initialization
@@ -28,23 +27,45 @@ class AudioManager: RCTEventEmitter {
         cleanupResources()
     }
     
-    // Method to clean up resources
     func cleanupResources() {
         NLOG("[audioDevices swift] cleanupResources called")
         
-        // Remove notification observers
         NotificationCenter.default.removeObserver(self)
         
-        // Deactivate audio session to release audio focus
+        safeDeactivateAudioSession()
+    }
+    
+    private func safeDeactivateAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        
         do {
-            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-            NLOG("[audioDevices swift] Audio session deactivated successfully")
+            try session.setActive(false, options: .notifyOthersOnDeactivation)
+            NLOG("[audioDevices swift] ✅ Audio session deactivated successfully")
+        } catch let error as NSError {
+            if error.domain == "NSOSStatusErrorDomain" && error.code == 560030580 {
+                NLOG("[audioDevices swift] ⚠️ Cannot deactivate audio session: active I/O operations detected")
+                
+                do {
+                    try session.setActive(false, options: [])
+                    NLOG("[audioDevices swift] ✅ Audio session deactivated without notification")
+                } catch {
+                    NLOG("[audioDevices swift] ⚠️ Audio session deactivation failed (expected with active I/O):", error.localizedDescription)
+                    // Ensure session remains active since we couldn't deactivate it
+                    do {
+                        try session.setActive(true, options: [])
+                        NLOG("[audioDevices swift] ✅ Audio session kept active after failed deactivation")
+                    } catch {
+                        NLOG("[audioDevices swift] ⚠️ Could not ensure session is active:", error.localizedDescription)
+                    }
+                }
+            } else {
+                NLOG("[audioDevices swift] ❌ Error deactivating audio session:", error.localizedDescription)
+            }
         } catch {
-            NLOG("[audioDevices swift] Error deactivating audio session:", error)
+            NLOG("[audioDevices swift] ❌ Unexpected error deactivating audio session:", error)
         }
     }
     
-    // Public method that can be called from React Native
     @objc
     func releaseAudioFocus() {
         NLOG("[audioDevices swift] releaseAudioFocus called from React Native")

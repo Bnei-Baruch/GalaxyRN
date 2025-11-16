@@ -19,6 +19,7 @@ const AccountSettings = ({ withTitle = true }) => {
   const { t } = useTranslation();
   const { user, removeMember } = useUserStore();
   const [removeUserModalVisible, setRemoveUserModalVisible] = useState(false);
+  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
 
   const handleRemoveMember = () => {
     logger.info(NAMESPACE, 'User deletion confirmed');
@@ -57,6 +58,11 @@ const AccountSettings = ({ withTitle = true }) => {
 
   const handleSelect = item => item.action && item.action();
 
+  const toggleOptionsModal = () => {
+    alert('toggleOptionsModal');
+    setOptionsModalVisible(!optionsModalVisible);
+  };
+
   const renderItem = item => (
     <Text style={[baseStyles.text, baseStyles.listItem, item?.style]}>
       {item.text}
@@ -77,18 +83,28 @@ const AccountSettings = ({ withTitle = true }) => {
           text={t('user.title')}
         />
       )}
-      <TextDisplayWithButton
-        label={t('user.name')}
-        value={user?.display}
-        button={
-          <ListInModal
-            items={accauntOptions}
-            onSelect={handleSelect}
-            renderItem={renderItem}
-            trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
-          />
-        }
-      />
+      <TextDisplayWithButton label={t('user.name')}>
+        <ListInModal
+          toggleModal={toggleOptionsModal}
+          open={optionsModalVisible}
+          items={accauntOptions}
+          onSelect={handleSelect}
+          renderItem={renderItem}
+          trigger={
+            <View style={styles.triggerContainer}>
+              <View style={styles.triggerTextContainer}>
+                <Text style={styles.triggerText}>{user?.display}</Text>
+              </View>
+              <Icon
+                name="arrow-drop-down"
+                size={30}
+                color="white"
+                style={styles.triggerIcon}
+              />
+            </View>
+          }
+        />
+      </TextDisplayWithButton>
     </View>
   );
 };
@@ -126,5 +142,27 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 15,
+  },
+
+  triggerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+  },
+
+  triggerTextContainer: {
+    justifyContent: 'center',
+    paddingVertical: 8,
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  triggerText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  triggerIcon: {
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

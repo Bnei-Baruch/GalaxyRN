@@ -1,17 +1,31 @@
 import * as React from 'react';
-import { TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
+import { Pressable } from 'react-native';
+import BottomBarIconWithText from '../settings/BottomBarIconWithText';
 import { useMyStreamStore } from '../zustand/myStream';
 import { bottomBar } from './helper';
 
 export const MuteBtn = () => {
   const { mute, toggleMute } = useMyStreamStore();
-
   const handlePress = () => toggleMute();
-
+  const { t } = useTranslation();
+  let iconName, text, extraStyle;
+  if (mute) {
+    iconName = 'mic-off';
+    text = t('bottomBar.unmute');
+    extraStyle = ['pressed', 'pressedicon'];
+  } else {
+    iconName = 'mic';
+    text = t('bottomBar.mute');
+    extraStyle = ['rest', 'resticon'];
+  }
   return (
-    <TouchableOpacity onPress={handlePress} style={bottomBar.btn}>
-      <Icon name={mute ? 'mic-off' : 'mic'} size={40} color={mute ? 'red' : 'white'} />
-    </TouchableOpacity>
+    <Pressable onPress={handlePress} style={bottomBar.btn}>
+      <BottomBarIconWithText
+        iconName={iconName}
+        text={text}
+        extraStyle={extraStyle}
+      />
+    </Pressable>
   );
 };

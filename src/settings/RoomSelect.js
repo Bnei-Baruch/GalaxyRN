@@ -73,10 +73,21 @@ const RoomSelect = () => {
       keyboardVerticalOffset={45}
     >
       <View style={styles.container}>
-        <TextDisplayWithButton
-          label={t('settings.selectRoom')}
-          value={room?.description}
-          button={
+        <TextDisplayWithButton label={t('settings.selectRoom')}>
+          <View style={styles.triggerContainer}>
+            <View style={styles.triggerTextContainer}>
+              <TextInput
+                style={[styles.searchInput, baseStyles.text]}
+                placeholder={t('settings.search')}
+                value={searchText}
+                onChangeText={handleSearch}
+                onFocus={() => toggleOpen(true)}
+                onBlur={() => toggleOpen(false)}
+                autoCorrect={false}
+                autoComplete="off"
+              />
+            </View>
+
             <TouchableOpacity
               onPress={handleJoin}
               disabled={!room}
@@ -84,21 +95,8 @@ const RoomSelect = () => {
             >
               <Text style={styles.buttonText}>{t('settings.join')}</Text>
             </TouchableOpacity>
-          }
-          input={
-            <TextInput
-              style={[styles.searchInput, baseStyles.text]}
-              placeholder={t('settings.search')}
-              value={searchText}
-              onChangeText={handleSearch}
-              onFocus={() => toggleOpen(true)}
-              onBlur={() => toggleOpen(false)}
-              autoCorrect={false}
-              autoComplete="off"
-            />
-          }
-        />
-
+          </View>
+        </TextDisplayWithButton>
         {open &&
           filteredOptions.length > 0 &&
           (filteredOptions.length > 1 || !room) && (
@@ -151,18 +149,33 @@ const styles = StyleSheet.create({
     borderTopEndRadius: 5,
     borderBottomEndRadius: 5,
     backgroundColor: '#03A9F4',
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#9e9e9e',
+    height: 40,
   },
   buttonDisabled: {
     backgroundColor: '#9e9e9e',
   },
   buttonText: {
+    color: 'white',
+  },
+  triggerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+  },
+  triggerTextContainer: {
+    justifyContent: 'center',
+    paddingVertical: 8,
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  triggerText: {
+    fontSize: 16,
     color: 'white',
   },
 });
