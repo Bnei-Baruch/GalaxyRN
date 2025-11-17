@@ -10,6 +10,8 @@ import { useSettingsStore } from '../zustand/settings';
 import LabeledSwitch from './LabeledSwitch';
 import RoomSelect from './RoomSelect';
 import SelectUiLanguage from './SelectUiLanguage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 export const SettingsNotJoinedPortrait = () => {
   const { t } = useTranslation();
@@ -18,9 +20,9 @@ export const SettingsNotJoinedPortrait = () => {
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleCammute = () => toggleCammute();
-
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, baseStyles.viewBackground, { paddingTop: insets.top, paddingBottom: insets.bottom}]}>
       <PageHeader page={t('settings.page')} />
       <AccountSettings />
       <View style={styles.width100}>
@@ -47,9 +49,11 @@ export const SettingsNotJoinedPortrait = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 5,
+    
+    paddingHorizontal: 16,
     flex: 1,
-    backgroundColor: 'black',
+    // backgroundColor: '#222',
+    // backgroundColor: 'pink',
   },
   divider: {
     height: 1,

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import Text from '../components/CustomText';
-import { baseStyles } from '../constants';
 
 const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 

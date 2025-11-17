@@ -6,8 +6,10 @@ import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
 import ForegroundListener from './ForegroundListener';
 import RoomLayout from './Layout/RoomLayout';
-
+import { baseStyles } from '../constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const Room = () => {
+  const insets = useSafeAreaInsets();
   const { exitRoom } = useInRoomStore();
   useEffect(() => {
     return () => {
@@ -16,7 +18,13 @@ const Room = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        baseStyles.viewBackground,
+        { paddingTop: insets.top },
+      ]}
+    >
       <TopBar />
       <RoomLayout />
       <BottomBar />
@@ -29,7 +37,6 @@ const Room = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
   },
 });
 
