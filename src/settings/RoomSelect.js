@@ -72,7 +72,7 @@ const RoomSelect = () => {
       behavior={Platform.OS === 'ios' ? 'position' : 'padding'}
       keyboardVerticalOffset={45}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, baseStyles.viewBackground]}>
         <TextDisplayWithButton label={t('settings.selectRoom')}>
           <View style={styles.triggerContainer}>
             <View style={styles.triggerTextContainer}>
@@ -121,7 +121,6 @@ const RoomSelect = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
     paddingTop: 10,
   },
   searchInput: {
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
     bottom: 70,
     position: 'absolute',
     width: '100%',
-    backgroundColor: 'black',
+    backgroundColor: '#222',
     maxHeight: 200,
   },
   itemText: {

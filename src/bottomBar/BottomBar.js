@@ -7,6 +7,7 @@ import { CammuteBtn } from './CammuteBtn';
 import { MoreBtn } from './MoreBtn';
 import { MuteBtn } from './MuteBtn';
 import { QuestionBtn } from './QuestionBtn';
+import { baseStyles } from '../constants';
 
 export const BottomBar = () => {
   const { showBars } = useUiActions();
@@ -16,12 +17,14 @@ export const BottomBar = () => {
 
   return (
     <View style={styles.container}>
-      <MuteBtn />
-      <CammuteBtn />
-      <QuestionBtn />
-      <AudioModeBtn />
-      <View style={styles.devider}></View>
-      <MoreBtn />
+      <View style={[styles.buttons, baseStyles.panelBackground]}>
+        <MuteBtn />
+        <CammuteBtn />
+        <QuestionBtn />
+        <AudioModeBtn />
+        <View style={styles.devider}></View>
+        <MoreBtn />
+      </View>
     </View>
   );
 };
@@ -29,13 +32,18 @@ export const BottomBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 8,
-    left: 30,
-    right: 30,
+    left: 8,
+    right: 8,
+    bottom: 16,
+    alignItems: 'center',
+  },
+  buttons: {
+    minWidth: 360,
+    maxWidth: '100%',
+
     flexDirection: 'row',
     paddingVertical: 16,
     paddingHorizontal: 12,
-    backgroundColor: '#1e1e1e',
     borderRadius: 32,
   },
   devider: {

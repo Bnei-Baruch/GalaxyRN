@@ -10,6 +10,7 @@ import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
 import LabeledSwitch from './LabeledSwitch';
 import SelectUiLanguage from './SelectUiLanguage';
+// import { baseStyles } from '../constants';
 
 export const SettingsJoined = ({ toggleVisible }) => {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
   const handleCammute = () => toggleCammute();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, baseStyles.viewBackground]}>
       <PageHeader page={t('settings.page')} />
       <View style={[styles.container, !isPortrait && styles.landscape]}>
         <View style={styles.row}>
@@ -53,8 +54,8 @@ export const SettingsJoined = ({ toggleVisible }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 5,
+    paddingHorizontal: 16,
     flex: 1,
-    backgroundColor: 'black',
   },
   row: {
     flex: 1,

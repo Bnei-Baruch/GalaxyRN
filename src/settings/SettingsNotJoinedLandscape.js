@@ -12,6 +12,7 @@ import LabeledSwitch from './LabeledSwitch';
 import RoomSelect from './RoomSelect';
 
 import SelectUiLanguage from './SelectUiLanguage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const SettingsNotJoinedLandscape = () => {
   const { t } = useTranslation();
@@ -20,9 +21,20 @@ export const SettingsNotJoinedLandscape = () => {
 
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleCammute = () => toggleCammute();
-
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        baseStyles.viewBackground,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+        },
+      ]}
+    >
       <PageHeader page={t('settings.page')} />
       {/*user settings*/}
       <View style={styles.forms}>
@@ -53,9 +65,7 @@ export const SettingsNotJoinedLandscape = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 3,
     flex: 1,
-    backgroundColor: 'black',
   },
   forms: {
     flex: 1,

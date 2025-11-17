@@ -20,9 +20,20 @@ export const baseStyles = StyleSheet.create({
   },
   videoOverlay: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: '#151515',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  topBar:{
+
+    backgroundColor: '#101010',
+    borderColor: '#101010',
+  },
+  viewBackground:{
+    backgroundColor: '#101010',
+  },
+  panelBackground: {
+    backgroundColor: '#222',
   },
 });
 
