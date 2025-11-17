@@ -2,8 +2,8 @@ import { SENTRY_DSN } from '@env';
 import { register } from '@formatjs/intl-pluralrules';
 import * as Sentry from '@sentry/react-native';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { Platform, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import 'intl-pluralrules';
 import 'react-native-url-polyfill';
@@ -62,14 +62,12 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }}>
-        <SentryErrorBoundary>
-          <AndroidPermissions>
-            <NetConnectionModal />
-            <AuthenticationCheck />
-          </AndroidPermissions>
-        </SentryErrorBoundary>
-      </SafeAreaView>
+      <SentryErrorBoundary>
+        <AndroidPermissions>
+          <NetConnectionModal />
+          <AuthenticationCheck />
+        </AndroidPermissions>
+      </SentryErrorBoundary>
     </SafeAreaProvider>
   );
 };

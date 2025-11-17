@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Text from './CustomText';
+import { baseStyles } from '../constants';
 
 const TextDisplayWithButton = ({ label, children }) => {
   return (
     <View style={styles.container}>
       {label && (
-        <View style={styles.labelContainer}>
+        <View style={[styles.labelContainer, baseStyles.viewBackground]}>
           <Text style={styles.label}>{label}</Text>
         </View>
       )}
@@ -23,11 +24,10 @@ const styles = StyleSheet.create({
   },
   labelContainer: {
     position: 'absolute',
-    top: -10,
+    top: -9,
     left: 10,
     paddingHorizontal: 5,
     zIndex: 1,
-    backgroundColor: 'black',
   },
   label: {
     color: 'white',

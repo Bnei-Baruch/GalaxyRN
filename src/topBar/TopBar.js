@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
@@ -10,8 +11,8 @@ import { useUiActions } from '../zustand/uiActions';
 import { AudioDevicesBtn } from './AudioDevicesBtn';
 import { LeaveBtn } from './LeaveBtn';
 import { TopMenuBtn } from './TopMenuBtn';
-
 export const TopBar = () => {
+  const insets = useSafeAreaInsets();
   const { room } = useRoomStore();
   const { toggleShowBars, showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
@@ -22,7 +23,18 @@ export const TopBar = () => {
 
   return (
     <TouchableWithoutFeedback onPress={handleAnyPress}>
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          baseStyles.topBar,
+          {
+            borderTopWidth: insets.top,
+            marginTop: -insets.top,
+            borderLeftWidth: insets.left,
+            borderRightWidth: insets.right,
+          },
+        ]}
+      >
         <View style={styles.left}>
           <TopMenuBtn />
           <AudioDevicesBtn />
@@ -38,15 +50,10 @@ export const TopBar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     zIndex: 1000,
   },
   left: {
