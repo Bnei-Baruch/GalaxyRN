@@ -123,12 +123,20 @@ public class ForegroundService extends Service {
             Notification notification = buildNotification(this);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+                StringBuilder typesLog = new StringBuilder("Starting with MEDIA_PLAYBACK");
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ForegroundService.mIsMicOn) {
                     serviceType |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
-                    GxyLogger.i(TAG, "Starting with MEDIA_PLAYBACK + MICROPHONE types");
-                } else {
-                    GxyLogger.i(TAG, "Starting with MEDIA_PLAYBACK type ONLY (mIsMicOn=false)");
+                    typesLog.append(" + MICROPHONE");
                 }
+
+                // Add CONNECTED_DEVICE type for Bluetooth/USB audio devices (Android 14+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    serviceType |= ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE;
+                    typesLog.append(" + CONNECTED_DEVICE");
+                }
+
+                GxyLogger.i(TAG, typesLog.toString());
                 startForeground(NOTIFICATION_ID, notification, serviceType);
                 GxyLogger.i(TAG, "Successfully started as foreground service");
             } else {
