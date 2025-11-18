@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import logo from '../assets/arvut.png';
 import NetConnectionModal from '../components/ConnectionStatus/NetConnectionModal';
 import Text from '../components/CustomText';
 import WIP from '../components/WIP';
+import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import SelectUiLanguage from '../settings/SelectUiLanguage';
 import { useUserStore } from '../zustand/user';
@@ -17,6 +19,8 @@ const NAMESPACE = 'LoginScreen';
 const LoginScreen = () => {
   const { t } = useTranslation();
   const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
+
+  const insets = useSafeAreaInsets();
 
   const wip = useUserStore(state => state.wip);
   if (wip) {
@@ -33,7 +37,13 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        baseStyles.viewBackground,
+        { paddingTop: insets.top },
+      ]}
+    >
       <View style={styles.header}>
         <Image source={logo} style={styles.logo} />
         <View style={{ flex: 1 }}>
@@ -67,7 +77,6 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
     flexDirection: 'column',
   },
   header: {

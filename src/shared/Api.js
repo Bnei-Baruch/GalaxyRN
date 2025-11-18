@@ -179,12 +179,7 @@ class Api {
       const res = await fetch(this.urlFor('/v2/vhinfo'), this.defaultOptions());
 
       if (!res.ok) {
-        logger.error(
-          NAMESPACE,
-          'fetchVHInfo HTTP error:',
-          res.status,
-          res.statusText
-        );
+        logger.error(NAMESPACE, 'fetchVHInfo HTTP error:', res);
 
         if (res.status === 401 || res.status === 403) {
           throw new Error('UNAUTHORIZED');
