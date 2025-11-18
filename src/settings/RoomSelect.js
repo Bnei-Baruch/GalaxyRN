@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#222',
     maxHeight: 200,
+    zIndex: 1,
   },
   itemText: {
     padding: 10,

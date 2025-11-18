@@ -133,7 +133,7 @@ export const useChatStore = create((set, get) => ({
               textAlign: isRTLString(textContent) ? 'right' : 'left',
             };
           } catch (error) {
-            logger.error(NAMESPACE, 'Error processing question:', q, error);
+            logger.error(NAMESPACE, 'Error processing question:', error);
             return null;
           }
         })

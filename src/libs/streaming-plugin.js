@@ -31,7 +31,6 @@ export class StreamingPlugin {
     this.onStatus = null;
     this.pluginName = 'janus.plugin.streaming';
     this.isDestroyed = false;
-    this.iceRestartInProgress = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
     });
@@ -46,6 +45,7 @@ export class StreamingPlugin {
           streamId: this.streamId,
           handleId: this.janusHandleId,
           iceConnectionState: this.pc?.iceConnectionState,
+          NAMESPACE,
         }
       );
       try {
@@ -59,6 +59,13 @@ export class StreamingPlugin {
         useShidurStore.getState().restartShidur();
       }
     });
+    logger.debug(
+      NAMESPACE,
+      'StreamingPlugin constructor done',
+      this.id,
+      this.janusHandleId,
+      this.streamId
+    );
   }
 
   getPluginName = () => {
@@ -184,20 +191,35 @@ export class StreamingPlugin {
   iceRestart = async () => {
     const iceRestartSpan = addSpan(CONNECTION, 'streaming.iceRestart');
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
-    if (this.iceRestartInProgress) {
-      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+
+    if (this.isDestroyed) {
       return;
     }
-    this.iceRestartInProgress = true;
-
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
       finishSpan(iceRestartSpan, 'no_stream_id');
 
       this.detach();
-      await useShidurStore.getState().restartShidur();
+      useShidurStore.getState().restartShidur();
       return;
     }
+    const iceState = this.pc.iceConnectionState;
+
+    if (iceState === 'closed') {
+      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      this.detach();
+      useShidurStore.getState().restartShidur();
+      return;
+    }
+
+    //TODO: Comment this when we have a way to detect janus connection state
+    /*
+    if (iceState !== 'failed' && iceState !== 'disconnected') {
+      logger.warn(NAMESPACE, 'connection is not failed or disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      return;
+    }
+    */
 
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
@@ -221,17 +243,15 @@ export class StreamingPlugin {
       const errorCode = error?.data?.error_code;
       // Handle "Already in room" or similar Janus errors (460, 436, etc.)
       if (errorCode === 460 || errorCode === 436) {
-        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
-        finishSpan(iceRestartSpan, 'janus_error');
+        addAttributes(iceRestartSpan, { errorCode });
+        finishSpan(iceRestartSpan, 'already_in_room_error');
         return;
       }
 
-      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      addAttributes(iceRestartSpan, { error });
       finishSpan(iceRestartSpan, 'error_response');
       this.detach();
       useShidurStore.getState().restartShidur();
-    } finally {
-      this.iceRestartInProgress = false;
     }
   };
 
@@ -396,7 +416,6 @@ export class StreamingPlugin {
     this.candidates = [];
     this.onStatus = null;
     this.janus = null;
-    this.iceRestartInProgress = false;
     finishSpan(detachSpan, 'ok');
   };
 }

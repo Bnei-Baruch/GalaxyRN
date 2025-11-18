@@ -211,8 +211,7 @@ export const useInitsStore = create((set, get) => ({
             logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');
-            useShidurStore.getState().initShidur(_isPlay);
-            useInRoomStore.getState().joinRoom();
+            useInRoomStore.getState().joinRoom(_isPlay);
             logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
