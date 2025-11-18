@@ -376,6 +376,11 @@ class Keycloak {
         useUserStore.getState().setVhinfo({ active: false });
         return false;
       }
+      if (err?.message === 'SERVER_ERROR') {
+        useUserStore.getState().setVhinfo({ active: true });
+        return true;
+      }
+
       throw err;
     }
   };
