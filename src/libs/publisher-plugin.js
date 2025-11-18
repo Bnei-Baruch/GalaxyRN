@@ -27,7 +27,6 @@ export class PublisherPlugin {
     this.subTo = null;
     this.unsubFrom = null;
     this.talkEvent = null;
-    this.iceRestartInProgress = false;
     this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
@@ -315,11 +314,30 @@ export class PublisherPlugin {
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
 
-    if (this.iceRestartInProgress) {
-      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+    if (this.isDestroyed) {
       return;
     }
-    this.iceRestartInProgress = true;
+
+    const iceRestartSpan = addSpan(CONNECTION, 'publisher.iceRestart', {
+      NAMESPACE,
+    });
+    const iceState = this.pc.iceConnectionState;
+
+    if (iceState === 'closed') {
+      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      this.detach();
+      useFeedsStore.getState().restartFeeds();
+      return;
+    }
+
+    //TODO: Comment this when we have a way to detect janus connection state
+    /*
+    if (iceState !== 'failed' && iceState !== 'disconnected') {
+      logger.warn(NAMESPACE, 'connection is not failed or disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      return;
+    }
+    */
 
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
@@ -328,15 +346,14 @@ export class PublisherPlugin {
       // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
       if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
-        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
+        addAttributes(iceRestartSpan, { errorCode });
+        finishSpan(iceRestartSpan, 'already_in_room_error');
         return;
       }
 
-      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      finishSpan(iceRestartSpan, 'error_response');
       this.detach();
       useFeedsStore.getState().restartFeeds();
-    } finally {
-      this.iceRestartInProgress = false;
     }
   };
 

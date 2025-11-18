@@ -219,6 +219,14 @@ export const setSpanAttributes = (
 export const captureException = args => {
   const key = args[args.length - 1];
 
+  if (args[2] instanceof Error) {
+    args[2] = JSON.stringify({
+      message: args[2].message,
+      stack: args[2].stack,
+      code: args[2].code,
+    });
+  }
+
   let activeSpan = activeSessions.get(key);
   if (!activeSpan) {
     activeSpan = Sentry.getActiveSpan();

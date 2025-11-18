@@ -3529,9 +3529,11 @@ __metadata:
     dotenv-cli: ^8.0.0
     eslint: ^8.19.0
     i18next: ^23.16.4
+    iconv-lite: ^0.7.0
     immer: ^9.0.21
     intl-pluralrules: ^2.0.1
     jest: ^29.6.3
+    jschardet: ^3.1.4
     markdown-it: ^14.1.0
     mqtt: 5.9.1
     react: 18.2.0
@@ -6339,6 +6341,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"iconv-lite@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "iconv-lite@npm:0.7.0"
+  dependencies:
+    safer-buffer: ">= 2.1.2 < 3.0.0"
+  checksum: f362a8befb95e37f29be1d1290c17e0c9d0d4ad4fa62fcfd813cc9c937ab89401abed9a011f83e10651a267abb2aa231ec7da91d843570bec873bd98489b5bf8
+  languageName: node
+  linkType: hard
+
 "ieee754@npm:^1.1.13, ieee754@npm:^1.2.1":
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
@@ -7418,6 +7429,13 @@ __metadata:
   version: 0.2.4
   resolution: "jsc-safe-url@npm:0.2.4"
   checksum: 53b5741ba2c0a54da1722929dc80becb2c6fcc9525124fb6c2aec1a00f48e79afffd26816c278111e7b938e37ace029e33cbb8cdaa4ac1f528a87e58022284af
+  languageName: node
+  linkType: hard
+
+"jschardet@npm:^3.1.4":
+  version: 3.1.4
+  resolution: "jschardet@npm:3.1.4"
+  checksum: 30a1dfe2d0bbdfa4e641827ac31173e8b25c533d519d45edfe15091db8ec4737715de2daa13bc49037b74b3812778b7a43b6f6c94bf081df3566b133a43e98ec
   languageName: node
   linkType: hard
 

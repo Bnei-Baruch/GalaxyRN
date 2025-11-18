@@ -209,16 +209,24 @@ export class JanusMqtt {
       plugin.detach();
       throw err;
     }
+    logger.debug(NAMESPACE, 'detach done', plugin.janusHandleId);
     delete this.pluginHandles[plugin.janusHandleId];
+    plugin.detach();
     return true;
   };
 
   _cleanupPlugins = () => {
     logger.debug(NAMESPACE, '_cleanupPlugins');
-    const promises = Object.values(this.pluginHandles).map(plugin => {
-      logger.debug(NAMESPACE, '_cleanupPlugins plugin:', plugin.janusHandleId);
-      return this.detach(plugin);
-    });
+    const promises = Object.values(this.pluginHandles)
+      .filter(plugin => plugin && !plugin.isDestroyed)
+      .map(plugin => {
+        logger.debug(
+          NAMESPACE,
+          '_cleanupPlugins plugin:',
+          plugin.janusHandleId
+        );
+        return this.detach(plugin);
+      });
     return Promise.allSettled(promises);
   };
 
@@ -415,7 +423,7 @@ export class JanusMqtt {
     try {
       json = JSON.parse(message);
     } catch (err) {
-      logger.error(NAMESPACE, 'Cannot parse message', message, err);
+      logger.error(NAMESPACE, 'Cannot parse message', err);
       return;
     }
 
@@ -618,7 +626,7 @@ export class JanusMqtt {
         errorCode: json.error?.code,
         error: json.error?.reason || JSON.stringify(json.error),
       });
-      logger.error(NAMESPACE, `Janus error response ${json}`);
+      logger.error(NAMESPACE, `Janus error response`, json);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
         if (transaction.request) {

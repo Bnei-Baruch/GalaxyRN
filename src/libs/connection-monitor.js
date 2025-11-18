@@ -3,7 +3,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
-import { rejectTimeoutPromise, sleep } from '../shared/tools';
+import { rejectTimeoutPromise } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
@@ -23,13 +23,17 @@ const NAMESPACE = 'ConnectionMonitor';
 const MAX_CONNECTION_TIMEOUT = 20;
 const MAX_RECONNECT_DELAY = 5000;
 
-let netInfoUnsubscribe, listeners, timeout, currentState, disconnectedSeconds;
+let netInfoUnsubscribe,
+  iceRestartListeners,
+  timeout,
+  currentState,
+  disconnectedSeconds;
 let lastReconnect = 0;
 const waitConnectionListeners = [];
 
 export const initConnectionMonitor = () => {
   logger.debug(NAMESPACE, 'initConnectionMonitor');
-  listeners = {};
+  iceRestartListeners = {};
   netInfoUnsubscribe = null;
   timeout = null;
   disconnectedSeconds = 0;
@@ -142,7 +146,7 @@ const waitConnectionRestart = async () => {
     callListeners();
     finishSpan(restartSpan, 'ok');
   } catch (e) {
-    logger.error(NAMESPACE, 'Error calling listeners', e);
+    logger.error(NAMESPACE, 'Error calling iceRestartListeners', e);
     finishSpan(restartSpan, 'internal_error');
     useInRoomStore.getState().restartRoom();
   }
@@ -288,15 +292,14 @@ export const resetLastReconnect = () => {
 };
 
 const callListeners = async () => {
-  logger.debug(NAMESPACE, 'callListeners', Object.keys(listeners));
-  for (const key in listeners) {
+  logger.debug(NAMESPACE, 'callListeners', Object.keys(iceRestartListeners));
+  for (const key in iceRestartListeners) {
     try {
       logger.debug(NAMESPACE, 'calling listener', key);
-      listeners[key]();
+      iceRestartListeners[key]();
     } catch (error) {
       logger.error(NAMESPACE, 'Error in listener', key, error);
     }
-    await sleep(100);
   }
 };
 
@@ -342,13 +345,13 @@ const callWaitConnectionListeners = connected => {
 
 export const addConnectionListener = (key, listener) => {
   logger.debug(NAMESPACE, 'addListener', key);
-  listeners[key] = listener;
+  iceRestartListeners[key] = listener;
 };
 
 export const removeConnectionListener = key => {
   logger.debug(NAMESPACE, 'removeListener', key);
-  if (listeners[key]) {
-    delete listeners[key];
+  if (iceRestartListeners[key]) {
+    delete iceRestartListeners[key];
   }
 };
 
@@ -361,7 +364,7 @@ export const clearWaitConnectionListeners = () => {
 export const removeConnectionMonitor = () => {
   finishTransaction(CONNECTION, 'ok', NAMESPACE);
 
-  listeners = {};
+  iceRestartListeners = {};
   clearWaitConnectionListeners();
   if (netInfoUnsubscribe) {
     netInfoUnsubscribe();

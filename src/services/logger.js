@@ -1,5 +1,11 @@
 import { captureException } from '../libs/sentry/sentryHelper';
 
+let isDebug = __DEV__;
+
+export const setIsDebug = debug => {
+  isDebug = debug;
+};
+
 class Logger {
   hasTag(tag) {
     //if (tag === 'Mqtt' || tag === 'JanusMqtt') return false;
@@ -7,7 +13,7 @@ class Logger {
     return true;
     return (
       //tag === 'Shidur' || tag === 'Inits' || tag === 'CallsBridge'
-      //tag === 'StreamingPlugin' ||
+      tag === 'StreamingPlugin' ||
       //tag === 'JanusMqtt' ||
       //tag === 'ConnectionMonitor' ||
       //tag === 'PublisherPlugin' ||
@@ -18,25 +24,25 @@ class Logger {
       tag === 'ConnectionMonitor' ||
       //tag === 'FeedsStore' ||
       //tag === 'Feed' ||
-      //tag === 'SentryHelper'
+      tag === 'SentryHelper' ||
       tag === 'xxx'
     );
   }
 
   async trace(...args) {
-    if (!this.hasTag(args[0])) return;
+    if (!isDebug || !this.hasTag(args[0])) return;
 
     console.trace(...this.prepareConsoleMsg(args));
   }
 
   async debug(...args) {
-    if (!this.hasTag(args[0])) return;
+    if (!isDebug || !this.hasTag(args[0])) return;
 
     console.debug(...this.prepareConsoleMsg(args));
   }
 
   async info(...args) {
-    if (!this.hasTag(args[0])) return;
+    if (!isDebug || !this.hasTag(args[0])) return;
 
     console.info(...this.prepareConsoleMsg(args));
   }
@@ -51,6 +57,7 @@ class Logger {
     if (!this.hasTag(args[0])) return;
 
     console.error(args);
+
     captureException(args);
   }
 

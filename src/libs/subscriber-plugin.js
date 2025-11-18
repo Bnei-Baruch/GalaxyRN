@@ -8,7 +8,7 @@ import {
   removeConnectionListener,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addFinishSpan } from './sentry/sentryHelper';
+import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
 
 const NAMESPACE = 'SubscriberPlugin';
 
@@ -21,7 +21,6 @@ export class SubscriberPlugin {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
-    this.iceRestartInProgress = false;
     this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
       iceServers: list,
@@ -100,7 +99,7 @@ export class SubscriberPlugin {
         );
         return;
       }
-      logger.error(NAMESPACE, 'Subscribe to: ', JSON.stringify(error));
+      logger.error(NAMESPACE, 'Subscribe to: ', error);
     }
   };
 
@@ -182,10 +181,29 @@ export class SubscriberPlugin {
   iceRestart = async () => {
     logger.info(NAMESPACE, 'Starting ICE restart');
 
-    if (this.iceRestartInProgress) {
-      logger.warn(NAMESPACE, 'ICE restart already in progress, skipping');
+    if (this.isDestroyed) {
       return;
     }
+    const iceRestartSpan = addSpan(CONNECTION, 'subscriber.iceRestart', {
+      NAMESPACE,
+    });
+
+    const iceState = this.pc.iceConnectionState;
+
+    if (iceState === 'closed') {
+      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      this.detach();
+      useFeedsStore.getState().restartFeeds();
+      return;
+    }
+    //TODO: Comment this when we have a way to detect janus connection state
+    /*
+    if (iceState !== 'failed' && iceState !== 'disconnected') {
+      logger.warn(NAMESPACE, 'connection is not failed or disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      return;
+    }
+    */
 
     if (
       useFeedsStore.getState().feedIds.filter(id => id !== 'my').length === 0
@@ -193,7 +211,6 @@ export class SubscriberPlugin {
       logger.debug(NAMESPACE, 'No publishers in the room, skipping');
       return;
     }
-    this.iceRestartInProgress = true;
 
     try {
       await this.configure();
@@ -202,15 +219,15 @@ export class SubscriberPlugin {
       // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
       if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
-        logger.warn(NAMESPACE, `Janus error ${errorCode}, skipping restart`);
+        addAttributes(iceRestartSpan, { errorCode });
+        finishSpan(iceRestartSpan, 'already_in_room_error');
         return;
       }
 
-      logger.error(NAMESPACE, 'ICE restart failed:', error);
+      addAttributes(iceRestartSpan, { error });
+      finishSpan(iceRestartSpan, 'error_response');
       this.detach();
       useFeedsStore.getState().restartFeeds();
-    } finally {
-      this.iceRestartInProgress = false;
     }
   };
 
@@ -414,6 +431,5 @@ export class SubscriberPlugin {
     this.roomId = null;
     this.onTrack = null;
     this.onUpdate = null;
-    this.iceRestartInProgress = false;
   };
 }

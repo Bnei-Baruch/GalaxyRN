@@ -106,6 +106,14 @@ const getOptionByKey = key => {
 };
 
 const getAudioKey = async () => {
+  const isOriginal = await getFromStorage('is_original', false).then(
+    x => x === 'true'
+  );
+  logger.debug(NAMESPACE, 'initMedias audio', isOriginal);
+  if (isOriginal) {
+    return 'wo_original';
+  }
+
   let audioKey = await getFromStorage('audio');
   if (!audioKey) {
     const systemLang = getSystemLanguage();
@@ -261,17 +269,10 @@ export const useShidurStore = create((set, get) => ({
     }
     logger.debug(NAMESPACE, 'initMedias video', video);
 
-    let audio;
-    const isOriginal = await getFromStorage('is_original', false).then(
-      x => x === 'true'
-    );
-    logger.debug(NAMESPACE, 'initMedias audio', isOriginal);
-    if (isOriginal) {
-      audio = getOptionByKey('wo_original');
-    } else {
-      const audioKey = await getAudioKey();
-      audio = getOptionByKey(audioKey);
-    }
+    const audioKey = await getAudioKey();
+    logger.debug(NAMESPACE, 'initMedias audio', audioKey);
+    const audio = getOptionByKey(audioKey);
+
     logger.debug(NAMESPACE, `initMedias audio: ${JSON.stringify(audio)} `);
     set({ video, audio });
   },
@@ -348,26 +349,26 @@ export const useShidurStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'initShidur has trlAudioJanus', !!trlAudioJanus);
     if (!trlAudioJanus) {
-      logger.debug(NAMESPACE, 'init trlAudioJanus');
-      const audioKey = await getFromStorage('audio', null);
+      const audioKey = await getAudioKey();
+      logger.debug(NAMESPACE, 'init trlAudioJanus audioKey', audioKey);
       const id = trllang[audioKey?.split('_')[1]];
-      if (id) {
-        const trlPromise = new Promise((resolve, reject) => {
-          trlAudioJanus = new StreamingPlugin(config?.iceServers);
-          trlAudioJanus.onTrack = stream => {
-            logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
-            cleanStream(trlAudioStream);
-            stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
-            trlAudioStream = stream;
-            resolve();
-          };
-          initStream(id, trlAudioJanus);
-          promises.push(trlPromise);
-        });
-      }
+      logger.debug(NAMESPACE, 'initAudioHandles trlAudioJanus id', id);
+      const trlPromise = new Promise((resolve, reject) => {
+        trlAudioJanus = new StreamingPlugin(config?.iceServers);
+        trlAudioJanus.onTrack = stream => {
+          logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
+          cleanStream(trlAudioStream);
+          stream?.getAudioTracks()?.forEach(track => (track.enabled = false));
+          trlAudioStream = stream;
+          resolve();
+        };
+        initStream(id, trlAudioJanus);
+        promises.push(trlPromise);
+      });
     }
 
     Promise.all(promises).then(() => {
+      logger.debug(NAMESPACE, 'initAudioHandles promises done');
       if (get().isOnAir) {
         get().streamGalaxy(true, true);
       }
@@ -641,13 +642,7 @@ export const useShidurStore = create((set, get) => ({
 
   toggleIsOriginal: async () => {
     logger.debug(NAMESPACE, 'toggleIsOriginal');
-    const isOriginal = !(get().audio.key === 'wo_original');
-    let key;
-    if (isOriginal) {
-      key = 'wo_original';
-    } else {
-      key = await getAudioKey();
-    }
+    const key = await getAudioKey();
     logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);
   },

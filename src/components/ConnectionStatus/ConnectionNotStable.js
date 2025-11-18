@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../../constants';
 import logger from '../../services/logger';
 import { useSettingsStore } from '../../zustand/settings';
@@ -11,7 +12,7 @@ const NAMESPACE = 'ConnectionNotStable';
 const ConnectionNotStable = () => {
   const { t } = useTranslation();
   const netWIP = useSettingsStore(state => state.netWIP);
-
+  const insets = useSafeAreaInsets();
   logger.debug(NAMESPACE, 'render', netWIP);
 
   if (!netWIP) return null;
@@ -23,7 +24,7 @@ const ConnectionNotStable = () => {
       transparent={true}
       statusBarTranslucent={true}
     >
-      <View style={baseStyles.full}>
+      <View style={[baseStyles.full, { paddingTop: insets.top }]}>
         <View style={styles.container}>
           <ActivityIndicator
             size="large"

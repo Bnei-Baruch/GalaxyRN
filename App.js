@@ -2,7 +2,7 @@ import { SENTRY_DSN } from '@env';
 import { register } from '@formatjs/intl-pluralrules';
 import * as Sentry from '@sentry/react-native';
 import React, { useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import 'intl-pluralrules';

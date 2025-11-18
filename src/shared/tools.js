@@ -1,3 +1,6 @@
+import { Buffer } from 'buffer';
+import iconv from 'iconv-lite';
+import jschardet from 'jschardet';
 import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import logger from '../services/logger';
@@ -72,74 +75,27 @@ export const fixTextEncoding = text => {
     return 'No name';
   }
 
-  const hasCommonEncodingIssues =
-    /Ð/.test(text) ||
-    /Ñ/.test(text) ||
-    /â€/.test(text) ||
-    /Ã/.test(text) ||
-    /Â/.test(text);
-
-  const hasSuspiciousPatterns =
-    /Ð[ÐÑ¡¼½¾´µ¹²]/.test(text) ||
-    /Ñ[ÐÑ¡¼½¾´µ¹²]/.test(text) ||
-    /[¡¼½¾´µ¹²]/.test(text);
-
-  const hasHighByteChars = /[\xC0-\xFF]/.test(text);
-
-  if (!hasCommonEncodingIssues && !hasSuspiciousPatterns && !hasHighByteChars) {
-    return text;
-  }
-
-  if (hasHighByteChars && !hasCommonEncodingIssues && !hasSuspiciousPatterns) {
-    try {
-      const bytes = new Uint8Array(text.length);
-      for (let i = 0; i < text.length; i++) {
-        bytes[i] = text.charCodeAt(i) & 0xff;
-      }
-      const decoder = new TextDecoder('utf-8', { fatal: false });
-      const decodedText = decoder.decode(bytes);
-
-      if (!decodedText.includes('\uFFFD') && decodedText !== text) {
-        const originalSuspicious = (text.match(/[\xC0-\xFF]/g) || []).length;
-        const decodedSuspicious = (decodedText.match(/[\xC0-\xFF]/g) || [])
-          .length;
-        if (decodedSuspicious < originalSuspicious) {
-          return decodedText;
-        }
-      }
-    } catch (error) {}
+  if (!/[\xC0-\xFF]|Ð|Ñ|â€|Ã|Â/.test(text)) {
     return text;
   }
 
   try {
-    const bytes = new Uint8Array(text.length);
-    for (let i = 0; i < text.length; i++) {
-      const charCode = text.charCodeAt(i);
-      bytes[i] = charCode > 255 ? 255 : charCode & 0xff;
-    }
+    const buffer = Buffer.from(text, 'binary');
 
-    const decoder = new TextDecoder('utf-8', { fatal: false });
-    const decodedText = decoder.decode(bytes);
-
-    if (decodedText.includes('\uFFFD')) {
+    const detected = jschardet.detect(buffer);
+    const encoding = detected.encoding.toLowerCase();
+    if (encoding === 'ascii' || encoding === 'utf-8') {
       return text;
     }
-
-    const stillGarbled = /Ð[ÐÑ]/.test(decodedText) || /Ñ[ÐÑ]/.test(decodedText);
-
-    if (stillGarbled) {
-      return text;
+    const decoded = iconv.decode(buffer, detected.encoding);
+    if (!decoded.includes('\uFFFD') && decoded !== text) {
+      return decoded;
     }
-
-    if (decodedText !== text) {
-      return decodedText;
-    }
-
-    return text;
   } catch (error) {
-    console.warn('Text encoding fix failed:', error);
-    return text;
+    logger.warn(NAMESPACE, 'Text encoding fix failed:', error);
   }
+
+  return text;
 };
 
 const h265Config = {

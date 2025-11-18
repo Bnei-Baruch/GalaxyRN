@@ -1,20 +1,29 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AccountSettings from '../auth/AccountSettings';
 import Text from '../components/CustomText';
+import { baseStyles } from '../constants';
 import { useUserStore } from '../zustand/user';
 
 const UserPermissions = () => {
   const { t } = useTranslation();
   const { vhinfo } = useUserStore();
+  const insets = useSafeAreaInsets();
 
   const handleContactSupport = () => {
     Linking.openURL('mailto:help@kli.one');
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        baseStyles.full,
+        baseStyles.viewBackground,
+        { paddingTop: insets.top },
+      ]}
+    >
       <View style={styles.top}>
         <AccountSettings withTitle={false} />
       </View>
