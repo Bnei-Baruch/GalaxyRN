@@ -330,11 +330,14 @@ export class PublisherPlugin {
       return;
     }
 
+    //TODO: Comment this when we have a way to detect janus connection state
+    /*
     if (iceState !== 'failed' && iceState !== 'disconnected') {
       logger.warn(NAMESPACE, 'connection is not failed or disconnected');
       finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
       return;
     }
+    */
 
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
