@@ -8,8 +8,19 @@ const NAMESPACE = 'FetchRooms';
 
 const useRoomStore = create(set => ({
   room: null,
-  setRoom: room => {
-    room && setToStorage('room', room.room.toString());
+  setRoom: async room => {
+    if (!room?.room || !room.janus) {
+      logger.error(NAMESPACE, `room is ${JSON.stringify(room)} in setRoom`);
+      return;
+    }
+
+    try {
+      await setToStorage('room', room.room.toString());
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error setting room to storage', error);
+      throw new Error('Error setting room to storage');
+    }
+
     set({ room });
   },
 

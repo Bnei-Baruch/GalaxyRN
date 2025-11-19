@@ -5,12 +5,11 @@ import kc from '../auth/keycloak';
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
 import api from '../shared/Api';
-import ConfigStore from '../shared/ConfigStore';
-import GxyConfig from '../shared/janus-config';
 import mqtt from '../shared/mqtt';
 
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
+import { setJanusConfig } from '../shared/janus-config';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
 import { modalModes } from './helper';
@@ -72,14 +71,14 @@ export const useInitsStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing MQTT:', error);
       get().abortMqtt();
-      return;
+      throw error;
     }
 
     try {
       get().subscribeMqtt();
     } catch (error) {
       get().abortMqtt();
-      return;
+      throw error;
     }
 
     const { toggleCammute, toggleMute } = useMyStreamStore.getState();
@@ -94,6 +93,11 @@ export const useInitsStore = create((set, get) => ({
       if (user.id === id && CLIENT_RECONNECT_TYPES.includes(type)) {
         restartRoom();
       } else if (type === 'client-kicked' && user.id === id) {
+        try {
+          get().exitRoom();
+        } catch (e) {
+          logger.debug(NAMESPACE, 'Error in exitRoom', e);
+        }
         kc.logout();
       } else if (type === 'client-question' && user.id === id) {
         toggleQuestion();
@@ -117,6 +121,7 @@ export const useInitsStore = create((set, get) => ({
       }
     });
   },
+
   subscribeMqtt: async () => {
     try {
       await Promise.all([
@@ -163,11 +168,10 @@ export const useInitsStore = create((set, get) => ({
     try {
       const configData = await api.fetchConfig();
       logger.debug(NAMESPACE, 'got config: ', configData);
-      ConfigStore.setGlobalConfig(configData);
-      GxyConfig.setGlobalConfig(configData);
-      set(() => ({ configReady: true }));
+      setJanusConfig(configData);
     } catch (err) {
       logger.error(NAMESPACE, 'error initializing app', err);
+      throw err;
     }
     logger.debug(NAMESPACE, 'initConfig done');
   },
@@ -220,6 +224,7 @@ export const useInitsStore = create((set, get) => ({
       );
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing app', error);
+      throw error;
     }
   },
 

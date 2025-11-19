@@ -53,6 +53,7 @@ export const useMyStreamStore = create((set, get) => ({
       });
     } catch (e) {
       logger.error(NAMESPACE, 'Error accessing media devices:', e);
+      throw e;
     }
 
     set(() => ({ stream, cammute }));

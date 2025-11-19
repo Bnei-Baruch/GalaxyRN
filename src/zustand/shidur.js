@@ -23,7 +23,7 @@ import {
   trllang,
   workShopOptions,
 } from '../shared/consts';
-import GxyConfig from '../shared/janus-config';
+import { configByName, gatewayNames } from '../shared/janus-config';
 import {
   getFromStorage,
   rejectTimeoutPromise,
@@ -200,14 +200,14 @@ export const useShidurStore = create((set, get) => ({
       });
 
       if (!srv) {
-        const gw_list = GxyConfig.gatewayNames('streaming');
+        const gw_list = gatewayNames('streaming');
         let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
 
-        config = GxyConfig.instanceConfig(inst);
+        config = configByName(inst);
         srv = config.name;
         logger.debug(NAMESPACE, 'init janus build', inst, config);
       } else {
-        config = GxyConfig.instanceConfig(srv);
+        config = configByName(srv);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);

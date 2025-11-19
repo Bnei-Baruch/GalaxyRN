@@ -1,6 +1,5 @@
-import mqtt from 'mqtt';
-//import GxyConfig from "./janus-utils";
 import { MQTT_URL } from '@env';
+import mqtt from 'mqtt';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 
@@ -49,7 +48,6 @@ class MqttMsg {
     this.initialized = true;
 
     const { user } = useUserStore.getState();
-    //const svc_token = GxyConfig?.globalConfig?.dynamic_config?.mqtt_auth;
     const id = user.id + '-' + randomString(3);
     logger.debug(NAMESPACE, 'MQTT init', user);
 
@@ -88,7 +86,7 @@ class MqttMsg {
     try {
       this.mq = await rejectTimeoutPromise(
         mqtt.connectAsync(`wss://${MQTT_URL}`, options),
-        2000
+        10000
       );
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
       finishSpan(connectSpan, 'ok');

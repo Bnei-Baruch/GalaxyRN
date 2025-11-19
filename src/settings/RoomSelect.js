@@ -16,7 +16,6 @@ import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import useRoomStore from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
-import { useInitsStore } from '../zustand/inits';
 
 const NAMESPACE = 'RoomSelect';
 
@@ -27,7 +26,6 @@ const RoomSelect = () => {
 
   const { fetchRooms, setRoom, room } = useRoomStore();
   const { joinRoom } = useInRoomStore();
-  const { mqttIsOn, abortMqtt, initMQTT } = useInitsStore();
   const { t } = useTranslation();
 
   useEffect(() => {
