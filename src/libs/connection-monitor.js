@@ -193,11 +193,21 @@ const onNoNetwork = async () => {
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
+  try {
+    await useInRoomStore.getState().exitRoom();
+  } catch (e) {
+    logger.debug(NAMESPACE, 'Error in exitRoom', e);
+  }
   const _netIsOn = isNetConnected();
   useInitsStore.getState().setMqttIsOn(false);
   useSettingsStore.getState().setNetWIP(false);
   useInitsStore.getState().setNetIsOn(_netIsOn);
-  kc.logout();
+
+  try {
+    await kc.logout();
+  } catch (e) {
+    logger.debug(NAMESPACE, 'Error in logout', e);
+  }
 };
 
 const monitorNetInfo = async () => {

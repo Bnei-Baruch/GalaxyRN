@@ -6,11 +6,10 @@ import { create } from 'zustand';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
-
 import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import { userRolesEnum } from '../shared/enums';
-import GxyConfig from '../shared/janus-config';
+import { configByName } from '../shared/janus-config';
 import { deepClone, rejectTimeoutPromise } from '../shared/tools';
 import useRoomStore from './fetchRooms';
 import useInRoomStore from './inRoom';
@@ -95,7 +94,11 @@ export const useFeedsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     const { room } = useRoomStore.getState();
 
-    const config = GxyConfig.instanceConfig(room.janus);
+    if (!room?.janus) {
+      throw new Error(`room is ${room} in initFeeds`);
+    }
+
+    const config = configByName(room.janus);
     logger.debug(NAMESPACE, 'joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
     logger.debug(NAMESPACE, 'joinRoom janus', janus);
@@ -119,7 +122,11 @@ export const useFeedsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     const { cammute } = useMyStreamStore.getState();
 
-    const config = GxyConfig.instanceConfig(room.janus);
+    if (!room?.janus) {
+      throw new Error(`room is ${room} in initPublisher`);
+    }
+
+    const config = configByName(room.janus);
 
     videoroom = new PublisherPlugin(config.iceServers);
     videoroom.subTo = async pubs => {
@@ -251,7 +258,12 @@ export const useFeedsStore = create((set, get) => ({
   initSubscriber: async () => {
     logger.debug(NAMESPACE, 'initSubscriber');
     const { room } = useRoomStore.getState();
-    const config = GxyConfig.instanceConfig(room.janus);
+
+    if (!room?.janus) {
+      throw new Error(`room is ${room} in initSubscriber`);
+    }
+
+    const config = configByName(room.janus);
 
     /**
      * Subscribe to members of the room

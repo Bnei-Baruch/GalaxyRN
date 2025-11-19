@@ -18,36 +18,17 @@ class Api {
     this.accessToken = null;
   }
 
-  static makeParams = params =>
-    `${Object.entries(params)
-      .filter(([_, v]) => v !== undefined && v !== null)
-      .map(pair => {
-        const key = pair[0];
-        const value = pair[1];
-        if (Array.isArray(value)) {
-          return value.map(val => `${key}=${Api.encode(val)}`).join('&');
-        }
-        return `${key}=${Api.encode(value)}`;
-      })
-      //can happen if parameter value is empty array
-      .filter(p => p !== '')
-      .join('&')}`;
-
   // Galaxy API
-
   fetchConfig = () =>
     this.logAndParse(
       'fetch config',
       fetch(this.urlFor('/v2/config'), this.defaultOptions())
     );
 
-  fetchAvailableRooms = (params = {}) =>
+  fetchAvailableRooms = () =>
     this.logAndParse(
       'fetch available rooms',
-      fetch(
-        `${this.urlFor('/groups')}?${Api.makeParams(params)}`,
-        this.defaultOptions()
-      )
+      fetch(this.urlFor('/groups'), this.defaultOptions())
     );
 
   urlFor = path => API_BACKEND + path;
