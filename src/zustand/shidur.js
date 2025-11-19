@@ -575,7 +575,7 @@ export const useShidurStore = create((set, get) => ({
   exitAudioMode: async () => {
     const { initQuad, isPlay, video: currentVideo, setVideo } = get();
     try {
-      await rejectTimeoutPromise(initQuad(), 1000);
+      await rejectTimeoutPromise(initQuad(), 10000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initQuad:', error);
     }
