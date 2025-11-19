@@ -86,7 +86,7 @@ class MqttMsg {
     try {
       this.mq = await rejectTimeoutPromise(
         mqtt.connectAsync(`wss://${MQTT_URL}`, options),
-        2000
+        10000
       );
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
       finishSpan(connectSpan, 'ok');
