@@ -211,7 +211,7 @@ export const useInitsStore = create((set, get) => ({
             logger.debug(NAMESPACE, 'Processing ON_START_CALL');
             _isPlay = useShidurStore.getState().isPlay;
             logger.debug(NAMESPACE, 'ON_START_CALL exitRoom');
-            await useInRoomStore.getState().exitRoom();
+            useInRoomStore.getState().exitRoom();
             logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');

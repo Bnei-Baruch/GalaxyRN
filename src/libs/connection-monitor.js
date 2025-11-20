@@ -3,7 +3,6 @@ import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
-import { rejectTimeoutPromise } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
@@ -189,22 +188,18 @@ const onNoNetwork = async () => {
   logger.debug(NAMESPACE, 'onNoNetwork');
 
   try {
-    await rejectTimeoutPromise(useInRoomStore.getState().exitRoom(), 2000);
+    await useInRoomStore.getState().exitRoom();
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
-  try {
-    await useInRoomStore.getState().exitRoom();
-  } catch (e) {
-    logger.debug(NAMESPACE, 'Error in exitRoom', e);
-  }
+
   const _netIsOn = isNetConnected();
   useInitsStore.getState().setMqttIsOn(false);
   useSettingsStore.getState().setNetWIP(false);
   useInitsStore.getState().setNetIsOn(_netIsOn);
 
   try {
-    await kc.logout();
+    kc.logout();
   } catch (e) {
     logger.debug(NAMESPACE, 'Error in logout', e);
   }

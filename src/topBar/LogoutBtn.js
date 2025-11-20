@@ -21,7 +21,7 @@ const LogoutBtn = () => {
       logger.error(NAMESPACE, 'Error exiting room', error);
     }
     try {
-      await kc.logout();
+      kc.logout();
     } catch (error) {
       logger.error(NAMESPACE, 'Error logging out', error);
     }

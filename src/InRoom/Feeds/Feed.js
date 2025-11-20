@@ -18,7 +18,13 @@ const NAMESPACE = 'Feed';
 const RTCViewWrapper = memo(
   ({ streamURL }) => {
     logger.debug(NAMESPACE, 'RTCViewWrapper render');
-    return <RTCView streamURL={streamURL} style={styles.rtcView} objectFit="contain" />;
+    return (
+      <RTCView
+        streamURL={streamURL}
+        style={styles.rtcView}
+        objectFit="contain"
+      />
+    );
   },
   (prevProps, nextProps) => {
     return prevProps.streamURL === nextProps.streamURL;
@@ -31,17 +37,25 @@ const Feed = ({ id }) => {
   const { borders, width } = useUiActions();
   const netWIP = useSettingsStore(state => state.netWIP);
 
-  logger.debug(NAMESPACE, 'Feed render');
-
   const {
     display: { display } = {},
     talking,
     camera,
     question,
+    vWIP,
     vOn,
     url,
   } = feed || {};
 
+  logger.debug(NAMESPACE, 'Feed render', {
+    display,
+    talking,
+    camera,
+    question,
+    vWIP,
+    vOn,
+    url,
+  });
   const ref = useRef();
 
   const activateDeactivate = (top = 0, bottom = 0, feedId) => {
@@ -76,7 +90,7 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    if (!vOn || !url) return <WIP isReady={false} />;
+    if (vWIP || !vOn) return <WIP isReady={false} />;
 
     return (
       <View style={styles.viewer}>

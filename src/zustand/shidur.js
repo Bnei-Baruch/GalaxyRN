@@ -246,7 +246,7 @@ export const useShidurStore = create((set, get) => ({
       await Promise.all([get().cleanShidur(), get().cleanQuads()]);
 
       logger.debug(NAMESPACE, 'cleanJanus');
-      await rejectTimeoutPromise(janus.destroy(), 2000);
+      await rejectTimeoutPromise(janus.destroy(), 5000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanJanus:', error);
       finishSpan(span, 'internal_error', NAMESPACE);
@@ -416,7 +416,7 @@ export const useShidurStore = create((set, get) => ({
     trlAudioStream = null;
     try {
       if (trlAudioJanus) {
-        await rejectTimeoutPromise(janus?.detach(trlAudioJanus), 2000);
+        await rejectTimeoutPromise(janus.detach(trlAudioJanus), 2000);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
@@ -575,7 +575,7 @@ export const useShidurStore = create((set, get) => ({
   exitAudioMode: async () => {
     const { initQuad, isPlay, video: currentVideo, setVideo } = get();
     try {
-      await rejectTimeoutPromise(initQuad(), 10000);
+      initQuad();
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initQuad:', error);
     }

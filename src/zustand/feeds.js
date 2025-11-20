@@ -1,5 +1,5 @@
 // External libraries
-import produce from 'immer';
+import { produce } from 'immer';
 import { create } from 'zustand';
 
 // Libs
@@ -214,7 +214,10 @@ export const useFeedsStore = create((set, get) => ({
       is_group: false,
       is_desktop: false,
     };
-    logger.info(NAMESPACE, `Videoroom init: d - ${d} room - ${room.room}`);
+    logger.info(
+      NAMESPACE,
+      `Videoroom init: d - ${JSON.stringify(d)} room - ${room.room}`
+    );
 
     const data = await videoroom.join(room.room, d);
     logger.info(NAMESPACE, 'Joined respond');
@@ -273,7 +276,7 @@ export const useFeedsStore = create((set, get) => ({
       const { id } = stream;
       logger.info(
         NAMESPACE,
-        `>> This track is coming from feed ${id}: ${JSON.stringify(track)}`
+        `>> Track from feed ${id}: ${JSON.stringify(track)} on: ${on}`
       );
       if (on && track.kind === 'video') {
         let url;
@@ -281,13 +284,13 @@ export const useFeedsStore = create((set, get) => ({
           url = stream.toURL();
         } catch (error) {
           logger.error(NAMESPACE, 'Error setting feed url', error);
-          url = null;
         }
+
         set(
           produce(state => {
-            state.feedById[id].vOn = true;
-            state.feedById[id].vWIP = false;
             state.feedById[id].url = url;
+            state.feedById[id].vOn = !!url;
+            state.feedById[id].vWIP = false;
           })
         );
       }
@@ -297,22 +300,43 @@ export const useFeedsStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'subscriber.onUpdate streams', streams);
       if (!streams) return;
 
-      const _videosByFeed = {};
+      const _vOnByFeed = {};
       for (const s of streams) {
-        if (s.type !== 'video' || !s.active) continue;
-        _videosByFeed[s.feed_id] = s;
+        if (!s.feed_id) continue;
+
+        if (_vOnByFeed[s.feed_id]) continue;
+
+        if (
+          s.type === 'video' &&
+          s.active &&
+          s.ready &&
+          s.feed_id !== get().janusInfo?.rfid
+        ) {
+          _vOnByFeed[s.feed_id] = true;
+        } else {
+          _vOnByFeed[s.feed_id] = false;
+        }
       }
-      logger.debug(NAMESPACE, 'Updated _videosByFeed', _videosByFeed);
+
+      logger.debug(NAMESPACE, 'Updated _vOnByFeed', _vOnByFeed);
+
       set(
         produce(state => {
-          for (const k in state.feedById) {
-            const f = state.feedById[k];
-            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[k]', f);
-            if (f && !_videosByFeed[f.id]) {
-              f.url = null;
-              f.vOn = false;
-              f.vWIP = false;
+          for (const id in _vOnByFeed) {
+            const f = state.feedById[id];
+
+            if (!f) {
+              logger.error(
+                NAMESPACE,
+                `subscriber.onUpdate`,
+                new Error(`feedById[${id}] not found`)
+              );
+              continue;
             }
+
+            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[id]', f);
+            f.vWIP = false;
+            f.vOn = _vOnByFeed[id];
           }
         })
       );
@@ -413,7 +437,7 @@ export const useFeedsStore = create((set, get) => ({
     restartWIP = true;
     try {
       await get().cleanFeeds();
-      await rejectTimeoutPromise(get().initFeeds(), 2000);
+      await get().initFeeds();
     } catch (error) {
       logger.error(NAMESPACE, 'Error restarting feeds', error);
     }
@@ -425,9 +449,9 @@ export const useFeedsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'cleanFeeds');
     // Clean up Janus
     if (janus) {
-      logger.info(NAMESPACE, 'exitRoom janus');
+      logger.info(NAMESPACE, 'cleanFeeds janus');
       try {
-        await rejectTimeoutPromise(janus.destroy(), 2000);
+        await rejectTimeoutPromise(janus.destroy(), 5000);
       } catch (error) {
         logger.error(NAMESPACE, 'Error destroying janus', error);
       }
@@ -458,12 +482,14 @@ export const useFeedsStore = create((set, get) => ({
   activateFeedsVideos: ids => {
     logger.debug(NAMESPACE, 'activateFeedsVideos ids', ids);
     const { feedById } = get();
+    const _feedById = [];
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
-      if (f?.vMid && !f.url && !f.vWIP) {
+      if (f?.vMid && (f.url || f.camera) && !f.vWIP) {
         params.push({ feed: parseInt(id), mid: f.vMid });
+        _feedById[id] = { ...f, vWIP: true };
       }
     }
 
@@ -474,12 +500,14 @@ export const useFeedsStore = create((set, get) => ({
 
   deactivateFeedsVideos: ids => {
     const { feedById } = get();
+    const _feedById = [];
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
-      if (f?.vMid && f.url) {
+      if (f?.url && f.vOn && !f.vWIP) {
         params.push({ feed: parseInt(id), mid: f.vMid });
+        _feedById[id] = { ...f, vWIP: true };
       }
     }
 

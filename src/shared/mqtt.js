@@ -17,7 +17,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
-import { randomString, rejectTimeoutPromise } from './tools';
+import { randomString } from './tools';
 
 import { Buffer } from 'buffer';
 
@@ -84,10 +84,7 @@ class MqttMsg {
     const connectSpan = addSpan(CONNECTION, 'mqtt.connect');
     logger.debug(NAMESPACE, 'Connecting to MQTT:', MQTT_URL);
     try {
-      this.mq = await rejectTimeoutPromise(
-        mqtt.connectAsync(`wss://${MQTT_URL}`, options),
-        10000
-      );
+      this.mq = await mqtt.connectAsync(`wss://${MQTT_URL}`, options);
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
       finishSpan(connectSpan, 'ok');
     } catch (error) {
