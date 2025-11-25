@@ -34,7 +34,8 @@ const RTCViewWrapper = memo(
 const Feed = ({ id }) => {
   const feed = useFeedsStore(state => state.feedById[id]);
   const { activateFeedsVideos, deactivateFeedsVideos } = useFeedsStore();
-  const { borders, width } = useUiActions();
+  const borders = useUiActions(state => state.borders);
+  const width = useUiActions(state => state.width);
   const netWIP = useSettingsStore(state => state.netWIP);
 
   const {
@@ -70,8 +71,10 @@ const Feed = ({ id }) => {
   };
 
   useEffect(() => {
-    const { top, bottom } = borders;
-    activateDeactivate(top, bottom, id);
+    if (ref.current) {
+      const { top, bottom } = borders;
+      activateDeactivate(top, bottom, id);
+    }
   }, [borders, id]);
 
   if (!feed) return null;

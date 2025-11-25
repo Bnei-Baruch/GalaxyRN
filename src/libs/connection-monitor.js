@@ -56,7 +56,7 @@ export const initConnectionMonitor = () => {
       currentState = state;
       logger.debug(NAMESPACE, 'First network state');
       useInitsStore.getState().setNetIsOn(isNetConnected(state));
-      finishSpan(networkStateSpan, 'ok');
+      finishSpan(networkStateSpan, 'ok', NAMESPACE);
       return;
     }
 
@@ -67,9 +67,9 @@ export const initConnectionMonitor = () => {
 
       if (!isNetConnected()) {
         onNoNetwork();
-        finishSpan(networkStateSpan, 'net_error');
+        finishSpan(networkStateSpan, 'net_error', NAMESPACE);
       }
-      finishSpan(networkStateSpan, 'ok');
+      finishSpan(networkStateSpan, 'ok', NAMESPACE);
       return;
     }
 
@@ -81,7 +81,7 @@ export const initConnectionMonitor = () => {
 
       if (!isNetConnected()) {
         onNoNetwork();
-        finishSpan(networkStateSpan, 'net_error');
+        finishSpan(networkStateSpan, 'net_error', NAMESPACE);
         return;
       }
     }
@@ -89,7 +89,7 @@ export const initConnectionMonitor = () => {
     logger.debug(NAMESPACE, 'Network connected', state, currentState);
     useInitsStore.getState().setMqttIsOn(mqtt.mq?.connected);
     disconnectedSeconds = 0;
-    finishSpan(networkStateSpan, 'ok');
+    finishSpan(networkStateSpan, 'ok', NAMESPACE);
   });
 };
 
@@ -137,16 +137,16 @@ const waitConnectionRestart = async () => {
   const connected = await waitAndRestart();
   callWaitConnectionListeners(connected);
   if (!connected) {
-    finishSpan(restartSpan, 'internal_error');
+    finishSpan(restartSpan, 'internal_error', NAMESPACE);
     return;
   }
 
   try {
     callListeners();
-    finishSpan(restartSpan, 'ok');
+    finishSpan(restartSpan, 'ok', NAMESPACE);
   } catch (e) {
     logger.error(NAMESPACE, 'Error calling iceRestartListeners', e);
-    finishSpan(restartSpan, 'internal_error');
+    finishSpan(restartSpan, 'internal_error', NAMESPACE);
     useInRoomStore.getState().restartRoom();
   }
 };
@@ -161,7 +161,7 @@ const waitAndRestart = async () => {
     logger.debug(NAMESPACE, 'monitorNetInfo success');
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorNetInfo', e);
-    finishSpan(span, 'net_error');
+    finishSpan(span, 'net_error', NAMESPACE);
     await onNoNetwork();
     return false;
   }
@@ -173,14 +173,14 @@ const waitAndRestart = async () => {
     logger.debug(NAMESPACE, 'monitorMqtt success');
   } catch (e) {
     logger.error(NAMESPACE, 'Error in monitorMqtt', e);
-    finishSpan(span, 'mqtt_error');
+    finishSpan(span, 'mqtt_error', NAMESPACE);
     await onNoNetwork();
     return false;
   }
 
   disconnectedSeconds = 0;
   useSettingsStore.getState().setNetWIP(false);
-  finishSpan(span, 'ok');
+  finishSpan(span, 'ok', NAMESPACE);
   return true;
 };
 
@@ -325,6 +325,7 @@ export const waitConnection = async () => {
         addFinishSpan(CONNECTION, 'connectionMonitor.waitConnection', {
           netConnected,
           mqttConnected: mqtt.mq?.connected,
+          NAMESPACE,
         });
       }
       resolve(connected);

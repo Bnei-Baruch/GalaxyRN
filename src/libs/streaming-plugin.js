@@ -13,10 +13,10 @@ import {
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
 import {
-  addAttributes,
   addFinishSpan,
   addSpan,
   finishSpan,
+  setSpanAttributes,
 } from './sentry/sentryHelper';
 
 const NAMESPACE = 'StreamingPlugin';
@@ -51,10 +51,10 @@ export class StreamingPlugin {
       try {
         logger.info(NAMESPACE, 'Connection listener called');
         await this.iceRestart();
-        finishSpan(connectionListenerSpan, 'ok');
+        finishSpan(connectionListenerSpan, 'ok', NAMESPACE);
       } catch (error) {
         logger.error(NAMESPACE, 'Error in connection listener', error);
-        finishSpan(connectionListenerSpan, 'internal_error');
+        finishSpan(connectionListenerSpan, 'internal_error', NAMESPACE);
         this.detach();
         useShidurStore.getState().restartShidur();
       }
@@ -154,6 +154,7 @@ export class StreamingPlugin {
     const initSpan = addSpan(CONNECTION, 'streaming.init', {
       streamId: id,
       handleId: this.janusHandleId,
+      NAMESPACE,
     });
 
     logger.info(NAMESPACE, 'watch: ', id);
@@ -166,11 +167,11 @@ export class StreamingPlugin {
       const { json } = result || {};
       if (!json?.jsep) {
         logger.error(NAMESPACE, 'No JSEP received');
-        finishSpan(initSpan, 'internal_error');
+        finishSpan(initSpan, 'internal_error', NAMESPACE);
         throw new Error('No JSEP received');
       }
       await this.sdpExchange(json.jsep);
-      finishSpan(initSpan, 'ok');
+      finishSpan(initSpan, 'ok', NAMESPACE);
     } catch (error) {
       const errorCode = error?.data?.error_code;
 
@@ -179,17 +180,19 @@ export class StreamingPlugin {
           NAMESPACE,
           `Stream ${id} not found on Janus server (error 455)`
         );
-        finishSpan(initSpan, 'internal_error');
+        finishSpan(initSpan, 'internal_error', NAMESPACE);
         throw new Error(`Stream ${id} not found on Janus server`);
       }
 
-      finishSpan(initSpan, 'internal_error');
+      finishSpan(initSpan, 'internal_error', NAMESPACE);
       throw error;
     }
   };
 
   iceRestart = async () => {
-    const iceRestartSpan = addSpan(CONNECTION, 'streaming.iceRestart');
+    const iceRestartSpan = addSpan(CONNECTION, 'streaming.iceRestart', {
+      NAMESPACE,
+    });
     logger.info(NAMESPACE, 'Starting ICE restart for streaming');
 
     if (this.isDestroyed) {
@@ -197,7 +200,7 @@ export class StreamingPlugin {
     }
     if (!this.streamId) {
       logger.warn(NAMESPACE, 'Cannot restart ICE - no stream ID available');
-      finishSpan(iceRestartSpan, 'no_stream_id');
+      finishSpan(iceRestartSpan, 'no_stream_id', NAMESPACE);
 
       this.detach();
       useShidurStore.getState().restartShidur();
@@ -206,7 +209,7 @@ export class StreamingPlugin {
     const iceState = this.pc.iceConnectionState;
 
     if (iceState === 'closed') {
-      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      finishSpan(iceRestartSpan, 'ice_connection_closed', NAMESPACE);
       this.detach();
       useShidurStore.getState().restartShidur();
       return;
@@ -216,7 +219,7 @@ export class StreamingPlugin {
     /*
     if (iceState !== 'failed' && iceState !== 'disconnected') {
       logger.warn(NAMESPACE, 'connection is not failed or disconnected');
-      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected', NAMESPACE);
       return;
     }
     */
@@ -232,10 +235,10 @@ export class StreamingPlugin {
       if (json?.jsep) {
         await this.sdpExchange(json.jsep);
         logger.info(NAMESPACE, 'ICE restart completed successfully');
-        finishSpan(iceRestartSpan, 'ok');
+        finishSpan(iceRestartSpan, 'ok', NAMESPACE);
       } else {
         logger.warn(NAMESPACE, 'ICE restart: No JSEP in response');
-        finishSpan(iceRestartSpan, 'no_jsep');
+        finishSpan(iceRestartSpan, 'no_jsep', NAMESPACE);
       }
 
       return result;
@@ -243,13 +246,13 @@ export class StreamingPlugin {
       const errorCode = error?.data?.error_code;
       // Handle "Already in room" or similar Janus errors (460, 436, etc.)
       if (errorCode === 460 || errorCode === 436) {
-        addAttributes(iceRestartSpan, { errorCode });
-        finishSpan(iceRestartSpan, 'already_in_room_error');
+        setSpanAttributes(iceRestartSpan, { errorCode, NAMESPACE });
+        finishSpan(iceRestartSpan, 'already_in_room_error', NAMESPACE);
         return;
       }
 
-      addAttributes(iceRestartSpan, { error });
-      finishSpan(iceRestartSpan, 'error_response');
+      setSpanAttributes(iceRestartSpan, { error, NAMESPACE });
+      finishSpan(iceRestartSpan, 'error_response', NAMESPACE);
       this.detach();
       useShidurStore.getState().restartShidur();
     }
@@ -373,6 +376,7 @@ export class StreamingPlugin {
       streamId: this.streamId,
       handleId: this.janusHandleId,
       iceConnectionState: this.pc?.iceConnectionState,
+      NAMESPACE,
     });
     logger.warn(NAMESPACE, 'SlowLink detected:', {
       uplink,
@@ -406,7 +410,8 @@ export class StreamingPlugin {
         this.pc.close();
         this.pc = null;
       } catch (error) {
-        addAttributes(detachSpan, { error });
+        logger.error(NAMESPACE, 'Error in detach', error);
+        setSpanAttributes(detachSpan, { error, NAMESPACE });
       }
     }
 
@@ -416,6 +421,6 @@ export class StreamingPlugin {
     this.candidates = [];
     this.onStatus = null;
     this.janus = null;
-    finishSpan(detachSpan, 'ok');
+    finishSpan(detachSpan, 'ok', NAMESPACE);
   };
 }

@@ -75,6 +75,8 @@ export const fixTextEncoding = text => {
     return 'No name';
   }
 
+  logger.debug(NAMESPACE, 'fixTextEncoding text', text);
+
   if (!/[\xC0-\xFF]|Ð|Ñ|â€|Ã|Â/.test(text)) {
     return text;
   }
@@ -84,10 +86,12 @@ export const fixTextEncoding = text => {
 
     const detected = jschardet.detect(buffer);
     const encoding = detected.encoding.toLowerCase();
+    logger.debug(NAMESPACE, 'fixTextEncoding encoding', encoding);
     if (encoding === 'ascii' || encoding === 'utf-8') {
       return text;
     }
     const decoded = iconv.decode(buffer, detected.encoding);
+    logger.debug(NAMESPACE, 'fixTextEncoding decoded', decoded);
     if (!decoded.includes('\uFFFD') && decoded !== text) {
       return decoded;
     }

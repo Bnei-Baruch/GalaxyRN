@@ -9,10 +9,10 @@ import {
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
 import {
-  addAttributes,
   addFinishSpan,
   addSpan,
   finishSpan,
+  setSpanAttributes,
 } from './sentry/sentryHelper';
 
 const NAMESPACE = 'PublisherPlugin';
@@ -324,7 +324,7 @@ export class PublisherPlugin {
     const iceState = this.pc.iceConnectionState;
 
     if (iceState === 'closed') {
-      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      finishSpan(iceRestartSpan, 'ice_connection_closed', NAMESPACE);
       this.detach();
       useFeedsStore.getState().restartFeeds();
       return;
@@ -334,7 +334,7 @@ export class PublisherPlugin {
     /*
     if (iceState !== 'failed' && iceState !== 'disconnected') {
       logger.warn(NAMESPACE, 'connection is not failed or disconnected');
-      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected', NAMESPACE);
       return;
     }
     */
@@ -342,18 +342,20 @@ export class PublisherPlugin {
     try {
       logger.debug(NAMESPACE, 'Restarting ICE');
       await this.configure(true);
+      finishSpan(iceRestartSpan, 'ok', NAMESPACE);
     } catch (error) {
       // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
       if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
-        addAttributes(iceRestartSpan, { errorCode });
-        finishSpan(iceRestartSpan, 'already_in_room_error');
+        setSpanAttributes(iceRestartSpan, { errorCode });
+        finishSpan(iceRestartSpan, 'already_in_room_error', NAMESPACE);
         return;
       }
 
-      finishSpan(iceRestartSpan, 'error_response');
       this.detach();
       useFeedsStore.getState().restartFeeds();
+      finishSpan(iceRestartSpan, 'error_response', NAMESPACE);
+      logger.error(NAMESPACE, 'Error in iceRestart', error);
     }
   };
 
@@ -475,6 +477,7 @@ export class PublisherPlugin {
   oncleanup = () => {
     addFinishSpan(CONNECTION, 'publisher.oncleanup', {
       isDestroyed: this.isDestroyed,
+      NAMESPACE,
     });
   };
 
@@ -483,6 +486,7 @@ export class PublisherPlugin {
   detached = () => {
     addFinishSpan(CONNECTION, 'publisher.detached', {
       isDestroyed: this.isDestroyed,
+      NAMESPACE,
     });
   };
 
@@ -532,7 +536,8 @@ export class PublisherPlugin {
     try {
       this.cleanupPc();
     } catch (error) {
-      addAttributes(detachSpan, { error });
+      logger.error(NAMESPACE, 'Error in detach', error);
+      setSpanAttributes(detachSpan, { error, NAMESPACE });
     }
 
     // Clear additional properties
@@ -542,7 +547,7 @@ export class PublisherPlugin {
     this.unsubFrom = null;
     this.talkEvent = null;
     this.janus = null;
-    finishSpan(detachSpan, 'ok');
+    finishSpan(detachSpan, 'ok', NAMESPACE);
   };
 
   cleanupPc = () => {

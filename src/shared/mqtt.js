@@ -41,7 +41,7 @@ class MqttMsg {
     const initSpan = addSpan(CONNECTION, 'mqtt.init');
 
     if (this.mq) {
-      finishSpan(initSpan, 'error_already_initialized');
+      finishSpan(initSpan, 'error_already_initialized', NAMESPACE);
       return this.mq;
     }
 
@@ -86,11 +86,11 @@ class MqttMsg {
     try {
       this.mq = await mqtt.connectAsync(`wss://${MQTT_URL}`, options);
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
-      finishSpan(connectSpan, 'ok');
+      finishSpan(connectSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error connecting to MQTT:', error);
-      finishSpan(connectSpan, 'internal_error');
-      finishSpan(initSpan, 'internal_error');
+      finishSpan(connectSpan, 'internal_error', NAMESPACE);
+      finishSpan(initSpan, 'internal_error', NAMESPACE);
       throw error;
     }
     this.mq.setMaxListeners(50);
@@ -99,10 +99,15 @@ class MqttMsg {
       logger.debug(NAMESPACE, 'mqtt on connect', data);
       resetLastReconnect();
 
-      const connectSpan = addSpan(CONNECTION, 'mqtt.connectEvent');
+      const connectSpan = addSpan(CONNECTION, 'mqtt.connectEvent', {
+        NAMESPACE,
+      });
 
       if (!data.sessionPresent && this.wasConnected) {
-        addFinishSpan(CONNECTION, 'mqtt.connectEvent.resubscribe', data);
+        addFinishSpan(CONNECTION, 'mqtt.connectEvent.resubscribe', {
+          ...data,
+          NAMESPACE,
+        });
         Promise.all([
           useInRoomStore.getState().subscribeMqtt(),
           useInitsStore.getState().subscribeMqtt(),
@@ -119,28 +124,29 @@ class MqttMsg {
       }
 
       this.wasConnected = true;
-      finishSpan(connectSpan, 'ok');
+      finishSpan(connectSpan, 'ok', NAMESPACE);
     });
 
     this.mq.on('reconnect', data => {
-      addFinishSpan(CONNECTION, 'mqtt.reconnect');
+      addFinishSpan(CONNECTION, 'mqtt.reconnect', { ...data, NAMESPACE });
       logger.debug(NAMESPACE, 'mqtt on reconnect', data, this.mq.connected);
     });
 
     this.mq.on('offline', data => {
-      addFinishSpan(CONNECTION, 'mqtt.offline');
+      addFinishSpan(CONNECTION, 'mqtt.offline', { ...data, NAMESPACE });
       logger.debug(NAMESPACE, 'mqtt on offline', data);
     });
 
     this.mq.on('close', () => {
       addFinishSpan(CONNECTION, 'mqtt.close', {
         connected: this.mq?.connected,
+        NAMESPACE,
       });
       useInitsStore.getState().setMqttIsOn(!this.mq?.connected);
     });
 
     this.mq.on('disconnect', data => {
-      addFinishSpan(CONNECTION, 'mqtt.disconnect');
+      addFinishSpan(CONNECTION, 'mqtt.disconnect', { ...data, NAMESPACE });
       logger.debug(NAMESPACE, 'mqtt on disconnect', data);
 
       if (data?.reasonCode === 142) {
@@ -149,16 +155,16 @@ class MqttMsg {
     });
 
     this.mq.on('end', data => {
-      addFinishSpan(CONNECTION, 'mqtt.end');
+      addFinishSpan(CONNECTION, 'mqtt.end', { ...data, NAMESPACE });
       logger.debug(NAMESPACE, 'mqtt on end', data);
     });
 
     this.mq.on('error', error => {
-      addFinishSpan(CONNECTION, 'mqtt.error');
+      addFinishSpan(CONNECTION, 'mqtt.error', { ...error, NAMESPACE });
       logger.error(NAMESPACE, 'mqtt on error', error);
     });
 
-    finishSpan(initSpan, 'ok');
+    finishSpan(initSpan, 'ok', NAMESPACE);
     return this.mq;
   };
 
@@ -327,7 +333,7 @@ class MqttMsg {
     const endSpan = addSpan(CONNECTION, 'mqtt.end');
     logger.debug(NAMESPACE, 'start of mqttend', this.mq);
     if (!this.mq) {
-      finishSpan(endSpan, 'ok');
+      finishSpan(endSpan, 'ok', NAMESPACE);
       return;
     }
 
@@ -336,15 +342,15 @@ class MqttMsg {
       this.mq.removeAllListeners();
     } catch (e) {
       logger.error(NAMESPACE, 'end removeAllListeners', e);
-      finishSpan(endSpan, 'internal_error');
+      finishSpan(endSpan, 'internal_error', NAMESPACE);
     }
     try {
       logger.debug(NAMESPACE, 'endAsync', this.mq);
       await this.mq.endAsync();
-      finishSpan(endSpan, 'ok');
+      finishSpan(endSpan, 'ok', NAMESPACE);
     } catch (e) {
       logger.error(NAMESPACE, 'endAsync error', e);
-      finishSpan(endSpan, 'internal_error');
+      finishSpan(endSpan, 'internal_error', NAMESPACE);
     }
     this.mq = null;
     this.wasConnected = false;

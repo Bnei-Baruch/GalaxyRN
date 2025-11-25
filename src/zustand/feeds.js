@@ -3,6 +3,7 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 // Libs
+import BackgroundTimer from 'react-native-background-timer';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
@@ -286,10 +287,17 @@ export const useFeedsStore = create((set, get) => ({
           logger.error(NAMESPACE, 'Error setting feed url', error);
         }
 
+        BackgroundTimer.setTimeout(() => {
+          set(
+            produce(state => {
+              state.feedById[id].vOn = !!url;
+            })
+          );
+        }, 100);
+
         set(
           produce(state => {
             state.feedById[id].url = url;
-            state.feedById[id].vOn = !!url;
             state.feedById[id].vWIP = false;
           })
         );
@@ -335,7 +343,7 @@ export const useFeedsStore = create((set, get) => ({
             }
 
             logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[id]', f);
-            f.vWIP = false;
+            f.vWIP = !f.url;
             f.vOn = _vOnByFeed[id];
           }
         })
@@ -397,9 +405,9 @@ export const useFeedsStore = create((set, get) => ({
           display: JSON.parse(display),
           camera,
         };
-      }
-      if (!_isSubscribed && vStream) {
-        subs.push({ feed: id });
+        if (!_isSubscribed && vStream) {
+          subs.push({ feed: id });
+        }
       }
 
       feedById[id].vMid = vStream?.mid;
@@ -489,30 +497,60 @@ export const useFeedsStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
       if (f?.vMid && (f.url || f.camera) && !f.vWIP) {
         params.push({ feed: parseInt(id), mid: f.vMid });
-        _feedById[id] = { ...f, vWIP: true };
       }
     }
 
     if (params.length === 0) return Promise.resolve();
+
+    set(
+      produce(state => {
+        for (const { feed } of params) {
+          state.feedById[feed].vWIP = true;
+        }
+      })
+    );
+
+    if (!subscriber || !_subscriberJoined) {
+      logger.warn(NAMESPACE, 'activateFeedsVideos: subscriber not ready', {
+        hasSubscriber: !!subscriber,
+        isJoined: _subscriberJoined,
+      });
+      return Promise.resolve();
+    }
 
     return subscriber.sub(params);
   },
 
   deactivateFeedsVideos: ids => {
     const { feedById } = get();
-    const _feedById = [];
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
       if (f?.url && f.vOn && !f.vWIP) {
         params.push({ feed: parseInt(id), mid: f.vMid });
-        _feedById[id] = { ...f, vWIP: true };
       }
     }
 
     if (params.length === 0) return Promise.resolve();
 
+    set(
+      produce(state => {
+        for (const { feed } of params) {
+          state.feedById[feed].vWIP = true;
+        }
+      })
+    );
+
+    if (!subscriber || !_subscriberJoined) {
+      logger.warn(NAMESPACE, 'deactivateFeedsVideos: subscriber not ready', {
+        hasSubscriber: !!subscriber,
+        isJoined: _subscriberJoined,
+      });
+      return Promise.resolve();
+    }
+
+    logger.debug(NAMESPACE, 'deactivateFeedsVideos params', params);
     return subscriber.unsub(params);
   },
 

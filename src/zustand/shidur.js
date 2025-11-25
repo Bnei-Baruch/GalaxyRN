@@ -4,6 +4,11 @@ import { create } from 'zustand';
 
 // Libs
 import { JanusMqtt } from '../libs/janus-mqtt';
+import {
+  addSpan,
+  finishSpan,
+  setSpanAttributes,
+} from '../libs/sentry/sentryHelper';
 import { StreamingPlugin } from '../libs/streaming-plugin';
 
 // Services
@@ -13,7 +18,6 @@ import logger from '../services/logger';
 import i18n, { getSystemLanguage } from '../i18n/i18n';
 import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
-import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
 import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
@@ -258,8 +262,11 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initMedias: async () => {
-    logger.debug(NAMESPACE, 'initMedias');
-    if (get().video && get().audio) return;
+    logger.debug(NAMESPACE, 'initMedias called');
+    if (get().video && get().audio) {
+      logger.debug(NAMESPACE, 'video and audio already set, skipping');
+      return;
+    }
 
     let video;
     if (useSettingsStore.getState().audioMode) {
@@ -278,7 +285,10 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initShidur: async (isPlay = get().isPlay) => {
-    logger.debug(NAMESPACE, 'initShidur isPlay', isPlay);
+    const span = addSpan(ROOM_SESSION, 'shidur.initShidur', {
+      NAMESPACE,
+      isPlay,
+    });
     set({ shidurWIP: true, isPlay });
     logger.debug(NAMESPACE, 'initShidur');
 
@@ -287,14 +297,23 @@ export const useShidurStore = create((set, get) => ({
       await get().initJanus();
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
+      setSpanAttributes(span, { error });
     }
 
     if (!useSettingsStore.getState().isShidur || !isPlay) {
       set({ shidurWIP: false });
+      setSpanAttributes(span, { isPlay });
+      finishSpan(span, 'ok', NAMESPACE);
       return;
     }
 
-    await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
+    try {
+      await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during initShidur:', error);
+    }
+    set({ readyShidur: true, shidurWIP: false });
+    finishSpan(span, 'ok', NAMESPACE);
   },
 
   initVideoHandle: async () => {
@@ -302,7 +321,6 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, `initVideoHandle video: ${video} `);
 
     if (videoJanus || video === NO_VIDEO_OPTION_VALUE) {
-      set({ readyShidur: true, shidurWIP: false });
       return;
     }
 
@@ -315,11 +333,7 @@ export const useShidurStore = create((set, get) => ({
         videoStream = stream;
         const url = videoStream?.toURL();
         logger.debug(NAMESPACE, 'videoStream got track url: ', url);
-        set({
-          url,
-          readyShidur: true,
-          shidurWIP: false,
-        });
+        set({ url });
       };
       initStream(video, videoJanus);
     } catch (error) {
@@ -335,7 +349,12 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'initShidur has audioJanus', !!audioJanus);
     if (!audioJanus) {
       const audioPromise = new Promise((resolve, reject) => {
-        audioJanus = new StreamingPlugin(config?.iceServers);
+        try {
+          audioJanus = new StreamingPlugin(config?.iceServers);
+        } catch (error) {
+          logger.error(NAMESPACE, 'Error during initAudioHandles:', error);
+          reject(error);
+        }
         audioJanus.onTrack = stream => {
           logger.info(NAMESPACE, 'audioStream got track: ', stream);
           cleanStream(audioStream);
@@ -354,7 +373,12 @@ export const useShidurStore = create((set, get) => ({
       const id = trllang[audioKey?.split('_')[1]];
       logger.debug(NAMESPACE, 'initAudioHandles trlAudioJanus id', id);
       const trlPromise = new Promise((resolve, reject) => {
-        trlAudioJanus = new StreamingPlugin(config?.iceServers);
+        try {
+          trlAudioJanus = new StreamingPlugin(config?.iceServers);
+        } catch (error) {
+          logger.error(NAMESPACE, 'Error during initAudioHandles:', error);
+          reject(error);
+        }
         trlAudioJanus.onTrack = stream => {
           logger.info(NAMESPACE, 'trlAudioStream got track: ', stream);
           cleanStream(trlAudioStream);
@@ -599,6 +623,7 @@ export const useShidurStore = create((set, get) => ({
 
   setAudio: async key => {
     const audio = getOptionByKey(key);
+    const span = addSpan(ROOM_SESSION, 'shidur.setAudio', { NAMESPACE });
     logger.debug(NAMESPACE, 'setAudio', audio);
 
     try {
@@ -628,8 +653,10 @@ export const useShidurStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'set audio', audio);
     const isOriginal = audio.key === 'wo_original';
+    setSpanAttributes(span, { isOriginal, NAMESPACE });
+
     if (!isOriginal) {
-      Promise.all([
+      await Promise.all([
         setToStorage('audio', audio.key),
         setToStorage('is_original', false),
       ]);
@@ -637,11 +664,17 @@ export const useShidurStore = create((set, get) => ({
       await setToStorage('is_original', true);
     }
 
+    setSpanAttributes(span, { audio, NAMESPACE });
     set({ audio });
+    finishSpan(span, 'ok', NAMESPACE);
   },
 
   toggleIsOriginal: async () => {
-    logger.debug(NAMESPACE, 'toggleIsOriginal');
+    const isOriginal = await getFromStorage('is_original', false).then(
+      x => x === 'true'
+    );
+    logger.debug(NAMESPACE, 'toggleIsOriginal', (!isOriginal).toString());
+    await setToStorage('is_original', (!isOriginal).toString());
     const key = await getAudioKey();
     logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);

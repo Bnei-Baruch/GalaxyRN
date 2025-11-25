@@ -6,7 +6,8 @@ import Text from '../components/CustomText';
 import { useShidurStore } from '../zustand/shidur';
 
 export const OriginalSwitch = () => {
-  const { toggleIsOriginal, audio } = useShidurStore();
+  const toggleIsOriginal = useShidurStore(state => state.toggleIsOriginal);
+  const audio = useShidurStore(state => state.audio);
 
   const { t } = useTranslation();
   const isOriginal = audio?.key === 'wo_original';

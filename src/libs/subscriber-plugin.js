@@ -8,7 +8,12 @@ import {
   removeConnectionListener,
 } from './connection-monitor';
 import { CONNECTION } from './sentry/constants';
-import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
+import {
+  addFinishSpan,
+  addSpan,
+  finishSpan,
+  setSpanAttributes,
+} from './sentry/sentryHelper';
 
 const NAMESPACE = 'SubscriberPlugin';
 
@@ -191,7 +196,7 @@ export class SubscriberPlugin {
     const iceState = this.pc.iceConnectionState;
 
     if (iceState === 'closed') {
-      finishSpan(iceRestartSpan, 'ice_connection_closed');
+      finishSpan(iceRestartSpan, 'ice_connection_closed', NAMESPACE);
       this.detach();
       useFeedsStore.getState().restartFeeds();
       return;
@@ -200,7 +205,7 @@ export class SubscriberPlugin {
     /*
     if (iceState !== 'failed' && iceState !== 'disconnected') {
       logger.warn(NAMESPACE, 'connection is not failed or disconnected');
-      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected');
+      finishSpan(iceRestartSpan, 'connection_not_failed_or_disconnected', NAMESPACE);
       return;
     }
     */
@@ -209,23 +214,26 @@ export class SubscriberPlugin {
       useFeedsStore.getState().feedIds.filter(id => id !== 'my').length === 0
     ) {
       logger.debug(NAMESPACE, 'No publishers in the room, skipping');
+      finishSpan(iceRestartSpan, 'no_publishers', NAMESPACE);
       return;
     }
 
     try {
       await this.configure();
       logger.info(NAMESPACE, 'ICE restart completed successfully');
+      finishSpan(iceRestartSpan, 'ok', NAMESPACE);
     } catch (error) {
       // Handle "Already in room" or similar Janus errors (460, 436, 424, etc.)
       const errorCode = error?.data?.error_code;
       if (errorCode === 460 || errorCode === 436 || errorCode === 424) {
-        addAttributes(iceRestartSpan, { errorCode });
-        finishSpan(iceRestartSpan, 'already_in_room_error');
+        setSpanAttributes(iceRestartSpan, { errorCode });
+        finishSpan(iceRestartSpan, 'already_in_room_error', NAMESPACE);
         return;
       }
 
-      addAttributes(iceRestartSpan, { error });
-      finishSpan(iceRestartSpan, 'error_response');
+      logger.error(NAMESPACE, 'Error in iceRestart', error);
+      setSpanAttributes(iceRestartSpan, { error, NAMESPACE });
+      finishSpan(iceRestartSpan, 'error_response', NAMESPACE);
       this.detach();
       useFeedsStore.getState().restartFeeds();
     }
@@ -358,6 +366,7 @@ export class SubscriberPlugin {
   oncleanup = () => {
     addFinishSpan(CONNECTION, 'subscriber.oncleanup', {
       isDestroyed: this.isDestroyed,
+      NAMESPACE,
     });
   };
 
