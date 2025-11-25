@@ -74,10 +74,6 @@
 # React Native Screens
 -keep class com.swmansion.rnscreens.** { *; }
 
-# Flipper
--keep class com.facebook.flipper.** { *; }
--keep class com.facebook.jni.** { *; }
-
 # Hermes
 -keep class com.facebook.hermes.unicode.** { *; }
 -keep class com.facebook.jni.** { *; }

@@ -1,0 +1,18 @@
+// React Native autolinking dependencies
+// RN 0.77 autolinking generates PackageList but doesn't add implementation statements
+// This file provides the required implementation dependencies
+
+dependencies {
+    implementation project(':react-native-app-auth')
+    implementation project(':react-native-background-timer')
+    implementation project(':react-native-community_netinfo')
+    implementation project(':react-native-crisp-chat-sdk')
+    implementation project(':react-native-orientation-locker')
+    implementation project(':react-native-safe-area-context')
+    implementation project(':react-native-vector-icons')
+    implementation project(':react-native-webrtc')
+    implementation project(':react-native-webview')
+    implementation project(':rn-secure-storage')
+    implementation project(':sentry_react-native')
+}
+
