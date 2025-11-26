@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import { create } from 'zustand';
 import { isRTLString } from '../chat/helper';
 import logger from '../services/logger';

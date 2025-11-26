@@ -181,20 +181,17 @@ export const setTransactionTags = (
  * @param {string} key - Key of the session
  * @param {Object} attributes - Object with attribute key-value pairs
  */
-export const setTransactionAttributes = (
-  key,
-  attributes,
-  NAMESPACE = DEFAULT_NAMESPACE
-) => {
+export const setTransactionAttributes = (key, attributes) => {
+  const namespace = attributes.NAMESPACE || DEFAULT_NAMESPACE;
   const session = activeSessions.get(key);
   if (!session) {
-    logger.warn(NAMESPACE, `Session ${key} not found, cannot set attributes`);
+    logger.warn(namespace, `Session ${key} not found, cannot set attributes`);
     return;
   }
 
   // Используем setAttributes для установки всех атрибутов одновременно
   session.span.setAttributes(attributes);
-  logger.debug(NAMESPACE, `Set attributes on ${key}:`, attributes);
+  logger.debug(namespace, `Set attributes on ${key}:`, attributes);
 };
 
 /**
@@ -202,18 +199,15 @@ export const setTransactionAttributes = (
  * @param {Span} span - The span to set attributes on
  * @param {Object} attributes - Attributes to set
  */
-export const setSpanAttributes = (
-  span,
-  attributes,
-  NAMESPACE = DEFAULT_NAMESPACE
-) => {
+export const setSpanAttributes = (span, attributes) => {
   if (!span) {
-    logger.warn(NAMESPACE, 'Span not found, cannot set attributes');
+    logger.warn(DEFAULT_NAMESPACE, 'Span not found, cannot set attributes');
     return;
   }
 
+  const namespace = span.attributes?.NAMESPACE || DEFAULT_NAMESPACE;
   span.setAttributes(attributes);
-  logger.debug(NAMESPACE, 'Set attributes on span:', attributes);
+  logger.debug(namespace, 'Set attributes on span:', attributes);
 };
 
 export const captureException = args => {

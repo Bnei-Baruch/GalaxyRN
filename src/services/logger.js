@@ -1,6 +1,6 @@
 import { captureException } from '../libs/sentry/sentryHelper';
 
-let isDebug = __DEV__;
+let isDebug = true; // __DEV__;
 
 export const setIsDebug = debug => {
   isDebug = debug;

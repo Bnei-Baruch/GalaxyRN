@@ -18,7 +18,13 @@ const NAMESPACE = 'Feed';
 const RTCViewWrapper = memo(
   ({ streamURL }) => {
     logger.debug(NAMESPACE, 'RTCViewWrapper render');
-    return <RTCView streamURL={streamURL} style={styles.rtcView} objectFit="contain" />;
+    return (
+      <RTCView
+        streamURL={streamURL}
+        style={styles.rtcView}
+        objectFit="contain"
+      />
+    );
   },
   (prevProps, nextProps) => {
     return prevProps.streamURL === nextProps.streamURL;
@@ -28,20 +34,29 @@ const RTCViewWrapper = memo(
 const Feed = ({ id }) => {
   const feed = useFeedsStore(state => state.feedById[id]);
   const { activateFeedsVideos, deactivateFeedsVideos } = useFeedsStore();
-  const { borders, width } = useUiActions();
+  const borders = useUiActions(state => state.borders);
+  const width = useUiActions(state => state.width);
   const netWIP = useSettingsStore(state => state.netWIP);
-
-  logger.debug(NAMESPACE, 'Feed render');
 
   const {
     display: { display } = {},
     talking,
     camera,
     question,
+    vWIP,
     vOn,
     url,
   } = feed || {};
 
+  logger.debug(NAMESPACE, 'Feed render', {
+    display,
+    talking,
+    camera,
+    question,
+    vWIP,
+    vOn,
+    url,
+  });
   const ref = useRef();
 
   const activateDeactivate = (top = 0, bottom = 0, feedId) => {
@@ -56,8 +71,10 @@ const Feed = ({ id }) => {
   };
 
   useEffect(() => {
-    const { top, bottom } = borders;
-    activateDeactivate(top, bottom, id);
+    if (ref.current) {
+      const { top, bottom } = borders;
+      activateDeactivate(top, bottom, id);
+    }
   }, [borders, id]);
 
   if (!feed) return null;
@@ -76,7 +93,7 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    if (!vOn || !url) return <WIP isReady={false} />;
+    if (vWIP || !vOn) return <WIP isReady={false} />;
 
     return (
       <View style={styles.viewer}>

@@ -10,25 +10,25 @@
 		374C51002DFAD10E00DAE8D9 /* GxyLoggerUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */; };
 		374C51012DFAD10E00DAE8D9 /* SentryUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */; };
 		374C51022DFAD10E00DAE8D9 /* GxyLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */; };
-		376193362D9D5C5700F52320 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193172D9D5C5600F52320 /* AudioManager.m */; };
 		376193372D9D5C5700F52320 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193182D9D5C5600F52320 /* AudioManager.swift */; };
 		376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */; };
 		376193392D9D5C5700F52320 /* AudioManager+Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761931A2D9D5C5600F52320 /* AudioManager+Controller.swift */; };
 		3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761931B2D9D5C5600F52320 /* AudioManager+Events.swift */; };
 		3761933B2D9D5C5700F52320 /* AudioManager+Monitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761931C2D9D5C5600F52320 /* AudioManager+Monitor.swift */; };
 		3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761931D2D9D5C5600F52320 /* AudioManager+Types.swift */; };
-		3761933E2D9D5C5700F52320 /* CallManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193212D9D5C5600F52320 /* CallManager.m */; };
 		3761933F2D9D5C5700F52320 /* CallManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193222D9D5C5600F52320 /* CallManager.swift */; };
 		376193402D9D5C5700F52320 /* CallManager+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193232D9D5C5600F52320 /* CallManager+Bridge.swift */; };
 		376193412D9D5C5700F52320 /* CallManager+Events.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193242D9D5C5600F52320 /* CallManager+Events.swift */; };
 		376193422D9D5C5700F52320 /* CallManager+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193252D9D5C5600F52320 /* CallManager+Types.swift */; };
-		376193452D9D5C5700F52320 /* KeepAwakeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3761932A2D9D5C5600F52320 /* KeepAwakeModule.m */; };
 		376193462D9D5C5700F52320 /* KeepAwakeModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761932B2D9D5C5600F52320 /* KeepAwakeModule.swift */; };
-		376193472D9D5C5700F52320 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3761932E2D9D5C5600F52320 /* AppDelegate.mm */; };
 		376193482D9D5C5700F52320 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 376193302D9D5C5600F52320 /* Images.xcassets */; };
 		3761934A2D9D5C5700F52320 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376193322D9D5C5600F52320 /* LaunchScreen.storyboard */; };
-		3761934B2D9D5C5700F52320 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 376193332D9D5C5600F52320 /* main.m */; };
 		3761934C2D9D5C5700F52320 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */; };
+		37AC36EE2ED48316004C2C74 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37AC36EE2ED48316004C2C72 /* AppDelegate.mm */; };
+		571629B743684BA8A9FB6ED1 /* KeepAwakeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = E7AA59A8ECF84B2EBEE22F89 /* KeepAwakeModule.m */; };
+		709C1553E62A4E48803C8705 /* CallManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D88EC1798B0C47439D036886 /* CallManager.m */; };
+		7A57AC4E7FE4455BA569BC12 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE3EABD71384268824E6267 /* AudioManager.m */; };
+		E5469BD4E21D49813203D166 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B002FD9808B04C9EA67C48A /* main.mm */; };
 		EEE4C679E7EF7F5CC9C2B75D /* libPods-GalaxyRN.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */; };
 /* End PBXBuildFile section */
 
@@ -38,34 +38,32 @@
 		374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLogger.swift; sourceTree = "<group>"; };
 		374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLoggerUtils.swift; sourceTree = "<group>"; };
 		374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentryUtils.swift; sourceTree = "<group>"; };
-		376193162D9D5C5600F52320 /* AudioManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioManager.h; sourceTree = "<group>"; };
-		376193172D9D5C5600F52320 /* AudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioManager.m; sourceTree = "<group>"; };
 		376193182D9D5C5600F52320 /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Bridge.swift"; sourceTree = "<group>"; };
 		3761931A2D9D5C5600F52320 /* AudioManager+Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Controller.swift"; sourceTree = "<group>"; };
 		3761931B2D9D5C5600F52320 /* AudioManager+Events.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Events.swift"; sourceTree = "<group>"; };
 		3761931C2D9D5C5600F52320 /* AudioManager+Monitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Monitor.swift"; sourceTree = "<group>"; };
 		3761931D2D9D5C5600F52320 /* AudioManager+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Types.swift"; sourceTree = "<group>"; };
-		376193202D9D5C5600F52320 /* CallManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallManager.h; sourceTree = "<group>"; };
-		376193212D9D5C5600F52320 /* CallManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallManager.m; sourceTree = "<group>"; };
 		376193222D9D5C5600F52320 /* CallManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CallManager.swift; sourceTree = "<group>"; };
 		376193232D9D5C5600F52320 /* CallManager+Bridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CallManager+Bridge.swift"; sourceTree = "<group>"; };
 		376193242D9D5C5600F52320 /* CallManager+Events.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CallManager+Events.swift"; sourceTree = "<group>"; };
 		376193252D9D5C5600F52320 /* CallManager+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CallManager+Types.swift"; sourceTree = "<group>"; };
-		376193292D9D5C5600F52320 /* KeepAwakeModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeepAwakeModule.h; sourceTree = "<group>"; };
-		3761932A2D9D5C5600F52320 /* KeepAwakeModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeepAwakeModule.m; sourceTree = "<group>"; };
 		3761932B2D9D5C5600F52320 /* KeepAwakeModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeepAwakeModule.swift; sourceTree = "<group>"; };
-		3761932D2D9D5C5600F52320 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		3761932E2D9D5C5600F52320 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
 		3761932F2D9D5C5600F52320 /* GalaxyRN-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GalaxyRN-Bridging-Header.h"; sourceTree = "<group>"; };
 		376193302D9D5C5600F52320 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		376193312D9D5C5600F52320 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		376193322D9D5C5600F52320 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
-		376193332D9D5C5600F52320 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		37AC36ED2ED48316004C2C71 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		37AC36EE2ED48316004C2C72 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
+		37AC36EE2ED48316004C2C73 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		37B463BC2D5BA5C6003D2E9C /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
+		4CE3EABD71384268824E6267 /* AudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioManager.m; sourceTree = "<group>"; };
+		5B002FD9808B04C9EA67C48A /* main.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		914FF1DFB728CF44BF715873 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C51E97E138229AE1AF6618C1 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
+		D88EC1798B0C47439D036886 /* CallManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallManager.m; sourceTree = "<group>"; };
+		E7AA59A8ECF84B2EBEE22F89 /* KeepAwakeModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KeepAwakeModule.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -103,14 +101,13 @@
 		3761931F2D9D5C5600F52320 /* AudioManager */ = {
 			isa = PBXGroup;
 			children = (
-				376193162D9D5C5600F52320 /* AudioManager.h */,
-				376193172D9D5C5600F52320 /* AudioManager.m */,
 				376193182D9D5C5600F52320 /* AudioManager.swift */,
 				376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */,
 				3761931A2D9D5C5600F52320 /* AudioManager+Controller.swift */,
 				3761931B2D9D5C5600F52320 /* AudioManager+Events.swift */,
 				3761931C2D9D5C5600F52320 /* AudioManager+Monitor.swift */,
 				3761931D2D9D5C5600F52320 /* AudioManager+Types.swift */,
+				4CE3EABD71384268824E6267 /* AudioManager.m */,
 			);
 			path = AudioManager;
 			sourceTree = "<group>";
@@ -118,12 +115,11 @@
 		376193272D9D5C5600F52320 /* CallManager */ = {
 			isa = PBXGroup;
 			children = (
-				376193202D9D5C5600F52320 /* CallManager.h */,
-				376193212D9D5C5600F52320 /* CallManager.m */,
 				376193222D9D5C5600F52320 /* CallManager.swift */,
 				376193232D9D5C5600F52320 /* CallManager+Bridge.swift */,
 				376193242D9D5C5600F52320 /* CallManager+Events.swift */,
 				376193252D9D5C5600F52320 /* CallManager+Types.swift */,
+				D88EC1798B0C47439D036886 /* CallManager.m */,
 			);
 			path = CallManager;
 			sourceTree = "<group>";
@@ -131,9 +127,8 @@
 		3761932C2D9D5C5600F52320 /* KeepAwakeModule */ = {
 			isa = PBXGroup;
 			children = (
-				376193292D9D5C5600F52320 /* KeepAwakeModule.h */,
-				3761932A2D9D5C5600F52320 /* KeepAwakeModule.m */,
 				3761932B2D9D5C5600F52320 /* KeepAwakeModule.swift */,
+				E7AA59A8ECF84B2EBEE22F89 /* KeepAwakeModule.m */,
 			);
 			path = KeepAwakeModule;
 			sourceTree = "<group>";
@@ -141,18 +136,19 @@
 		376193352D9D5C5600F52320 /* GalaxyRN */ = {
 			isa = PBXGroup;
 			children = (
+				37AC36ED2ED48316004C2C71 /* AppDelegate.h */,
+				37AC36EE2ED48316004C2C72 /* AppDelegate.mm */,
+				37AC36EE2ED48316004C2C73 /* AppDelegate.swift */,
 				374C50FF2DFAD10E00DAE8D9 /* Logger */,
 				3761931F2D9D5C5600F52320 /* AudioManager */,
 				376193272D9D5C5600F52320 /* CallManager */,
 				3761932C2D9D5C5600F52320 /* KeepAwakeModule */,
-				3761932D2D9D5C5600F52320 /* AppDelegate.h */,
-				3761932E2D9D5C5600F52320 /* AppDelegate.mm */,
 				3761932F2D9D5C5600F52320 /* GalaxyRN-Bridging-Header.h */,
 				376193302D9D5C5600F52320 /* Images.xcassets */,
 				376193312D9D5C5600F52320 /* Info.plist */,
 				376193322D9D5C5600F52320 /* LaunchScreen.storyboard */,
-				376193332D9D5C5600F52320 /* main.m */,
 				376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */,
+				5B002FD9808B04C9EA67C48A /* main.mm */,
 			);
 			path = GalaxyRN;
 			sourceTree = "<group>";
@@ -346,23 +342,23 @@
 			files = (
 				374C51002DFAD10E00DAE8D9 /* GxyLoggerUtils.swift in Sources */,
 				374C51012DFAD10E00DAE8D9 /* SentryUtils.swift in Sources */,
+				37AC36EE2ED48316004C2C74 /* AppDelegate.mm in Sources */,
 				374C51022DFAD10E00DAE8D9 /* GxyLogger.swift in Sources */,
 				3761933C2D9D5C5700F52320 /* AudioManager+Types.swift in Sources */,
 				3761933A2D9D5C5700F52320 /* AudioManager+Events.swift in Sources */,
-				376193362D9D5C5700F52320 /* AudioManager.m in Sources */,
 				3761933F2D9D5C5700F52320 /* CallManager.swift in Sources */,
 				376193372D9D5C5700F52320 /* AudioManager.swift in Sources */,
 				376193412D9D5C5700F52320 /* CallManager+Events.swift in Sources */,
 				376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */,
-				376193452D9D5C5700F52320 /* KeepAwakeModule.m in Sources */,
 				376193402D9D5C5700F52320 /* CallManager+Bridge.swift in Sources */,
 				376193422D9D5C5700F52320 /* CallManager+Types.swift in Sources */,
 				3761933B2D9D5C5700F52320 /* AudioManager+Monitor.swift in Sources */,
 				376193392D9D5C5700F52320 /* AudioManager+Controller.swift in Sources */,
 				376193462D9D5C5700F52320 /* KeepAwakeModule.swift in Sources */,
-				376193472D9D5C5700F52320 /* AppDelegate.mm in Sources */,
-				3761934B2D9D5C5700F52320 /* main.m in Sources */,
-				3761933E2D9D5C5700F52320 /* CallManager.m in Sources */,
+				7A57AC4E7FE4455BA569BC12 /* AudioManager.m in Sources */,
+				709C1553E62A4E48803C8705 /* CallManager.m in Sources */,
+				571629B743684BA8A9FB6ED1 /* KeepAwakeModule.m in Sources */,
+				E5469BD4E21D49813203D166 /* main.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,7 +373,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 81;
+				CURRENT_PROJECT_VERSION = 84;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -387,7 +383,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -397,6 +393,7 @@
 				PRODUCT_NAME = GalaxyRN;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OBJC_BRIDGING_HEADER = "GalaxyRN/GalaxyRN-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -412,7 +409,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 81;
+				CURRENT_PROJECT_VERSION = 84;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -421,7 +418,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.6;
+				MARKETING_VERSION = 2.0.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -431,6 +428,7 @@
 				PRODUCT_NAME = GalaxyRN;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OBJC_BRIDGING_HEADER = "GalaxyRN/GalaxyRN-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -488,7 +486,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -516,6 +514,7 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
 			};
 			name = Debug;
@@ -564,7 +563,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (

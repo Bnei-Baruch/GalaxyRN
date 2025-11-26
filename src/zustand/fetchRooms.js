@@ -10,7 +10,8 @@ const useRoomStore = create(set => ({
   room: null,
   setRoom: async room => {
     if (!room?.room || !room.janus) {
-      logger.error(NAMESPACE, `room is ${JSON.stringify(room)} in setRoom`);
+      logger.debug(NAMESPACE, `room is ${JSON.stringify(room)} in setRoom`);
+      set({ room: null });
       return;
     }
 

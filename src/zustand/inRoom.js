@@ -62,10 +62,10 @@ export const useInRoomStore = create((set, get) => ({
       AudioBridge.requestAudioFocus();
       await WakeLockBridge.keepScreenOn();
       useMyStreamStore.getState().toggleMute(true);
-      finishSpan(deviceSpan, 'ok');
+      finishSpan(deviceSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'audio focus or keeping screen on', error);
-      finishSpan(deviceSpan, 'internal_error');
+      finishSpan(deviceSpan, 'internal_error', NAMESPACE);
       finishTransaction(ROOM_SESSION, 'internal_error');
       return get().exitRoom();
     }
@@ -77,10 +77,10 @@ export const useInRoomStore = create((set, get) => ({
         useFeedsStore.getState().initFeeds(),
         useShidurStore.getState().initShidur(isPlay),
       ]);
-      finishSpan(janusInitSpan, 'ok');
+      finishSpan(janusInitSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing shidur and feeds', error);
-      finishSpan(janusInitSpan, 'internal_error');
+      finishSpan(janusInitSpan, 'internal_error', NAMESPACE);
       finishTransaction(ROOM_SESSION, 'internal_error');
       return get().restartRoom();
     }
@@ -104,9 +104,10 @@ export const useInRoomStore = create((set, get) => ({
         mqtt.sub(`galaxy/room/${room.room}`),
         mqtt.sub(`galaxy/room/${room.room}/chat`, { qos: 0, nl: false }),
       ]);
-      finishSpan(mqttSubscribeSpan, 'ok');
+      finishSpan(mqttSubscribeSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to MQTT rooms', error);
+      finishSpan(mqttSubscribeSpan, 'internal_error', NAMESPACE);
       throw error;
     }
   },
@@ -133,14 +134,14 @@ export const useInRoomStore = create((set, get) => ({
     try {
       AudioBridge.abandonAudioFocus();
       WakeLockBridge.releaseScreenOn();
-      finishSpan(deviceCleanupSpan, 'ok');
+      finishSpan(deviceCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error cleaning up device states', error);
-      finishSpan(deviceCleanupSpan, 'internal_error');
+      finishSpan(deviceCleanupSpan, 'internal_error', NAMESPACE);
     }
 
     // Finish the room session transaction
-    finishTransaction(ROOM_SESSION, 'ok');
+    finishTransaction(ROOM_SESSION, 'ok', NAMESPACE);
 
     exitWIP = false;
     set({ isInRoom: false });
@@ -157,10 +158,10 @@ export const useInRoomStore = create((set, get) => ({
         useShidurStore.getState().cleanJanus(),
         useFeedsStore.getState().cleanFeeds(),
       ]);
-      finishSpan(janusCleanupSpan, 'ok');
+      finishSpan(janusCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error cleaning shidur janus', error);
-      finishSpan(janusCleanupSpan, 'internal_error');
+      finishSpan(janusCleanupSpan, 'internal_error', NAMESPACE);
     }
 
     // Step 2: Clean chat and unsubscribe from MQTT
@@ -178,7 +179,7 @@ export const useInRoomStore = create((set, get) => ({
         mqtt.exit(`galaxy/room/${room.room}`),
         mqtt.exit(`galaxy/room/${room.room}/chat`),
       ]);
-      finishSpan(mqttCleanupSpan, 'ok');
+      finishSpan(mqttCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
       finishSpan(mqttCleanupSpan, 'internal_error');
@@ -206,7 +207,7 @@ export const useInRoomStore = create((set, get) => ({
   enterBackground: async () => {
     set({ isInBackground: true });
     get().enterAudioMode();
-    addFinishSpan(ROOM_SESSION, 'background');
+    addFinishSpan(ROOM_SESSION, 'background', { NAMESPACE });
   },
 
   enterForeground: async () => {
@@ -214,7 +215,7 @@ export const useInRoomStore = create((set, get) => ({
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
     }
-    addFinishSpan(ROOM_SESSION, 'foreground');
+    addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
   enterAudioMode: async () => {
@@ -231,7 +232,7 @@ export const useInRoomStore = create((set, get) => ({
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
-      finishSpan(span, 'internal_error');
+      finishSpan(span, 'internal_error', NAMESPACE);
     }
   },
 
@@ -247,10 +248,10 @@ export const useInRoomStore = create((set, get) => ({
       if (!get().isInRoom) return;
 
       useShidurStore.getState().exitAudioMode();
-      finishSpan(span, 'ok');
+      finishSpan(span, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'exitAudioMode error', error);
-      finishSpan(span, 'internal_error');
+      finishSpan(span, 'internal_error', NAMESPACE);
     }
   },
 }));

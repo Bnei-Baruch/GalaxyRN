@@ -51,6 +51,7 @@ export class JanusMqtt {
     const subscribeSpan = addSpan(this.sentrySession, 'janus.subscribeTopics', {
       rxTopic: this.rxTopic,
       stTopic: this.stTopic,
+      NAMESPACE,
     });
 
     try {
@@ -59,10 +60,10 @@ export class JanusMqtt {
         mqtt.sub(this.rxTopic, { qos: 0 }),
         mqtt.sub(this.stTopic, { qos: 1 }),
       ]);
-      finishSpan(subscribeSpan, 'ok');
+      finishSpan(subscribeSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error subscribing to MQTT topics:', error);
-      finishSpan(subscribeSpan, 'internal_error');
+      finishSpan(subscribeSpan, 'internal_error', NAMESPACE);
       finishTransaction(this.sentrySession, 'internal_error');
       throw error;
     }
@@ -112,6 +113,7 @@ export class JanusMqtt {
           this.sessionId = json.data.id;
           setTransactionAttributes(this.sentrySession, {
             sessionId: this.sessionId,
+            NAMESPACE,
           });
           this.isConnected = true;
           this.keepAlive();
@@ -176,13 +178,13 @@ export class JanusMqtt {
       logger.debug(NAMESPACE, 'destroy _cleanupPlugins done');
     } catch (err) {
       logger.error(NAMESPACE, 'cleanupPlugins err', err);
-      finishSpan(destroySpan, 'internal_error');
+      finishSpan(destroySpan, 'internal_error', NAMESPACE);
     }
 
     try {
       await this.transaction('destroy', {}, 'success', 5000);
     } catch (err) {
-      addFinishSpan(this.sentrySession, 'janus.destroy', err);
+      addFinishSpan(this.sentrySession, 'janus.destroy', { ...err, NAMESPACE });
     }
 
     this._cleanupTransactions();
@@ -205,7 +207,7 @@ export class JanusMqtt {
     try {
       await this.transaction('hangup', body, 'success', 5000);
     } catch (err) {
-      addFinishSpan(this.sentrySession, 'janus.destroy', err);
+      addFinishSpan(this.sentrySession, 'janus.destroy', { ...err, NAMESPACE });
       plugin.detach();
       throw err;
     }
@@ -246,12 +248,10 @@ export class JanusMqtt {
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'transaction promise', transactionId);
       if (!this.isConnected) {
-        addFinishSpan(
-          this.sentrySession,
-          'janus.transaction',
-          'not_connected',
-          { NAMESPACE }
-        );
+        addFinishSpan(this.sentrySession, 'janus.transaction', {
+          status: 'not_connected',
+          NAMESPACE,
+        });
         return;
       }
 
@@ -509,15 +509,15 @@ export class JanusMqtt {
       const sender = json.sender;
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
-        finishSpan(webrtcUpSpan, 'internal_error');
+        finishSpan(webrtcUpSpan, 'internal_error', NAMESPACE);
         return;
       }
       const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        finishSpan(webrtcUpSpan, 'internal_error');
+        finishSpan(webrtcUpSpan, 'internal_error', NAMESPACE);
         return;
       }
-      finishSpan(webrtcUpSpan, 'ok');
+      finishSpan(webrtcUpSpan, 'ok', NAMESPACE);
       return;
     }
     if (janus === 'ice-failed') {
@@ -527,17 +527,17 @@ export class JanusMqtt {
       const sender = json.sender;
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
-        finishSpan(iceFailedSpan, 'no_sender');
+        finishSpan(iceFailedSpan, 'no_sender', NAMESPACE);
         return;
       }
       const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        finishSpan(iceFailedSpan, 'no_plugin_handle');
+        finishSpan(iceFailedSpan, 'no_plugin_handle', NAMESPACE);
         return;
       }
       //TODO: Add iceFailed to plugin handle
       // pluginHandle.iceFailed && pluginHandle.iceFailed();
-      finishSpan(iceFailedSpan, 'ok');
+      finishSpan(iceFailedSpan, 'ok', NAMESPACE);
       return;
     }
 
@@ -551,16 +551,16 @@ export class JanusMqtt {
       const sender = json.sender;
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
-        finishSpan(hangupSpan, 'internal_error');
+        finishSpan(hangupSpan, 'internal_error', NAMESPACE);
         return;
       }
       const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        finishSpan(hangupSpan, 'internal_error');
+        finishSpan(hangupSpan, 'internal_error', NAMESPACE);
         return;
       }
       pluginHandle.hangup && pluginHandle.hangup(json.reason);
-      finishSpan(hangupSpan, 'ok');
+      finishSpan(hangupSpan, 'ok', NAMESPACE);
       return;
     }
 
@@ -607,16 +607,16 @@ export class JanusMqtt {
       const sender = json.sender;
       if (!sender) {
         logger.warn(NAMESPACE, 'Missing sender...');
-        finishSpan(slowlinkSpan, 'no_sender');
+        finishSpan(slowlinkSpan, 'no_sender', NAMESPACE);
         return;
       }
       const pluginHandle = this.findHandle(sender);
       if (!pluginHandle) {
-        finishSpan(slowlinkSpan, 'no_plugin_handle');
+        finishSpan(slowlinkSpan, 'no_plugin_handle', NAMESPACE);
         return;
       }
       pluginHandle.slowLink(json.uplink, json.nacks);
-      finishSpan(slowlinkSpan, 'ok');
+      finishSpan(slowlinkSpan, 'ok', NAMESPACE);
       return;
     }
 
