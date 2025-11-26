@@ -13,11 +13,11 @@ export const MuteBtn = () => {
   if (mute) {
     iconName = 'mic-off';
     text = t('bottomBar.unmute');
-    extraStyle = ['pressed', 'pressedicon'];
+    extraStyle = ['toggle_on', 'toggle_on_icon'];
   } else {
     iconName = 'mic';
     text = t('bottomBar.mute');
-    extraStyle = ['rest', 'resticon'];
+    extraStyle = ['toggle_off', 'toggle_off_icon'];
   }
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn}>
@@ -25,6 +25,7 @@ export const MuteBtn = () => {
         iconName={iconName}
         text={text}
         extraStyle={extraStyle}
+        showtext={false}
       />
     </Pressable>
   );

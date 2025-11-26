@@ -13,8 +13,8 @@ export const TopMenuBtn = () => {
   const { toggleShowBars } = useUiActions();
 
   const items = [
-    { component: <StudyMaterialsBtn />, key: 1 },
-    { component: <DonateBtn />, key: 2 },
+    // { component: <StudyMaterialsBtn />, key: 1 },
+    // { component: <DonateBtn />, key: 2 },
     { component: <SettingsBtn />, key: 3 },
     { component: <LogoutBtn />, key: 4 },
     { component: <VersionInfo />, key: 5 },

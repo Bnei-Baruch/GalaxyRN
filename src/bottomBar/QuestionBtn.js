@@ -21,10 +21,10 @@ export const QuestionBtn = () => {
   const disabled = !isPlay || isOnAir || isRoomQuestion;
   const text = question ? t('bottomBar.qustionon') : t('bottomBar.qustionoff');
   const extraStyle = disabled
-    ? ['disabled', 'disabledicon']
+    ? ['toggle_off_disabled', 'toggle_off_disabled_icon']
     : question
-    ? ['pressedalt', 'pressediconalt']
-    : ['rest', 'resticon'];
+    ? ['toggle_on_alt', 'toggle_on_icon_alt']
+    : ['toggle_off', 'toggle_off_icon'];
 
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn} disabled={disabled}>
@@ -32,6 +32,7 @@ export const QuestionBtn = () => {
         iconName={'live-help'}
         text={text}
         extraStyle={extraStyle}
+        showtext={false}
       />
     </Pressable>
   );

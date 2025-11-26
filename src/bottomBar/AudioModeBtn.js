@@ -14,11 +14,11 @@ export const AudioModeBtn = () => {
   if (!audioMode) {
     iconName = 'hearing';
     text = t('bottomBar.showBroadcast');
-    extraStyle = ['rest', 'resticon'];
+    extraStyle = ['toggle_off', 'toggle_off_icon'];
   } else {
     iconName = 'hearing';
     text = t('bottomBar.hideBroadcast');
-    extraStyle = ['pressed', 'pressedicon'];
+    extraStyle = ['toggle_on', 'toggle_on_icon'];
   }
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn}>
@@ -26,6 +26,7 @@ export const AudioModeBtn = () => {
         iconName={iconName}
         text={text}
         extraStyle={extraStyle}
+        showtext={false}
       />
     </Pressable>
   );

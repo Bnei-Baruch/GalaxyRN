@@ -1,11 +1,17 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
-import { baseStyles } from '../../constants';
-import IconWithText from '../../settings/IconWithText';
+import { bottomBar } from '../helper';
 import { useUserStore } from '../../zustand/user';
 
 export const VoteBtn = () => {
@@ -18,9 +24,15 @@ export const VoteBtn = () => {
 
   return (
     <>
-      <TouchableOpacity onPress={toggleOpen} style={baseStyles.listItem}>
-        <IconWithText iconName="thumbs-up-down" text={t('bottomBar.vote')} />
-      </TouchableOpacity>
+      <Pressable onPress={toggleOpen} style={bottomBar.btn}>
+        <BottomBarIconWithText
+          iconName="thumbs-up-down"
+          text={t('bottomBar.vote')}
+          extraStyle={['rest', 'resticon']}
+          showtext={true}
+          direction="horizontal"
+        />
+      </Pressable>
       {open && (
         <Modal
           animationType="slide"
