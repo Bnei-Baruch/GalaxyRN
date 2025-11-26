@@ -1,25 +1,19 @@
 #import "AppDelegate.h"
+#import <React/RCTLinkingManager.h>
+#import <Crisp/Crisp.h>
 
 #import <React/RCTBundleURLProvider.h>
-// Import Crisp SDK header
-#import <Crisp/Crisp-Swift.h>
+#import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
 
 @implementation AppDelegate
-- (BOOL)application: (UIApplication *)application
-              openURL: (NSURL *)url
-              options: (NSDictionary<UIApplicationOpenURLOptionsKey, id> *) options
- {
-   if ([self.authorizationFlowManagerDelegate resumeExternalUserAgentFlowWithURL:url]) {
-     return YES;
-   }
-   return [RCTLinkingManager application:application openURL:url options:options];
-}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"GalaxyRN";
+  self.dependencyProvider = [RCTAppDependencyProvider new];
   self.initialProps = @{};
-
+  
+  
   // Initialize Crisp SDK with website ID - move to background thread
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
     NSString *websiteID = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CRISP_WEBSITE_ID"];
@@ -29,16 +23,22 @@
       });
     }
   });
-
+  
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
-- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+- (BOOL)application:(UIApplication *)app
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
-  return [self bundleURL];
+  // Handle OAuth redirects
+  if ([self.authorizationFlowManagerDelegate resumeExternalUserAgentFlowWithURL:url]) {
+    return YES;
+  }
+  return [RCTLinkingManager application:app openURL:url options:options];
 }
 
-- (NSURL *)bundleURL
+- (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
@@ -52,4 +52,10 @@
 #endif
 }
 
+- (NSURL *)bundleURL
+{
+  return [self sourceURLForBridge:nil];
+}
+
 @end
+
