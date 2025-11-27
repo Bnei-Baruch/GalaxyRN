@@ -1,16 +1,13 @@
-// External libraries
 import { create } from 'zustand';
 
-// i18n
-
-// Shared modules
-
-// Zustand stores
+import logger from '../services/logger';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
+
+const NAMESPACE = 'settings';
 
 export const useSettingsStore = create((set, get) => ({
   autoEnterRoom: false,
@@ -32,8 +29,11 @@ export const useSettingsStore = create((set, get) => ({
   isShidur: true,
   toggleIsShidur: async () => {
     const isShidur = !get().isShidur;
+    logger.debug(NAMESPACE, 'toggleIsShidur', isShidur);
     if (!isShidur) {
       await useShidurStore.getState().cleanShidur();
+    } else {
+      await useShidurStore.getState().initShidur();
     }
     set({ isShidur });
     useUiActions.getState().updateWidth(isShidur);

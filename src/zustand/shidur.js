@@ -234,6 +234,7 @@ export const useShidurStore = create((set, get) => ({
       janusReady = true;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
+      throw error;
     }
     set({ janusReady });
     finishSpan(span, 'ok', NAMESPACE);
@@ -256,8 +257,7 @@ export const useShidurStore = create((set, get) => ({
       finishSpan(span, 'internal_error', NAMESPACE);
     }
     janus = null;
-    set({ janusReady: false });
-    set({ cleanWIP: false });
+    set({ cleanWIP: false, janusReady: false });
     finishSpan(span, 'ok', NAMESPACE);
   },
 
@@ -289,7 +289,8 @@ export const useShidurStore = create((set, get) => ({
       NAMESPACE,
       isPlay,
     });
-    set({ shidurWIP: true, isPlay });
+    set({ shidurWIP: true, isPlay, cleanWIP: false });
+
     logger.debug(NAMESPACE, 'initShidur');
 
     try {
@@ -298,6 +299,9 @@ export const useShidurStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
       setSpanAttributes(span, { error });
+      set({ shidurWIP: false });
+      finishSpan(span, 'internal_error', NAMESPACE);
+      throw error;
     }
 
     if (!useSettingsStore.getState().isShidur || !isPlay) {
@@ -309,11 +313,15 @@ export const useShidurStore = create((set, get) => ({
 
     try {
       await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
+      set({ readyShidur: true, shidurWIP: false });
+      finishSpan(span, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
+      set({ shidurWIP: false, readyShidur: false });
+      setSpanAttributes(span, { error });
+      finishSpan(span, 'internal_error', NAMESPACE);
+      throw error;
     }
-    set({ readyShidur: true, shidurWIP: false });
-    finishSpan(span, 'ok', NAMESPACE);
   },
 
   initVideoHandle: async () => {
@@ -450,7 +458,10 @@ export const useShidurStore = create((set, get) => ({
 
   restartShidur: async () => {
     logger.debug(NAMESPACE, 'restartShidur');
-    if (get().shidurWIP) return;
+    if (get().shidurWIP || get().cleanWIP) {
+      logger.debug(NAMESPACE, 'restartShidur skipped, already in progress');
+      return;
+    }
 
     set({ shidurWIP: true });
 
@@ -463,12 +474,14 @@ export const useShidurStore = create((set, get) => ({
       await get().cleanShidur();
       set({ isPlay });
       await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
-      attempts++;
+      attempts = 0;
     } catch (error) {
+      attempts++;
       useInRoomStore.getState().restartRoom();
       logger.error(NAMESPACE, 'Error during restartShidur:', error);
+    } finally {
+      set({ shidurWIP: false });
     }
-    set({ shidurWIP: false });
   },
 
   streamGalaxy: async (isOnAir, onPlay = false) => {
@@ -544,6 +557,7 @@ export const useShidurStore = create((set, get) => ({
       set({ isPlay });
       await Promise.all([initVideoHandle(), initAudioHandles()]);
       useUiActions.getState().toggleShowBars();
+      set({ readyShidur: true });
       return;
     }
 
