@@ -295,7 +295,7 @@ export const useShidurStore = create((set, get) => ({
 
     try {
       await get().initMedias();
-      await get().initJanus();
+      await rejectTimeoutPromise(get().initJanus(), 10000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
       setSpanAttributes(span, { error });

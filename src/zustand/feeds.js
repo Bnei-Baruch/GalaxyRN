@@ -102,18 +102,18 @@ export const useFeedsStore = create((set, get) => ({
     const config = configByName(room.janus);
     logger.debug(NAMESPACE, 'joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
-    logger.debug(NAMESPACE, 'joinRoom janus', janus);
+    logger.debug(NAMESPACE, 'joinRoom janus');
 
     try {
-      await janus.init(config.token);
+      await rejectTimeoutPromise(janus.init(config.token), 10000);
       logger.info(NAMESPACE, 'joinRoom on janus.init');
-
-      // Initialize subscriber and publisher sequentially to avoid race conditions
       await Promise.all([get().initSubscriber(), get().initPublisher()]);
     } catch (err) {
       logger.error(NAMESPACE, 'Janus init error', err);
       await useInRoomStore.getState().restartRoom();
       return;
+    } finally {
+      logger.debug(NAMESPACE, 'joinRoom finally');
     }
   },
 
@@ -342,9 +342,9 @@ export const useFeedsStore = create((set, get) => ({
               continue;
             }
 
-            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[id]', f);
-            f.vWIP = !f.url;
+            f.vWIP = false;
             f.vOn = _vOnByFeed[id];
+            logger.debug(NAMESPACE, 'subscriber.onUpdate feedById[id]', f);
           }
         })
       );
@@ -393,25 +393,30 @@ export const useFeedsStore = create((set, get) => ({
         });
 
       // Sub video streams
-      const vStream = pub.streams.find(
-        s => s?.type === 'video' && s.codec === 'h264'
-      );
+      const vStream = pub.streams.find(s => s?.type === 'video');
+      const camera = !!vStream && !vStream.disabled;
 
       if (!feedById[id]) {
         logger.debug(NAMESPACE, `makeSubscription new feed ${id}`);
-        const camera = !!vStream && !vStream.disabled;
         feedById[id] = {
           id,
           display: JSON.parse(display),
           camera,
+          vMid: vStream?.mid,
         };
-        if (!_isSubscribed && vStream) {
+        if (!_isSubscribed && camera) {
           subs.push({ feed: id });
         }
+      } else if (vStream?.mid) {
+        if (!camera) {
+          feedById[id].camera = false;
+          feedById[id].vWIP = false;
+          unsubs.push({ feed: id, mid: vStream?.mid });
+        } else {
+          feedById[id].vWIP = false;
+          subs.push({ feed: id, mid: vStream?.mid });
+        }
       }
-
-      feedById[id].vMid = vStream?.mid;
-      logger.debug(NAMESPACE, 'makeSubscription feedById[id]', feedById[id]);
     }
 
     logger.debug(NAMESPACE, 'makeSubscription subs', JSON.stringify(subs));
@@ -489,13 +494,20 @@ export const useFeedsStore = create((set, get) => ({
 
   activateFeedsVideos: ids => {
     logger.debug(NAMESPACE, 'activateFeedsVideos ids', ids);
+
+    if (!subscriber || !_subscriberJoined) {
+      logger.warn(NAMESPACE, 'activateFeedsVideos: subscriber not ready', {
+        hasSubscriber: !!subscriber,
+        isJoined: _subscriberJoined,
+      });
+      return Promise.resolve();
+    }
     const { feedById } = get();
-    const _feedById = [];
     const params = [];
     for (const id of ids) {
       const f = feedById[id];
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
-      if (f?.vMid && (f.url || f.camera) && !f.vWIP) {
+      if (f?.vMid && (f.url || f.camera) && !f.vWIP && !f.vOn) {
         params.push({ feed: parseInt(id), mid: f.vMid });
       }
     }
@@ -509,14 +521,6 @@ export const useFeedsStore = create((set, get) => ({
         }
       })
     );
-
-    if (!subscriber || !_subscriberJoined) {
-      logger.warn(NAMESPACE, 'activateFeedsVideos: subscriber not ready', {
-        hasSubscriber: !!subscriber,
-        isJoined: _subscriberJoined,
-      });
-      return Promise.resolve();
-    }
 
     return subscriber.sub(params);
   },
