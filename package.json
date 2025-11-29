@@ -78,5 +78,8 @@
   "engines": {
     "node": ">=18"
   },
+  "config": {
+    "isProduction": false
+  },
   "packageManager": "yarn@3.6.4"
 }

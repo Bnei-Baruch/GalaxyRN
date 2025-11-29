@@ -55,4 +55,9 @@ export const useSettingsStore = create((set, get) => ({
 
   netWIP: false,
   setNetWIP: netWIP => set({ netWIP }),
+  debugMode: false,
+  toggleDebugMode: () => {
+    set(state => ({ debugMode: !state.debugMode }));
+    setIsDebug(state.debugMode);
+  },
 }));
