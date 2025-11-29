@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity } from 'react-native';
-
-import { baseStyles } from '../../constants';
-import IconWithText from '../../settings/IconWithText';
+import { Pressable } from 'react-native';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
 
@@ -12,11 +10,17 @@ export const ShidurBtn = () => {
   const { t } = useTranslation();
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={toggleIsShidur}
-      style={[baseStyles.listItem, isShidur && baseStyles.listItemSelected]}
+      style={bottomBar.btn}
     >
-      <IconWithText iconName="desktop-windows" text={t('bottomBar.shidur')} />
-    </TouchableOpacity>
+      <BottomBarIconWithText
+        iconName='desktop-windows'
+        text={t('bottomBar.shidur')}
+        extraStyle={!isShidur ?   ['toggle_off', 'toggle_off_icon']:  ['toggle_on_alt2', 'toggle_on_icon_alt2']}
+        showtext={true}
+        direction='vertical'
+      />
+    </Pressable>
   );
 };

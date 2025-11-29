@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
 import { ChatCounter } from '../chat/ChatCounter';
-import ListInModal from '../components/ListInModal';
+import ButtonsPaneModal, { useButtonsPaneModal } from '../components/ButtonsPaneModal';
 import { useUiActions } from '../zustand/uiActions';
 import { bottomBar } from './helper';
 import { ChatBtn } from './moreBtns/ChatBtn';
@@ -15,6 +15,7 @@ import BottomBarIconWithText from '../settings/BottomBarIconWithText';
 
 export const MoreBtn = () => {
   const { toggleShowBars } = useUiActions();
+  const modalContext = useButtonsPaneModal();
 
   const items = [
     { component: <GroupsBtn />, key: 1 },
@@ -28,32 +29,34 @@ export const MoreBtn = () => {
 
   const renderItem = item => item.component;
 
+  const triggerContent = (
+    <View style={bottomBar.moreSelBtn}>
+      <BottomBarIconWithText
+        iconName={modalContext ? "close" : "more-vert"}
+        text='close'
+        extraStyle={modalContext ? ['toggle_on_alt2b', 'toggle_on_icon_alt2']:['toggle_off', 'toggle_off_icon'] }
+        showtext={false}
+      />
+      <ChatCounter />
+    </View>
+  );
+
+  if (modalContext) {
+    return (
+      <TouchableOpacity onPress={modalContext.closeModal}>
+        {triggerContent}
+      </TouchableOpacity>
+    );
+  }
+
   return (
-    <ListInModal
+    <ButtonsPaneModal
       items={items}
       renderItem={renderItem}
       onOpen={handlePress}
-      styles={{ padding: 0, margin: 0 }}
-      trigger={
-        <View style={bottomBar.moreSelBtn}>
-          <BottomBarIconWithText
-            iconName="more-vert"
-            extraStyle={['rest', 'resticon']}
-          />
-          <ChatCounter />
-        </View>
-      }
+      // styles={{ padding: 0, margin: 0 }}
+      trigger={triggerContent}
     />
   );
 };
 
-export const styles = StyleSheet.create({
-  btn: {
-    display: 'flex',
-    textAlign: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 75,
-    marginHorizontal: 2,
-  },
-});
