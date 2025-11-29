@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from './CustomText';
@@ -20,6 +21,7 @@ import { GroupsBtn } from '../bottomBar/moreBtns/GroupsBtn';
 import { HideSelfBtn } from '../bottomBar/moreBtns/HideSelfBtn';
 import { ShidurBtn } from '../bottomBar/moreBtns/ShidurBtn';
 import { BottomBar } from '../bottomBar/BottomBar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../constants';
 export const ButtonsPaneModalContext = React.createContext(null);
 export const useButtonsPaneModal = () =>
@@ -34,6 +36,9 @@ const ButtonsPaneModal = ({
   open = false,
   trigger,
 }) => {
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   const [visible, setVisible] = useState(open);
   const tooltipRef = useRef(null);
 
@@ -85,7 +90,7 @@ const ButtonsPaneModal = ({
         {trigger ? trigger : <Text styles={styles.itemText}>{selected}</Text>}
       </Pressable>
       <Modal
-        // animationType="fade"
+        // animationType="slide"
         presentationStyle="overFullScreen"
         transparent={true}
         visible={visible}
@@ -97,7 +102,14 @@ const ButtonsPaneModal = ({
             <View style={styles.modalContainer}>
               <BottomBar />
 
-              <View style={[styles.paneWraper, baseStyles.panelBackground]}>
+              <View
+                style={[
+                  styles.paneWrapper,
+                  baseStyles.panelBackground,
+                  { marginLeft: insets.left + 8, marginRight: insets.right + 8 },
+                  isLandscape && styles.paneWrapperLandscape,
+                ]}
+              >
                 <View style={styles.buttonsSection}>
                   <Text
                     style={[ baseStyles.text, styles.text]}
@@ -126,6 +138,9 @@ const ButtonsPaneModal = ({
                   >
                     Open
                   </Text>
+
+                  {/* for portrait mode only */}
+                  {!isLandscape && (
                   <View style={styles.buttonsBlock}>
                     <View style={styles.buttonsRow}>
                       <View style={styles.button_50}>
@@ -144,6 +159,26 @@ const ButtonsPaneModal = ({
                       </View>
                     </View>
                   </View>
+                  )}
+                  {/* for landscape mode only */}
+                  {isLandscape && (
+                  <View style={styles.buttonsBlock}>
+                    <View style={styles.buttonsRow}>
+                      <View style={styles.button_25}>
+                        <ChatBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <VoteBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <StudyMaterialsBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <DonateBtn />
+                      </View>
+                    </View>
+                  </View>
+                  )}
                 </View>
               </View>
             </View>
@@ -162,14 +197,18 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingBottom: 80 + 16 + 16,
+    paddingBottom: 80 + 16 + 16, // BottomBar height + marginBottom + extra
   },
-  paneWraper: {
+  paneWrapper: {
     // padding: 16,
-    marginHorizontal: 8,
+    // marginHorizontal: 8,
     borderRadius: 32,
     // marginTop:-32
     // paddingBottom: 0
+  },
+  paneWrapperLandscape: {
+    // borderWidth: 10,
+    // borderColor: 'red',
   },
   buttonsSection: {
     // marginVertical: 16,
@@ -192,6 +231,9 @@ export const styles = StyleSheet.create({
   },
   button_33: {
     width: '33.3333333%',
+  },
+  button_25: {
+    width: '25%',
   },
   text: {
     marginBottom: 8,
