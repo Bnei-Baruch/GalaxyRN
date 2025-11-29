@@ -1,189 +1,123 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React from 'react';
 import {
   Dimensions,
   Modal,
-  Pressable,
-  ScrollView,
   StyleSheet,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  useWindowDimensions,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import Text from './CustomText';
 import { ChatBtn } from '../bottomBar/moreBtns/ChatBtn';
-import { VoteBtn } from '../bottomBar/moreBtns/VoteBtn';
 import { DonateBtn } from '../bottomBar/moreBtns/DonateBtn';
 import { StudyMaterialsBtn } from '../bottomBar/moreBtns/StudyMaterialsBtn';
+import { VoteBtn } from '../bottomBar/moreBtns/VoteBtn';
+import Text from './CustomText';
 
+import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomBar } from '../bottomBar/BottomBar';
 import { GroupsBtn } from '../bottomBar/moreBtns/GroupsBtn';
 import { HideSelfBtn } from '../bottomBar/moreBtns/HideSelfBtn';
 import { ShidurBtn } from '../bottomBar/moreBtns/ShidurBtn';
-import { BottomBar } from '../bottomBar/BottomBar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../constants';
-export const ButtonsPaneModalContext = React.createContext(null);
-export const useButtonsPaneModal = () =>
-  React.useContext(ButtonsPaneModalContext);
+import { useInitsStore } from '../zustand/inits';
+import { useUiActions } from '../zustand/uiActions';
 
-const ButtonsPaneModal = ({
-  items,
-  selected,
-  onSelect,
-  onOpen,
-  renderItem,
-  open = false,
-  trigger,
-}) => {
+const ButtonsPaneModal = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
-  const isLandscape = width > height;
-  const [visible, setVisible] = useState(open);
-  const tooltipRef = useRef(null);
-
-  const toggleModal = React.useCallback(() => {
-    setVisible(prev => {
-      const next = !prev;
-      onOpen && onOpen(next);
-      return next;
-    });
-  }, [onOpen]);
-
-  const closeModal = React.useCallback(() => {
-    setVisible(prev => {
-      if (!prev) return prev;
-      onOpen && onOpen(false);
-      return false;
-    });
-  }, [onOpen]);
-
-  const contextValue = useMemo(() => ({ closeModal }), [closeModal]);
-
-  const handleSelect = item => {
-    onSelect && onSelect(item);
-    toggleModal();
-  };
-
-  const _renderItem = item => {
-    const key = item.key ?? item.value ?? item.text ?? item.id;
-    if (!key) return;
-
-    return (
-      <View key={key} style={styles.item}>
-        <TouchableOpacity
-          onPress={() => handleSelect(item)}
-          style={[
-            styles.item,
-            selected && item.value === selected && styles.selected,
-          ]}
-        >
-          {renderItem(item)}
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const { toggleMoreModal, moreModal } = useUiActions();
+  const { isPortrait } = useInitsStore();
 
   return (
     <View style={styles.container}>
-      <Pressable ref={tooltipRef} onPress={toggleModal}>
-        {trigger ? trigger : <Text styles={styles.itemText}>{selected}</Text>}
-      </Pressable>
       <Modal
-        // animationType="slide"
         presentationStyle="overFullScreen"
         transparent={true}
-        visible={visible}
-        onRequestClose={toggleModal}
+        visible={moreModal}
+        onRequestClose={toggleMoreModal}
         supportedOrientations={['portrait', 'landscape']}
       >
-        <ButtonsPaneModalContext.Provider value={contextValue}>
-          <TouchableWithoutFeedback onPress={toggleModal}>
-            <View style={styles.modalContainer}>
-              <BottomBar />
-
-              <View
-                style={[
-                  styles.paneWrapper,
-                  baseStyles.panelBackground,
-                  { marginLeft: insets.left + 8, marginRight: insets.right + 8 },
-                  isLandscape && styles.paneWrapperLandscape,
-                ]}
-              >
-                <View style={styles.buttonsSection}>
-                  <Text
-                    style={[ baseStyles.text, styles.text]}
-                    numberOfLines={1}
-                  >
-                    Show
-                  </Text>
-                  <View style={styles.buttonsBlock}>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_33}>
-                        <ShidurBtn />
-                      </View>
-                      <View style={styles.button_33}>
-                        <GroupsBtn />
-                      </View>
-                      <View style={styles.button_33}>
-                        <HideSelfBtn />
-                      </View>
+        <TouchableWithoutFeedback onPress={toggleMoreModal}>
+          <View style={styles.modalContainer}>
+            <BottomBar />
+            <View
+              style={[
+                styles.paneWrapper,
+                baseStyles.panelBackground,
+                {
+                  marginLeft: insets.left + 8,
+                  marginRight: insets.right + 8,
+                },
+                !isPortrait && styles.paneWrapperLandscape,
+              ]}
+            >
+              <View style={styles.buttonsSection}>
+                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
+                  {t('bottomBar.show')}
+                </Text>
+                <View style={styles.buttonsBlock}>
+                  <View style={styles.buttonsRow}>
+                    <View style={styles.button_33}>
+                      <ShidurBtn />
+                    </View>
+                    <View style={styles.button_33}>
+                      <GroupsBtn />
+                    </View>
+                    <View style={styles.button_33}>
+                      <HideSelfBtn />
                     </View>
                   </View>
-                </View>
-                <View style={styles.buttonsSection}>
-                  <Text
-                    style={[ baseStyles.text, styles.text]}
-                    numberOfLines={1}
-                  >
-                    Open
-                  </Text>
-
-                  {/* for portrait mode only */}
-                  {!isLandscape && (
-                  <View style={styles.buttonsBlock}>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_50}>
-                        <ChatBtn />
-                      </View>
-                      <View style={styles.button_50}>
-                        <VoteBtn />
-                      </View>
-                    </View>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_50}>
-                        <StudyMaterialsBtn />
-                      </View>
-                      <View style={styles.button_50}>
-                        <DonateBtn />
-                      </View>
-                    </View>
-                  </View>
-                  )}
-                  {/* for landscape mode only */}
-                  {isLandscape && (
-                  <View style={styles.buttonsBlock}>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_25}>
-                        <ChatBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <VoteBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <StudyMaterialsBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <DonateBtn />
-                      </View>
-                    </View>
-                  </View>
-                  )}
                 </View>
               </View>
+              <View style={styles.buttonsSection}>
+                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
+                  {t('bottomBar.open')}
+                </Text>
+
+                {/* for portrait mode only */}
+                {isPortrait && (
+                  <View style={styles.buttonsBlock}>
+                    <View style={styles.buttonsRow}>
+                      <View style={styles.button_50}>
+                        <ChatBtn />
+                      </View>
+                      <View style={styles.button_50}>
+                        <VoteBtn />
+                      </View>
+                    </View>
+                    <View style={styles.buttonsRow}>
+                      <View style={styles.button_50}>
+                        <StudyMaterialsBtn />
+                      </View>
+                      <View style={styles.button_50}>
+                        <DonateBtn />
+                      </View>
+                    </View>
+                  </View>
+                )}
+                {/* for landscape mode only */}
+                {!isPortrait && (
+                  <View style={styles.buttonsBlock}>
+                    <View style={styles.buttonsRow}>
+                      <View style={styles.button_25}>
+                        <ChatBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <VoteBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <StudyMaterialsBtn />
+                      </View>
+                      <View style={styles.button_25}>
+                        <DonateBtn />
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
             </View>
-          </TouchableWithoutFeedback>
-        </ButtonsPaneModalContext.Provider>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -237,8 +171,8 @@ export const styles = StyleSheet.create({
   },
   text: {
     marginBottom: 8,
-    marginLeft:8,
-    color:'#575757',
+    marginLeft: 8,
+    color: '#575757',
   },
   // flexDirection: 'column',
   tooltip: {

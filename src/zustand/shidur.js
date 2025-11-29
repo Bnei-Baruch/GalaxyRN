@@ -43,8 +43,8 @@ import { useUserStore } from './user';
 const NAMESPACE = 'Shidur';
 
 let janus = null;
-let quadJanus = null;
-let quadStream = null;
+let kliOlamiJanus = null;
+let kliOlamiStream = null;
 
 // Streaming plugin for video
 let videoJanus = null;
@@ -134,7 +134,7 @@ export const useShidurStore = create((set, get) => ({
   video: null,
   audio: null,
   url: null,
-  quadUrl: null,
+  kliOlamiUrl: null,
   trlUrl: null,
   audioUrl: null,
   readyShidur: false,
@@ -156,7 +156,11 @@ export const useShidurStore = create((set, get) => ({
   },
 
   setVideo: async (video, updateState = true) => {
-    const span = addSpan(ROOM_SESSION, 'shidur.setVideo', { NAMESPACE });
+    const span = addSpan(ROOM_SESSION, 'shidur.setVideo', {
+      NAMESPACE,
+      video,
+      updateState,
+    });
     if (!janus) {
       return;
     }
@@ -186,13 +190,14 @@ export const useShidurStore = create((set, get) => ({
       finishSpan(span, 'duplicate', NAMESPACE);
       return;
     }
-
+    logger.debug(NAMESPACE, 'initJanus new JanusMqtt');
     const { user } = useUserStore.getState();
 
     if (!(await waitConnection())) {
       logger.warn(NAMESPACE, 'Connection unavailable in initJanus');
       return;
     }
+    logger.debug(NAMESPACE, 'initJanus waitConnection done');
 
     let srv = null;
     try {
@@ -248,7 +253,7 @@ export const useShidurStore = create((set, get) => ({
     }
     set({ cleanWIP: true });
     try {
-      await Promise.all([get().cleanShidur(), get().cleanQuads()]);
+      await Promise.all([get().cleanShidur(), get().cleanKliOlami()]);
 
       logger.debug(NAMESPACE, 'cleanJanus');
       await rejectTimeoutPromise(janus.destroy(), 5000);
@@ -569,35 +574,35 @@ export const useShidurStore = create((set, get) => ({
     set({ isPlay });
   },
 
-  initQuad: async () => {
+  initKliOlami: async () => {
     if (!useSettingsStore.getState().showGroups) return;
 
-    if (quadStream) return;
+    if (kliOlamiStream) return;
 
-    quadJanus = new StreamingPlugin(config?.iceServers);
-    quadJanus.onTrack = stream => {
-      logger.info(NAMESPACE, 'quadStream got track: ', stream);
-      cleanStream(quadStream);
-      quadStream = stream;
-      set({ quadUrl: quadStream.toURL() });
+    kliOlamiJanus = new StreamingPlugin(config?.iceServers);
+    kliOlamiJanus.onTrack = stream => {
+      logger.info(NAMESPACE, 'kliOlamiStream got track: ', stream);
+      cleanStream(kliOlamiStream);
+      kliOlamiStream = stream;
+      set({ kliOlamiUrl: kliOlamiStream.toURL() });
     };
-    await initStream(102, quadJanus);
+    await initStream(102, kliOlamiJanus);
   },
 
-  cleanQuads: async (updateState = true) => {
-    cleanStream(quadStream);
-    quadStream = null;
+  cleanKliOlami: async (updateState = true) => {
+    cleanStream(kliOlamiStream);
+    kliOlamiStream = null;
     try {
-      if (quadJanus) {
-        await rejectTimeoutPromise(janus.detach(quadJanus), 2000);
+      if (kliOlamiJanus) {
+        await rejectTimeoutPromise(janus.detach(kliOlamiJanus), 2000);
       }
     } catch (error) {
-      logger.error(NAMESPACE, 'Error during cleanQuads:', error);
+      logger.error(NAMESPACE, 'Error during cleanKliOlami:', error);
     }
-    quadJanus = null;
+    kliOlamiJanus = null;
 
-    if (updateState) set({ quadUrl: null });
-    else set({ quadUrl: null });
+    if (updateState) set({ kliOlamiUrl: null });
+    else set({ kliOlamiUrl: null });
   },
 
   enterAudioMode: () => {
@@ -611,11 +616,11 @@ export const useShidurStore = create((set, get) => ({
   },
 
   exitAudioMode: async () => {
-    const { initQuad, isPlay, video: currentVideo, setVideo } = get();
+    const { initKliOlami, isPlay, video: currentVideo, setVideo } = get();
     try {
-      initQuad();
+      initKliOlami();
     } catch (error) {
-      logger.error(NAMESPACE, 'Error during initQuad:', error);
+      logger.error(NAMESPACE, 'Error during initKliOlami:', error);
     }
 
     if (!useSettingsStore.getState().isShidur || !isPlay) {
@@ -629,7 +634,7 @@ export const useShidurStore = create((set, get) => ({
     } else {
       video = await getFromStorage('video', 1).then(x => Number(x));
     }
-
+    console.log('exitAudioMode video', video, currentVideo);
     if (video !== currentVideo) {
       setVideo(video, false);
     }

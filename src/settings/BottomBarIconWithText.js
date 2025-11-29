@@ -1,10 +1,8 @@
 import React from 'react';
-import { Animated, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
-const AnimatedIcon = Animated.createAnimatedComponent(Icon);
-const AnimatedText = Animated.createAnimatedComponent(Text);
 
 const BottomBarIconWithText = ({
   iconName,
@@ -13,10 +11,6 @@ const BottomBarIconWithText = ({
   showtext,
   direction,
 }) => {
-  const containerAnim = React.useRef(new Animated.Value(1)).current;
-  const iconAnim = React.useRef(new Animated.Value(1)).current;
-  const textAnim = React.useRef(new Animated.Value(1)).current;
-
   const extraStylesArray = React.Children.toArray(extraStyle);
   const containerVariant = extraStylesArray[0];
   const iconVariant = extraStylesArray[1];
@@ -52,166 +46,6 @@ const BottomBarIconWithText = ({
     [textVariant]
   );
 
-  const flattenedContainer = React.useMemo(
-    () => StyleSheet.flatten(buttonStyles) || {},
-    [buttonStyles]
-  );
-
-  const flattenedIcon = React.useMemo(
-    () => StyleSheet.flatten(iconBaseStyles) || {},
-    [iconBaseStyles]
-  );
-
-  const flattenedText = React.useMemo(
-    () => StyleSheet.flatten(textBaseStyles) || {},
-    [textBaseStyles]
-  );
-
-  const targetContainerBackground =
-    flattenedContainer.backgroundColor ??
-    styles.container.backgroundColor ??
-    'transparent';
-  const targetContainerRadius =
-    flattenedContainer.borderRadius ?? styles.container.borderRadius ?? 0;
-  const targetIconColor = flattenedIcon.color ?? styles.icon.color ?? '#ffffff';
-  const targetTextColor =
-    flattenedText.color ??
-    baseStyles?.text?.color ??
-    styles.text.color ??
-    '#ffffff';
-
-  const [containerTransition, setContainerTransition] = React.useState(() => ({
-    fromBg: targetContainerBackground,
-    toBg: targetContainerBackground,
-    fromRadius: targetContainerRadius,
-    toRadius: targetContainerRadius,
-  }));
-
-  const [iconTransition, setIconTransition] = React.useState(() => ({
-    fromColor: targetIconColor,
-    toColor: targetIconColor,
-  }));
-
-  const [textTransition, setTextTransition] = React.useState(() => ({
-    fromColor: targetTextColor,
-    toColor: targetTextColor,
-  }));
-
-  React.useEffect(() => {
-    setContainerTransition(prev => {
-      if (
-        prev.toBg === targetContainerBackground &&
-        prev.toRadius === targetContainerRadius
-      ) {
-        return prev;
-      }
-      return {
-        fromBg: prev.toBg,
-        toBg: targetContainerBackground,
-        fromRadius: prev.toRadius,
-        toRadius: targetContainerRadius,
-      };
-    });
-  }, [targetContainerBackground, targetContainerRadius]);
-
-  React.useEffect(() => {
-    setIconTransition(prev => {
-      if (prev.toColor === targetIconColor) {
-        return prev;
-      }
-      return {
-        fromColor: prev.toColor,
-        toColor: targetIconColor,
-      };
-    });
-  }, [targetIconColor]);
-
-  React.useEffect(() => {
-    setTextTransition(prev => {
-      if (prev.toColor === targetTextColor) {
-        return prev;
-      }
-      return {
-        fromColor: prev.toColor,
-        toColor: targetTextColor,
-      };
-    });
-  }, [targetTextColor]);
-
-  // Smoothly interpolate container background and icon tint when variants change.
-  React.useEffect(() => {
-    if (
-      containerTransition.fromBg !== containerTransition.toBg ||
-      containerTransition.fromRadius !== containerTransition.toRadius
-    ) {
-      containerAnim.setValue(0);
-      Animated.timing(containerAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [containerTransition, containerAnim]);
-
-  React.useEffect(() => {
-    if (iconTransition.fromColor !== iconTransition.toColor) {
-      iconAnim.setValue(0);
-      Animated.timing(iconAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [iconTransition, iconAnim]);
-
-  React.useEffect(() => {
-    if (textTransition.fromColor !== textTransition.toColor) {
-      textAnim.setValue(0);
-      Animated.timing(textAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [textTransition, textAnim]);
-
-  const animatedContainerStyle = React.useMemo(
-    () => ({
-      backgroundColor: containerAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [containerTransition.fromBg, containerTransition.toBg],
-      }),
-      borderRadius: containerAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [
-          containerTransition.fromRadius,
-          containerTransition.toRadius,
-        ],
-      }),
-    }),
-    [containerAnim, containerTransition]
-  );
-
-  const animatedIconStyle = React.useMemo(
-    () => ({
-      color: iconAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [iconTransition.fromColor, iconTransition.toColor],
-      }),
-    }),
-    [iconAnim, iconTransition]
-  );
-
-  const animatedTextStyle = React.useMemo(
-    () => ({
-      color: textAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [textTransition.fromColor, textTransition.toColor],
-      }),
-    }),
-    [textAnim, textTransition]
-  );
-
   const containerDirectionStyle = React.useMemo(() => {
     if (showtext === false) return [styles.notext, styles.icon_notext];
     if (direction === 'horizontal')
@@ -222,31 +56,18 @@ const BottomBarIconWithText = ({
   }, [direction, showtext]);
 
   return (
-    <Animated.View
-      style={[
-        ...buttonStyles,
-        containerDirectionStyle[0],
-        animatedContainerStyle,
-      ]}
-    >
-      <AnimatedIcon
-        style={[
-          ...iconBaseStyles,
-          containerDirectionStyle[1],
-          animatedIconStyle,
-        ]}
+    <View style={[...buttonStyles, containerDirectionStyle[0]]}>
+      <Icon
+        style={[...iconBaseStyles, containerDirectionStyle[1]]}
         name={iconName}
         size={24}
       />
       {(showtext === undefined || showtext) && (
-        <AnimatedText
-          style={[...textBaseStyles, animatedTextStyle]}
-          numberOfLines={1}
-        >
+        <Text style={[...textBaseStyles]} numberOfLines={1}>
           {text}
-        </AnimatedText>
+        </Text>
       )}
-    </Animated.View>
+    </View>
   );
 };
 

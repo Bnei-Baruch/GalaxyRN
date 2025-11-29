@@ -41,9 +41,11 @@
     "vote": "הצבעה",
     "shidur": "שידור",
     "self": "להסתיר את הווידאו שלי",
-    "quads": "Kli Olamy tens",
+    "kliOlami": "Kli Olamy tens",
     "leave": "עזוב את החדר",
-    "chat": "צ'אט"
+    "chat": "צ'אט",
+    "show": "הצג",
+    "open": "פתח"
   },
   "shidur": {
     "onAir": "בשידור",

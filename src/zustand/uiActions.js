@@ -110,4 +110,7 @@ export const useUiActions = create((set, get) => ({
     }
     set({ showBars });
   },
+
+  moreModal: false,
+  toggleMoreModal: () => set({ moreModal: !get().moreModal }),
 }));

@@ -7,16 +7,16 @@ import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 
-export const Quads = () => {
-  const { quadUrl, initQuad, cleanQuads } = useShidurStore();
+export const KliOlami = () => {
+  const { kliOlamiUrl, initKliOlami, cleanKliOlami } = useShidurStore();
   const { isShidur } = useSettingsStore();
   const { isPortrait } = useInitsStore();
   const { width } = useUiActions();
 
   useEffect(() => {
-    initQuad();
+    initKliOlami();
     return () => {
-      cleanQuads();
+      cleanKliOlami();
     };
   }, []);
 
@@ -27,9 +27,9 @@ export const Quads = () => {
         !isShidur && !isPortrait && { width, alignSelf: 'center' },
       ]}
     >
-      {quadUrl && (
+      {kliOlamiUrl && (
         <RTCView
-          streamURL={quadUrl}
+          streamURL={kliOlamiUrl}
           style={styles.viewer}
           objectFit="contain"
         />

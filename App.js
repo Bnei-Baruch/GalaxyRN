@@ -22,10 +22,20 @@ import logger from './src/services/logger';
 
 const {
   version: appVersion,
-  config: { isProduction },
+  config: { isProduction: _isProduction },
 } = require('./package.json');
 
+let isProduction = _isProduction;
 const NAMESPACE = 'App';
+let environment;
+if (__DEV__) {
+  environment = 'development';
+  //isProduction = tr;
+} else if (isProduction) {
+  environment = 'production';
+} else {
+  environment = 'staging';
+}
 
 if (!SENTRY_DSN) {
   logger.warn(NAMESPACE, 'Sentry DSN is not configured; skipping Sentry.init.');
@@ -34,7 +44,7 @@ if (!SENTRY_DSN) {
     dsn: SENTRY_DSN,
     tracesSampleRate: isProduction ? 0.2 : 1.0,
     profilesSampleRate: isProduction ? 0.1 : 1.0,
-    environment: isProduction ? 'production' : 'staging',
+    environment,
     attachStacktrace: true,
     release: `GalaxyRN@${appVersion}`,
     dist: Platform.OS,

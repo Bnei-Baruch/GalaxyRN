@@ -1,21 +1,12 @@
 import * as React from 'react';
 import { useState } from 'react';
-import {
-  Text,
-  Modal,
-  View,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
-import { topMenuBtns } from '../../topBar/helper';
-import useMaterials from '../../zustand/fetchMaterials';
-import WIP from '../../components/WIP';
-import { StudyMaterialItem } from '../../topBar/StudyMaterialItem';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import ScreenTitle from '../../components/ScreenTitle';
+import WIP from '../../components/WIP';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import { StudyMaterialItem } from '../../topBar/StudyMaterialItem';
+import useMaterials from '../../zustand/fetchMaterials';
 import { bottomBar } from '../helper';
 
 export const StudyMaterialsBtn = () => {

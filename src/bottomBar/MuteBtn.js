@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
+import BottomBarIconWithText from '../settings/BottomBarIconWithTextAnimated';
 import { useMyStreamStore } from '../zustand/myStream';
 import { bottomBar } from './helper';
 

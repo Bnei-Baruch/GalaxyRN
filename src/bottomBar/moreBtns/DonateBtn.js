@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Linking, Pressable } from 'react-native';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useTranslation } from 'react-i18next';
+import { Linking, Pressable } from 'react-native';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { bottomBar } from '../helper';
 
 const PARAMS =
@@ -31,7 +31,7 @@ export const DonateBtn = () => {
         text={t('topBar.donate')}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction='horizontal'
+        direction="horizontal"
       />
     </Pressable>
   );

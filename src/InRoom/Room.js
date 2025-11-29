@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
+import ButtonsPaneModal from '../components/ButtonsPaneModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
 import { TopBar } from '../topBar/TopBar';
@@ -29,6 +30,7 @@ const Room = () => {
       <TopBar />
       <RoomLayout />
       <BottomBar />
+      <ButtonsPaneModal />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>

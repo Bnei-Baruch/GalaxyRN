@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import logger from '../../services/logger';
@@ -17,7 +17,18 @@ const NAMESPACE = 'Feed';
 
 const RTCViewWrapper = memo(
   ({ streamURL }) => {
-    logger.debug(NAMESPACE, 'RTCViewWrapper render');
+    logger.debug(NAMESPACE, 'RTCViewWrapper render', streamURL);
+    const [on, setOn] = useState(false);
+    useEffect(() => {
+      setTimeout(() => {
+        setOn(true);
+      }, 100);
+      return () => {
+        setOn(false);
+      };
+    }, [streamURL]);
+    logger.debug(NAMESPACE, 'RTCViewWrapper render on:', on);
+    if (!on) return null;
     return (
       <RTCView
         streamURL={streamURL}

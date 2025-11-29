@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
-import { bottomBar } from '../helper';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useUserStore } from '../../zustand/user';
+import { bottomBar } from '../helper';
 
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);

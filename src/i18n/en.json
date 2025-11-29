@@ -46,9 +46,11 @@
     "vote": "Vote",
     "shidur": "Broadcast",
     "self": "My video",
-    "quads": "World Kli tens",
+    "kliOlami": "World Kli tens",
     "leave": "Leave room",
-    "chat": "Chat"
+    "chat": "Chat",
+    "show": "Show",
+    "open": "Open"
   },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",
