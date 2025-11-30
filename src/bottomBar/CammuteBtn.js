@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
+import BottomBarIconWithText from '../settings/BottomBarIconWithTextAnimated';
 import { useMyStreamStore } from '../zustand/myStream';
 import { bottomBar } from './helper';
 
@@ -13,11 +13,11 @@ export const CammuteBtn = () => {
   if (cammute) {
     iconName = 'videocam-off';
     text = t('bottomBar.stopVideo');
-    extraStyle = ['pressed', 'pressedicon'];
+    extraStyle = ['toggle_on', 'toggle_on_icon'];
   } else {
     iconName = 'videocam';
     text = t('bottomBar.startVideo');
-    extraStyle = ['rest', 'resticon'];
+    extraStyle = ['toggle_off', 'toggle_off_icon'];
   }
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn}>
@@ -25,6 +25,7 @@ export const CammuteBtn = () => {
         iconName={iconName}
         text={text}
         extraStyle={extraStyle}
+        showtext={false}
       />
     </Pressable>
   );

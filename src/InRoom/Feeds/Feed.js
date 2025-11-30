@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 import logger from '../../services/logger';
@@ -17,7 +17,18 @@ const NAMESPACE = 'Feed';
 
 const RTCViewWrapper = memo(
   ({ streamURL }) => {
-    logger.debug(NAMESPACE, 'RTCViewWrapper render');
+    logger.debug(NAMESPACE, 'RTCViewWrapper render', streamURL);
+    const [on, setOn] = useState(false);
+    useEffect(() => {
+      setTimeout(() => {
+        setOn(true);
+      }, 100);
+      return () => {
+        setOn(false);
+      };
+    }, [streamURL]);
+    logger.debug(NAMESPACE, 'RTCViewWrapper render on:', on);
+    if (!on) return null;
     return (
       <RTCView
         streamURL={streamURL}
@@ -59,8 +70,14 @@ const Feed = ({ id }) => {
   });
   const ref = useRef();
 
-  const activateDeactivate = (top = 0, bottom = 0, feedId) => {
-    if (!ref.current) return;
+  const activateDeactivate = (top = 0, bottom = 0, feedId, camera) => {
+    logger.debug(NAMESPACE, 'activateDeactivate', {
+      top,
+      bottom,
+      feedId,
+      camera,
+    });
+    if (!ref.current || !camera) return;
 
     const { height, y } = ref.current;
     if (y + height - 10 > top && y - 10 < bottom) {
@@ -73,16 +90,17 @@ const Feed = ({ id }) => {
   useEffect(() => {
     if (ref.current) {
       const { top, bottom } = borders;
-      activateDeactivate(top, bottom, id);
+      activateDeactivate(top, bottom, id, camera);
     }
-  }, [borders, id]);
+  }, [borders, id, camera]);
 
   if (!feed) return null;
 
   const handleLayout = event => {
+    logger.debug(NAMESPACE, 'handleLayout', event.nativeEvent.layout);
     const { y, height } = event.nativeEvent.layout;
     ref.current = { y, height };
-    activateDeactivate(borders.top, borders.bottom, id);
+    activateDeactivate(borders.top, borders.bottom, id, camera);
   };
 
   const renderContent = () => {
@@ -93,7 +111,9 @@ const Feed = ({ id }) => {
     if (!camera) {
       return <CammutedFeed display={display} />;
     }
-    if (vWIP || !vOn) return <WIP isReady={false} />;
+    if (vWIP || !vOn) {
+      return <WIP isReady={false} />;
+    }
 
     return (
       <View style={styles.viewer}>
@@ -105,8 +125,8 @@ const Feed = ({ id }) => {
 
   return (
     <View
-      onLayout={handleLayout}
       style={[styles.container, talking && styles.talking, { width }]}
+      onLayout={handleLayout}
     >
       {question && <QuestionOverlay />}
       {renderContent()}

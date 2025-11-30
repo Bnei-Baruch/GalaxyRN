@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity } from 'react-native';
-
-import { baseStyles } from '../../constants';
-import IconWithText from '../../settings/IconWithText';
+import { Pressable } from 'react-native';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
 
@@ -11,14 +9,19 @@ export const GroupsBtn = () => {
   const { showGroups, toggleShowGroups } = useSettingsStore();
   const { t } = useTranslation();
 
-  const handlePress = () => toggleShowGroups();
-
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      style={[baseStyles.listItem, showGroups && baseStyles.listItemSelected]}
-    >
-      <IconWithText iconName="public" text={t('bottomBar.quads')} />
-    </TouchableOpacity>
+    <Pressable onPress={toggleShowGroups} style={bottomBar.btn}>
+      <BottomBarIconWithText
+        iconName="public"
+        text={t('bottomBar.kliOlami')}
+        extraStyle={
+          !showGroups
+            ? ['toggle_off', 'toggle_off_icon']
+            : ['toggle_on_alt2', 'toggle_on_icon_alt2']
+        }
+        showtext={true}
+        direction="vertical"
+      />
+    </Pressable>
   );
 };

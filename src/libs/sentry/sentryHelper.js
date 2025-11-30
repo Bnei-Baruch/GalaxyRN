@@ -236,3 +236,7 @@ export const captureException = args => {
     Sentry.captureException(new Error(args.join(', ')));
   }
 };
+
+export const setIsDebug = debug => {
+  Sentry.setIsDebug(debug);
+};

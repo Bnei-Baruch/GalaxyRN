@@ -45,10 +45,12 @@
   "bottomBar": {
     "vote": "Vote",
     "shidur": "Broadcast",
-    "self": "Hide my video",
-    "quads": "Kli Olamy tens",
+    "self": "My video",
+    "kliOlami": "World Kli tens",
     "leave": "Leave room",
-    "chat": "Chat"
+    "chat": "Chat",
+    "show": "Show",
+    "open": "Open"
   },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",

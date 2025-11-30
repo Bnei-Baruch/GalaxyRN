@@ -42,9 +42,11 @@
     "vote": "Голосовать",
     "shidur": "Трансляция",
     "self": "Скрыть мое видео",
-    "quads": "Kli Olamy tens",
+    "kliOlami": "Kli Olamy tens",
     "leave": "Покинуть комнату",
-    "chat": "Чат"
+    "chat": "Чат",
+    "show": "Показать",
+    "open": "Открыть"
   },
   "shidur": {
     "onAir": "В ЭФИРЕ",

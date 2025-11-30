@@ -1,0 +1,61 @@
+import * as React from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import ScreenTitle from '../../components/ScreenTitle';
+import WIP from '../../components/WIP';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import { StudyMaterialItem } from '../../topBar/StudyMaterialItem';
+import useMaterials from '../../zustand/fetchMaterials';
+import { bottomBar } from '../helper';
+
+export const StudyMaterialsBtn = () => {
+  const [open, setOpen] = useState(false);
+  const { fetchMaterials, materials, isLoading } = useMaterials();
+  const { t } = useTranslation();
+
+  const toggleModal = () => {
+    if (!open) fetchMaterials();
+    setOpen(!open);
+  };
+
+  return (
+    <>
+      <Pressable onPress={toggleModal} style={bottomBar.btn}>
+        <BottomBarIconWithText
+          iconName="book"
+          text={t('topBar.materials')}
+          extraStyle={['rest', 'resticon']}
+          showtext={true}
+          direction="horizontal"
+        />
+      </Pressable>
+      <Modal
+        visible={open}
+        onRequestClose={toggleModal}
+        style={styles.modal}
+        animationType="none"
+        presentationStyle="pageSheet"
+        supportedOrientations={['portrait', 'landscape']}
+      >
+        <View style={styles.modal}>
+          <ScreenTitle text={t('topBar.materialsTitle')} close={toggleModal} />
+          <WIP isReady={!isLoading}>
+            <ScrollView>
+              {materials.map(m => (
+                <StudyMaterialItem msg={m} key={m.Title} />
+              ))}
+            </ScrollView>
+          </WIP>
+        </View>
+      </Modal>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  modal: {
+    backgroundColor: 'black',
+    flex: 1,
+  },
+});

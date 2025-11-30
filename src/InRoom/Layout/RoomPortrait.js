@@ -15,7 +15,7 @@ import { useUiActions } from '../../zustand/uiActions';
 
 const NAMESPACE = 'RoomPortrait';
 
-const RoomPortrait = ({ shidur, quads, members }) => {
+const RoomPortrait = ({ shidur, kliOlami, members }) => {
   const { janusReady } = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
@@ -42,7 +42,7 @@ const RoomPortrait = ({ shidur, quads, members }) => {
           <WIP isReady={janusReady}>
             <View style={[baseStyles.full, { width }]}>
               {shidur}
-              {quads}
+              {kliOlami}
             </View>
           </WIP>
           {members}

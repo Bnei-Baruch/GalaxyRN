@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-
+import { Pressable } from 'react-native';
 import { ChatCounter } from '../../chat/ChatCounter';
 import { ChatModal } from '../../chat/ChatModal';
-import { baseStyles } from '../../constants';
-import IconWithText from '../../settings/IconWithText';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+
 import { useChatStore } from '../../zustand/chat';
 import { modalModes } from '../../zustand/helper';
+import { bottomBar } from '../helper';
 
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
@@ -16,29 +16,17 @@ export const ChatBtn = () => {
 
   return (
     <>
-      <TouchableOpacity
-        onPress={handlePress}
-        style={[baseStyles.listItem, styles.container]}
-      >
-        <View style={styles.leftBlock}>
-          <ChatCounter />
-          <IconWithText iconName="forum" text={t('bottomBar.chat')} />
-        </View>
-        <View style={styles.divider}></View>
-      </TouchableOpacity>
+      <Pressable onPress={handlePress} style={bottomBar.btn}>
+        <BottomBarIconWithText
+          iconName="forum"
+          text={t('bottomBar.chat')}
+          extraStyle={['rest', 'resticon']}
+          showtext={true}
+          direction="horizontal"
+        />
+        <ChatCounter />
+      </Pressable>
       <ChatModal />
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  divider: {
-    flex: 1,
-  },
-  container: {
-    flexDirection: 'row',
-  },
-  leftBlock: {
-    paddingRight: 15,
-  },
-});

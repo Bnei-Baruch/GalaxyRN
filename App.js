@@ -20,30 +20,40 @@ import {
 import AndroidPermissions from './src/services/AndroidPermissions';
 import logger from './src/services/logger';
 
-const { version: appVersion } = require('./package.json');
+const {
+  version: appVersion,
+  config: { isProduction: _isProduction },
+} = require('./package.json');
 
+let isProduction = _isProduction;
 const NAMESPACE = 'App';
-const environment = __DEV__ ? 'development' : 'production';
-const release = `GalaxyRN@${appVersion}`;
-const dist = Platform.OS;
+let environment;
+if (__DEV__) {
+  environment = 'development';
+  //isProduction = tr;
+} else if (isProduction) {
+  environment = 'production';
+} else {
+  environment = 'staging';
+}
 
 if (!SENTRY_DSN) {
   logger.warn(NAMESPACE, 'Sentry DSN is not configured; skipping Sentry.init.');
 } else {
   Sentry.init({
     dsn: SENTRY_DSN,
-    tracesSampleRate: 0.2,
-    profilesSampleRate: 0.1,
+    tracesSampleRate: isProduction ? 0.2 : 1.0,
+    profilesSampleRate: isProduction ? 0.1 : 1.0,
     environment,
     attachStacktrace: true,
-    release,
-    dist,
+    release: `GalaxyRN@${appVersion}`,
+    dist: Platform.OS,
     enableAutoSessionTracking: true,
     sessionTrackingIntervalMillis: 30000,
     maxBreadcrumbs: 100,
     autoInitializeNativeSdk: true,
-    attachScreenshot: true,
-    attachViewHierarchy: true,
+    attachScreenshot: false,
+    attachViewHierarchy: false,
   });
 }
 

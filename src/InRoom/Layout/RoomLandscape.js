@@ -6,7 +6,7 @@ import { useUiActions } from '../../zustand/uiActions';
 
 const NAMESPACE = 'RoomLandscape';
 
-const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
+const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
 
   const isShidur = !!shidur;
@@ -34,7 +34,7 @@ const RoomLandscape = ({ shidur, quads, members, subtitle }) => {
           onScroll={handleScroll}
         >
           <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
-            {quads}
+            {kliOlami}
             {members}
           </Pressable>
         </ScrollView>

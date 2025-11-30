@@ -73,10 +73,8 @@ export const useInRoomStore = create((set, get) => ({
     const janusInitSpan = addSpan(ROOM_SESSION, 'janus.inits');
 
     try {
-      await Promise.all([
-        useFeedsStore.getState().initFeeds(),
-        useShidurStore.getState().initShidur(isPlay),
-      ]);
+      await useShidurStore.getState().initShidur(isPlay);
+      await useFeedsStore.getState().initFeeds();
       finishSpan(janusInitSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing shidur and feeds', error);
@@ -226,9 +224,9 @@ export const useInRoomStore = create((set, get) => ({
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
-      const { enterAudioMode, cleanQuads } = useShidurStore.getState();
+      const { enterAudioMode, cleanKliOlami } = useShidurStore.getState();
       enterAudioMode();
-      cleanQuads(false);
+      cleanKliOlami(false);
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);

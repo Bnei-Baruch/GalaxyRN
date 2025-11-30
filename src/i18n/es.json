@@ -40,9 +40,11 @@
     "vote": "Vote",
     "shidur": "Translation",
     "self": "Hide my video",
-    "quads": "Kli Olamy tens",
+    "kliOlami": "Kli Olamy tens",
     "leave": "Leave room",
-    "chat": "Chat"
+    "chat": "Chat",
+    "show": "Mostrar",
+    "open": "Abrir"
   },
   "shidur": {
     "onAir": "EN VIVO",
