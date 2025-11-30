@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { baseStyles } from '../constants';
 import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
 import { AudioModeBtn } from './AudioModeBtn';
@@ -7,17 +9,23 @@ import { CammuteBtn } from './CammuteBtn';
 import { MoreBtn } from './MoreBtn';
 import { MuteBtn } from './MuteBtn';
 import { QuestionBtn } from './QuestionBtn';
-import { baseStyles } from '../constants';
 
 export const BottomBar = () => {
   const { showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
+  const insets = useSafeAreaInsets();
 
   if (!showBars || isFullscreen) return null;
 
   return (
     <View style={styles.container}>
-      <View style={[styles.buttons, baseStyles.panelBackground]}>
+      <View
+        style={[
+          styles.buttons,
+          baseStyles.panelBackground,
+          { bottom: insets.bottom },
+        ]}
+      >
         <MuteBtn />
         <CammuteBtn />
         <QuestionBtn />

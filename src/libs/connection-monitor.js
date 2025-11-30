@@ -3,6 +3,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
+import { sleep } from '../shared/tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
@@ -230,18 +231,21 @@ const monitorNetInfo = async () => {
 const monitorMqtt = async () => {
   logger.debug(NAMESPACE, 'monitorMqtt');
   BackgroundTimer.clearTimeout(timeout);
-  if (!mqtt.mq) {
-    return false;
-  }
 
   if (disconnectedSeconds > MAX_CONNECTION_TIMEOUT) {
     throw new Error('MQTT disconnected');
   }
-
   disconnectedSeconds++;
+
+  if (!mqtt.mq) {
+    logger.debug(NAMESPACE, 'MQTT not initialized, setting timeout');
+    sleep(1000);
+    return await monitorMqtt();
+  }
+
   logger.debug(NAMESPACE, 'MQTT connected', mqtt.mq?.connected);
-  if (mqtt.mq?.connected) {
-    return;
+  if (mqtt.mq.connected) {
+    return true;
   }
   logger.debug(NAMESPACE, 'monitorMqtt run timeout', disconnectedSeconds);
   return new Promise(resolve => {
@@ -312,9 +316,13 @@ export const waitConnection = async () => {
   logger.debug(NAMESPACE, 'waitConnection');
 
   if (isNetConnected() && mqtt.mq?.connected) {
+    logger.debug(NAMESPACE, 'waitConnection already connected');
     return true;
   }
-
+  logger.debug(
+    NAMESPACE,
+    'waitConnection not connected, waiting for connection'
+  );
   return new Promise(resolve => {
     waitConnectionListeners.push(connected => {
       logger.debug(NAMESPACE, 'waitConnection listener', connected);
@@ -341,7 +349,7 @@ const callWaitConnectionListeners = connected => {
     return;
   }
 
-  if (disconnectedSeconds < 10) {
+  if (disconnectedSeconds < MAX_CONNECTION_TIMEOUT - 1) {
     waitConnectionListeners.forEach(listener => listener(true));
   } else {
     waitConnectionListeners.forEach(listener => listener(false));

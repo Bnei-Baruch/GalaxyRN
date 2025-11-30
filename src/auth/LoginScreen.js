@@ -4,7 +4,6 @@ import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import logo from '../assets/arvut.png';
-import NetConnectionModal from '../components/ConnectionStatus/NetConnectionModal';
 import Text from '../components/CustomText';
 import WIP from '../components/WIP';
 import { baseStyles } from '../constants';
@@ -69,7 +68,6 @@ const LoginScreen = () => {
         visible={isTermsModalVisible}
         onClose={() => setIsTermsModalVisible(false)}
       />
-      <NetConnectionModal />
     </View>
   );
 };

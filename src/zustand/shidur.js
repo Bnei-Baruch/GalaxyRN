@@ -146,6 +146,10 @@ export const useShidurStore = create((set, get) => ({
   cleanWIP: false,
 
   setIsMuted: (isMuted = !get().isMuted) => {
+    if (!get().isPlay) {
+      set({ isMuted });
+      return;
+    }
     const { isOnAir } = get();
     const tracks = isOnAir
       ? trlAudioStream?.getAudioTracks()
