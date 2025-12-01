@@ -36,7 +36,8 @@
     "support": "Поддержка",
     "settings": "Настройки",
     "communicationTitle": "Communication",
-    "materialsTitle": "Учебный материал"
+    "materialsTitle": "Учебный материал",
+    "sendLogs": "Отправить логи"
   },
   "bottomBar": {
     "vote": "Голосовать",

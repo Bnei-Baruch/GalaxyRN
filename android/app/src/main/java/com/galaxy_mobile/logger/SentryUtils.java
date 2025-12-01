@@ -3,6 +3,9 @@ package com.galaxy_mobile.logger;
 import android.util.Log;
 import io.sentry.Sentry;
 import io.sentry.SentryLevel;
+import io.sentry.Attachment;
+import io.sentry.Hint;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Utility class for Sentry integration
@@ -79,6 +82,41 @@ public class SentryUtils {
             Log.v(TAG, "Successfully added breadcrumb to Sentry");
         } catch (Exception e) {
             Log.e(TAG, "Failed to add breadcrumb to Sentry", e);
+        }
+    }
+
+    public static void sendLogFile(String email, String logs) {
+        try {
+            Log.d(TAG, "Sending log file to Sentry for email: " + email);
+            if (logs == null || logs.isEmpty()) {
+                Log.e(TAG, "No logs to send");
+                return;
+            }
+
+            byte[] logsBytes = logs.getBytes(StandardCharsets.UTF_8);
+            Log.d(TAG, "Logs converted to bytes, size: " + logsBytes.length + " bytes");
+
+            Attachment attachment = new Attachment(logsBytes, "application-logs.txt");
+            Log.d(TAG, "Attachment created from bytes, size: " + logsBytes.length + " bytes");
+            Hint hint = Hint.withAttachment(attachment);
+            Log.d(TAG, "Hint created with attachment");
+
+            Exception logException = new Exception("Log file sent to " + email);
+
+            Sentry.withScope(scope -> {
+                scope.setTag("email", email);
+                scope.setLevel(SentryLevel.ERROR);
+                scope.addAttachment(attachment);
+                Log.d(TAG, "Attachment added to scope");
+
+                Sentry.captureException(logException, hint);
+                Log.d(TAG, "Exception captured with attachment via Hint");
+            });
+
+            Log.i(TAG, "Successfully sent log file to Sentry");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to send log file to Sentry", e);
+            throw new RuntimeException("Failed to send log file to Sentry", e);
         }
     }
 }

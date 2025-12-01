@@ -34,7 +34,8 @@
     "support": "Enviar una pregunta",
     "settings": "Configuración",
     "communicationTitle": "Communication",
-    "materialsTitle": "Material de estudio"
+    "materialsTitle": "Material de estudio",
+    "sendLogs": "Enviar registros"
   },
   "bottomBar": {
     "vote": "Vote",
