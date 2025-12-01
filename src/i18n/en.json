@@ -40,7 +40,8 @@
     "support": "Support",
     "settings": "Settings",
     "communicationTitle": "Communication",
-    "materialsTitle": "Study Materials"
+    "materialsTitle": "Study Materials",
+    "sendLogs": "Send Logs"
   },
   "bottomBar": {
     "vote": "Vote",

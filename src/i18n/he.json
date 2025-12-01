@@ -35,7 +35,8 @@
     "support": "תמיכה",
     "settings": "הגדרות",
     "communicationTitle": "תקשורת",
-    "materialsTitle": "חומר לימוד"
+    "materialsTitle": "חומר לימוד",
+    "sendLogs": "שלח לוגים"
   },
   "bottomBar": {
     "vote": "הצבעה",
