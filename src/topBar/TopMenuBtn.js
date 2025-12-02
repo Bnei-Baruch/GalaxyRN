@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ListInModal from '../components/ListInModal';
 import VersionInfo from '../components/VersionInfo';
@@ -15,8 +15,11 @@ export const TopMenuBtn = () => {
     { component: <SettingsBtn />, key: 1 },
     { component: <LogoutBtn />, key: 2 },
     { component: <VersionInfo />, key: 3 },
-    { component: <SendLogsBtn />, key: 4 },
   ];
+
+  if (Platform.OS === 'android') {
+    items.push({ component: <SendLogsBtn />, key: 4 });
+  }
 
   const renderItem = item => item.component;
 
