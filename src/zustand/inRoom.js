@@ -5,6 +5,7 @@ import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { rejectTimeoutPromise } from '../shared/tools';
 
+import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
   addFinishSpan,

@@ -1,15 +1,16 @@
-import { DeviceEventEmitter, Platform } from 'react-native';
+import { DeviceEventEmitter, Dimensions, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
+import { ROOM_SESSION } from '../libs/sentry/constants';
+import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
 import api from '../shared/Api';
 import mqtt from '../shared/mqtt';
 
-import { ROOM_SESSION } from '../libs/sentry/constants';
-import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import { setJanusConfig } from '../shared/janus-config';
+import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
 import { modalModes } from './helper';
@@ -42,8 +43,10 @@ let subscription = null;
 export const useInitsStore = create((set, get) => ({
   permReady: false,
   setPermReady: (permReady = true) => set({ permReady }),
+
+  wip: false,
   isAppInited: false,
-  setIsAppInited: (isAppInited = true) => set({ isAppInited }),
+  setIsAppInited: (isAppInited = true) => set({ isAppInited, wip: false }),
 
   netIsOn: true,
   setNetIsOn: (netIsOn = true) => set({ netIsOn }),
@@ -60,7 +63,46 @@ export const useInitsStore = create((set, get) => ({
     }
   },
 
+  initApp: async () => {
+    if (get().isAppInited || get().wip) return;
+
+    set({ wip: true });
+
+    const { width, height } = Dimensions.get('window');
+    get().setIsPortrait(height > width);
+
+    try {
+      logger.debug(NAMESPACE, 'initServices');
+      await get().initServices();
+      logger.debug(NAMESPACE, 'initAudioDevices');
+      await useAudioDevicesStore.getState().initAudioDevices();
+      logger.debug(NAMESPACE, 'myInit');
+      await useMyStreamStore.getState().myInit();
+
+      await get().initConfig();
+      await get().initMQTT();
+
+      logger.debug(NAMESPACE, 'init done');
+      get().setIsAppInited(true);
+    } catch (error) {
+      get().setIsAppInited(false);
+      logger.error(NAMESPACE, 'Error initializing app', error);
+    }
+  },
+
+  terminateApp: () => {
+    logger.debug(NAMESPACE, 'terminateApp', isAppInited, wip);
+    if (!get().isAppInited || get().wip) return;
+
+    get().setIsAppInited(false);
+    get().terminateServices();
+    useAudioDevicesStore.getState().abortAudioDevices();
+    useMyStreamStore.getState().myAbort();
+    get().abortMqtt();
+  },
+
   initMQTT: async () => {
+    logger.debug(NAMESPACE, 'initMQTT');
     const { user } = useUserStore.getState();
     const { restartRoom } = useInRoomStore.getState();
 
@@ -176,8 +218,8 @@ export const useInitsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'initConfig done');
   },
 
-  initApp: async () => {
-    logger.debug(NAMESPACE, 'initApp');
+  initServices: async () => {
+    logger.debug(NAMESPACE, 'initServices');
     BackgroundTimer.start();
     let _isPlay = false;
     if (Platform.OS === 'android') {
@@ -228,8 +270,11 @@ export const useInitsStore = create((set, get) => ({
     }
   },
 
-  terminateApp: () => {
-    logger.debug(NAMESPACE, 'terminateApp - starting comprehensive cleanup');
+  terminateServices: () => {
+    logger.debug(
+      NAMESPACE,
+      'terminateServices - starting comprehensive cleanup'
+    );
 
     try {
       BackgroundTimer.stop();
@@ -250,9 +295,13 @@ export const useInitsStore = create((set, get) => ({
         subscription = null;
       }
 
-      logger.debug(NAMESPACE, 'terminateApp completed successfully');
+      logger.debug(NAMESPACE, 'terminateServices completed successfully');
     } catch (error) {
-      logger.error(NAMESPACE, 'Error during app termination cleanup', error);
+      logger.error(
+        NAMESPACE,
+        'Error during services termination cleanup',
+        error
+      );
     }
   },
 }));
