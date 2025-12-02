@@ -1,24 +1,25 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ListInModal from '../components/ListInModal';
 import VersionInfo from '../components/VersionInfo';
 import { useUiActions } from '../zustand/uiActions';
-import { DonateBtn } from './DonateBtn';
 import LogoutBtn from './LogoutBtn';
+import SendLogsBtn from './SendLogsBtn';
 import { SettingsBtn } from './SettingsBtn';
-import { StudyMaterialsBtn } from './StudyMaterialsBtn';
 
 export const TopMenuBtn = () => {
   const { toggleShowBars } = useUiActions();
 
   const items = [
-    // { component: <StudyMaterialsBtn />, key: 1 },
-    // { component: <DonateBtn />, key: 2 },
-    { component: <SettingsBtn />, key: 3 },
-    { component: <LogoutBtn />, key: 4 },
-    { component: <VersionInfo />, key: 5 },
+    { component: <SettingsBtn />, key: 1 },
+    { component: <LogoutBtn />, key: 2 },
+    { component: <VersionInfo />, key: 3 },
   ];
+
+  if (Platform.OS === 'android') {
+    items.push({ component: <SendLogsBtn />, key: 4 });
+  }
 
   const renderItem = item => item.component;
 

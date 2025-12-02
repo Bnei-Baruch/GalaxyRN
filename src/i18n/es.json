@@ -34,16 +34,21 @@
     "support": "Enviar una pregunta",
     "settings": "Configuración",
     "communicationTitle": "Communication",
-    "materialsTitle": "Material de estudio"
+    "materialsTitle": "Material de estudio",
+    "sendLogs": "Enviar registros"
   },
   "bottomBar": {
     "vote": "Vote",
-    "shidur": "Translation",
+    "shidur": "Transmisión",
     "self": "Hide my video",
     "kliOlami": "Kli Olamy tens",
     "leave": "Leave room",
     "chat": "Chat",
     "show": "Mostrar",
+    "broadcastsettings": "Configuración de transmisión",
+    "broacasttranslation": "Traducción",
+    "broadcastsubtitles": "Subtitles",
+    "broadcastsound": "Audio",
     "open": "Abrir"
   },
   "shidur": {

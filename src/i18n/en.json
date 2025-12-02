@@ -40,7 +40,8 @@
     "support": "Support",
     "settings": "Settings",
     "communicationTitle": "Communication",
-    "materialsTitle": "Study Materials"
+    "materialsTitle": "Study Materials",
+    "sendLogs": "Send Logs"
   },
   "bottomBar": {
     "vote": "Vote",
@@ -50,6 +51,10 @@
     "leave": "Leave room",
     "chat": "Chat",
     "show": "Show",
+    "broadcastsettings": "Broadcast Settings",
+    "broacasttranslation": "Translation",
+    "broadcastsubtitles": "Subtitles",
+    "broadcastsound": "Audio",
     "open": "Open"
   },
   "shidur": {

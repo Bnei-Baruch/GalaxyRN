@@ -36,7 +36,8 @@
     "support": "Поддержка",
     "settings": "Настройки",
     "communicationTitle": "Communication",
-    "materialsTitle": "Учебный материал"
+    "materialsTitle": "Учебный материал",
+    "sendLogs": "Отправить логи"
   },
   "bottomBar": {
     "vote": "Голосовать",
@@ -46,6 +47,10 @@
     "leave": "Покинуть комнату",
     "chat": "Чат",
     "show": "Показать",
+    "broadcastsettings": "Настройки трансляции",
+    "broacasttranslation": "Перевод",
+    "broadcastsubtitles": "Субтитры",
+    "broadcastsound": "Аудио",
     "open": "Открыть"
   },
   "shidur": {

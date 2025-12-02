@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import 'intl-pluralrules';
 import 'react-native-url-polyfill';
@@ -19,10 +19,21 @@ const BeforeRoom = () => {
   const { forceUpdate } = useVersionStore();
   const isInRoom = useInRoomStore(state => state.isInRoom);
   const isAppInited = useInitsStore(state => state.isAppInited);
+  const wip = useInitsStore(state => state.wip);
+  const initApp = useInitsStore(state => state.initApp);
+  const terminateApp = useInitsStore(state => state.terminateApp);
 
-  logger.debug(NAMESPACE, 'render', isInRoom, isAppInited);
+  logger.debug(NAMESPACE, 'render', isInRoom, isAppInited, wip);
+  useEffect(() => {
+    logger.debug(NAMESPACE, 'useEffect', isAppInited, wip);
+    initApp();
+    return () => {
+      logger.debug(NAMESPACE, 'useEffect terminateApp');
+      terminateApp();
+    };
+  }, []);
 
-  if (!isAppInited) {
+  if (!isAppInited || wip) {
     logger.debug(NAMESPACE, '!isAppInited');
     return <WIP isReady={false} />;
   }

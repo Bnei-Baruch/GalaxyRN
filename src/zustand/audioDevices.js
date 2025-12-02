@@ -38,7 +38,7 @@ const deviceInfoToOption = d => {
   }
 };
 
-const useAudioDevicesStore = create((set, get) => ({
+export const useAudioDevicesStore = create((set, get) => ({
   selected: null,
   wip: false,
 
@@ -111,5 +111,3 @@ const useAudioDevicesStore = create((set, get) => ({
     }
   },
 }));
-
-export default useAudioDevicesStore;

@@ -101,4 +101,55 @@ class SentryUtils {
             os_log("Failed to add breadcrumb to Sentry: %@", log: OSLog.default, type: .error, error.localizedDescription)
         }
     }
+    
+    //TODO: This is not working, in current SentrySDK no method to send log file with attachment.
+    /**
+     * Send log file to Sentry with attachment
+     */
+    static func sendLogFile(email: String, logs: String) {
+        os_log("Sending log file to Sentry for email: %@", log: OSLog.default, type: .debug, email)
+        
+        guard !logs.isEmpty else {
+            os_log("No logs to send", log: OSLog.default, type: .error)
+            return
+        }
+        
+        do {
+            // Convert logs string to data
+            guard let logsData = logs.data(using: .utf8) else {
+                os_log("Failed to convert logs to data", log: OSLog.default, type: .error)
+                return
+            }
+            
+            os_log("Logs converted to data, size: %d bytes", log: OSLog.default, type: .debug, logsData.count)
+            
+            // Check file size limit (20 MB compressed, 100 MB uncompressed)
+            let maxSize = 100 * 1024 * 1024 // 100 MB
+            let finalData: Data
+            if logsData.count > maxSize {
+                os_log("Log file size exceeds 100 MB limit, truncating to last 100 MB", log: OSLog.default, type: .default)
+                let startIndex = logsData.count - maxSize
+                finalData = logsData.subdata(in: startIndex..<logsData.count)
+            } else {
+                finalData = logsData
+            }
+            
+            // Create attachment from data
+            let attachment = Attachment(data: finalData, filename: "application-logs.txt", contentType: "text/plain")
+            os_log("Attachment created from data, size: %d bytes", log: OSLog.default, type: .debug, finalData.count)
+            
+            // Create exception to capture with attachment
+            let logException = NSError(domain: "SendLogsModule", code: 0, userInfo: [NSLocalizedDescriptionKey: "Log file sent to \(email)"])
+   
+          // Capture error with scope block
+         /*  SentrySDK.capture(error: logException, block: { scope in
+              scope.setTag(value: email, key: "email")
+              scope.addAttachment(attachment)
+              os_log("Attachment added to scope", log: OSLog.default, type: .debug)
+          }) */
+          
+        } catch {
+            os_log("Failed to send log file to Sentry: %@", log: OSLog.default, type: .error, error.localizedDescription)
+        }
+    }
 }

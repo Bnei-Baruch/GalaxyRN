@@ -5,6 +5,7 @@ import logger from '../services/logger';
 import mqtt from '../shared/mqtt';
 import { rejectTimeoutPromise } from '../shared/tools';
 
+import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
   addFinishSpan,
@@ -54,6 +55,16 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     attempts++;
+    try {
+      const connected = await rejectTimeoutPromise(waitConnection(), 5000);
+      if (!connected) {
+        throw new Error('No connection');
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error waiting for connection', error);
+      finishTransaction(ROOM_SESSION, 'internal_error');
+      return get().restartRoom();
+    }
     set({ isInRoom: true });
 
     const deviceSpan = addSpan(ROOM_SESSION, 'device.setup');
@@ -73,8 +84,10 @@ export const useInRoomStore = create((set, get) => ({
     const janusInitSpan = addSpan(ROOM_SESSION, 'janus.inits');
 
     try {
-      await useShidurStore.getState().initShidur(isPlay);
-      await useFeedsStore.getState().initFeeds();
+      await Promise.all([
+        useShidurStore.getState().initShidur(isPlay),
+        useFeedsStore.getState().initFeeds(),
+      ]);
       finishSpan(janusInitSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing shidur and feeds', error);

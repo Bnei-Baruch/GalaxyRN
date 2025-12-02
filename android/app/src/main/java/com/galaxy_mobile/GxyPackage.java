@@ -20,6 +20,7 @@ import com.galaxy_mobile.callManager.CallListenerModule;
 import com.galaxy_mobile.foreground.ForegroundModule;
 import com.galaxy_mobile.permissions.PermissionsModule;
 import com.galaxy_mobile.WakeLockModule;
+import com.galaxy_mobile.SendLogsModule;
 import com.galaxy_mobile.SendEventToClient;
 
 /**
@@ -49,6 +50,7 @@ public class GxyPackage implements ReactPackage {
             modules.add(new WakeLockModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
             modules.add(new CallListenerModule(reactContext));
+            modules.add(new SendLogsModule(reactContext));
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
         }

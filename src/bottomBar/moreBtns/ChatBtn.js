@@ -18,7 +18,7 @@ export const ChatBtn = () => {
     <>
       <Pressable onPress={handlePress} style={bottomBar.btn}>
         <BottomBarIconWithText
-          iconName="forum"
+          iconName="chat"
           text={t('bottomBar.chat')}
           extraStyle={['rest', 'resticon']}
           showtext={true}

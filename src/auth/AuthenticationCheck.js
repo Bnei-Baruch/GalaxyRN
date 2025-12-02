@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 
 import { View } from 'react-native';
 import BeforeRoom from '../InRoom/BeforeRoom';
-import RoomInit from '../InRoom/RoomInit';
 import ScreenOrientation from '../InRoom/ScreenOrientation';
 import WIP from '../components/WIP';
 import { baseStyles } from '../constants';
@@ -46,7 +45,6 @@ const AuthenticationCheck = () => {
   return (
     <View style={baseStyles.full}>
       <BeforeRoom />
-      <RoomInit />
       <ScreenOrientation />
     </View>
   );

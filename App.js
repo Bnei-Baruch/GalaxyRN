@@ -49,7 +49,7 @@ if (!SENTRY_DSN) {
     release: `GalaxyRN@${appVersion}`,
     dist: Platform.OS,
     enableAutoSessionTracking: true,
-    sessionTrackingIntervalMillis: 30000,
+    sessionTrackingIntervalMillis: 3 * 60 * 60 * 1000, //3 hours
     maxBreadcrumbs: 100,
     autoInitializeNativeSdk: true,
     attachScreenshot: false,

@@ -18,14 +18,15 @@ export const BottomBar = () => {
   if (!showBars || isFullscreen) return null;
 
   return (
-    <View style={styles.container}>
-      <View
-        style={[
-          styles.buttons,
-          baseStyles.panelBackground,
-          { bottom: insets.bottom },
-        ]}
-      >
+    <View
+      style={[
+        styles.container,
+        { bottom: Math.max(insets.bottom, 16) },
+        { left: insets.left + 8 },
+        { right: insets.right + 8 },
+      ]}
+    >
+      <View style={[styles.buttons, baseStyles.panelBackground]}>
         <MuteBtn />
         <CammuteBtn />
         <QuestionBtn />
@@ -40,9 +41,8 @@ export const BottomBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 8,
-    right: 8,
-    bottom: 16,
+    left: 30,
+    right: 30,
     alignItems: 'center',
   },
   buttons: {

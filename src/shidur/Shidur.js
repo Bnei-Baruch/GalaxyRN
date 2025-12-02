@@ -19,13 +19,13 @@ import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
-import { MuteBtn } from './MuteBtn';
+// import { MuteBtn } from './MuteBtn';
 import OptionsBtn from './OptionsBtn';
-import { OriginalSwitch } from './OriginalSwitch';
+// import { OriginalSwitch } from './OriginalSwitch';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
-import { SubtitleBtn } from './SubtitleBtn';
+// import { SubtitleBtn } from './SubtitleBtn';
 
 const NAMESPACE = 'Shidur';
 
@@ -75,12 +75,12 @@ const Shidur = () => {
             <View style={styles.toolbar}>
               <View style={styles.toolbarBtnsGroup}>
                 <PlayPauseBtn />
-                <MuteBtn />
-                <OriginalSwitch />
+                {/* <MuteBtn /> */}
+                {/* <OriginalSwitch /> */}
               </View>
 
               <View style={styles.toolbarBtnsGroup}>
-                <SubtitleBtn />
+                {/* <SubtitleBtn /> */}
                 <OptionsBtn />
                 <FullscreenBtn />
               </View>

@@ -35,16 +35,21 @@
     "support": "תמיכה",
     "settings": "הגדרות",
     "communicationTitle": "תקשורת",
-    "materialsTitle": "חומר לימוד"
+    "materialsTitle": "חומר לימוד",
+    "sendLogs": "שלח לוגים"
   },
   "bottomBar": {
     "vote": "הצבעה",
     "shidur": "שידור",
-    "self": "להסתיר את הווידאו שלי",
-    "kliOlami": "Kli Olamy tens",
+    "self": "וידאו שלי",
+    "kliOlami": "הכלי העולמי",
     "leave": "עזוב את החדר",
     "chat": "צ'אט",
     "show": "הצג",
+    "broadcastsettings": "הגדרות שידור",
+    "broacasttranslation": "תרגום",
+    "broadcastsubtitles": "כתוביות",
+    "broadcastsound": "שמע",
     "open": "פתח"
   },
   "shidur": {

@@ -8,7 +8,7 @@ import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
-import useAudioDevicesStore from '../zustand/audioDevices';
+import { useAudioDevicesStore } from '../zustand/audioDevices';
 
 const NAMESPACE = 'SelectDeviceBtn';
 
