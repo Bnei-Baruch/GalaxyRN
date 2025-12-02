@@ -50,6 +50,10 @@
     "leave": "Leave room",
     "chat": "Chat",
     "show": "Show",
+    "broadcastsettings": "Broadcast Settings",
+    "broacasttranslation": "Translation",
+    "broadcastsubtitles": "Subtitles",
+    "broadcastsound": "Audio",
     "open": "Open"
   },
   "shidur": {

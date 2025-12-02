@@ -18,9 +18,12 @@ import { BottomBar } from '../bottomBar/BottomBar';
 import { GroupsBtn } from '../bottomBar/moreBtns/GroupsBtn';
 import { HideSelfBtn } from '../bottomBar/moreBtns/HideSelfBtn';
 import { ShidurBtn } from '../bottomBar/moreBtns/ShidurBtn';
+import { SubtitleBtn } from '../bottomBar/moreBtns/SubtitleBtn';
+import { TranslationBtn } from '../bottomBar/moreBtns/TranslationBtn';
 import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
 import { useUiActions } from '../zustand/uiActions';
+import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
 
 const ButtonsPaneModal = () => {
   const { t } = useTranslation();
@@ -38,7 +41,12 @@ const ButtonsPaneModal = () => {
         supportedOrientations={['portrait', 'landscape']}
       >
         <TouchableWithoutFeedback onPress={toggleMoreModal}>
-          <View style={styles.modalContainer}>
+          <View
+            style={[
+              styles.modalContainer,
+              { paddingBottom: Math.max(insets.bottom, 16) + 80 + 16 },
+            ]}
+          >
             <BottomBar />
             <View
               style={[
@@ -67,6 +75,33 @@ const ButtonsPaneModal = () => {
                       <HideSelfBtn />
                     </View>
                   </View>
+                </View>
+              </View>
+              <View style={styles.buttonsSection}>
+                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
+                  {t('bottomBar.broadcastsettings')}
+                </Text>
+                <View style={styles.buttonsBlock}>
+                  <View style={styles.buttonsRow}>
+                    <View style={styles.button_33}>
+                      <TranslationBtn />
+                    </View>
+                    <View style={styles.button_33}>
+                      <SubtitleBtn />
+                    </View>
+                    <View style={styles.button_33}>
+                      <BroadcastMuteBtn />
+                    </View>
+                  </View>
+
+                  {/* <View style={styles.buttonsRow}>
+                    <View style={styles.button_50}>
+                      <GroupsBtn />
+                    </View>
+                    <View style={styles.button_50}>
+                      <HideSelfBtn />
+                    </View>
+                  </View> */}
                 </View>
               </View>
               <View style={styles.buttonsSection}>
@@ -131,7 +166,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingBottom: 80 + 16 + 16, // BottomBar height + marginBottom + extra
+    // paddingBottom: 80 + 16 + 16, // BottomBar height + marginBottom + extra
   },
   paneWrapper: {
     // padding: 16,
