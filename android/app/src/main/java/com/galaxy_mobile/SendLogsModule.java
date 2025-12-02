@@ -22,7 +22,7 @@ public class SendLogsModule extends ReactContextBaseJavaModule {
     public static final String NAME = "SendLogsModule";
     private static final String TAG = "SendLogsModule";
     private final ReactApplicationContext reactContext;
-    private static final int MAX_LINES = 10;
+    private static final int MAX_LINES = 1000;
 
     // Package name for filtering logs
     private static final String PACKAGE_NAME = "com.galaxy_mobile";
