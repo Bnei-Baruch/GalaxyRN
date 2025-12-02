@@ -11,8 +11,7 @@ export const MoreBtn = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
 
   return (
-    <Pressable onPress={toggleMoreModal} style={bottomBar.btn}>
-      <View style={bottomBar.moreSelBtn}>
+    <Pressable onPress={toggleMoreModal} style={bottomBar.moreSelBtn}>
         <BottomBarIconWithText
           iconName={moreModal ? 'close' : 'more-vert'}
           text="close"
@@ -24,7 +23,6 @@ export const MoreBtn = () => {
           showtext={false}
         />
         <ChatCounter />
-      </View>
     </Pressable>
   );
 };
