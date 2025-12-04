@@ -1,0 +1,12 @@
+# Правила для AI ассистента
+
+Проект: React Native приложение (bare React Native, без Expo)
+
+Стек технологий:
+- React Native
+- React Native WebRTC
+- zustand
+
+Use native code for some features
+
+If asked to check something, check documentation first and get links.

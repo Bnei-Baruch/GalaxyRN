@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+yarn.lock
+package-lock.json
+
+# Build outputs
+build/
+dist/
+*.bundle
+*.bundle.map
+*.jsbundle
+*.jsbundle.map
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/bin/
+*.apk
+*.aab
+*.keystore
+*.jks
+*.properties
+
+# iOS
+ios/build/
+ios/Podfile.lock
+ios/*.xcworkspace/xcuserdata/
+ios/*.xcodeproj/xcuserdata/
+ios/Pods/
+*.xcarchive
+
+# Logs
+*.log
+*.log.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.tmp/
+
+# Archive files
+*.zip
+*.tar.gz
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.map
+*.orig
+
