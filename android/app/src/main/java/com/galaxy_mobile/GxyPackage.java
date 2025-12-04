@@ -1,10 +1,6 @@
 package com.galaxy_mobile;
 
-import android.os.Build;
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
-
-import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -22,6 +18,8 @@ import com.galaxy_mobile.permissions.PermissionsModule;
 import com.galaxy_mobile.WakeLockModule;
 import com.galaxy_mobile.SendLogsModule;
 import com.galaxy_mobile.SendEventToClient;
+import com.galaxy_mobile.logger.GxyLogger;
+
 
 /**
  * React Native package that registers Galaxy native modules
@@ -35,7 +33,6 @@ public class GxyPackage implements ReactPackage {
         return Collections.emptyList();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();

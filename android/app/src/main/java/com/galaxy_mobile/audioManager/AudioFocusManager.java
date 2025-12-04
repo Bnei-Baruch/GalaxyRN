@@ -4,19 +4,14 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
-import android.os.Build;
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.facebook.react.bridge.ReactContext;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
 public class AudioFocusManager {
     private static final String TAG = "AudioFocusManager";
 
-    // Audio focus constants
     private static final int CONTENT_TYPE = AudioAttributes.CONTENT_TYPE_SPEECH;
     private static final int USAGE_TYPE = AudioAttributes.USAGE_VOICE_COMMUNICATION;
 
@@ -63,42 +58,26 @@ public class AudioFocusManager {
         }
     }
 
-    /**
-     * Abandon previously requested audio focus
-     * 
-     * @return true if audio focus was abandoned successfully, false otherwise
-     */
-    public boolean abandonAudioFocus() {
+    public void abandonAudioFocus() {   
         if (audioManager == null || audioFocusRequest == null) {
-            GxyLogger.d(TAG, "Cannot abandon audio focus: AudioManager or AudioFocusRequest is null");
-            return false;
+            GxyLogger.d(TAG, "Cannot abandon: AudioManager or AudioFocusRequest is null");
         }
 
         try {
-            int result = audioManager.abandonAudioFocusRequest(audioFocusRequest);
-            String resultStr = getAudioFocusResultString(result);
-
+            audioManager.abandonAudioFocusRequest(audioFocusRequest);
             audioManager.setMode(AudioManager.MODE_NORMAL);
-            GxyLogger.d(TAG, "abandonAudioFocus(): result = " + resultStr);
+            GxyLogger.d(TAG, "abandonAudioFocus() completed");
 
             hasAudioFocus = false;
-            return (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error abandoning audio focus", e);
-            return false;
         }
     }
 
-    /**
-     * @return whether the app currently has audio focus
-     */
     public boolean hasAudioFocus() {
         return hasAudioFocus;
     }
 
-    /**
-     * Convert audio focus result code to readable string for logging
-     */
     private String getAudioFocusResultString(int result) {
         switch (result) {
             case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
@@ -109,6 +88,15 @@ public class AudioFocusManager {
                 return "AUDIOFOCUS_REQUEST_DELAYED";
             default:
                 return "AUDIOFOCUS_REQUEST_UNKNOWN";
+        }
+    }
+
+    public void cleanup() {
+        try {
+            abandonAudioFocus();
+            GxyLogger.d(TAG, "Audio focus abandoned and mode set to normal");
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error during cleanup", e);
         }
     }
 }

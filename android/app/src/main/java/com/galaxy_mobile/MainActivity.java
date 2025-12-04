@@ -3,21 +3,17 @@ package com.galaxy_mobile;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.os.Process;
-import android.content.IntentFilter;
-import android.content.Context;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactHost;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.galaxy_mobile.foreground.ForegroundService;
 import com.galaxy_mobile.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
 import com.galaxy_mobile.logger.GxyLogger;
@@ -38,7 +34,8 @@ public class MainActivity extends ReactActivity {
 
     @Override
     protected ReactActivityDelegate createReactActivityDelegate() {
-        return new DefaultReactActivityDelegate(this, getMainComponentName(), false);
+        return new DefaultReactActivityDelegate(this, getMainComponentName(),
+                DefaultNewArchitectureEntryPoint.getFabricEnabled());
     }
 
     @Override
@@ -48,29 +45,37 @@ public class MainActivity extends ReactActivity {
 
         permissionHelper = new PermissionHelper(this);
 
-        // Using custom logger instead of Log.d
         GxyLogger.i(TAG, "onCreate");
         GxyLoggerUtils.logDeviceInfo(TAG);
 
-        getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
-            @Override
-            public void onReactContextInitialized(ReactContext context) {
-                GxyLogger.i("ReactContext",
-                        "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
-                                + permissionHelper.permissionsReady);
-                if (!permissionHelper.permissionsReady) {
-                    permissionHelper.initModules((ReactApplicationContext) context);
-                } else {
-                    permissionHelper.sendPermissions();
+        ReactApplication reactApplication = (ReactApplication) getApplication();
+        ReactHost reactHost = reactApplication.getReactHost();
+
+        GxyLogger.d(TAG, "onCreate: reactHost: " + Boolean.toString(reactHost == null));
+
+        if (reactHost != null) {
+            reactHost.addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+                @Override
+                public void onReactContextInitialized(ReactContext context) {
+                    GxyLogger.i(TAG, "Updating Permissions ready");
+                    if (!permissionHelper.permissionsReady) {
+                        permissionHelper.initModules((ReactApplicationContext) context);
+                    } else {
+                        permissionHelper.sendPermissions();
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            GxyLogger.w(TAG, "ReactHost is null, cannot get ReactInstanceManager");
+        }
     }
 
     @Override
     protected void onDestroy() {
-        GxyLogger.d(TAG, "onDestroy - ensuring all services are stopped");
+        GxyLogger.d(TAG, "onDestroy");
         super.onDestroy();
+
+        MainApplication.performCleanup();
 
         try {
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
@@ -92,6 +97,15 @@ public class MainActivity extends ReactActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (permissionHelper != null) {
             permissionHelper.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        try {
+            super.onWindowFocusChanged(hasFocus);
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error in onWindowFocusChanged", e);
         }
     }
 }

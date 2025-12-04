@@ -12,15 +12,12 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.facebook.react.bridge.ReactApplicationContext;
 import android.bluetooth.BluetoothProfile;
 
 import com.galaxy_mobile.logger.SentrySpanHelper;
 import io.sentry.SpanStatus;
-
-import java.util.Arrays;
 
 public class AudioDeviceManager {
     private static final String TAG = AudioDeviceManager.class.getSimpleName();
@@ -51,14 +48,12 @@ public class AudioDeviceManager {
         try {
             GxyLogger.d(TAG, "Initializing AudioDeviceManager");
 
-            // Check if already initialized
             if (audioManager != null) {
                 GxyLogger.w(TAG, "AudioDeviceManager already initialized");
                 span.finish(SpanStatus.ALREADY_EXISTS);
                 return;
             }
 
-            // Initialize audio manager
             audioManager = (AudioManager) reactContext.getSystemService(Context.AUDIO_SERVICE);
             if (audioManager == null) {
                 GxyLogger.e(TAG, "Failed to get AudioManager service");
@@ -66,11 +61,9 @@ public class AudioDeviceManager {
                 return;
             }
 
-            // Initialize audio callback
             audioCallback = createAudioDeviceCallback();
             registerAudioDeviceCallback();
 
-            // Initialize broadcast receiver
             receiver = createBroadcastReceiver();
             registerBroadcastReceiver();
 
@@ -79,8 +72,7 @@ public class AudioDeviceManager {
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to initialize AudioDeviceManager", e);
             span.finishWithError(e);
-            // Cleanup in case of partial initialization
-            stop();
+            cleanup();
         }
     }
 
@@ -298,30 +290,16 @@ public class AudioDeviceManager {
         return filter;
     }
 
-    public void stop() {
-        GxyLogger.d(TAG, "Stopping AudioDeviceManager");
+    public void cleanup() {
+        GxyLogger.d(TAG, "cleanup() called");
         try {
-            // First disable Bluetooth SCO to prevent audio routing issues
             disableBluetoothSco();
-
-            // Then unregister callbacks to prevent unwanted events
             handler.removeCallbacks(notificationRunnable);
             unregisterAudioDeviceCallback();
             unregisterBroadcastReceiver();
-
-            // Reset audio mode to normal
-            if (audioManager != null) {
-                audioManager.setMode(AudioManager.MODE_NORMAL);
-            }
-
-            // Clear references
-            audioCallback = null;
-            receiver = null;
-            audioManager = null;
-
-            GxyLogger.d(TAG, "AudioDeviceManager stopped successfully");
+            GxyLogger.d(TAG, "Cleanup completed");
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error during AudioDeviceManager stop", e);
+            GxyLogger.e(TAG, "Error in cleanup(): " + e.getMessage(), e);
         }
     }
 

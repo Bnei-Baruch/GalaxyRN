@@ -1,12 +1,9 @@
 package com.galaxy_mobile.permissions;
 
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.galaxy_mobile.callManager.CallListenerModule;
-import com.galaxy_mobile.callManager.PhoneCallListener;
 import com.galaxy_mobile.audioManager.AudioDeviceModule;
-import com.galaxy_mobile.WakeLockModule;
 import com.galaxy_mobile.foreground.ForegroundModule;
 import com.galaxy_mobile.permissions.PermissionsModule;
 
@@ -42,17 +39,6 @@ public class ModuleInitializer {
                     GxyLogger.d(TAG, "CallListenerModule.initializeAfterPermissions() called successfully");
                 } else {
                     GxyLogger.w(TAG, "CallListenerModule not found in React Native module registry");
-
-                    // Fallback: try to initialize PhoneCallListener directly
-                    PhoneCallListener callListener = PhoneCallListener.getInstance();
-                    if (callListener != null && !callListener.isInitialized()) {
-                        boolean success = callListener.initialize(reactContext);
-                        if (success) {
-                            GxyLogger.d(TAG, "PhoneCallListener initialized successfully after permissions (fallback)");
-                        } else {
-                            GxyLogger.e(TAG, "Failed to initialize PhoneCallListener after permissions (fallback)");
-                        }
-                    }
                 }
             } else {
                 GxyLogger.w(TAG, "ReactApplicationContext is null, cannot initialize CallListenerModule");
@@ -62,9 +48,6 @@ public class ModuleInitializer {
         }
     }
 
-    /**
-     * Initialize the AudioDeviceModule after permissions are granted
-     */
     private void initializeAudioDeviceModule() {
         try {
             if (reactContext != null) {

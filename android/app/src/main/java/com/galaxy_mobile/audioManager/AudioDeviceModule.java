@@ -4,156 +4,69 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.module.annotations.ReactModule;
 import com.galaxy_mobile.SendEventToClient;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.Comparator;
-import android.os.Handler;
-import android.os.Looper;
-import android.content.res.Configuration;
-import android.app.UiModeManager;
 
 import static com.galaxy_mobile.audioManager.AudioHelper.BUILTIN_EARPIECE_GROUP;
 import static com.galaxy_mobile.audioManager.AudioHelper.BUILTIN_SPEAKER_GROUP;
 import static com.galaxy_mobile.audioManager.AudioHelper.BLUETOOTH_GROUP;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
 @ReactModule(name = AudioDeviceModule.NAME)
-public class AudioDeviceModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class AudioDeviceModule extends ReactContextBaseJavaModule {
     public static final String NAME = "AudioDeviceModule";
     private static final String REACT_NATIVE_MODULE_NAME = "AudioDeviceModule";
     private static final String TAG = REACT_NATIVE_MODULE_NAME;
     private static final String EVENT_UPDATE_AUDIO_DEVICE = "updateAudioDevice";
-    private static final float DEFAULT_VOLUME_LEVEL = 0.8f;
 
-    private final ReactApplicationContext context;
+    private final ReactApplicationContext reactContext;
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
-    private boolean isInitialized = false;
-    private boolean autoInitializeDisabled = true;
     private String prevGroupType = "";
 
-    public AudioDeviceModule(ReactApplicationContext reactContext) {
-        super(reactContext);
-        this.context = reactContext;
-        reactContext.addLifecycleEventListener(this);
-    }
 
     @NonNull
     @Override
     public String getName() {
         return NAME;
     }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        GxyLogger.d(TAG, "initialize");
-
-        if (autoInitializeDisabled) {
-            GxyLogger.d(TAG, "Auto-initialization disabled - waiting for permissions");
-            return;
-        }
-
-        initializeAudioManagersInternal();
+    public AudioDeviceModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+        this.reactContext = reactContext;
     }
 
-    /**
-     * Public method to initialize the module after permissions are granted
-     * This is called from the ModuleInitializer
-     */
     public void initializeAfterPermissions() {
         GxyLogger.d(TAG, "initializeAfterPermissions() called");
-        autoInitializeDisabled = false;
-        initializeAudioManagersInternal();
-    }
 
-    private void initializeAudioManagersInternal() {
-        try {
-            initializeAudioManagers();
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error in initializeAudioManagersInternal(): " + e.getMessage(), e);
-        }
-    }
-
-    private void initializeAudioManagers() {
         UpdateAudioDeviceCallback callback = () -> handleDevicesChange(null);
         UiThreadUtil.runOnUiThread(() -> {
             try {
-                audioDeviceManager = new AudioDeviceManager(this.context, callback);
-                isInitialized = true;
-                autoInitializeDisabled = false; // Enable for future lifecycle events
+                audioDeviceManager = new AudioDeviceManager(this.reactContext, callback);
             } catch (Exception e) {
                 GxyLogger.e(TAG, "Error initializing AudioDeviceManager: " + e.getMessage(), e);
             }
         });
 
-        audioFocusManager = new AudioFocusManager(this.context);
+        audioFocusManager = new AudioFocusManager(this.reactContext);
     }
 
-    @Override
-    public void onHostResume() {
-        GxyLogger.d(TAG, "onHostResume()");
-    }
-
-    @Override
-    public void onHostPause() {
-        GxyLogger.d(TAG, "onHostPause()");
-    }
-
-    @Override
-    public void onHostDestroy() {
-        GxyLogger.d(TAG, "onHostDestroy()");
-        cleanupResources();
-    }
-
-    private void cleanupResources() {
-        GxyLogger.d(TAG, "Starting cleanup of audio resources");
-        if (!isInitialized) {
-            GxyLogger.d(TAG, "Audio managers already initialized");
-            return;
-        }
-
+    public void cleanup() {
         try {
-            // First abandon audio focus
-            if (audioFocusManager != null) {
-                boolean focusAbandoned = audioFocusManager.abandonAudioFocus();
-                GxyLogger.d(TAG, "Audio focus abandoned: " + focusAbandoned);
-            }
-
-            // Then stop the device manager on UI thread
-            UiThreadUtil.runOnUiThread(() -> {
-                try {
-                    if (audioDeviceManager != null) {
-                        audioDeviceManager.stop();
-                        audioDeviceManager = null;
-                        GxyLogger.d(TAG, "AudioDeviceManager stopped and nullified");
-                    }
-                } catch (Exception e) {
-                    GxyLogger.e(TAG, "Error stopping AudioDeviceManager: " + e.getMessage(), e);
-                }
-            });
-
-            isInitialized = false;
-            GxyLogger.d(TAG, "Audio resources cleanup completed");
+            audioDeviceManager.cleanup();
+            audioFocusManager.cleanup();
+            GxyLogger.d(TAG, "Audio cleanup completed");
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error in cleanupResources(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error in cleanup(): " + e.getMessage(), e);
         }
     }
 
@@ -273,7 +186,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule implements Lif
     }
 
     private AudioManager getAudioManager() {
-        AudioManager audioManager = ((AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE));
+        AudioManager audioManager = ((AudioManager) this.reactContext.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
             GxyLogger.e(TAG, "Could not get AudioManager service");
         }

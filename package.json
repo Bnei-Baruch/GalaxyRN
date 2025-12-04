@@ -81,5 +81,8 @@
   "config": {
     "isProduction": true
   },
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "yarn@3.6.4",
+  "resolutions": {
+    "react-native-background-timer@^2.4.1": "patch:react-native-background-timer@npm%3A2.4.1#./.yarn/patches/react-native-background-timer-npm-2.4.1-bef63bbd2f.patch"
+  }
 }

@@ -1,7 +1,6 @@
 package com.galaxy_mobile;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.WindowManager;
 import com.galaxy_mobile.logger.GxyLogger;
 
@@ -78,7 +77,6 @@ public class WakeLockModule extends ReactContextBaseJavaModule implements Lifecy
 
     @Override
     public void onHostResume() {
-        // If screen lock was active before pause, reapply it
         if (isScreenLockActive) {
             keepScreenOn();
         }
@@ -86,12 +84,11 @@ public class WakeLockModule extends ReactContextBaseJavaModule implements Lifecy
 
     @Override
     public void onHostPause() {
-        // No need to do anything on pause
+        GxyLogger.d(TAG, "onHostPause");
     }
 
     @Override
     public void onHostDestroy() {
-        // Ensure screen lock is released
         if (isScreenLockActive) {
             releaseScreenOn();
         }
@@ -100,11 +97,23 @@ public class WakeLockModule extends ReactContextBaseJavaModule implements Lifecy
 
     @Override
     public void invalidate() {
-        // Ensure cleanup when module is invalidated
         if (isScreenLockActive) {
             releaseScreenOn();
         }
         reactContext.removeLifecycleEventListener(this);
         super.invalidate();
+    }
+
+    public void cleanup() {
+        try {
+            GxyLogger.d(TAG, "Cleaning up screen lock");
+            Activity activity = getCurrentActivity();
+            if (activity != null) {
+                activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+            reactContext.removeLifecycleEventListener(this);
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error during cleanup", e);
+        }
     }
 }

@@ -14,24 +14,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Module for collecting and sending application logs
- */
 @ReactModule(name = SendLogsModule.NAME)
 public class SendLogsModule extends ReactContextBaseJavaModule {
     public static final String NAME = "SendLogsModule";
     private static final String TAG = "SendLogsModule";
-    private final ReactApplicationContext reactContext;
     private static final int MAX_LINES = 1000;
 
     // Package name for filtering logs
     private static final String PACKAGE_NAME = "com.galaxy_mobile";
-
-    public SendLogsModule(ReactApplicationContext reactContext) {
-        super(reactContext);
-        this.reactContext = reactContext;
-        GxyLogger.d(TAG, "SendLogsModule created");
-    }
 
     @NonNull
     @Override
@@ -39,11 +29,11 @@ public class SendLogsModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    /**
-     * Collects application logs from logcat
-     * 
-     * @param promise Promise to resolve with log string or reject with error
-     */
+    public SendLogsModule(ReactApplicationContext reactContext) {
+        super(reactContext);
+        GxyLogger.d(TAG, "constructor called");
+    }
+
     @ReactMethod
     public void sendLogs(String email, Promise promise) {
         GxyLogger.d(TAG, "Getting application logs for email: " + email);
@@ -67,10 +57,6 @@ public class SendLogsModule extends ReactContextBaseJavaModule {
         }
     }
 
-    /**
-     * Collects logs from logcat
-     * Note: In production builds, logcat access may be restricted
-     */
     private String collectLogs() {
         Process process = null;
         BufferedReader reader = null;
@@ -100,17 +86,10 @@ public class SendLogsModule extends ReactContextBaseJavaModule {
                 }
             }
 
-            String logsContent = logs.toString();
-            GxyLogger.d(TAG, "Logs collected: " + logsContent);
-            // Add header with device info
-            String header = buildLogHeader();
-            GxyLogger.d(TAG, "Header: " + header);
-            return header + logsContent;
+            return logs.toString();
 
         } catch (SecurityException e) {
             GxyLogger.w(TAG, "Security exception - logcat access denied: " + e.getMessage());
-            // Re-throw SecurityException to be handled in getApplicationLogs with special
-            // error code
             throw e;
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error reading logcat: " + e.getMessage(), e);
@@ -134,28 +113,12 @@ public class SendLogsModule extends ReactContextBaseJavaModule {
         SentryUtils.sendLogFile(email, logs);
     }
 
-    /**
-     * Builds a header with device and app information
-     */
-    private String buildLogHeader() {
-        StringBuilder header = new StringBuilder();
-        header.append("=== Application Logs ===\n");
-        header.append("Package: ").append(PACKAGE_NAME).append("\n");
-        header.append("Android Version: ").append(android.os.Build.VERSION.RELEASE).append("\n");
-        header.append("Device: ").append(android.os.Build.MANUFACTURER)
-                .append(" ").append(android.os.Build.MODEL).append("\n");
-        header.append("SDK: ").append(android.os.Build.VERSION.SDK_INT).append("\n");
+    public void cleanup() {
+        GxyLogger.d(TAG, "Cleaning up SendLogsModule");
         try {
-            String packageName = reactContext.getPackageName();
-            android.content.pm.PackageInfo packageInfo = reactContext.getPackageManager()
-                    .getPackageInfo(packageName, 0);
-            header.append("App Version: ").append(packageInfo.versionName)
-                    .append(" (").append(packageInfo.versionCode).append(")\n");
+            io.sentry.Sentry.flush(1000);
         } catch (Exception e) {
-            GxyLogger.d(TAG, "Could not get package info: " + e.getMessage());
+            GxyLogger.e(TAG, "Error flushing Sentry", e);
         }
-        header.append("Timestamp: ").append(new java.util.Date().toString()).append("\n");
-        header.append("========================\n\n");
-        return header.toString();
     }
 }

@@ -1,6 +1,5 @@
 package com.galaxy_mobile;
 
-import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
 
 import androidx.annotation.Nullable;

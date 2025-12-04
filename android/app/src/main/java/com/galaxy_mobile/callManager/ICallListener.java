@@ -1,7 +1,5 @@
 package com.galaxy_mobile.callManager;
 
-import com.facebook.react.bridge.ReactApplicationContext;
-
 /**
  * Interface for call listeners in the application.
  * Implementations will handle phone call state changes.
@@ -9,20 +7,19 @@ import com.facebook.react.bridge.ReactApplicationContext;
 public interface ICallListener {
     
     /**
-     * Initialize the call listener with a context
-     * @param context ReactApplicationContext to listen for calls
-     * @return true if initialization was successful, false otherwise
+     * Initialize the call listener
      */
-    boolean initialize(ReactApplicationContext context);
+    void initialize(CallStateCallback callback);
     
     /**
      * Stop listening for call events and clean up resources
      */
-    void cleanup();
+    public void cleanup();
     
     /**
-     * Check if the listener is currently initialized
-     * @return true if the listener is initialized, false otherwise
+     * Called when the call state changes
+     * @param state The new call state
+     * @param phoneNumber The phone number of the call
      */
-    boolean isInitialized();
+    public void onCallStateChanged(int state, String phoneNumber);
 } 
