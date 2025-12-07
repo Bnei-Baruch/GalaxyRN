@@ -93,16 +93,19 @@ const getOptionByKey = key => {
       return {
         ...workShopOptions.find(x => x.key === key),
         icon: 'group',
+        description: 'shidur.streamForWorkshopDescription',
       };
     case 'ss':
       return {
         ...sourceStreamOptions.find(x => x.key === key),
         icon: 'center-focus-strong',
+        description: 'shidur.sourceStreamDescription',
       };
     case 'dl':
       return {
         ...dualLanguageOptions.find(x => x.key === key),
         icon: 'group',
+        description: 'shidur.dualLnaguagesStreamDescription',
       };
     default:
       return workShopOptions.find(x => x.key === 'wo_original');
