@@ -81,7 +81,7 @@ const Shidur = () => {
 
               <View style={styles.toolbarBtnsGroup}>
                 {/* <SubtitleBtn /> */}
-                <OptionsBtn />
+                {/* <OptionsBtn /> */}
                 <FullscreenBtn />
               </View>
             </View>
