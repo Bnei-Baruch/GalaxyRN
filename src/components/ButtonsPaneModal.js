@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
   Dimensions,
+  Easing,
   Modal,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -20,23 +22,164 @@ import { HideSelfBtn } from '../bottomBar/moreBtns/HideSelfBtn';
 import { ShidurBtn } from '../bottomBar/moreBtns/ShidurBtn';
 import { SubtitleBtn } from '../bottomBar/moreBtns/SubtitleBtn';
 import { TranslationBtn } from '../bottomBar/moreBtns/TranslationBtn';
+import VideoSelect from '../bottomBar/moreBtns/VideoSelect';
+import AudioSelectModal from '../bottomBar/moreBtns/audioSelect/AudioSelectModal';
 import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
 import { useUiActions } from '../zustand/uiActions';
 import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
+import { LeaveBtn } from '../bottomBar/moreBtns/LeaveBtn';
+
+const PANEL_ANIMATION_IN = 400;
+const PANEL_ANIMATION_OUT = 300;
+
+const getTranslateYValue = (styleRef) => {
+  const flattened = StyleSheet.flatten(styleRef);
+  if (!flattened || !Array.isArray(flattened.transform)) {
+    return 0;
+  }
+
+  const translateEntry = flattened.transform.find((entry) =>
+    entry && Object.prototype.hasOwnProperty.call(entry, 'translateY')
+  );
+
+  if (!translateEntry) {
+    return 0;
+  }
+
+  return normalizeTranslateValue(translateEntry.translateY);
+};
+
+const normalizeTranslateValue = (value) => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed.endsWith('%')) {
+      const percent = parseFloat(trimmed.slice(0, -1));
+      if (!Number.isNaN(percent)) {
+        return (percent / 100) * Dimensions.get('window').height;
+      }
+    }
+
+    const numeric = Number(trimmed);
+    if (!Number.isNaN(numeric)) {
+      return numeric;
+    }
+  }
+
+  return 0;
+};
 
 const ButtonsPaneModal = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { toggleMoreModal, moreModal } = useUiActions();
   const { isPortrait } = useInitsStore();
+  const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
+  const modalVisible = moreModal || shouldRenderModal;
+  const translateYStart = useMemo(
+    () => getTranslateYValue(styles.panelWrapperTopStart),
+    [isPortrait]
+  );
+  const translateYEnd = useMemo(
+    () => getTranslateYValue(styles.panelWrapperTopEnd),
+    [isPortrait]
+  );
+  const translateYBottomStart = useMemo(
+    () => getTranslateYValue(styles.panelWrapperBottomStart),
+    [isPortrait]
+  );
+  const translateYBottomEnd = useMemo(
+    () => getTranslateYValue(styles.panelWrapperBottomEnd),
+    [isPortrait]
+  );
+  const panelEntrance = useRef(new Animated.Value(0)).current;
+  const animatedTopPanelStyle = useMemo(
+    () => ({
+      transform: [
+        {
+          translateY: panelEntrance.interpolate({
+            inputRange: [0, 1],
+            outputRange: [translateYStart, translateYEnd],
+            extrapolate: 'clamp',
+          }),
+        },
+      ],
+    }),
+    [panelEntrance, translateYStart, translateYEnd]
+  );
+  const animatedBottomPanelStyle = useMemo(
+    () => ({
+      transform: [
+        {
+          translateY: panelEntrance.interpolate({
+            inputRange: [0, 1],
+            outputRange: [translateYBottomStart, translateYBottomEnd],
+            extrapolate: 'clamp',
+          }),
+        },
+      ],
+    }),
+    [panelEntrance, translateYBottomStart, translateYBottomEnd]
+  );
+
+  useEffect(() => {
+    if (!moreModal) {
+      return;
+    }
+
+    setShouldRenderModal(true);
+    panelEntrance.stopAnimation();
+    const animation = Animated.timing(panelEntrance, {
+      toValue: 1,
+      duration: PANEL_ANIMATION_IN,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    });
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [moreModal, panelEntrance]);
+
+  useEffect(() => {
+    if (moreModal || !shouldRenderModal) {
+      return;
+    }
+
+    panelEntrance.stopAnimation();
+    let isCancelled = false;
+    const animation = Animated.timing(panelEntrance, {
+      toValue: 0,
+      duration: PANEL_ANIMATION_OUT,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    });
+
+    animation.start(({ finished }) => {
+      if (finished && !isCancelled) {
+        setShouldRenderModal(false);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+      animation.stop();
+    };
+  }, [moreModal, panelEntrance, shouldRenderModal]);
 
   return (
     <View style={styles.container}>
       <Modal
+        animationType="fade"
         presentationStyle="overFullScreen"
         transparent={true}
-        visible={moreModal}
+        visible={modalVisible}
         onRequestClose={toggleMoreModal}
         supportedOrientations={['portrait', 'landscape']}
       >
@@ -44,19 +187,52 @@ const ButtonsPaneModal = () => {
           <View
             style={[
               styles.modalContainer,
-              { paddingBottom: Math.max(insets.bottom, 16) + 80 + 16 },
+              { paddingBottom: Math.max(insets.bottom, 16) + 80 + 16, paddingTop: insets.top + 8},
             ]}
           >
             <BottomBar />
-            <View
+            <Animated.View
               style={[
-                styles.paneWrapper,
+                styles.panelWrapper,
                 baseStyles.panelBackground,
+                styles.panelWrapperTop,
+                styles.panelWrapperTopEnd,
+                animatedTopPanelStyle,
                 {
                   marginLeft: insets.left + 8,
                   marginRight: insets.right + 8,
                 },
-                !isPortrait && styles.paneWrapperLandscape,
+                !isPortrait && styles.panelWrapperLandscape,
+              ]}
+            >
+              <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
+                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
+                  Room settings - PT4
+                </Text>
+                <View style={styles.buttonsBlock}>
+                  <View style={styles.buttonsRow}>
+                    <View style={styles.button_50}>
+                      {/* <StudyMaterialsBtn /> */}
+                    </View>
+                    <View style={styles.button_50}>
+                      <LeaveBtn />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+            <Animated.View
+              style={[
+                styles.panelWrapper,
+                styles.panelWrapperBottom,
+                baseStyles.panelBackground,
+                styles.panelWrapperBottomEnd,
+                animatedBottomPanelStyle,
+                {
+                  marginLeft: insets.left + 8,
+                  marginRight: insets.right + 8,
+                },
+                !isPortrait && styles.panelWrapperLandscape,
               ]}
             >
               <View style={styles.buttonsSection}>
@@ -94,17 +270,17 @@ const ButtonsPaneModal = () => {
                     </View>
                   </View>
 
-                  {/* <View style={styles.buttonsRow}>
+                  <View style={styles.buttonsRow}>
                     <View style={styles.button_50}>
-                      <GroupsBtn />
+                      <VideoSelect />
                     </View>
                     <View style={styles.button_50}>
-                      <HideSelfBtn />
+                      <AudioSelectModal />
                     </View>
-                  </View> */}
+                  </View>
                 </View>
               </View>
-              <View style={styles.buttonsSection}>
+              <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
                 <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
                   {t('bottomBar.open')}
                 </Text>
@@ -150,7 +326,7 @@ const ButtonsPaneModal = () => {
                   </View>
                 )}
               </View>
-            </View>
+            </Animated.View>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
@@ -158,42 +334,56 @@ const ButtonsPaneModal = () => {
   );
 };
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     position: 'relative',
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    // paddingBottom: 80 + 16 + 16, // BottomBar height + marginBottom + extra
   },
-  paneWrapper: {
-    // padding: 16,
-    // marginHorizontal: 8,
+  panelWrapper: {
     borderRadius: 32,
-    // marginTop:-32
-    // paddingBottom: 0
+    padding: 16,
   },
-  paneWrapperLandscape: {
-    // borderWidth: 10,
-    // borderColor: 'red',
+  panelWrapperLandscape: {},
+  panelWrapperTop: {
+    position: 'relative',
+    // top:"-6%"
+    // marginTop: 8,
+  },
+  panelWrapperBottom: {
+    // position: 'relative',
+    // marginHorizontal: '300px',
+    
+    // top:"-6%"
+    // marginTop: 8,
+  },  
+  panelWrapperTopStart: {
+    transform: [{ translateY: '-50%' }],
+  },
+  panelWrapperTopEnd: {
+    transform: [{ translateY: 0 }],
+  },
+  panelWrapperBottomStart: {
+    transform: [{ translateY: '100%' }],
+  },
+  panelWrapperBottomEnd: {
+    transform: [{ translateY: 0 }],
   },
   buttonsSection: {
-    // marginVertical: 16,
-    padding: 16,
-    // marginTop:32
+    marginBottom: 24,
   },
-  buttonsBlock: {
-    marginBottom: -8,
-    marginHorizontal: -4,
+  buttonsSectionLast: {
+    marginBottom: 0,
   },
+  buttonsBlock: {},
   buttonsRow: {
-    // display: 'flex',
     flexDirection: 'row',
-    marginBottom: 8,
-    // backgroundColor:'yellow',
-    // padding:0,
+    marginHorizontal: -4,
+    marginTop: 8,
   },
   button_50: {
     width: '50%',
@@ -205,9 +395,9 @@ export const styles = StyleSheet.create({
     width: '25%',
   },
   text: {
-    marginBottom: 8,
+    // marginBottom: 8,
     marginLeft: 8,
-    color: '#575757',
+    color: '#7f7f7f',
   },
   // flexDirection: 'column',
   tooltip: {

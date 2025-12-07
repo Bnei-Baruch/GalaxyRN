@@ -286,6 +286,13 @@ const styles = StyleSheet.create({
   rest_icon: {
     color: '#ddd',
   },
+  rest_alt: {
+    backgroundColor: '#EF171E',
+    borderRadius: 16,
+  },
+  rest_icon_alt: {
+    color: '#ddd',
+  },
   toggle_off: {
     backgroundColor: '#333',
     borderRadius: 24,

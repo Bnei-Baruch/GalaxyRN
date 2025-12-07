@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     left: 30,
     right: 30,
     alignItems: 'center',
+    zIndex: 100,
   },
   buttons: {
     minWidth: 360,

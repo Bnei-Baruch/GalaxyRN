@@ -42,7 +42,9 @@ export const TopBar = () => {
         <View>
           <Text style={baseStyles.text}>{room?.description}</Text>
         </View>
-        <LeaveBtn />
+        {/* placeholder - will delete later */}
+        <View><Text>"    "</Text></View>
+        {/* <LeaveBtn /> */}
       </View>
     </TouchableWithoutFeedback>
   );
