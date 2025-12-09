@@ -1,6 +1,4 @@
 import { Buffer } from 'buffer';
-import iconv from 'iconv-lite';
-import jschardet from 'jschardet';
 import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import logger from '../services/logger';
@@ -72,29 +70,19 @@ export const noop = () => {};
 
 export const fixTextEncoding = text => {
   if (!text || typeof text !== 'string') {
-    return 'No name';
+    return '';
   }
 
   logger.debug(NAMESPACE, 'fixTextEncoding text', text);
 
   if (!/[\xC0-\xFF]|Ð|Ñ|â€|Ã|Â/.test(text)) {
+    logger.debug(NAMESPACE, 'fixTextEncoding text is not encoded', text);
     return text;
   }
 
   try {
     const buffer = Buffer.from(text, 'binary');
-
-    const detected = jschardet.detect(buffer);
-    const encoding = detected.encoding.toLowerCase();
-    logger.debug(NAMESPACE, 'fixTextEncoding encoding', encoding);
-    if (encoding === 'ascii' || encoding === 'utf-8') {
-      return text;
-    }
-    const decoded = iconv.decode(buffer, detected.encoding);
-    logger.debug(NAMESPACE, 'fixTextEncoding decoded', decoded);
-    if (!decoded.includes('\uFFFD') && decoded !== text) {
-      return decoded;
-    }
+    text = buffer.toString('utf-8');
   } catch (error) {
     logger.warn(NAMESPACE, 'Text encoding fix failed:', error);
   }
