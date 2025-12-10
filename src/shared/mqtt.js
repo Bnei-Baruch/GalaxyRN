@@ -5,7 +5,11 @@ import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
 
-import { resetLastReconnect, waitConnection } from '../libs/connection-monitor';
+import {
+  onMqttConnectionLost,
+  resetLastReconnect,
+  waitConnection,
+} from '../libs/connection-monitor';
 import { CONNECTION } from '../libs/sentry/constants';
 import {
   addFinishSpan,
@@ -17,7 +21,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
-import { randomString } from './tools';
+import { randomString, rejectTimeoutPromise } from './tools';
 
 import { Buffer } from 'buffer';
 
@@ -142,7 +146,15 @@ class MqttMsg {
         connected: this.mq?.connected,
         NAMESPACE,
       });
-      useInitsStore.getState().setMqttIsOn(!this.mq?.connected);
+
+      //need for catch case when NETWORK connection was not changed, but MQTT connection was closed
+      rejectTimeoutPromise(onMqttConnectionLost(), 5000)
+        .catch(error => {
+          logger.error(NAMESPACE, 'mqtt close error', error);
+        })
+        .finally(() => {
+          useInitsStore.getState().setMqttIsOn(!this.mq?.connected);
+        });
     });
 
     this.mq.on('disconnect', data => {

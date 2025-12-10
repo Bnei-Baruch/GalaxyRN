@@ -27,7 +27,8 @@ let netInfoUnsubscribe,
   iceRestartListeners,
   timeout,
   currentState,
-  disconnectedSeconds;
+  disconnectedSeconds,
+  wip;
 let lastReconnect = 0;
 const waitConnectionListeners = [];
 
@@ -51,6 +52,7 @@ export const initConnectionMonitor = () => {
       }
     );
 
+    wip = true;
     logger.debug(NAMESPACE, 'Network state:', state);
 
     if (!currentState) {
@@ -71,6 +73,7 @@ export const initConnectionMonitor = () => {
         finishSpan(networkStateSpan, 'net_error', NAMESPACE);
       }
       finishSpan(networkStateSpan, 'ok', NAMESPACE);
+      wip = false;
       return;
     }
 
@@ -83,6 +86,7 @@ export const initConnectionMonitor = () => {
       if (!isNetConnected()) {
         onNoNetwork();
         finishSpan(networkStateSpan, 'net_error', NAMESPACE);
+        wip = false;
         return;
       }
     }
@@ -91,6 +95,7 @@ export const initConnectionMonitor = () => {
     useInitsStore.getState().setMqttIsOn(mqtt.mq?.connected);
     disconnectedSeconds = 0;
     finishSpan(networkStateSpan, 'ok', NAMESPACE);
+    wip = false;
   });
 };
 
@@ -127,6 +132,16 @@ const isSameNetwork = newState => {
 
   logger.debug(NAMESPACE, `hasCommonIp: ${hasCommonIp}`);
   return hasCommonIp;
+};
+
+export const onMqttConnectionLost = async () => {
+  logger.debug(NAMESPACE, 'onMqttClosed: wip is', wip);
+  if (wip) {
+    return;
+  }
+  wip = true;
+  await waitConnectionRestart();
+  wip = false;
 };
 
 const waitConnectionRestart = async () => {
@@ -198,6 +213,7 @@ const onNoNetwork = async () => {
   useInitsStore.getState().setMqttIsOn(false);
   useSettingsStore.getState().setNetWIP(false);
   useInitsStore.getState().setNetIsOn(_netIsOn);
+  wip = false;
 
   try {
     kc.logout();
@@ -243,14 +259,20 @@ const monitorMqtt = async () => {
     return await monitorMqtt();
   }
 
-  logger.debug(NAMESPACE, 'MQTT connected', mqtt.mq?.connected);
+  logger.debug(NAMESPACE, 'MQTT connected', mqtt.mq.connected);
   if (mqtt.mq.connected) {
     return true;
   }
-  logger.debug(NAMESPACE, 'monitorMqtt run timeout', disconnectedSeconds);
+  logger.debug(
+    NAMESPACE,
+    'monitorMqtt run timeout promise',
+    disconnectedSeconds
+  );
   return new Promise(resolve => {
+    logger.debug(NAMESPACE, 'monitorMqtt run timeout', mqtt.mq?.connected);
     timeout = BackgroundTimer.setTimeout(() => {
-      if (mqtt.mq?.connected) {
+      logger.debug(NAMESPACE, 'monitorMqtt timeout', mqtt.mq?.connected);
+      if (mqtt.mq.connected) {
         return resolve(true);
       }
       mqttReconnect()
@@ -269,7 +291,7 @@ const monitorMqtt = async () => {
 
 const mqttReconnect = async () => {
   const now = Date.now();
-  if (mqtt.mq?.connected) {
+  if (mqtt.mq.connected) {
     logger.debug(NAMESPACE, 'mqtt already connected, skipping reconnect');
     return true;
   }
@@ -313,10 +335,7 @@ const callListeners = async () => {
 };
 
 export const waitConnection = async () => {
-  logger.debug(NAMESPACE, 'waitConnection');
-
   if (isNetConnected() && mqtt.mq?.connected) {
-    logger.debug(NAMESPACE, 'waitConnection already connected');
     return true;
   }
   logger.debug(
