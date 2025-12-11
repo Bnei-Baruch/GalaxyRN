@@ -5,6 +5,8 @@
 .vscode
 .idea
 .swift-project
+.cursorrules
+.cursorignore
 
 # Node.js
 node_modules/
