@@ -1,15 +1,11 @@
 import * as React from 'react';
 import { Pressable, View } from 'react-native';
-
 import { ChatCounter } from '../chat/ChatCounter';
 import { useUiActions } from '../zustand/uiActions';
 import { bottomBar } from './helper';
-
 import BottomBarIconWithText from '../settings/BottomBarIconWithTextAnimated';
-
 export const MoreBtn = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
-
   return (
     <Pressable onPress={toggleMoreModal} style={bottomBar.moreSelBtn}>
         <BottomBarIconWithText

@@ -2,20 +2,14 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../settings/BottomBarIconWithTextAnimated';
-// import { TouchableOpacity } from 'react-native';
-// import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import { useInRoomStore } from '../zustand/inRoom';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
-
 import { bottomBar } from './helper';
-
 export const QuestionBtn = () => {
   const { question, toggleQuestion } = useSettingsStore();
   const { isPlay, isOnAir } = useShidurStore();
   const { isRoomQuestion } = useInRoomStore();
-
   const handlePress = () => toggleQuestion();
   const { t } = useTranslation();
   const disabled = !isPlay || isOnAir || isRoomQuestion;
@@ -25,7 +19,6 @@ export const QuestionBtn = () => {
     : question
     ? ['toggle_on_alt', 'toggle_on_icon_alt']
     : ['toggle_off', 'toggle_off_icon'];
-
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn} disabled={disabled}>
       <BottomBarIconWithText

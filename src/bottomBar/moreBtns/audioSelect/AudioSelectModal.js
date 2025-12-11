@@ -11,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import { baseStyles } from '../../../constants';
 import logger from '../../../services/logger';
 import {
@@ -25,22 +24,18 @@ import AudioHeader from './AudioHeader';
 import AudioOption from './AudioOption';
 import { bottomBar } from '../../helper';
 import BottomBarIconWithText from '../../../settings/BottomBarIconWithTextAnimated';
-
 const NAMESPACE = 'AudioSelectModal';
-
 const AudioSelectModal = () => {
   const { audio, setAudio } = useShidurStore();
   const { toggleShowBars } = useUiActions();
   const [visible, setVisible] = useState(false);
   const { t } = useTranslation();
-
   const handleSetAudio = key => {
     logger.debug(NAMESPACE, 'handleSetAudio', key);
     setAudio(key);
     toggleShowBars(false, true);
     setVisible(false);
   };
-
   return (
     <View style={bottomBar.btn}>
       <Pressable onPress={() => setVisible(true)}>
@@ -51,7 +46,6 @@ const AudioSelectModal = () => {
         showtext={true}
         direction={['vertical','vertical']}
       />
-
       </Pressable>
       <Modal
         animationType="slide"
@@ -86,7 +80,6 @@ const AudioSelectModal = () => {
                   />
                 ))}
                 <View style={styles.sectionDivider} />
-
                 <AudioHeader
                   icon="center-focus-strong"
                   text="shidur.sourceStream"
@@ -124,7 +117,6 @@ const AudioSelectModal = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -170,5 +162,4 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-
 export default AudioSelectModal;
