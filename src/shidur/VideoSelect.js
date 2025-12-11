@@ -6,8 +6,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import { baseStyles } from '../constants';
+import { videos_options2 } from '../consts';
 import logger from '../services/logger';
-import { videos_options2 } from '../shared/consts';
 import { useShidurStore } from '../zustand/shidur';
 
 const NAMESPACE = 'VideoSelect';

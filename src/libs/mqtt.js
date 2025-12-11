@@ -5,23 +5,19 @@ import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
 
-import {
-  onMqttConnectionLost,
-  resetLastReconnect,
-  waitConnection,
-} from '../libs/connection-monitor';
-import { CONNECTION } from '../libs/sentry/constants';
-import {
-  addFinishSpan,
-  addSpan,
-  finishSpan,
-} from '../libs/sentry/sentryHelper';
+import { randomString, rejectTimeoutPromise } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSubtitleStore } from '../zustand/subtitle';
 import { useUserStore } from '../zustand/user';
 import { useVersionStore } from '../zustand/version';
-import { randomString, rejectTimeoutPromise } from './tools';
+import {
+  onMqttConnectionLost,
+  resetLastReconnect,
+  waitConnection,
+} from './connection-monitor';
+import { CONNECTION } from './sentry/constants';
+import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
 
 import { Buffer } from 'buffer';
 

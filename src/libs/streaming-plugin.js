@@ -5,7 +5,7 @@ import {
   RTCSessionDescription,
 } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
+import { randomString } from '../tools';
 import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,

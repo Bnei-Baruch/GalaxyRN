@@ -13,14 +13,13 @@ import { useSubtitleStore } from '../zustand/subtitle';
 // Local imports
 import WIP from '../components/WIP';
 import { baseStyles, SHIDUR_BAR_ZINDEX } from '../constants';
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { withProfiler } from '../libs/sentry/sentryHOC';
-import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
 // import { MuteBtn } from './MuteBtn';
-import OptionsBtn from './OptionsBtn';
 // import { OriginalSwitch } from './OriginalSwitch';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';

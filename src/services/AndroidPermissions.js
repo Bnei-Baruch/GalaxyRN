@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Platform, View } from 'react-native';
+
 import { baseStyles } from '../constants';
 import { useAndroidPermissionsStore } from '../zustand/androidPermissions';
 import logger from './logger';

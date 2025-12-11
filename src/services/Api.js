@@ -6,8 +6,8 @@ import {
   STRDB_BACKEND,
   STUDY_MATERIALS,
 } from '@env';
-import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
+import mqtt from '../libs/mqtt';
+import logger from './logger';
 
 const NAMESPACE = 'Api';
 

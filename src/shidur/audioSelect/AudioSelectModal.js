@@ -11,12 +11,12 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { baseStyles } from '../../constants';
-import logger from '../../services/logger';
 import {
   dualLanguageOptions,
   sourceStreamOptions,
   workShopOptions,
-} from '../../shared/consts';
+} from '../../consts';
+import logger from '../../services/logger';
 import { useShidurStore } from '../../zustand/shidur';
 import { useUiActions } from '../../zustand/uiActions';
 import AudioHeader from './AudioHeader';

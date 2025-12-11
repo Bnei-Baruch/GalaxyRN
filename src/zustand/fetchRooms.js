@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 
+import api from '../services/Api';
 import logger from '../services/logger';
-import api from '../shared/Api';
-import { getFromStorage, setToStorage } from '../shared/tools';
+import { getFromStorage, setToStorage } from '../tools';
 
 const NAMESPACE = 'FetchRooms';
 
-const useRoomStore = create(set => ({
+export const useRoomStore = create(set => ({
   room: null,
   setRoom: async room => {
     if (!room?.room || !room.janus) {
@@ -51,5 +51,3 @@ const useRoomStore = create(set => ({
     }
   },
 }));
-
-export default useRoomStore;

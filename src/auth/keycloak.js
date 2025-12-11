@@ -3,16 +3,16 @@ import { decode } from 'base-64';
 import { authorize, logout, refresh } from 'react-native-app-auth';
 import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage from 'rn-secure-storage';
+import { getUserRole, userRolesEnum } from '../enums';
+import mqtt from '../libs/mqtt';
 import {
   addBreadcrumb,
   clearUser as clearSentryUser,
   setUser as setSentryUser,
 } from '../libs/sentry/sentryHelper';
+import api from '../services/Api';
 import logger from '../services/logger';
-import api from '../shared/Api';
-import { getUserRole, userRolesEnum } from '../shared/enums';
-import mqtt from '../shared/mqtt';
-import { fixTextEncoding, getFromStorage, setToStorage } from '../shared/tools';
+import { fixTextEncoding, getFromStorage, setToStorage } from '../tools';
 import { useUserStore } from '../zustand/user';
 
 const NAMESPACE = 'Keycloak';

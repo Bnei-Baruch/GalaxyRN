@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import RenderHtml from 'react-native-render-html';
-import Text from '../components/CustomText';
+import Text from '../../components/CustomText';
 
 const customHTMLElementModels = {
   font: {

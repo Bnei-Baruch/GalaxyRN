@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { topMenuBtns } from '../topBar/helper';
+import { topMenuBtns } from '../bottomBar/moreBtns/helper';
 import { useSettingsStore } from '../zustand/settings';
 
 export const FullscreenBtn = () => {

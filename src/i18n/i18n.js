@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import logger from '../services/logger';
-import { getFromStorage, setToStorage } from '../shared/tools';
+import { getFromStorage, setToStorage } from '../tools';
 
 const NAMESPACE = 'i18n';
 

@@ -1,7 +1,7 @@
 import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
+import { randomString } from '../tools';
 import { useFeedsStore } from '../zustand/feeds';
 import {
   addConnectionListener,

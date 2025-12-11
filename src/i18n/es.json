@@ -28,13 +28,12 @@
     "deleteConfirm": "Eliminar",
     "cancel": "Cancelar"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "Material de estudio",
     "donate": "DONAR",
     "support": "Enviar una pregunta",
     "settings": "Configuración",
-    "communicationTitle": "Communication",
-    "materialsTitle": "Material de estudio",
+    "communication": "Communication",
     "sendLogs": "Enviar registros"
   },
   "bottomBar": {

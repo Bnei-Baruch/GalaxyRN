@@ -29,13 +29,12 @@
     "deleteConfirm": "מחק",
     "cancel": "ביטול"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "חומר לימוד",
     "donate": "לתרום",
     "support": "תמיכה",
     "settings": "הגדרות",
-    "communicationTitle": "תקשורת",
-    "materialsTitle": "חומר לימוד",
+    "communication": "תקשורת",
     "sendLogs": "שלח לוגים"
   },
   "bottomBar": {

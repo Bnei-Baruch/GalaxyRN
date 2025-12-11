@@ -2,7 +2,7 @@
  * @format
  */
 
-import { fixTextEncoding } from '../src/shared/tools';
+import { fixTextEncoding } from '../src/tools';
 
 describe('fixTextEncoding', () => {
   it('should return empty string for null input', () => {

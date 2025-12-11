@@ -34,13 +34,12 @@
     "deleteConfirm": "Delete",
     "cancel": "Cancel"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "Study Materials",
     "donate": "Donate",
     "support": "Support",
     "settings": "Settings",
-    "communicationTitle": "Communication",
-    "materialsTitle": "Study Materials",
+    "communication": "Communication",
     "sendLogs": "Send Logs"
   },
   "bottomBar": {

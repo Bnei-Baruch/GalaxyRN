@@ -1,9 +1,9 @@
 import { create } from 'zustand';
+import mqtt from '../libs/mqtt';
 import AudioBridge from '../services/AudioBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
-import { rejectTimeoutPromise } from '../shared/tools';
+import { rejectTimeoutPromise } from '../tools';
 
 import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
@@ -14,10 +14,10 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
-import { getFromStorage } from '../shared/tools';
+import { getFromStorage } from '../tools';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
-import useRoomStore from './fetchRooms';
+import { useRoomStore } from './fetchRooms';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
@@ -38,7 +38,6 @@ export const useInRoomStore = create((set, get) => ({
 
     startTransaction(ROOM_SESSION, 'Join Room', 'navigation');
 
-    // Early exit checks
     if (get().isInRoom) {
       logger.debug(NAMESPACE, 'already in room');
       finishTransaction(ROOM_SESSION, 'duplicate');
@@ -103,7 +102,6 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     attempts = 0;
-    // Note: Transaction will be finished when exitRoom is called
   },
 
   subscribeMqtt: async () => {
@@ -151,7 +149,6 @@ export const useInRoomStore = create((set, get) => ({
       finishSpan(deviceCleanupSpan, 'internal_error', NAMESPACE);
     }
 
-    // Finish the room session transaction
     finishTransaction(ROOM_SESSION, 'ok', NAMESPACE);
 
     exitWIP = false;
@@ -159,7 +156,6 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   exitNetResources: async () => {
-    // Step 1: Clean Janus connections
     const janusCleanupSpan = addSpan(ROOM_SESSION, 'janus.cleanup', {
       NAMESPACE,
     });
@@ -175,7 +171,6 @@ export const useInRoomStore = create((set, get) => ({
       finishSpan(janusCleanupSpan, 'internal_error', NAMESPACE);
     }
 
-    // Step 2: Clean chat and unsubscribe from MQTT
     const mqttCleanupSpan = addSpan(ROOM_SESSION, 'mqtt.cleanup', {
       NAMESPACE,
     });

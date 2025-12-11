@@ -5,7 +5,6 @@ import { BottomBar } from '../bottomBar/BottomBar';
 import ButtonsPaneModal from '../components/ButtonsPaneModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
-// import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
 import ForegroundListener from './ForegroundListener';
 import RoomLayout from './Layout/RoomLayout';
@@ -13,6 +12,7 @@ import RoomLayout from './Layout/RoomLayout';
 const Room = () => {
   const insets = useSafeAreaInsets();
   const { exitRoom } = useInRoomStore();
+
   useEffect(() => {
     return () => {
       exitRoom();
@@ -27,7 +27,6 @@ const Room = () => {
         { paddingTop: insets.top },
       ]}
     >
-      {/* <TopBar /> */}
       <RoomLayout />
       <BottomBar />
       <ButtonsPaneModal />

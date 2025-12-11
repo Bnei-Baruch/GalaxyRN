@@ -2,28 +2,26 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
-  Pressable,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { baseStyles } from '../../../constants';
-import logger from '../../../services/logger';
 import {
   dualLanguageOptions,
   sourceStreamOptions,
   workShopOptions,
-} from '../../../shared/consts';
+} from '../../../consts';
+import logger from '../../../services/logger';
+import BottomBarIconWithText from '../../../settings/BottomBarIconWithTextAnimated';
 import { useShidurStore } from '../../../zustand/shidur';
 import { useUiActions } from '../../../zustand/uiActions';
+import { bottomBar } from '../../helper';
 import AudioHeader from './AudioHeader';
 import AudioOption from './AudioOption';
-import { bottomBar } from '../../helper';
-import BottomBarIconWithText from '../../../settings/BottomBarIconWithTextAnimated';
 const NAMESPACE = 'AudioSelectModal';
 const AudioSelectModal = () => {
   const { audio, setAudio } = useShidurStore();
@@ -39,13 +37,13 @@ const AudioSelectModal = () => {
   return (
     <View style={bottomBar.btn}>
       <Pressable onPress={() => setVisible(true)}>
-              <BottomBarIconWithText
-        iconName="record-voice-over"
-        text={t(audio.text)+" - "+t(audio.description)}
-        extraStyle={['rest', 'resticon']}
-        showtext={true}
-        direction={['vertical','vertical']}
-      />
+        <BottomBarIconWithText
+          iconName="record-voice-over"
+          text={t(audio.text) + ' - ' + t(audio.description)}
+          extraStyle={['rest', 'resticon']}
+          showtext={true}
+          direction={['vertical', 'vertical']}
+        />
       </Pressable>
       <Modal
         animationType="slide"

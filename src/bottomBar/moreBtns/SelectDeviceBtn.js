@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useTranslation } from 'react-i18next';
 import Text from '../../components/CustomText';
 import ListInModal from '../../components/ListInModal';
 import { baseStyles } from '../../constants';
 import logger from '../../services/logger';
-import useAudioDevicesStore from '../../zustand/audioDevices';
+import { useAudioDevicesStore } from '../../zustand/audioDevices';
+
 const NAMESPACE = 'SelectDeviceBtn';
+
 export const SelectDeviceBtn = () => {
   const [open, setOpen] = useState();
   const { selected, select, devices } = useAudioDevicesStore();
@@ -56,6 +58,7 @@ export const SelectDeviceBtn = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',

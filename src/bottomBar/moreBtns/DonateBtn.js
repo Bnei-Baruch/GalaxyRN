@@ -24,10 +24,10 @@ export const DonateBtn = () => {
     <Pressable onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName="favorite"
-        text={t('topBar.donate')}
+        text={t('moreOpts.donate')}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction={['horizontal','horizontal']}
+        direction={['horizontal', 'horizontal']}
       />
     </Pressable>
   );

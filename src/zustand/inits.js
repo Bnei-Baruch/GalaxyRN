@@ -2,14 +2,13 @@ import { DeviceEventEmitter, Dimensions, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
+import { setJanusConfig } from '../libs/janus-config';
+import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
+import api from '../services/Api';
 import CallsBridge from '../services/CallsBridge';
 import logger from '../services/logger';
-import api from '../shared/Api';
-import mqtt from '../shared/mqtt';
-
-import { setJanusConfig } from '../shared/janus-config';
 import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
@@ -29,7 +28,6 @@ const CLIENT_RECONNECT_TYPES = [
   'client-disconnect',
 ];
 
-// Safely create event emitter using the bridge's method
 let eventEmitter;
 try {
   eventEmitter = CallsBridge.getEventEmitter();

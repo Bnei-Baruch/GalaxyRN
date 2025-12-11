@@ -30,13 +30,12 @@
     "deleteConfirm": "Удалить",
     "cancel": "Отмена"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "Учебный материал",
     "donate": "ВНЕСТИ ВКЛАД",
     "support": "Поддержка",
     "settings": "Настройки",
-    "communicationTitle": "Communication",
-    "materialsTitle": "Учебный материал",
+    "communication": "Communication",
     "sendLogs": "Отправить логи"
   },
   "bottomBar": {

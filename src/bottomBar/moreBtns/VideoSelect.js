@@ -5,11 +5,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../../components/CustomText';
 import ListInModal from '../../components/ListInModal';
 import { baseStyles } from '../../constants';
+import { videos_options2 } from '../../consts';
 import logger from '../../services/logger';
-import { videos_options2 } from '../../shared/consts';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../helper';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 const NAMESPACE = 'VideoSelect';
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
@@ -48,7 +48,7 @@ const VideoSelect = () => {
         text={t(selected.text) + ' - ' + t(selected.description)}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction={['vertical','vertical']}
+        direction={['vertical', 'vertical']}
       />
     </View>
   );

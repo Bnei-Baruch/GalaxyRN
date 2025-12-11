@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
-import logger from '../services/logger';
+import logger from './services/logger';
 
 const NAMESPACE = 'Tools';
 

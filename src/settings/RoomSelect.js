@@ -14,7 +14,7 @@ import TextInput from '../components/CustomTextInput';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
-import useRoomStore from '../zustand/fetchRooms';
+import { useRoomStore } from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
 
 const NAMESPACE = 'RoomSelect';

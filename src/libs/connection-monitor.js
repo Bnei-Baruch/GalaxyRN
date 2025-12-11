@@ -2,11 +2,11 @@ import NetInfo from '@react-native-community/netinfo';
 import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
-import { sleep } from '../shared/tools';
+import { sleep } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
+import mqtt from './mqtt';
 import { CONNECTION } from './sentry/constants';
 import {
   addFinishSpan,

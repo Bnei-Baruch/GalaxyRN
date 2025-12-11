@@ -5,9 +5,10 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import ScreenTitle from '../../components/ScreenTitle';
 import WIP from '../../components/WIP';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
-import { StudyMaterialItem } from '../../topBar/StudyMaterialItem';
-import useMaterials from '../../zustand/fetchMaterials';
+import { useMaterials } from '../../zustand/fetchMaterials';
 import { bottomBar } from '../helper';
+import { StudyMaterialItem } from './StudyMaterialItem';
+
 export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
   const { fetchMaterials, materials, isLoading } = useMaterials();
@@ -21,10 +22,10 @@ export const StudyMaterialsBtn = () => {
       <Pressable onPress={toggleModal} style={bottomBar.btn}>
         <BottomBarIconWithText
           iconName="book"
-          text={t('topBar.materials')}
+          text={t('moreOpts.materials')}
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction={['horizontal','horizontal']}
+          direction={['horizontal', 'horizontal']}
         />
       </Pressable>
       <Modal
@@ -36,7 +37,7 @@ export const StudyMaterialsBtn = () => {
         supportedOrientations={['portrait', 'landscape']}
       >
         <View style={styles.modal}>
-          <ScreenTitle text={t('topBar.materialsTitle')} close={toggleModal} />
+          <ScreenTitle text={t('moreOpts.materials')} close={toggleModal} />
           <WIP isReady={!isLoading}>
             <ScrollView>
               {materials.map(m => (
@@ -49,6 +50,7 @@ export const StudyMaterialsBtn = () => {
     </>
   );
 };
+
 const styles = StyleSheet.create({
   modal: {
     backgroundColor: 'black',

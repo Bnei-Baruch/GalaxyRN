@@ -4,7 +4,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import TextInput from '../components/CustomTextInput';
-import mqtt from '../shared/mqtt';
+import mqtt from '../libs/mqtt';
 import useRoomStore from '../zustand/fetchRooms';
 import { useUserStore } from '../zustand/user';
 

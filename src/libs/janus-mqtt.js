@@ -1,9 +1,9 @@
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
-import { randomString } from '../shared/tools';
+import { randomString } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { waitConnection } from './connection-monitor';
+import mqtt from './mqtt';
 import { CONNECTION } from './sentry/constants';
 import {
   addFinishSpan,

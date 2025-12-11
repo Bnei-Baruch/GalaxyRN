@@ -45,7 +45,7 @@ export const ChatModal = () => {
         style={styles.modalContainer}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
       >
-        <ScreenTitle text={t('topBar.communicationTitle')} close={closeModal} />
+        <ScreenTitle text={t('moreOpts.communication')} close={closeModal} />
         <View style={styles.tabs}>
           <TouchableOpacity
             style={[

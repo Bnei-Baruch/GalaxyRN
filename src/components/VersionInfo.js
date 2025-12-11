@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { topMenuBtns } from '../bottomBar/moreBtns/helper';
 import { baseStyles } from '../constants';
-import { topMenuBtns } from '../topBar/helper';
 import { useVersionStore } from '../zustand/version';
 import Text from './CustomText';
 const VersionInfo = () => {

@@ -1,10 +1,10 @@
-import { StyleSheet } from "react-native";
-import { baseStyles } from "../constants";
+import { StyleSheet } from 'react-native';
+import { baseStyles } from '../../constants';
 
 export const topMenuBtns = StyleSheet.create({
   btn: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     ...baseStyles.listItem,
   },
   menuItemText: {

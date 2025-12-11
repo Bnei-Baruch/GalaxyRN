@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Dimensions,
@@ -8,28 +9,28 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { ChatBtn } from '../bottomBar/moreBtns/ChatBtn';
-import { DonateBtn } from '../bottomBar/moreBtns/DonateBtn';
-import { StudyMaterialsBtn } from '../bottomBar/moreBtns/StudyMaterialsBtn';
-import { VoteBtn } from '../bottomBar/moreBtns/VoteBtn';
-import Text from './CustomText';
-import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
+import { AudioDevicesBtn } from '../bottomBar/moreBtns/AudioDevicesBtn';
+import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
+import { ChatBtn } from '../bottomBar/moreBtns/ChatBtn';
+import { DonateBtn } from '../bottomBar/moreBtns/DonateBtn';
 import { GroupsBtn } from '../bottomBar/moreBtns/GroupsBtn';
 import { HideSelfBtn } from '../bottomBar/moreBtns/HideSelfBtn';
+import { LeaveBtn } from '../bottomBar/moreBtns/LeaveBtn';
 import { ShidurBtn } from '../bottomBar/moreBtns/ShidurBtn';
+import { StudyMaterialsBtn } from '../bottomBar/moreBtns/StudyMaterialsBtn';
 import { SubtitleBtn } from '../bottomBar/moreBtns/SubtitleBtn';
 import { TranslationBtn } from '../bottomBar/moreBtns/TranslationBtn';
 import VideoSelect from '../bottomBar/moreBtns/VideoSelect';
+import { VoteBtn } from '../bottomBar/moreBtns/VoteBtn';
 import AudioSelectModal from '../bottomBar/moreBtns/audioSelect/AudioSelectModal';
-import { AudioDevicesBtn } from '../bottomBar/moreBtns/AudioDevicesBtn';
 import { baseStyles } from '../constants';
+import { useRoomStore } from '../zustand/fetchRooms';
 import { useInitsStore } from '../zustand/inits';
 import { useUiActions } from '../zustand/uiActions';
-import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
-import { LeaveBtn } from '../bottomBar/moreBtns/LeaveBtn';
-import useRoomStore from '../zustand/fetchRooms';
+import Text from './CustomText';
+
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
 const getTranslateYValue = styleRef => {
@@ -456,8 +457,7 @@ const styles = StyleSheet.create({
   panelWrapperTop: {
     position: 'relative',
   },
-  panelWrapperBottom: {
-  },
+  panelWrapperBottom: {},
   panelWrapperTopStart: {
     transform: [{ translateY: '-50%' }],
   },
