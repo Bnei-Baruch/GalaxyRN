@@ -42,24 +42,16 @@ const AudioSelectModal = () => {
   };
 
   return (
-    <View>
+    <View style={bottomBar.btn}>
       <Pressable onPress={() => setVisible(true)}>
               <BottomBarIconWithText
         iconName="record-voice-over"
         text={t(audio.text)+" - "+t(audio.description)}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction="vertical"
+        direction={['vertical','vertical']}
       />
-        {/* <View style={styles.container}>
-          <View style={styles.withArrow}>
-            <Icon name={audio.icon} color="white" size={20} />
-            <Text style={[baseStyles.text, baseStyles.listItem]}>
-              {audio.text}
-            </Text>
-          </View>
-          <Icon name="keyboard-arrow-down" color="white" size={20} />
-        </View> */}
+
       </Pressable>
       <Modal
         animationType="slide"

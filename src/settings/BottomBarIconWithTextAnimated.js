@@ -1,8 +1,9 @@
 import React from 'react';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
+
 const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -13,6 +14,8 @@ const BottomBarIconWithTextAnimated = ({
   showtext,
   direction,
 }) => {
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
   const containerAnim = React.useRef(new Animated.Value(1)).current;
   const iconAnim = React.useRef(new Animated.Value(1)).current;
   const textAnim = React.useRef(new Animated.Value(1)).current;
@@ -213,13 +216,18 @@ const BottomBarIconWithTextAnimated = ({
   );
 
   const containerDirectionStyle = React.useMemo(() => {
-    if (showtext === false) return [styles.notext, styles.icon_notext];
-    if (direction === 'horizontal')
-      return [styles.horizontal, styles.icon_horizontal];
-    if (direction === 'vertical')
+    if (showtext === false) {
+      return [styles.notext, styles.icon_notext];
+    }
+
+    const orientationDirection = isPortrait ? direction?.[0] : direction?.[1];
+
+    if (orientationDirection === 'vertical') {
       return [styles.vertical, styles.icon_vertical];
+    }
+
     return [styles.horizontal, styles.icon_horizontal];
-  }, [direction, showtext]);
+  }, [direction, isPortrait, showtext]);
 
   return (
     <Animated.View
@@ -268,6 +276,8 @@ const styles = StyleSheet.create({
   horizontal: {
     justifyContent: 'flex-start',
     flexDirection: 'row',
+    // alignItems: 'center',
+    // flexWrap: 'nowrap',
   },
   icon: {
     // backgroundColor: 'blue',
@@ -285,6 +295,13 @@ const styles = StyleSheet.create({
   },
   rest_icon: {
     color: '#ddd',
+  },
+  rest_disabled: {
+    backgroundColor: '#272727',
+    borderRadius: 16,
+  },
+  rest_disabled_icon: {
+    color: '#575757',
   },
   rest_alt: {
     backgroundColor: '#EF171E',
@@ -333,10 +350,13 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    textAlign: 'center',
+    // textAlign: 'center',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
+    flexShrink: 1,
+    minWidth: 0,
     fontWeight: '600',
+    // backgroundColor: 'blue',
   },
 });
 

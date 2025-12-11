@@ -36,7 +36,7 @@ export const TopBar = () => {
         ]}
       >
         <View style={styles.left}>
-          <TopMenuBtn />
+          {/* <TopMenuBtn /> */}
           <AudioDevicesBtn />
         </View>
         <View>

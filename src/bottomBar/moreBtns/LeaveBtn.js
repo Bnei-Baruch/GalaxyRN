@@ -18,7 +18,7 @@ export const LeaveBtn = () => {
           text={t('bottomBar.leave')}
           extraStyle={['rest_alt', 'rest_alt_icon']}
           showtext={true}
-          direction="horizontal"
+          direction={['horizontal','horizontal']}
         />
     </Pressable>
   );

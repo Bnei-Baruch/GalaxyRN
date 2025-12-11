@@ -25,9 +25,10 @@ export const StudyMaterialsBtn = () => {
         <BottomBarIconWithText
           iconName="book"
           text={t('topBar.materials')}
+          // text="sdfg sdfg sdfg"
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction="horizontal"
+          direction={['horizontal','horizontal']}
         />
       </Pressable>
       <Modal

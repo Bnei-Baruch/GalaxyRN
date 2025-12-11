@@ -22,7 +22,7 @@ export const ChatBtn = () => {
           text={t('bottomBar.chat')}
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction="horizontal"
+          direction={['horizontal','horizontal']}
         />
         <ChatCounter />
       </Pressable>
