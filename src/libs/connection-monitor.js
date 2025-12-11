@@ -21,7 +21,7 @@ export const NET_INFO_STATE_DISCONNECTED = 'DISCONNECTED';
 
 const NAMESPACE = 'ConnectionMonitor';
 const MAX_CONNECTION_TIMEOUT = 20;
-const MAX_RECONNECT_DELAY = 5000;
+const MAX_MQTT_RECONNECT_FREQUENCY = 3 * 1000;
 
 let netInfoUnsubscribe,
   iceRestartListeners,
@@ -134,9 +134,17 @@ const isSameNetwork = newState => {
   return hasCommonIp;
 };
 
+/**
+ * This function is called when the MQTT connection is lost.
+ * for case when network connection was not changed, but MQTT connection was closed.
+ * Wait 1 second for possible network change listener may be triggered.
+ */
 export const onMqttConnectionLost = async () => {
   logger.debug(NAMESPACE, 'onMqttClosed: wip is', wip);
+  lastReconnect = 0;
+  await sleep(1000);
   if (wip) {
+    logger.debug(NAMESPACE, 'onMqttConnectionLost: wip is true, skipping');
     return;
   }
   wip = true;
@@ -204,7 +212,7 @@ const onNoNetwork = async () => {
   logger.debug(NAMESPACE, 'onNoNetwork');
 
   try {
-    await useInRoomStore.getState().exitRoom();
+    await rejectTimeoutPromise(useInRoomStore.getState().exitRoom(), 5000);
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
@@ -301,8 +309,13 @@ const mqttReconnect = async () => {
     return;
   }
 
-  if (now - lastReconnect < MAX_RECONNECT_DELAY) {
-    logger.debug(NAMESPACE, 'mqtt reconnect too soon, skipping');
+  if (now - lastReconnect < MAX_MQTT_RECONNECT_FREQUENCY) {
+    logger.debug(
+      NAMESPACE,
+      'mqtt reconnect too soon, skipping',
+      now,
+      lastReconnect
+    );
     return;
   }
 

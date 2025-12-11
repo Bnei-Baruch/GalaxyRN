@@ -147,14 +147,9 @@ class MqttMsg {
         NAMESPACE,
       });
 
-      //need for catch case when NETWORK connection was not changed, but MQTT connection was closed
-      rejectTimeoutPromise(onMqttConnectionLost(), 5000)
-        .catch(error => {
-          logger.error(NAMESPACE, 'mqtt close error', error);
-        })
-        .finally(() => {
-          useInitsStore.getState().setMqttIsOn(!this.mq?.connected);
-        });
+      rejectTimeoutPromise(onMqttConnectionLost(), 5000).catch(error => {
+        logger.error(NAMESPACE, 'mqtt close error', error);
+      });
     });
 
     this.mq.on('disconnect', data => {
@@ -174,6 +169,9 @@ class MqttMsg {
     this.mq.on('error', error => {
       addFinishSpan(CONNECTION, 'mqtt.error', { ...error, NAMESPACE });
       logger.error(NAMESPACE, 'mqtt on error', error);
+      rejectTimeoutPromise(onMqttConnectionLost(), 5000).catch(error => {
+        logger.error(NAMESPACE, 'mqtt close error', error);
+      });
     });
 
     finishSpan(initSpan, 'ok', NAMESPACE);
