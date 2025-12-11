@@ -52,7 +52,8 @@
     "broadcastsubtitles": "Субтитры",
     "broadcastsound": "Аудио",
     "open": "Открыть",
-    "audioSource": "Источник аудио"
+    "audioSource": "Источник аудио",
+    "roomSettings": "Настройки комнаты"
   },
   "shidur": {
     "onAir": "В ЭФИРЕ",
