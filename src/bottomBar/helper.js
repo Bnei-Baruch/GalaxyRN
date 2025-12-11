@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-
 export const bottomBar = StyleSheet.create({
   btn: {
     flexGrow: 1,
@@ -7,6 +6,5 @@ export const bottomBar = StyleSheet.create({
   },
   moreSelBtn: {
     marginHorizontal: 4,
-    // backgroundColor:'gray'
   },
 });

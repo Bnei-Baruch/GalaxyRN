@@ -1,11 +1,9 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import Text from '../../../components/CustomText';
 import { baseStyles } from '../../../constants';
 import { useShidurStore } from '../../../zustand/shidur';
-
 const AudioOption = ({ streamKey, icon, text, onSelect }) => {
   const { audio } = useShidurStore();
   const isSelected = audio.key === streamKey;
@@ -19,7 +17,6 @@ const AudioOption = ({ streamKey, icon, text, onSelect }) => {
     </TouchableOpacity>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -32,5 +29,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#222222',
   },
 });
-
 export default AudioOption;

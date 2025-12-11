@@ -9,14 +9,11 @@ import { CammuteBtn } from './CammuteBtn';
 import { MoreBtn } from './MoreBtn';
 import { MuteBtn } from './MuteBtn';
 import { QuestionBtn } from './QuestionBtn';
-
 export const BottomBar = () => {
   const { showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
   const insets = useSafeAreaInsets();
-
   if (!showBars || isFullscreen) return null;
-
   return (
     <View
       style={[
@@ -37,7 +34,6 @@ export const BottomBar = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -49,7 +45,6 @@ const styles = StyleSheet.create({
   buttons: {
     minWidth: 360,
     maxWidth: '100%',
-
     flexDirection: 'row',
     paddingVertical: 16,
     paddingHorizontal: 12,
