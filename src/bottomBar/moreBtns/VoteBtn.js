@@ -30,7 +30,7 @@ export const VoteBtn = () => {
           text={t('bottomBar.vote')}
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction="horizontal"
+          direction={['horizontal','horizontal]}']}
         />
       </Pressable>
       {open && (
