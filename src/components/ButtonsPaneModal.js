@@ -29,6 +29,7 @@ import { useInitsStore } from '../zustand/inits';
 import { useUiActions } from '../zustand/uiActions';
 import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
 import { LeaveBtn } from '../bottomBar/moreBtns/LeaveBtn';
+import useRoomStore from '../zustand/fetchRooms';
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
 const getTranslateYValue = styleRef => {
@@ -64,6 +65,7 @@ const normalizeTranslateValue = value => {
   return 0;
 };
 const ButtonsPaneModal = () => {
+  const { room } = useRoomStore();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { toggleMoreModal, moreModal } = useUiActions();
@@ -199,14 +201,12 @@ const ButtonsPaneModal = () => {
                       style={[baseStyles.text, styles.text]}
                       numberOfLines={1}
                     >
-                      Room settings - PT4
+                      {t('bottomBar.roomSettings')} - {room?.description}
                     </Text>
                     <View style={styles.buttonsBlock}>
                       <View style={styles.buttonsRow}>
                         <View style={styles.button_50}>
                           <AudioDevicesBtn />
-                          {/* <LeaveBtn /> */}
-                          {/* <StudyMaterialsBtn /> */}
                         </View>
                         <View style={styles.button_50}>
                           <LeaveBtn />
@@ -382,7 +382,7 @@ const ButtonsPaneModal = () => {
                         style={[baseStyles.text, styles.text]}
                         numberOfLines={1}
                       >
-                        Room settings - PT4
+                        {t('bottomBar.roomSettings')} - {room?.description}
                       </Text>
                       <View style={styles.buttonsBlock}>
                         <View style={styles.buttonsRow}>
