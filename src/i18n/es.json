@@ -42,7 +42,7 @@
     "shidur": "Transmisión",
     "self": "Hide my video",
     "kliOlami": "Kli Olamy tens",
-    "leave": "Leave room",
+    "leave": "Salir de la sala",
     "chat": "Chat",
     "show": "Mostrar",
     "broadcastsettings": "Configuración de transmisión",
@@ -50,7 +50,8 @@
     "broadcastsubtitles": "Subtitles",
     "broadcastsound": "Audio",
     "open": "Abrir",
-    "audioSource": "Fuente de audio"
+    "audioSource": "Fuente de audio",
+    "roomSettings": "Configuración de la sala"
   },
   "shidur": {
     "onAir": "EN VIVO",

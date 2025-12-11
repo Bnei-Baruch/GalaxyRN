@@ -56,7 +56,8 @@
     "broadcastsubtitles": "Subtitles",
     "broadcastsound": "Audio",
     "open": "Open",
-    "audioSource": "Audio source"
+    "audioSource": "Audio source",
+    "roomSettings": "Room settings"
   },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",
