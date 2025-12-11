@@ -31,7 +31,7 @@ export const DonateBtn = () => {
         text={t('topBar.donate')}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction="horizontal"
+        direction={['horizontal','horizontal']}
       />
     </Pressable>
   );

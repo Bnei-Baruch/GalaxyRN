@@ -13,7 +13,6 @@ import { DonateBtn } from '../bottomBar/moreBtns/DonateBtn';
 import { StudyMaterialsBtn } from '../bottomBar/moreBtns/StudyMaterialsBtn';
 import { VoteBtn } from '../bottomBar/moreBtns/VoteBtn';
 import Text from './CustomText';
-
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
@@ -24,37 +23,31 @@ import { SubtitleBtn } from '../bottomBar/moreBtns/SubtitleBtn';
 import { TranslationBtn } from '../bottomBar/moreBtns/TranslationBtn';
 import VideoSelect from '../bottomBar/moreBtns/VideoSelect';
 import AudioSelectModal from '../bottomBar/moreBtns/audioSelect/AudioSelectModal';
+import { AudioDevicesBtn } from '../bottomBar/moreBtns/AudioDevicesBtn';
 import { baseStyles } from '../constants';
 import { useInitsStore } from '../zustand/inits';
 import { useUiActions } from '../zustand/uiActions';
 import { BroadcastMuteBtn } from '../bottomBar/moreBtns/BroadcastMuteBtn';
 import { LeaveBtn } from '../bottomBar/moreBtns/LeaveBtn';
-
-const PANEL_ANIMATION_IN = 400;
-const PANEL_ANIMATION_OUT = 300;
-
-const getTranslateYValue = (styleRef) => {
+const PANEL_ANIMATION_IN = 200;
+const PANEL_ANIMATION_OUT = 150;
+const getTranslateYValue = styleRef => {
   const flattened = StyleSheet.flatten(styleRef);
   if (!flattened || !Array.isArray(flattened.transform)) {
     return 0;
   }
-
-  const translateEntry = flattened.transform.find((entry) =>
-    entry && Object.prototype.hasOwnProperty.call(entry, 'translateY')
+  const translateEntry = flattened.transform.find(
+    entry => entry && Object.prototype.hasOwnProperty.call(entry, 'translateY')
   );
-
   if (!translateEntry) {
     return 0;
   }
-
   return normalizeTranslateValue(translateEntry.translateY);
 };
-
-const normalizeTranslateValue = (value) => {
+const normalizeTranslateValue = value => {
   if (typeof value === 'number') {
     return value;
   }
-
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (trimmed.endsWith('%')) {
@@ -63,16 +56,13 @@ const normalizeTranslateValue = (value) => {
         return (percent / 100) * Dimensions.get('window').height;
       }
     }
-
     const numeric = Number(trimmed);
     if (!Number.isNaN(numeric)) {
       return numeric;
     }
   }
-
   return 0;
 };
-
 const ButtonsPaneModal = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -125,12 +115,10 @@ const ButtonsPaneModal = () => {
     }),
     [panelEntrance, translateYBottomStart, translateYBottomEnd]
   );
-
   useEffect(() => {
     if (!moreModal) {
       return;
     }
-
     setShouldRenderModal(true);
     panelEntrance.stopAnimation();
     const animation = Animated.timing(panelEntrance, {
@@ -139,19 +127,15 @@ const ButtonsPaneModal = () => {
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     });
-
     animation.start();
-
     return () => {
       animation.stop();
     };
   }, [moreModal, panelEntrance]);
-
   useEffect(() => {
     if (moreModal || !shouldRenderModal) {
       return;
     }
-
     panelEntrance.stopAnimation();
     let isCancelled = false;
     const animation = Animated.timing(panelEntrance, {
@@ -160,19 +144,16 @@ const ButtonsPaneModal = () => {
       easing: Easing.in(Easing.cubic),
       useNativeDriver: true,
     });
-
     animation.start(({ finished }) => {
       if (finished && !isCancelled) {
         setShouldRenderModal(false);
       }
     });
-
     return () => {
       isCancelled = true;
       animation.stop();
     };
   }, [moreModal, panelEntrance, shouldRenderModal]);
-
   return (
     <View style={styles.container}>
       <Modal
@@ -187,162 +168,285 @@ const ButtonsPaneModal = () => {
           <View
             style={[
               styles.modalContainer,
-              { paddingBottom: Math.max(insets.bottom, 16) + 80 + 16, paddingTop: insets.top + 8},
+              {
+                paddingBottom: Math.max(insets.bottom, 16) + 80 + 16,
+                paddingTop: insets.top + 8,
+              },
+              !isPortrait && styles.modalContainerLandscape,
             ]}
           >
             <BottomBar />
-            <Animated.View
-              style={[
-                styles.panelWrapper,
-                baseStyles.panelBackground,
-                styles.panelWrapperTop,
-                styles.panelWrapperTopEnd,
-                animatedTopPanelStyle,
-                {
-                  marginLeft: insets.left + 8,
-                  marginRight: insets.right + 8,
-                },
-                !isPortrait && styles.panelWrapperLandscape,
-              ]}
-            >
-              <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
-                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                  Room settings - PT4
-                </Text>
-                <View style={styles.buttonsBlock}>
-                  <View style={styles.buttonsRow}>
-                    <View style={styles.button_50}>
-                      {/* <StudyMaterialsBtn /> */}
+            {/* for Portrait orientation */}
+            {isPortrait && (
+              <>
+                <Animated.View
+                  style={[
+                    styles.panelWrapper,
+                    baseStyles.panelBackground,
+                    styles.panelWrapperTop,
+                    styles.panelWrapperTopEnd,
+                    animatedTopPanelStyle,
+                    {
+                      marginLeft: insets.left + 8,
+                      marginRight: insets.right + 8,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[styles.buttonsSection, styles.buttonsSectionLast]}
+                  >
+                    <Text
+                      style={[baseStyles.text, styles.text]}
+                      numberOfLines={1}
+                    >
+                      Room settings - PT4
+                    </Text>
+                    <View style={styles.buttonsBlock}>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_50}>
+                          <AudioDevicesBtn />
+                          {/* <LeaveBtn /> */}
+                          {/* <StudyMaterialsBtn /> */}
+                        </View>
+                        <View style={styles.button_50}>
+                          <LeaveBtn />
+                        </View>
+                      </View>
                     </View>
-                    <View style={styles.button_50}>
-                      <LeaveBtn />
+                  </View>
+                </Animated.View>
+                <Animated.View
+                  style={[
+                    styles.panelWrapper,
+                    styles.panelWrapperBottom,
+                    baseStyles.panelBackground,
+                    styles.panelWrapperBottomEnd,
+                    animatedBottomPanelStyle,
+                    {
+                      marginLeft: insets.left + 8,
+                      marginRight: insets.right + 8,
+                    },
+                  ]}
+                >
+                  <View style={styles.buttonsSection}>
+                    <Text
+                      style={[baseStyles.text, styles.text]}
+                      numberOfLines={1}
+                    >
+                      {t('bottomBar.show')}
+                    </Text>
+                    <View style={styles.buttonsBlock}>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_33}>
+                          <ShidurBtn />
+                        </View>
+                        <View style={styles.button_33}>
+                          <GroupsBtn />
+                        </View>
+                        <View style={styles.button_33}>
+                          <HideSelfBtn />
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.buttonsSection}>
+                    <Text
+                      style={[baseStyles.text, styles.text]}
+                      numberOfLines={1}
+                    >
+                      {t('bottomBar.broadcastsettings')}
+                    </Text>
+                    <View style={styles.buttonsBlock}>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_33}>
+                          <TranslationBtn />
+                        </View>
+                        <View style={styles.button_33}>
+                          <SubtitleBtn />
+                        </View>
+                        <View style={styles.button_33}>
+                          <BroadcastMuteBtn />
+                        </View>
+                      </View>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_50}>
+                          <VideoSelect />
+                        </View>
+                        <View style={styles.button_50}>
+                          <AudioSelectModal />
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  <View
+                    style={[styles.buttonsSection, styles.buttonsSectionLast]}
+                  >
+                    <Text
+                      style={[baseStyles.text, styles.text]}
+                      numberOfLines={1}
+                    >
+                      {t('bottomBar.open')}
+                    </Text>
+                    <View style={styles.buttonsBlock}>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_50}>
+                          <ChatBtn />
+                        </View>
+                        <View style={styles.button_50}>
+                          <VoteBtn />
+                        </View>
+                      </View>
+                      <View style={styles.buttonsRow}>
+                        <View style={styles.button_50}>
+                          <StudyMaterialsBtn />
+                        </View>
+                        <View style={styles.button_50}>
+                          <DonateBtn />
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </Animated.View>
+              </>
+            )}
+            {/* for Landscape orientation */}
+            {!isPortrait && (
+              <Animated.View
+                style={[
+                  styles.panelWrapper,
+                  styles.panelWrapperBottom,
+                  baseStyles.panelBackground,
+                  styles.panelWrapperBottomEnd,
+                  animatedBottomPanelStyle,
+                  {
+                    marginLeft: insets.left + 8,
+                    marginRight: insets.right + 8,
+                  },
+                ]}
+              >
+                <View style={styles.buttonsSectionsRow}>
+                  <View style={[styles.firstColumn]}>
+                    <View style={[styles.buttonsSection]}>
+                      <Text
+                        style={[baseStyles.text, styles.text]}
+                        numberOfLines={1}
+                      >
+                        {t('bottomBar.show')}
+                      </Text>
+                      <View style={styles.buttonsBlock}>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_33}>
+                            <ShidurBtn />
+                          </View>
+                          <View style={styles.button_33}>
+                            <GroupsBtn />
+                          </View>
+                          <View style={styles.button_33}>
+                            <HideSelfBtn />
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                    <View
+                      style={[styles.buttonsSection, styles.buttonsSectionLast]}
+                    >
+                      <Text
+                        style={[baseStyles.text, styles.text]}
+                        numberOfLines={1}
+                      >
+                        {t('bottomBar.open')}
+                      </Text>
+                      <View style={styles.buttonsBlock}>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_50}>
+                            <ChatBtn />
+                          </View>
+                          <View style={styles.button_50}>
+                            <VoteBtn />
+                          </View>
+                        </View>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_50}>
+                            <StudyMaterialsBtn />
+                          </View>
+                          <View style={styles.button_50}>
+                            <DonateBtn />
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={[styles.lastColumn]}>
+                    <View style={[styles.buttonsSection]}>
+                      <Text
+                        style={[baseStyles.text, styles.text]}
+                        numberOfLines={1}
+                      >
+                        Room settings - PT4
+                      </Text>
+                      <View style={styles.buttonsBlock}>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_50}>
+                            <AudioDevicesBtn />
+                          </View>
+                          <View style={styles.button_50}>
+                            <LeaveBtn />
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                    <View
+                      style={[styles.buttonsSection, styles.buttonsSectionLast]}
+                    >
+                      <Text
+                        style={[baseStyles.text, styles.text]}
+                        numberOfLines={1}
+                      >
+                        {t('bottomBar.broadcastsettings')}
+                      </Text>
+                      <View style={styles.buttonsBlock}>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_33}>
+                            <TranslationBtn />
+                          </View>
+                          <View style={styles.button_33}>
+                            <SubtitleBtn />
+                          </View>
+                          <View style={styles.button_33}>
+                            <BroadcastMuteBtn />
+                          </View>
+                        </View>
+                        <View style={styles.buttonsRow}>
+                          <View style={styles.button_50}>
+                            <VideoSelect />
+                          </View>
+                          <View style={styles.button_50}>
+                            <AudioSelectModal />
+                          </View>
+                        </View>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            </Animated.View>
-            <Animated.View
-              style={[
-                styles.panelWrapper,
-                styles.panelWrapperBottom,
-                baseStyles.panelBackground,
-                styles.panelWrapperBottomEnd,
-                animatedBottomPanelStyle,
-                {
-                  marginLeft: insets.left + 8,
-                  marginRight: insets.right + 8,
-                },
-                !isPortrait && styles.panelWrapperLandscape,
-              ]}
-            >
-              <View style={styles.buttonsSection}>
-                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                  {t('bottomBar.show')}
-                </Text>
-                <View style={styles.buttonsBlock}>
-                  <View style={styles.buttonsRow}>
-                    <View style={styles.button_33}>
-                      <ShidurBtn />
-                    </View>
-                    <View style={styles.button_33}>
-                      <GroupsBtn />
-                    </View>
-                    <View style={styles.button_33}>
-                      <HideSelfBtn />
-                    </View>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.buttonsSection}>
-                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                  {t('bottomBar.broadcastsettings')}
-                </Text>
-                <View style={styles.buttonsBlock}>
-                  <View style={styles.buttonsRow}>
-                    <View style={styles.button_33}>
-                      <TranslationBtn />
-                    </View>
-                    <View style={styles.button_33}>
-                      <SubtitleBtn />
-                    </View>
-                    <View style={styles.button_33}>
-                      <BroadcastMuteBtn />
-                    </View>
-                  </View>
-
-                  <View style={styles.buttonsRow}>
-                    <View style={styles.button_50}>
-                      <VideoSelect />
-                    </View>
-                    <View style={styles.button_50}>
-                      <AudioSelectModal />
-                    </View>
-                  </View>
-                </View>
-              </View>
-              <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
-                <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                  {t('bottomBar.open')}
-                </Text>
-
-                {/* for portrait mode only */}
-                {isPortrait && (
-                  <View style={styles.buttonsBlock}>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_50}>
-                        <ChatBtn />
-                      </View>
-                      <View style={styles.button_50}>
-                        <VoteBtn />
-                      </View>
-                    </View>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_50}>
-                        <StudyMaterialsBtn />
-                      </View>
-                      <View style={styles.button_50}>
-                        <DonateBtn />
-                      </View>
-                    </View>
-                  </View>
-                )}
-                {/* for landscape mode only */}
-                {!isPortrait && (
-                  <View style={styles.buttonsBlock}>
-                    <View style={styles.buttonsRow}>
-                      <View style={styles.button_25}>
-                        <ChatBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <VoteBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <StudyMaterialsBtn />
-                      </View>
-                      <View style={styles.button_25}>
-                        <DonateBtn />
-                      </View>
-                    </View>
-                  </View>
-                )}
-              </View>
-            </Animated.View>
+              </Animated.View>
+            )}
           </View>
         </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
   },
   modalContainer: {
     flex: 1,
-    // justifyContent: 'flex-end',
     justifyContent: 'space-between',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  modalContainerLandscape: {
+    justifyContent: 'flex-end',
   },
   panelWrapper: {
     borderRadius: 32,
@@ -351,16 +455,9 @@ const styles = StyleSheet.create({
   panelWrapperLandscape: {},
   panelWrapperTop: {
     position: 'relative',
-    // top:"-6%"
-    // marginTop: 8,
   },
   panelWrapperBottom: {
-    // position: 'relative',
-    // marginHorizontal: '300px',
-    
-    // top:"-6%"
-    // marginTop: 8,
-  },  
+  },
   panelWrapperTopStart: {
     transform: [{ translateY: '-50%' }],
   },
@@ -375,6 +472,23 @@ const styles = StyleSheet.create({
   },
   buttonsSection: {
     marginBottom: 24,
+    flexShrink: 1,
+  },
+  buttonsSectionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'stretch',
+    display: 'flex',
+  },
+  columnsSpacer: {
+    width: 24,
+  },
+  firstColumn: {
+    width: '50%',
+    paddingRight: 12,
+  },
+  lastColumn: {
+    width: '50%',
+    paddingLeft: 12,
   },
   buttonsSectionLast: {
     marginBottom: 0,
@@ -395,11 +509,9 @@ const styles = StyleSheet.create({
     width: '25%',
   },
   text: {
-    // marginBottom: 8,
     marginLeft: 8,
     color: '#7f7f7f',
   },
-  // flexDirection: 'column',
   tooltip: {
     width: '70%',
     maxHeight: Dimensions.get('window').height * 0.8,
@@ -425,5 +537,4 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-
 export default ButtonsPaneModal;
