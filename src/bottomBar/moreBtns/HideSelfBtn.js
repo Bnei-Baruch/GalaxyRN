@@ -4,11 +4,9 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
-
 export const HideSelfBtn = () => {
   const { hideSelf, toggleHideSelf } = useSettingsStore();
   const { t } = useTranslation();
-
   return (
     <Pressable onPress={toggleHideSelf} style={bottomBar.btn}>
       <BottomBarIconWithText

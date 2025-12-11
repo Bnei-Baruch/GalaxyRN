@@ -13,15 +13,11 @@ import { WebView } from 'react-native-webview';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useUserStore } from '../../zustand/user';
 import { bottomBar } from '../helper';
-
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
-
   const { t } = useTranslation();
   const { user } = useUserStore();
-
   const toggleOpen = () => setOpen(!open);
-
   return (
     <>
       <Pressable onPress={toggleOpen} style={bottomBar.btn}>

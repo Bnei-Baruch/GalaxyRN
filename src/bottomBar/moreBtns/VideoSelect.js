@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import Text from '../../components/CustomText';
 import ListInModal from '../../components/ListInModal';
 import { baseStyles } from '../../constants';
@@ -12,16 +11,13 @@ import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../helper';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 const NAMESPACE = 'VideoSelect';
-
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
   const { t } = useTranslation();
-
   const handleSetVideo = item => {
     logger.debug(NAMESPACE, 'handleSetVideo', item);
     setVideo(item.value);
   };
-
   const renderItem = item => {
     if (item.header) {
       return (
@@ -33,7 +29,6 @@ const VideoSelect = () => {
         </View>
       );
     }
-
     return (
       <View style={styles.container} key={item.key}>
         <Text style={[baseStyles.text, baseStyles.listItem]}>
@@ -45,9 +40,7 @@ const VideoSelect = () => {
       </View>
     );
   };
-
   const selected = videos_options2.find(option => option.value === video);
-
   const trigger = (
     <View style={bottomBar.btn} key={selected.key}>
       <BottomBarIconWithText
@@ -69,7 +62,6 @@ const VideoSelect = () => {
     />
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -89,5 +81,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
   },
 });
-
 export default VideoSelect;

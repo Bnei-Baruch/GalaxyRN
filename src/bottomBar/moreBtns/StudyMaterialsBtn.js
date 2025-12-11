@@ -8,24 +8,20 @@ import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated'
 import { StudyMaterialItem } from '../../topBar/StudyMaterialItem';
 import useMaterials from '../../zustand/fetchMaterials';
 import { bottomBar } from '../helper';
-
 export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
   const { fetchMaterials, materials, isLoading } = useMaterials();
   const { t } = useTranslation();
-
   const toggleModal = () => {
     if (!open) fetchMaterials();
     setOpen(!open);
   };
-
   return (
     <>
       <Pressable onPress={toggleModal} style={bottomBar.btn}>
         <BottomBarIconWithText
           iconName="book"
           text={t('topBar.materials')}
-          // text="sdfg sdfg sdfg"
           extraStyle={['rest', 'resticon']}
           showtext={true}
           direction={['horizontal','horizontal']}
@@ -53,7 +49,6 @@ export const StudyMaterialsBtn = () => {
     </>
   );
 };
-
 const styles = StyleSheet.create({
   modal: {
     backgroundColor: 'black',
