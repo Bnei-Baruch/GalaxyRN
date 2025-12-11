@@ -8872,12 +8872,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-background-timer@npm:^2.4.1":
+"react-native-background-timer@npm:2.4.1":
   version: 2.4.1
   resolution: "react-native-background-timer@npm:2.4.1"
   peerDependencies:
     react-native: ">=0.47.0"
   checksum: 635feb23bfdc8c43b8ee85dc85a5eb83f85aa9c285ce92ac329946ac83864121ae66bfb64fefa21e2a10462d094e03c17ff87eeb5d7e6349bc8e72d941f12754
+  languageName: node
+  linkType: hard
+
+"react-native-background-timer@patch:react-native-background-timer@npm%3A2.4.1#./.yarn/patches/react-native-background-timer-npm-2.4.1-bef63bbd2f.patch::locator=GalaxyRN%40workspace%3A.":
+  version: 2.4.1
+  resolution: "react-native-background-timer@patch:react-native-background-timer@npm%3A2.4.1#./.yarn/patches/react-native-background-timer-npm-2.4.1-bef63bbd2f.patch::version=2.4.1&hash=ba8ca6&locator=GalaxyRN%40workspace%3A."
+  peerDependencies:
+    react-native: ">=0.47.0"
+  checksum: e33a59bb20ad8e89a786135e973e41a34ef8da3c8b44251a67e3f54f70c16610843f60b63424039242a6e9fd26c48b890cedaf751bdf5b59a08107a37c668269
   languageName: node
   linkType: hard
 

@@ -3,7 +3,6 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 
 // Libs
-import BackgroundTimer from 'react-native-background-timer';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
@@ -287,16 +286,9 @@ export const useFeedsStore = create((set, get) => ({
           logger.error(NAMESPACE, 'Error setting feed url', error);
         }
 
-        BackgroundTimer.setTimeout(() => {
-          set(
-            produce(state => {
-              state.feedById[id].vOn = !!url;
-            })
-          );
-        }, 100);
-
         set(
           produce(state => {
+            state.feedById[id].vOn = !!url;
             state.feedById[id].url = url;
             state.feedById[id].vWIP = false;
           })

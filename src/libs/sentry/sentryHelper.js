@@ -107,8 +107,6 @@ export const addSpan = (key, op, attributes = {}) => {
 };
 
 export const addFinishSpan = (key, op, attributes = {}) => {
-  const namespace = attributes.NAMESPACE || DEFAULT_NAMESPACE;
-  logger.debug(namespace, 'addFinishSpan', key, op, attributes);
   const span = addSpan(key, op, attributes);
   span.setStatus('ok');
   span.end();
@@ -216,7 +214,6 @@ export const captureException = args => {
   if (args[2] instanceof Error) {
     args[2] = JSON.stringify({
       message: args[2].message,
-      stack: args[2].stack,
       code: args[2].code,
     });
   }
