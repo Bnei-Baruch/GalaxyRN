@@ -4,8 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../../../components/CustomText';
 import { baseStyles } from '../../../constants';
+
 const AudioHeader = ({ icon, text, description }) => {
   const { t } = useTranslation();
+
   return (
     <View style={[styles.container, styles.header]}>
       <Icon name={icon} color="white" size={30} />
@@ -16,6 +18,7 @@ const AudioHeader = ({ icon, text, description }) => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
