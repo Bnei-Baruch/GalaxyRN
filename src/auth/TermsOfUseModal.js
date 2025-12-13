@@ -1,51 +1,49 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Text from '../components/CustomText';
 
 const TermsOfUseModal = ({ visible, onClose }) => {
   const { t } = useTranslation();
-
+  if (!visible) {
+    return null;
+  }
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <ScrollView style={styles.scrollView}>
-            <Text style={styles.modalText}>
-              {t('loginPage.termsOfUseContent')}
-            </Text>
-          </ScrollView>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>{t('close')}</Text>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.centeredView}>
+      <View style={styles.modalView}>
+        <ScrollView style={styles.scrollView}>
+          <Text style={styles.modalText}>
+            {t('loginPage.termsOfUseContent')}
+          </Text>
+        </ScrollView>
+        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <Text style={styles.closeButtonText}>{t('close')}</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    backgroundColor: 'green',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalView: {
+    height: '80%',
     width: '90%',
-    maxHeight: '80%',
-    backgroundColor: '#1a1a1a',
+    paddingBottom: 20,
+    paddingTop: 20,
+    backgroundColor: '#1c1c1c',
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
@@ -60,6 +58,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     width: '100%',
+    height: '100%',
   },
   modalText: {
     color: '#fff',

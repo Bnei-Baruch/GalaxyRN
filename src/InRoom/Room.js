@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
-import ButtonsPaneModal from '../components/ButtonsPaneModal';
+import { BottomBarBtns } from '../bottomBar/BottomBarBtns';
+import ButtonsPaneModal from '../bottomBar/moreBtns/ButtonsPaneModal';
+import AudioSelectModal from '../bottomBar/moreBtns/audioSelect/AudioSelectModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -19,6 +21,8 @@ const Room = () => {
     };
   }, []);
 
+  const bottomBarBtns = <BottomBarBtns />;
+
   return (
     <View
       style={[
@@ -28,8 +32,9 @@ const Room = () => {
       ]}
     >
       <RoomLayout />
-      <BottomBar />
-      <ButtonsPaneModal />
+      <BottomBar bottomBarBtns={bottomBarBtns} />
+      <ButtonsPaneModal bottomBarBtns={bottomBarBtns} />
+      <AudioSelectModal />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>
