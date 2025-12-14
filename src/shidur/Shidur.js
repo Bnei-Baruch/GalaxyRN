@@ -1,31 +1,22 @@
-// Core React and React Native imports
 import React, { memo, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-
-// Third-party libraries
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
 import Text from '../components/CustomText';
-import logger from '../services/logger';
-import { useSubtitleStore } from '../zustand/subtitle';
-
-// Local imports
 import WIP from '../components/WIP';
-import { baseStyles, SHIDUR_BAR_ZINDEX } from '../constants';
+import { SHIDUR_BAR_ZINDEX, baseStyles } from '../constants';
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { withProfiler } from '../libs/sentry/sentryHOC';
-import { NO_VIDEO_OPTION_VALUE } from '../shared/consts';
+import logger from '../services/logger';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
+import { useSubtitleStore } from '../zustand/subtitle';
 import { useUiActions } from '../zustand/uiActions';
 import { FullscreenBtn } from './FullscreenBtn';
-// import { MuteBtn } from './MuteBtn';
-import OptionsBtn from './OptionsBtn';
-// import { OriginalSwitch } from './OriginalSwitch';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
-// import { SubtitleBtn } from './SubtitleBtn';
 
 const NAMESPACE = 'Shidur';
 
@@ -75,13 +66,9 @@ const Shidur = () => {
             <View style={styles.toolbar}>
               <View style={styles.toolbarBtnsGroup}>
                 <PlayPauseBtn />
-                {/* <MuteBtn /> */}
-                {/* <OriginalSwitch /> */}
               </View>
 
               <View style={styles.toolbarBtnsGroup}>
-                {/* <SubtitleBtn /> */}
-                <OptionsBtn />
                 <FullscreenBtn />
               </View>
             </View>

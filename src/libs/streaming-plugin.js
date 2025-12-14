@@ -5,7 +5,7 @@ import {
   RTCSessionDescription,
 } from 'react-native-webrtc';
 import logger from '../services/logger';
-import { randomString } from '../shared/tools';
+import { randomString } from '../tools';
 import { useShidurStore } from '../zustand/shidur';
 import {
   addConnectionListener,
@@ -59,13 +59,7 @@ export class StreamingPlugin {
         useShidurStore.getState().restartShidur();
       }
     });
-    logger.debug(
-      NAMESPACE,
-      'StreamingPlugin constructor done',
-      this.id,
-      this.janusHandleId,
-      this.streamId
-    );
+    logger.debug(NAMESPACE, 'StreamingPlugin constructor done', this.id);
   }
 
   getPluginName = () => {
@@ -173,7 +167,7 @@ export class StreamingPlugin {
       await this.sdpExchange(json.jsep);
       finishSpan(initSpan, 'ok', NAMESPACE);
     } catch (error) {
-      const errorCode = error?.data?.error_code;
+      const errorCode = error?.data?.error_code || error?.error?.code;
 
       if (errorCode === 455) {
         logger.error(
@@ -243,7 +237,7 @@ export class StreamingPlugin {
 
       return result;
     } catch (error) {
-      const errorCode = error?.data?.error_code;
+      const errorCode = error?.data?.error_code || error?.error?.code;
       // Handle "Already in room" or similar Janus errors (460, 436, etc.)
       if (errorCode === 460 || errorCode === 436) {
         setSpanAttributes(iceRestartSpan, { errorCode, NAMESPACE });
@@ -272,6 +266,7 @@ export class StreamingPlugin {
       await this.start(answer);
     } catch (error) {
       logger.error(NAMESPACE, 'SDP exchange error:', error);
+      throw error;
     }
   };
 
@@ -308,7 +303,7 @@ export class StreamingPlugin {
     logger.debug(NAMESPACE, 'switch: ', id);
     const body = { request: 'switch', id };
     return this.transaction('message', { body }, 'event').catch(err => {
-      const errorCode = err?.data?.error_code;
+      const errorCode = err?.data?.error_code || err?.error?.code;
       logger.error(
         NAMESPACE,
         `cannot switch stream to ${id}, error code: ${errorCode}`,

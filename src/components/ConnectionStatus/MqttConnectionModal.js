@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import mqtt from '../../libs/mqtt';
 import logger from '../../services/logger';
-import mqtt from '../../shared/mqtt';
 import { useInitsStore } from '../../zustand/inits';
 import { useSettingsStore } from '../../zustand/settings';
 import Text from '../CustomText';
@@ -14,7 +14,7 @@ const NAMESPACE = 'MqttConnectionModal';
 
 const MqttConnectionModal = () => {
   const { t } = useTranslation();
-  const { mqttIsOn, abortMqtt, initMQTT } = useInitsStore();
+  const { mqttIsOn, resetMqtt } = useInitsStore();
   const netWIP = useSettingsStore(state => state.netWIP);
 
   logger.debug(NAMESPACE, 'render', mqttIsOn, netWIP, mqtt.mq?.connected);
@@ -41,8 +41,7 @@ const MqttConnectionModal = () => {
   }
 
   const handleRestartMqtt = async () => {
-    await abortMqtt();
-    await initMQTT();
+    await resetMqtt();
   };
 
   return (

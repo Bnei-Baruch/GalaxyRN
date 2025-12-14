@@ -1,24 +1,5 @@
-// External libraries
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
-
-// Libs
-import { JanusMqtt } from '../libs/janus-mqtt';
-import {
-  addSpan,
-  finishSpan,
-  setSpanAttributes,
-} from '../libs/sentry/sentryHelper';
-import { StreamingPlugin } from '../libs/streaming-plugin';
-
-// Services
-import logger from '../services/logger';
-
-// Shared modules
-import i18n, { getSystemLanguage } from '../i18n/i18n';
-import { waitConnection } from '../libs/connection-monitor';
-import { ROOM_SESSION } from '../libs/sentry/constants';
-import api from '../shared/Api';
 import {
   NO_VIDEO_OPTION_VALUE,
   dualLanguageOptions,
@@ -26,15 +7,21 @@ import {
   sourceStreamOptions,
   trllang,
   workShopOptions,
-} from '../shared/consts';
-import { configByName, gatewayNames } from '../shared/janus-config';
+} from '../consts';
+import i18n, { getSystemLanguage } from '../i18n/i18n';
+import { waitConnection } from '../libs/connection-monitor';
+import { configByName, gatewayNames } from '../libs/janus-config';
+import { JanusMqtt } from '../libs/janus-mqtt';
+import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
-  getFromStorage,
-  rejectTimeoutPromise,
-  setToStorage,
-} from '../shared/tools';
-
-// Zustand stores
+  addSpan,
+  finishSpan,
+  setSpanAttributes,
+} from '../libs/sentry/sentryHelper';
+import { StreamingPlugin } from '../libs/streaming-plugin';
+import api from '../services/Api';
+import logger from '../services/logger';
+import { getFromStorage, rejectTimeoutPromise, setToStorage } from '../tools';
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 import { useUiActions } from './uiActions';
@@ -46,15 +33,12 @@ let janus = null;
 let kliOlamiJanus = null;
 let kliOlamiStream = null;
 
-// Streaming plugin for video
 let videoJanus = null;
 let videoStream = null;
 
-// Streaming plugin for audio
 let audioJanus = null;
 let audioStream = null;
 
-// Streaming plugin for trlAudio
 let trlAudioJanus = null;
 let trlAudioStream = null;
 
@@ -93,16 +77,19 @@ const getOptionByKey = key => {
       return {
         ...workShopOptions.find(x => x.key === key),
         icon: 'group',
+        description: 'shidur.streamForWorkshopDescription',
       };
     case 'ss':
       return {
         ...sourceStreamOptions.find(x => x.key === key),
         icon: 'center-focus-strong',
+        description: 'shidur.sourceStreamDescription',
       };
     case 'dl':
       return {
         ...dualLanguageOptions.find(x => x.key === key),
         icon: 'group',
+        description: 'shidur.dualLnaguagesStreamDescription',
       };
     default:
       return workShopOptions.find(x => x.key === 'wo_original');
@@ -144,6 +131,11 @@ export const useShidurStore = create((set, get) => ({
   isMuted: false,
   shidurWIP: false,
   cleanWIP: false,
+  isAudioSelectOpen: false,
+
+  setIsAudioSelectOpen: (isAudioSelectOpen = !get().isAudioSelectOpen) => {
+    set({ isAudioSelectOpen });
+  },
 
   setIsMuted: (isMuted = !get().isMuted) => {
     if (!get().isPlay) {

@@ -1,7 +1,5 @@
-// React Native modules
+import { CRISP_WEBSITE_ID } from '@env';
 import { Platform } from 'react-native';
-
-// External libraries
 import {
   configure,
   resetSession,
@@ -11,14 +9,7 @@ import {
   show,
 } from 'react-native-crisp-chat-sdk';
 import { create } from 'zustand';
-
-// Environment variables
-import { CRISP_WEBSITE_ID } from '@env';
-
-// Services
 import logger from '../services/logger';
-
-// Zustand stores
 import { useUserStore } from './user';
 
 const NAMESPACE = 'Crisp';
@@ -51,18 +42,14 @@ export const useCrispStore = create((set, get) => ({
         display,
         id
       );
-
-      // Note: For iOS, the SDK may already be configured in AppDelegate.mm
-      // For Android, we need to configure it here
+      //TODO: check if this is needed
       if (Platform.OS === 'android') {
         logger.info(NAMESPACE, 'Configuring Crisp SDK for Android');
-        // First configure the SDK with the website ID
         configure(CRISP_WEBSITE_ID);
       } else {
         logger.info(NAMESPACE, 'Using pre-configured Crisp SDK for iOS');
       }
 
-      // Then set user info only if available
       try {
         if (email) {
           logger.debug(NAMESPACE, 'Setting user email:', email);
@@ -75,14 +62,12 @@ export const useCrispStore = create((set, get) => ({
         }
 
         if (id) {
-          // Make sure user ID is also properly formatted
           const cleanId = id.toString().replace(/[";'\s]/g, '');
           logger.debug(NAMESPACE, 'Setting user token ID:', cleanId);
           setTokenId(cleanId);
         }
       } catch (userInfoError) {
         logger.error(NAMESPACE, 'Error setting user info:', userInfoError);
-        // Continue despite user info errors
       }
 
       try {

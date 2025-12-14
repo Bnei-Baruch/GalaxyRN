@@ -1,13 +1,7 @@
-// React Native modules
-
-// External libraries
 import { create } from 'zustand';
 
 import { APP_SESSION } from '../libs/sentry/constants';
 import { addSpan, finishSpan } from '../libs/sentry/sentryHelper';
-// Constants
-
-// Services
 import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 

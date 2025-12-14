@@ -1,19 +1,15 @@
-// External libraries
 import { produce } from 'immer';
 import { create } from 'zustand';
-
-// Libs
-import BackgroundTimer from 'react-native-background-timer';
+import { userRolesEnum } from '../enums';
+import { configByName } from '../libs/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
 import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
-import { userRolesEnum } from '../shared/enums';
-import { configByName } from '../shared/janus-config';
-import { deepClone, rejectTimeoutPromise } from '../shared/tools';
-import useRoomStore from './fetchRooms';
-import useInRoomStore from './inRoom';
+import { deepClone, rejectTimeoutPromise } from '../tools';
+import { useRoomStore } from './fetchRooms';
+import { useInRoomStore } from './inRoom';
 import { getStream, useMyStreamStore } from './myStream';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -30,7 +26,6 @@ let exitWIP = false;
 let _subscriberJoined = false;
 
 export const useFeedsStore = create((set, get) => ({
-  // State
   feedById: {},
   feedIds: [],
   restartCount: 0,
@@ -287,16 +282,9 @@ export const useFeedsStore = create((set, get) => ({
           logger.error(NAMESPACE, 'Error setting feed url', error);
         }
 
-        BackgroundTimer.setTimeout(() => {
-          set(
-            produce(state => {
-              state.feedById[id].vOn = !!url;
-            })
-          );
-        }, 100);
-
         set(
           produce(state => {
+            state.feedById[id].vOn = !!url;
             state.feedById[id].url = url;
             state.feedById[id].vWIP = false;
           })

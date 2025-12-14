@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
-import ButtonsPaneModal from '../components/ButtonsPaneModal';
+import { BottomBarBtns } from '../bottomBar/BottomBarBtns';
+import ButtonsPaneModal from '../bottomBar/moreBtns/ButtonsPaneModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
-import { TopBar } from '../topBar/TopBar';
 import { useInRoomStore } from '../zustand/inRoom';
 import ForegroundListener from './ForegroundListener';
 import RoomLayout from './Layout/RoomLayout';
@@ -13,11 +13,14 @@ import RoomLayout from './Layout/RoomLayout';
 const Room = () => {
   const insets = useSafeAreaInsets();
   const { exitRoom } = useInRoomStore();
+
   useEffect(() => {
     return () => {
       exitRoom();
     };
   }, []);
+
+  const bottomBarBtns = <BottomBarBtns />;
 
   return (
     <View
@@ -27,10 +30,9 @@ const Room = () => {
         { paddingTop: insets.top },
       ]}
     >
-      <TopBar />
       <RoomLayout />
-      <BottomBar />
-      <ButtonsPaneModal />
+      <BottomBar bottomBarBtns={bottomBarBtns} />
+      <ButtonsPaneModal bottomBarBtns={bottomBarBtns} />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>

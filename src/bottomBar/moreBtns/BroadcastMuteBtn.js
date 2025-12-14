@@ -1,17 +1,13 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-// import Icon from 'react-native-vector-icons/MaterialIcons';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../helper';
-
 export const BroadcastMuteBtn = () => {
   const { isMuted, setIsMuted } = useShidurStore();
   const toggleMute = () => setIsMuted();
   const { t } = useTranslation();
-  
-
   return (
     <Pressable onPress={toggleMute} style={bottomBar.btn}>
       <BottomBarIconWithText
@@ -23,7 +19,7 @@ export const BroadcastMuteBtn = () => {
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }
         showtext={true}
-        direction="vertical"
+        direction={['vertical','horizontal']}
       />
     </Pressable>
   );

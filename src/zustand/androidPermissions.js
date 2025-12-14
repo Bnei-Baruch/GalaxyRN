@@ -1,10 +1,5 @@
-// React Native modules
 import { DeviceEventEmitter, NativeModules } from 'react-native';
-
-// External libraries
 import { create } from 'zustand';
-
-// Services
 import logger from '../services/logger';
 
 const NAMESPACE = 'androidPermissions';
@@ -14,7 +9,6 @@ const permissionsModule = NativeModules.PermissionsModule;
 
 let subscription;
 
-// Export the store
 export const useAndroidPermissionsStore = create((set, get) => ({
   permReady: false,
   setPermReady: (permReady = true) => set({ permReady }),
@@ -26,7 +20,6 @@ export const useAndroidPermissionsStore = create((set, get) => ({
       return;
     }
 
-    // Clean up existing subscription if any
     if (subscription) {
       logger.debug(NAMESPACE, 'Removing existing subscription');
       subscription.remove();

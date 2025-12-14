@@ -29,13 +29,12 @@
     "deleteConfirm": "מחק",
     "cancel": "ביטול"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "חומר לימוד",
     "donate": "לתרום",
     "support": "תמיכה",
     "settings": "הגדרות",
-    "communicationTitle": "תקשורת",
-    "materialsTitle": "חומר לימוד",
+    "communication": "תקשורת",
     "sendLogs": "שלח לוגים"
   },
   "bottomBar": {
@@ -50,16 +49,18 @@
     "broacasttranslation": "תרגום",
     "broadcastsubtitles": "כתוביות",
     "broadcastsound": "שמע",
-    "open": "פתח"
+    "open": "פתח",
+    "audioSource": "מקור שמע",
+    "roomSettings": "הגדרות חדר"
   },
   "shidur": {
     "onAir": "בשידור",
     "streamForWorkshop": "ערוץ לסדנה",
-    "streamForWorkshopDescription": "(קבוצת המיקוד מושתקת)",
+    "streamForWorkshopDescription": "ללא קבוצת המיקוד",
     "sourceStream": "ערוץ מקור",
-    "sourceStreamDescription": "(קבוצת המיקוד פועלת)",
+    "sourceStreamDescription": "עם קבוצת המיקוד",
     "dualLnaguagesStream": "ערוץ שפה כפולה",
-    "dualLnaguagesStreamDescription": "(קבוצת המיקוד מושתקת)",
+    "dualLnaguagesStreamDescription": "ללא קבוצת המיקוד",
     "lowQuality": "איכות נמוכה",
     "mediumQuality": "איכות בינונית",
     "highQuality": "איכות גבוה",

@@ -1,15 +1,10 @@
-// External libraries
 import { create } from 'zustand';
-
-// Services
+import api from '../services/Api';
 import logger from '../services/logger';
-
-// Shared modules
-import api from '../shared/Api';
 
 const NAMESPACE = 'Materials';
 
-const useMaterials = create(set => ({
+export const useMaterials = create(set => ({
   materials: [],
 
   fetchMaterials: async () => {
@@ -34,5 +29,3 @@ const useMaterials = create(set => ({
     }
   },
 }));
-
-export default useMaterials;

@@ -4,11 +4,9 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
-
 export const HideSelfBtn = () => {
   const { hideSelf, toggleHideSelf } = useSettingsStore();
   const { t } = useTranslation();
-
   return (
     <Pressable onPress={toggleHideSelf} style={bottomBar.btn}>
       <BottomBarIconWithText
@@ -20,7 +18,7 @@ export const HideSelfBtn = () => {
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }
         showtext={true}
-        direction="vertical"
+        direction={['vertical','vertical']}
       />
     </Pressable>
   );

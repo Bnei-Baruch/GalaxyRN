@@ -1,6 +1,6 @@
 {
   "name": "GalaxyRN",
-  "version": "2.0.10",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "start": "react-native start",
@@ -24,9 +24,7 @@
     "@react-native-community/netinfo": "^11.3.3",
     "@sentry/react-native": "^7.7.0",
     "base-64": "^1.0.0",
-    "iconv-lite": "^0.7.0",
     "immer": "^10.2.0",
-    "jschardet": "^3.1.4",
     "markdown-it": "^14.1.0",
     "mqtt": "5.9.1",
     "react": "18.3.1",
@@ -81,5 +79,8 @@
   "config": {
     "isProduction": true
   },
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "yarn@3.6.4",
+  "resolutions": {
+    "react-native-background-timer@^2.4.1": "patch:react-native-background-timer@npm%3A2.4.1#./.yarn/patches/react-native-background-timer-npm-2.4.1-bef63bbd2f.patch"
+  }
 }

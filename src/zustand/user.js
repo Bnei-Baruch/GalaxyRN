@@ -1,18 +1,10 @@
-// React Native modules
 import { Platform } from 'react-native';
-
-// External libraries
 import { create } from 'zustand';
-
-// Services
+import mqtt from '../libs/mqtt';
+import api from '../services/Api';
 import logger from '../services/logger';
 
-// Shared modules
-import api from '../shared/Api';
-import mqtt from '../shared/mqtt';
-
-// Zustand stores
-import useRoomStore from './fetchRooms';
+import { useRoomStore } from './fetchRooms';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
 
@@ -22,7 +14,7 @@ export const useUserStore = create((set, get) => ({
   wip: false,
   setWIP: wip => set({ wip }),
 
-  // on init user is undefined
+  // on init user must be undefined
   setUser: user => set({ user, wip: false }),
 
   vhinfo: null,

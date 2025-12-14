@@ -1,14 +1,8 @@
-// React Native modules
 import { Dimensions } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
-
-// External libraries
 import { create } from 'zustand';
-
-// Services
 import logger from '../services/logger';
-
-// Zustand stores
+import { sleep } from '../tools';
 import { useFeedsStore } from './feeds';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
 import { useSettingsStore } from './settings';
@@ -21,7 +15,7 @@ let showBarTimeout = null;
 const getBorders = async (scrollPos, feedsPos, currentBorders) => {
   lastTimestemp = Date.now();
   const currentTimestamp = lastTimestemp;
-  await new Promise(r => BackgroundTimer.setTimeout(r, 500));
+  await sleep(500);
 
   if (lastTimestemp !== currentTimestamp) return null;
 
@@ -90,7 +84,6 @@ export const useUiActions = create((set, get) => ({
       }
     }
 
-    // Обновляем только если значение изменилось
     if (get().width !== newWidth) {
       set({ width: newWidth });
     }
@@ -112,5 +105,5 @@ export const useUiActions = create((set, get) => ({
   },
 
   moreModal: false,
-  toggleMoreModal: () => set({ moreModal: !get().moreModal }),
+  toggleMoreModal: (moreModal = !get().moreModal) => set({ moreModal }),
 }));

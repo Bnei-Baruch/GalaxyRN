@@ -34,13 +34,12 @@
     "deleteConfirm": "Delete",
     "cancel": "Cancel"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "Study Materials",
     "donate": "Donate",
     "support": "Support",
     "settings": "Settings",
-    "communicationTitle": "Communication",
-    "materialsTitle": "Study Materials",
+    "communication": "Communication",
     "sendLogs": "Send Logs"
   },
   "bottomBar": {
@@ -55,15 +54,17 @@
     "broacasttranslation": "Translation",
     "broadcastsubtitles": "Subtitles",
     "broadcastsound": "Audio",
-    "open": "Open"
+    "open": "Open",
+    "audioSource": "Audio source",
+    "roomSettings": "Room settings"
   },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",
-    "streamForWorkshopDescription": "(focus group is muted)",
+    "streamForWorkshopDescription": "no focus group",
     "sourceStream": "SOURCE STREAM",
-    "sourceStreamDescription": "(focus group is on)",
+    "sourceStreamDescription": "with focus group",
     "dualLnaguagesStream": "DUAL LANGUAGES STREAM",
-    "dualLnaguagesStreamDescription": "(focus group is muted)",
+    "dualLnaguagesStreamDescription": "no focus group",
     "lowQuality": "Low quality",
     "mediumQuality": "Medium quality",
     "highQuality": "High quality",

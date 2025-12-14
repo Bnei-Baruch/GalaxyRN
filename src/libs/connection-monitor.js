@@ -2,11 +2,11 @@ import NetInfo from '@react-native-community/netinfo';
 import BackgroundTimer from 'react-native-background-timer';
 import kc from '../auth/keycloak';
 import logger from '../services/logger';
-import mqtt from '../shared/mqtt';
-import { sleep } from '../shared/tools';
+import { rejectTimeoutPromise, sleep } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
+import mqtt from './mqtt';
 import { CONNECTION } from './sentry/constants';
 import {
   addFinishSpan,
@@ -21,13 +21,14 @@ export const NET_INFO_STATE_DISCONNECTED = 'DISCONNECTED';
 
 const NAMESPACE = 'ConnectionMonitor';
 const MAX_CONNECTION_TIMEOUT = 20;
-const MAX_RECONNECT_DELAY = 5000;
+const MAX_MQTT_RECONNECT_FREQUENCY = 3 * 1000;
 
 let netInfoUnsubscribe,
   iceRestartListeners,
   timeout,
   currentState,
-  disconnectedSeconds;
+  disconnectedSeconds,
+  wip;
 let lastReconnect = 0;
 const waitConnectionListeners = [];
 
@@ -51,6 +52,7 @@ export const initConnectionMonitor = () => {
       }
     );
 
+    wip = true;
     logger.debug(NAMESPACE, 'Network state:', state);
 
     if (!currentState) {
@@ -71,6 +73,7 @@ export const initConnectionMonitor = () => {
         finishSpan(networkStateSpan, 'net_error', NAMESPACE);
       }
       finishSpan(networkStateSpan, 'ok', NAMESPACE);
+      wip = false;
       return;
     }
 
@@ -83,6 +86,7 @@ export const initConnectionMonitor = () => {
       if (!isNetConnected()) {
         onNoNetwork();
         finishSpan(networkStateSpan, 'net_error', NAMESPACE);
+        wip = false;
         return;
       }
     }
@@ -91,6 +95,7 @@ export const initConnectionMonitor = () => {
     useInitsStore.getState().setMqttIsOn(mqtt.mq?.connected);
     disconnectedSeconds = 0;
     finishSpan(networkStateSpan, 'ok', NAMESPACE);
+    wip = false;
   });
 };
 
@@ -127,6 +132,24 @@ const isSameNetwork = newState => {
 
   logger.debug(NAMESPACE, `hasCommonIp: ${hasCommonIp}`);
   return hasCommonIp;
+};
+
+/**
+ * This function is called when the MQTT connection is lost.
+ * for case when network connection was not changed, but MQTT connection was closed.
+ * Wait 1 second for possible network change listener may be triggered.
+ */
+export const onMqttConnectionLost = async () => {
+  logger.debug(NAMESPACE, 'onMqttClosed: wip is', wip);
+  lastReconnect = 0;
+  await sleep(1000);
+  if (wip) {
+    logger.debug(NAMESPACE, 'onMqttConnectionLost: wip is true, skipping');
+    return;
+  }
+  wip = true;
+  await waitConnectionRestart();
+  wip = false;
 };
 
 const waitConnectionRestart = async () => {
@@ -189,7 +212,7 @@ const onNoNetwork = async () => {
   logger.debug(NAMESPACE, 'onNoNetwork');
 
   try {
-    await useInRoomStore.getState().exitRoom();
+    await rejectTimeoutPromise(useInRoomStore.getState().exitRoom(), 5000);
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
@@ -198,6 +221,7 @@ const onNoNetwork = async () => {
   useInitsStore.getState().setMqttIsOn(false);
   useSettingsStore.getState().setNetWIP(false);
   useInitsStore.getState().setNetIsOn(_netIsOn);
+  wip = false;
 
   try {
     kc.logout();
@@ -243,14 +267,20 @@ const monitorMqtt = async () => {
     return await monitorMqtt();
   }
 
-  logger.debug(NAMESPACE, 'MQTT connected', mqtt.mq?.connected);
+  logger.debug(NAMESPACE, 'MQTT connected', mqtt.mq.connected);
   if (mqtt.mq.connected) {
     return true;
   }
-  logger.debug(NAMESPACE, 'monitorMqtt run timeout', disconnectedSeconds);
+  logger.debug(
+    NAMESPACE,
+    'monitorMqtt run timeout promise',
+    disconnectedSeconds
+  );
   return new Promise(resolve => {
+    logger.debug(NAMESPACE, 'monitorMqtt run timeout', mqtt.mq?.connected);
     timeout = BackgroundTimer.setTimeout(() => {
-      if (mqtt.mq?.connected) {
+      logger.debug(NAMESPACE, 'monitorMqtt timeout', mqtt.mq?.connected);
+      if (mqtt.mq.connected) {
         return resolve(true);
       }
       mqttReconnect()
@@ -269,7 +299,7 @@ const monitorMqtt = async () => {
 
 const mqttReconnect = async () => {
   const now = Date.now();
-  if (mqtt.mq?.connected) {
+  if (mqtt.mq.connected) {
     logger.debug(NAMESPACE, 'mqtt already connected, skipping reconnect');
     return true;
   }
@@ -279,8 +309,13 @@ const mqttReconnect = async () => {
     return;
   }
 
-  if (now - lastReconnect < MAX_RECONNECT_DELAY) {
-    logger.debug(NAMESPACE, 'mqtt reconnect too soon, skipping');
+  if (now - lastReconnect < MAX_MQTT_RECONNECT_FREQUENCY) {
+    logger.debug(
+      NAMESPACE,
+      'mqtt reconnect too soon, skipping',
+      now,
+      lastReconnect
+    );
     return;
   }
 
@@ -313,10 +348,7 @@ const callListeners = async () => {
 };
 
 export const waitConnection = async () => {
-  logger.debug(NAMESPACE, 'waitConnection');
-
   if (isNetConnected() && mqtt.mq?.connected) {
-    logger.debug(NAMESPACE, 'waitConnection already connected');
     return true;
   }
   logger.debug(

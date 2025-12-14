@@ -4,13 +4,11 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../settings/BottomBarIconWithTextAnimated';
 import { useSettingsStore } from '../zustand/settings';
 import { bottomBar } from './helper';
-
 export const AudioModeBtn = () => {
   const { audioMode, toggleAudioMode } = useSettingsStore();
   const { t } = useTranslation();
   const handlePress = () => toggleAudioMode();
   let iconName, text, extraStyle;
-
   if (!audioMode) {
     iconName = 'hearing';
     text = t('bottomBar.showBroadcast');

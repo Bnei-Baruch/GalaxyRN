@@ -1,9 +1,9 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 import { isRTLString } from '../chat/helper';
+import Api from '../services/Api';
 import logger from '../services/logger';
-import Api from '../shared/Api';
-import { getDateString } from '../shared/tools';
+import { getDateString } from '../tools';
 import { modalModes } from './helper';
 import { useUserStore } from './user';
 
@@ -119,7 +119,6 @@ export const useChatStore = create((set, get) => ({
               timestamp,
             } = q;
 
-            // Make sure content is a string
             const textContent = content ? String(content) : '';
 
             return {

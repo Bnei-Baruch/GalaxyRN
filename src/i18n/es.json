@@ -28,13 +28,12 @@
     "deleteConfirm": "Eliminar",
     "cancel": "Cancelar"
   },
-  "topBar": {
+  "moreOpts": {
     "materials": "Material de estudio",
     "donate": "DONAR",
     "support": "Enviar una pregunta",
     "settings": "Configuración",
-    "communicationTitle": "Communication",
-    "materialsTitle": "Material de estudio",
+    "communication": "Communication",
     "sendLogs": "Enviar registros"
   },
   "bottomBar": {
@@ -42,23 +41,25 @@
     "shidur": "Transmisión",
     "self": "Hide my video",
     "kliOlami": "Kli Olamy tens",
-    "leave": "Leave room",
+    "leave": "Salir de la sala",
     "chat": "Chat",
     "show": "Mostrar",
     "broadcastsettings": "Configuración de transmisión",
     "broacasttranslation": "Traducción",
     "broadcastsubtitles": "Subtitles",
     "broadcastsound": "Audio",
-    "open": "Abrir"
+    "open": "Abrir",
+    "audioSource": "Fuente de audio",
+    "roomSettings": "Configuración de la sala"
   },
   "shidur": {
     "onAir": "EN VIVO",
     "streamForWorkshop": "Retransmisión para taller",
-    "streamForWorkshopDescription": "(grupo de enfoque silenciado)",
+    "streamForWorkshopDescription": "no hay grupo de enfoque",
     "sourceStream": "Retransmisión original",
-    "sourceStreamDescription": "(Grupo de enfoque activado)",
+    "sourceStreamDescription": "con grupo de enfoque",
     "dualLnaguagesStream": "Retransmisión dual de idiomas",
-    "dualLnaguagesStreamDescription": "(Grupo de enfoque silenciado)",
+    "dualLnaguagesStreamDescription": "no hay grupo de enfoque",
     "lowQuality": "Baja calidad",
     "mediumQuality": "Calidad media",
     "highQuality": "Alta calidad",

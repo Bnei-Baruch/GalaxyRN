@@ -5,8 +5,6 @@ import logger from '../services/logger';
 
 const NAMESPACE = 'Version';
 
-const LOG_TAG = '[VersionStore]';
-
 export const compareVersions = (v1, v2) => {
   const v1Parts = v1.split('.').map(Number);
   const v2Parts = v2.split('.').map(Number);
@@ -33,7 +31,6 @@ const getStoreUrl = () => {
 const getUpdateAssessment = (storeVersion, currentVersion) => {
   logger.debug(NAMESPACE, 'Assessing update', { storeVersion, currentVersion });
 
-  // If we couldn't fetch store version, no updates available
   if (!storeVersion) {
     logger.info(NAMESPACE, 'No store version available for assessment');
     return {
@@ -46,7 +43,6 @@ const getUpdateAssessment = (storeVersion, currentVersion) => {
   logger.debug(NAMESPACE, 'Version difference', { versionDiff });
 
   if (versionDiff <= 0) {
-    // Store version is same or older than current version
     logger.info(NAMESPACE, 'No update needed, current version is up to date');
     return {
       updateAvailable: false,
@@ -54,7 +50,6 @@ const getUpdateAssessment = (storeVersion, currentVersion) => {
     };
   }
 
-  // Parse version components to determine if update should be forced
   const currentParts = currentVersion.split('.').map(Number);
   const storeParts = storeVersion.split('.').map(Number);
 
@@ -95,7 +90,6 @@ export const useVersionStore = create((set, get) => ({
         logger.info(NAMESPACE, 'Opening app store with deep link', { url });
         Linking.openURL(url);
       } else {
-        // If the deep link fails, try the web URL
         const webUrl =
           Platform.OS === 'ios'
             ? `https://apps.apple.com/app/id${APP_STORE_ID}`
