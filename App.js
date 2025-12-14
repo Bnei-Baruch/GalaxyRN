@@ -22,15 +22,13 @@ import logger from './src/services/logger';
 
 const {
   version: appVersion,
-  config: { isProduction: _isProduction },
+  config: { isProduction },
 } = require('./package.json');
 
-let isProduction = _isProduction;
 const NAMESPACE = 'App';
 let environment;
 if (__DEV__) {
   environment = 'development';
-  //isProduction = tr;
 } else if (isProduction) {
   environment = 'production';
 } else {
