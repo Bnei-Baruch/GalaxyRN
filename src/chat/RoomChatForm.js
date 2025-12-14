@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import TextInput from '../components/CustomTextInput';
 import mqtt from '../libs/mqtt';
-import useRoomStore from '../zustand/fetchRooms';
+import { useRoomStore } from '../zustand/fetchRooms';
 import { useUserStore } from '../zustand/user';
 
 export const RoomChatForm = () => {
