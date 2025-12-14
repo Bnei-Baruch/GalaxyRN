@@ -10,14 +10,18 @@ import logger from '../../services/logger';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
 import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../helper';
+
 const NAMESPACE = 'VideoSelect';
+
 const VideoSelect = () => {
   const { video, setVideo } = useShidurStore();
   const { t } = useTranslation();
+
   const handleSetVideo = item => {
     logger.debug(NAMESPACE, 'handleSetVideo', item);
     setVideo(item.value);
   };
+
   const renderItem = item => {
     if (item.header) {
       return (
@@ -40,7 +44,9 @@ const VideoSelect = () => {
       </View>
     );
   };
+
   const selected = videos_options2.find(option => option.value === video);
+
   const trigger = (
     <View style={bottomBar.btn} key={selected.key}>
       <BottomBarIconWithText
