@@ -20,7 +20,7 @@ import AudioOption from './AudioOption';
 const NAMESPACE = 'AudioSelectModal';
 
 const AudioSelectModal = () => {
-  const { setAudio, isAudioSelectOpen, setIsAudioSelectOpen } =
+  const { audio, setAudio, isAudioSelectOpen, setIsAudioSelectOpen } =
     useShidurStore();
 
   const handleSetAudio = key => {
@@ -34,6 +34,9 @@ const AudioSelectModal = () => {
     setIsAudioSelectOpen(false);
   };
   logger.debug(NAMESPACE, 'isAudioSelectOpen', isAudioSelectOpen);
+  if (!audio) {
+    return null;
+  }
 
   return (
     <Modal
@@ -43,7 +46,7 @@ const AudioSelectModal = () => {
       onRequestClose={handleClose}
       supportedOrientations={['portrait', 'landscape']}
     >
-      <View style={styles.modalOverlay}>
+      <View style={styles.container}>
         <View style={styles.modalContent} pointerEvents="auto">
           <TouchableOpacity onPress={handleClose} style={styles.close}>
             <Icon name="close" size={30} color="white" />
@@ -106,27 +109,18 @@ const AudioSelectModal = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 5,
-  },
-  modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    height: '90%',
-    width: '100%',
   },
   modalContent: {
-    backgroundColor: '#1c1c1c',
+    backgroundColor: 'blue',
     borderRadius: 5,
     padding: 15,
     paddingTop: 20,
-    height: '100%',
-    width: '100%',
+    height: '90%',
+    width: '90%',
   },
   withArrow: {
     flexDirection: 'row',
