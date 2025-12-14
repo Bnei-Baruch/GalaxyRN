@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Modal,
   ScrollView,
@@ -22,6 +22,12 @@ const NAMESPACE = 'AudioSelectModal';
 const AudioSelectModal = () => {
   const { audio, setAudio, isAudioSelectOpen, setIsAudioSelectOpen } =
     useShidurStore();
+
+  useEffect(() => {
+    return () => {
+      handleClose();
+    };
+  }, []);
 
   const handleSetAudio = key => {
     logger.debug(NAMESPACE, 'handleSetAudio', key);
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalContent: {
-    backgroundColor: 'blue',
+    backgroundColor: '#1c1c1c',
     borderRadius: 5,
     padding: 15,
     paddingTop: 20,
@@ -145,7 +151,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   scrollView: {
-    backgroundColor: 'red',
+    height: 300,
+    width: '100%',
   },
 });
 export default AudioSelectModal;

@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar } from '../bottomBar/BottomBar';
 import { BottomBarBtns } from '../bottomBar/BottomBarBtns';
 import ButtonsPaneModal from '../bottomBar/moreBtns/ButtonsPaneModal';
-import AudioSelectModal from '../bottomBar/moreBtns/audioSelect/AudioSelectModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -34,7 +33,6 @@ const Room = () => {
       <RoomLayout />
       <BottomBar bottomBarBtns={bottomBarBtns} />
       <ButtonsPaneModal bottomBarBtns={bottomBarBtns} />
-      <AudioSelectModal />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>

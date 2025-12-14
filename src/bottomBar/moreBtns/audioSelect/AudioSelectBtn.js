@@ -5,6 +5,7 @@ import logger from '../../../services/logger';
 import BottomBarIconWithText from '../../../settings/BottomBarIconWithTextAnimated';
 import { useShidurStore } from '../../../zustand/shidur';
 import { bottomBar } from '../../helper';
+import AudioSelectModal from './AudioSelectModal';
 
 const NAMESPACE = 'AudioSelectBtn';
 
@@ -28,6 +29,8 @@ const AudioSelectBtn = () => {
           direction={['vertical', 'vertical']}
         />
       </Pressable>
+
+      <AudioSelectModal />
     </View>
   );
 };

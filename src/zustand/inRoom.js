@@ -21,6 +21,7 @@ import { useRoomStore } from './fetchRooms';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
+import { useUiActions } from './uiActions';
 
 const NAMESPACE = 'InRoom';
 
@@ -141,6 +142,7 @@ export const useInRoomStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
     try {
+      useUiActions.getState().toggleMoreModal(false);
       AudioBridge.abandonAudioFocus();
       WakeLockBridge.releaseScreenOn();
       finishSpan(deviceCleanupSpan, 'ok', NAMESPACE);

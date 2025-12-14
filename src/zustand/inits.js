@@ -200,6 +200,17 @@ export const useInitsStore = create((set, get) => ({
     set(() => ({ mqttIsOn: false }));
     logger.debug(NAMESPACE, 'abortMqtt done');
   },
+  resetMqtt: async () => {
+    logger.debug(NAMESPACE, 'resetMqtt');
+    try {
+      await get().abortMqtt();
+      await get().initMQTT();
+      logger.debug(NAMESPACE, 'resetMqtt done');
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error resetting MQTT:', error);
+      await get().terminateApp();
+    }
+  },
 
   initConfig: async () => {
     logger.debug(NAMESPACE, 'initConfig');

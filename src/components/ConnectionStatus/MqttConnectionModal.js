@@ -14,7 +14,7 @@ const NAMESPACE = 'MqttConnectionModal';
 
 const MqttConnectionModal = () => {
   const { t } = useTranslation();
-  const { mqttIsOn, abortMqtt, initMQTT } = useInitsStore();
+  const { mqttIsOn, resetMqtt } = useInitsStore();
   const netWIP = useSettingsStore(state => state.netWIP);
 
   logger.debug(NAMESPACE, 'render', mqttIsOn, netWIP, mqtt.mq?.connected);
@@ -41,8 +41,7 @@ const MqttConnectionModal = () => {
   }
 
   const handleRestartMqtt = async () => {
-    await abortMqtt();
-    await initMQTT();
+    await resetMqtt();
   };
 
   return (

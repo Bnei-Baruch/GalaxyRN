@@ -1,6 +1,6 @@
 import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
-import { randomString } from '../tools';
+import { randomString, rejectTimeoutPromise } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
 import { waitConnection } from './connection-monitor';
 import mqtt from './mqtt';
@@ -182,7 +182,10 @@ export class JanusMqtt {
     }
 
     try {
-      await this.transaction('destroy', {}, 'success', 5000);
+      await rejectTimeoutPromise(
+        this.transaction('destroy', {}, 'success'),
+        5000
+      );
     } catch (err) {
       addFinishSpan(this.sentrySession, 'janus.destroy', { ...err, NAMESPACE });
     }
@@ -205,7 +208,10 @@ export class JanusMqtt {
       handle_id: plugin.janusHandleId,
     };
     try {
-      await this.transaction('hangup', body, 'success', 5000);
+      await rejectTimeoutPromise(
+        this.transaction('hangup', body, 'success'),
+        5000
+      );
     } catch (err) {
       addFinishSpan(this.sentrySession, 'janus.destroy', { ...err, NAMESPACE });
       plugin.detach();
@@ -232,7 +238,7 @@ export class JanusMqtt {
     return Promise.allSettled(promises);
   };
 
-  transaction = async (type, payload, replyType = 'ack', timeoutMs) => {
+  transaction = async (type, payload, replyType = 'ack') => {
     if (!type) {
       logger.error(NAMESPACE, 'Missing transaction type');
       return;
@@ -243,7 +249,7 @@ export class JanusMqtt {
       return;
     }
 
-    logger.debug(NAMESPACE, 'transaction', type, payload, replyType, timeoutMs);
+    logger.debug(NAMESPACE, 'transaction', type, payload, replyType);
     const transactionId = randomString(12);
     return new Promise((resolve, reject) => {
       logger.debug(NAMESPACE, 'transaction promise', transactionId);
@@ -307,16 +313,6 @@ export class JanusMqtt {
   };
 
   keepAlive = async () => {
-    logger.debug(NAMESPACE, 'keepAlive tick', this.keeptry);
-    logger.debug(NAMESPACE, 'keepAlive isConnected', this.isConnected);
-    if (!this.isConnected) {
-      return;
-    }
-    if (!(await waitConnection())) {
-      logger.warn(NAMESPACE, 'Connection unavailable in keepAlive');
-      return;
-    }
-
     logger.debug(NAMESPACE, 'keepAlive sessionId', this.sessionId);
     if (!this.sessionId) {
       this.setKeepAliveTimer();
@@ -325,27 +321,15 @@ export class JanusMqtt {
 
     logger.debug(NAMESPACE, `Sending keepalive to: ${this.srv}`);
     try {
-      const json = await this.transaction('keepalive', null, 'ack', 20 * 1000);
-      logger.debug(NAMESPACE, 'keepAlive done', json);
-      this.keeptry = 0;
-      this.setKeepAliveTimer();
+      await rejectTimeoutPromise(
+        this.transaction('keepalive', null, 'ack'),
+        2 * 1000
+      );
+      logger.debug(NAMESPACE, 'keepAlive done');
     } catch (err) {
-      logger.debug(NAMESPACE, 'keepAlive error', err);
-      if (!this.isConnected) {
-        return;
-      }
-      logger.debug(NAMESPACE, err, this.keeptry);
-      if (this.keeptry === 3) {
-        logger.error(
-          NAMESPACE,
-          `keepalive is not reached (${this.srv}) after: ${this.keeptry} tries`
-        );
-        this.isConnected = false;
-        useInRoomStore.getState().restartRoom();
-        return;
-      }
+      logger.error(NAMESPACE, 'keepAlive error', err);
+    } finally {
       this.setKeepAliveTimer();
-      this.keeptry++;
     }
   };
 
@@ -699,6 +683,10 @@ export class JanusMqtt {
   setKeepAliveTimer = (ms = 20 * 1000) => {
     logger.debug(NAMESPACE, 'setKeepAliveTimer', ms);
     this.clearKeepAliveTimer();
+
+    if (!this.isConnected) {
+      return;
+    }
     this.keepAliveTimer = BackgroundTimer.setTimeout(() => {
       logger.debug(NAMESPACE, 'keepAliveTimer tick', this.keepAliveTimer);
       this.keepAlive();

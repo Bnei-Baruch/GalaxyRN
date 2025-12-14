@@ -105,5 +105,5 @@ export const useUiActions = create((set, get) => ({
   },
 
   moreModal: false,
-  toggleMoreModal: () => set({ moreModal: !get().moreModal }),
+  toggleMoreModal: (moreModal = !get().moreModal) => set({ moreModal }),
 }));
