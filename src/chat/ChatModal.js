@@ -41,7 +41,7 @@ export const ChatModal = () => {
       supportedOrientations={['portrait', 'landscape']}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={'padding'}
         style={styles.modalContainer}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
       >

@@ -36,7 +36,7 @@ export const QuestionsForm = () => {
   };
 
   return (
-    <View style={{ paddingBottom: Math.max(insets.bottom, 10) + 10 }}>
+    <View style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0 }}>
       <View style={styles.inputContainer}>
         <TextInput
           placeholder={t('chat.myName')}
