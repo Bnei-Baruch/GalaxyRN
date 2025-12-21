@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Text from './CustomText';
 import { baseStyles } from '../constants';
+import Text from './CustomText';
 
 const TextDisplayWithButton = ({ label, children }) => {
   return (
