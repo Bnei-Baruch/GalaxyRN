@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 import { modalModes } from '../zustand/helper';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ScreenTitle from '../components/ScreenTitle';
 import { useChatStore } from '../zustand/chat';
 import { useCrispStore } from '../zustand/crisp';
@@ -22,6 +22,7 @@ export const ChatModal = () => {
   const { mode, setChatMode, cleanCounters } = useChatStore();
   const { start: openSupport } = useCrispStore();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     return () => {
@@ -36,43 +37,50 @@ export const ChatModal = () => {
       visible={mode !== modalModes.close}
       onRequestClose={closeModal}
       animationType="none"
-      presentationStyle="formSheet"
+      presentationStyle="overFullScreen"
       statusBarTranslucent={true}
       supportedOrientations={['portrait', 'landscape']}
     >
-      <KeyboardAvoidingView
-        behavior={'padding'}
-        style={styles.modalContainer}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
-      >
-        <ScreenTitle text={t('moreOpts.communication')} close={closeModal} />
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[
-              styles.tabContainer,
-              mode === modalModes.chat && styles.selectedTab,
-            ]}
-            onPress={() => setChatMode(modalModes.chat)}
-          >
-            <Text style={styles.tabText}>{t('chat.tab.chat')}</Text>
-            <ChatCounter />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.tabContainer]} onPress={openSupport}>
-            <Text style={styles.tabText}>{t('chat.tab.support')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabContainer,
-              mode === modalModes.question && styles.selectedTab,
-            ]}
-            onPress={() => setChatMode(modalModes.question)}
-          >
-            <Text style={styles.tabText}>{t('chat.tab.question')}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.container}>
-          {mode === modalModes.chat && <RoomChat />}
-          {mode === modalModes.question && <Questions />}
+      <KeyboardAvoidingView behavior={'padding'} style={styles.modalContainer}>
+        <View
+          style={{
+            paddingTop: insets.top + 8,
+            paddingBottom: 8,
+            flex: 1,
+          }}
+        >
+          <ScreenTitle text={t('moreOpts.communication')} close={closeModal} />
+          <View style={styles.tabs}>
+            <TouchableOpacity
+              style={[
+                styles.tabContainer,
+                mode === modalModes.chat && styles.selectedTab,
+              ]}
+              onPress={() => setChatMode(modalModes.chat)}
+            >
+              <Text style={styles.tabText}>{t('chat.tab.chat')}</Text>
+              <ChatCounter />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tabContainer]}
+              onPress={openSupport}
+            >
+              <Text style={styles.tabText}>{t('chat.tab.support')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.tabContainer,
+                mode === modalModes.question && styles.selectedTab,
+              ]}
+              onPress={() => setChatMode(modalModes.question)}
+            >
+              <Text style={styles.tabText}>{t('chat.tab.question')}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.container}>
+            {mode === modalModes.chat && <RoomChat />}
+            {mode === modalModes.question && <Questions />}
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>

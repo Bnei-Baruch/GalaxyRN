@@ -1,27 +1,28 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Dimensions, StyleSheet, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../../components/CustomText';
 import { baseStyles } from '../../constants';
 import { useRoomStore } from '../../zustand/fetchRooms';
-import { AudioDevicesBtn } from './AudioDevicesBtn';
-import { BroadcastMuteBtn } from './BroadcastMuteBtn';
-import { ChatBtn } from './ChatBtn';
-import { DonateBtn } from './DonateBtn';
-import { GroupsBtn } from './GroupsBtn';
-import { HideSelfBtn } from './HideSelfBtn';
-import { LeaveBtn } from './LeaveBtn';
-import { ShidurBtn } from './ShidurBtn';
-import { StudyMaterialsBtn } from './StudyMaterialsBtn';
-import { SubtitleBtn } from './SubtitleBtn';
-import { TranslationBtn } from './TranslationBtn';
-import VideoSelect from './VideoSelect';
-import { VoteBtn } from './VoteBtn';
-import AudioSelectBtn from './audioSelect/AudioSelectBtn';
+import { BottomBarBtns } from '../BottomBarBtns';
+import { AudioDevicesBtn } from '../moreBtns/AudioDevicesBtn';
+import { BroadcastMuteBtn } from '../moreBtns/BroadcastMuteBtn';
+import { ChatBtn } from '../moreBtns/ChatBtn';
+import { DonateBtn } from '../moreBtns/DonateBtn';
+import { GroupsBtn } from '../moreBtns/GroupsBtn';
+import { HideSelfBtn } from '../moreBtns/HideSelfBtn';
+import { LeaveBtn } from '../moreBtns/LeaveBtn';
+import { ShidurBtn } from '../moreBtns/ShidurBtn';
+import { StudyMaterialsBtn } from '../moreBtns/StudyMaterialsBtn';
+import { SubtitleBtn } from '../moreBtns/SubtitleBtn';
+import { TranslationBtn } from '../moreBtns/TranslationBtn';
+import VideoSelect from '../moreBtns/VideoSelect';
+import { VoteBtn } from '../moreBtns/VoteBtn';
+import AudioSelectBtn from '../moreBtns/audioSelect/AudioSelectBtn';
+import { buttonsPaneStyles as styles } from './helper';
 
 const ButtonsPanePortrait = ({
-  bottomBarBtns,
   animatedTopPanelStyle,
   animatedBottomPanelStyle,
 }) => {
@@ -30,13 +31,19 @@ const ButtonsPanePortrait = ({
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container]}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingBottom: Math.max(insets.bottom, 16),
+          paddingTop: insets.top + 8,
+        },
+      ]}
+    >
       <Animated.View
         style={[
           styles.panelWrapper,
           baseStyles.panelBackground,
-          styles.panelWrapperTop,
-          styles.panelWrapperTopEnd,
           animatedTopPanelStyle,
           {
             marginLeft: insets.left + 8,
@@ -63,9 +70,7 @@ const ButtonsPanePortrait = ({
       <Animated.View
         style={[
           styles.panelWrapper,
-          styles.panelWrapperBottom,
           baseStyles.panelBackground,
-          styles.panelWrapperBottomEnd,
           animatedBottomPanelStyle,
           {
             marginLeft: insets.left + 8,
@@ -141,109 +146,11 @@ const ButtonsPanePortrait = ({
           </View>
         </View>
       </Animated.View>
-      <View
-        style={{
-          marginLeft: insets.left + 8,
-          marginRight: insets.right + 8,
-          marpaginBottom: insets.bottom + 80,
-        }}
-      >
-        {bottomBarBtns}
+      <View style={styles.bottomBarContainer}>
+        <BottomBarBtns />
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
-    flexDirection: 'column',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  modalContainerLandscape: {
-    justifyContent: 'flex-end',
-  },
-  panelWrapper: {
-    borderRadius: 32,
-    padding: 16,
-  },
-  panelWrapperLandscape: {},
-  panelWrapperTop: {
-    position: 'relative',
-  },
-  panelWrapperBottom: {},
-  panelWrapperTopStart: {
-    transform: [{ translateY: '-50%' }],
-  },
-  panelWrapperTopEnd: {
-    transform: [{ translateY: 0 }],
-  },
-  panelWrapperBottomStart: {
-    transform: [{ translateY: '100%' }],
-  },
-  panelWrapperBottomEnd: {
-    transform: [{ translateY: 0 }],
-  },
-  buttonsSection: {
-    marginBottom: 24,
-    flexShrink: 1,
-  },
-  buttonsSectionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'stretch',
-    display: 'flex',
-  },
-  columnsSpacer: {
-    width: 24,
-  },
-  firstColumn: {
-    width: '50%',
-    paddingRight: 12,
-  },
-  lastColumn: {
-    width: '50%',
-    paddingLeft: 12,
-  },
-  buttonsSectionLast: {
-    marginBottom: 0,
-  },
-  buttonsBlock: {},
-  buttonsRow: {
-    flexDirection: 'row',
-    marginHorizontal: -4,
-    marginTop: 8,
-  },
-  button_50: {
-    width: '50%',
-  },
-  button_33: {
-    width: '33.3333333%',
-  },
-  button_25: {
-    width: '25%',
-  },
-  text: {
-    marginLeft: 8,
-    color: '#7f7f7f',
-  },
-  tooltip: {
-    width: '70%',
-    maxHeight: Dimensions.get('window').height * 0.8,
-    bottom: 0,
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: '#FFF',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    alignSelf: 'center',
-    backgroundColor: '#1c1c1c',
-    color: 'white',
-    paddingTop: 15,
-  },
-  selected: {
-    backgroundColor: '#222222',
-  },
-});
 export default ButtonsPanePortrait;
