@@ -32,6 +32,7 @@
     "react-native-app-auth": "^8.1.0",
     "react-native-background-timer": "^2.4.1",
     "react-native-crisp-chat-sdk": "^0.19.0",
+    "react-native-inappbrowser-reborn": "^3.7.0",
     "react-native-orientation-locker": "^1.7.0",
     "react-native-render-html": "^6.1.0",
     "react-native-safe-area-context": "^5.1.0",

@@ -1,7 +1,7 @@
 import { ACCOUNT_URL } from '@env';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
@@ -13,6 +13,8 @@ import RemoveUserModal from './RemoveUserModal';
 import kc from './keycloak';
 
 const NAMESPACE = 'AccountSettings';
+
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
 
 const AccountSettings = () => {
   const { t } = useTranslation();
@@ -30,9 +32,26 @@ const AccountSettings = () => {
       key: 'account',
       value: 'account',
       text: t('user.account'),
-      action: () => {
+      action: async () => {
+        if (Platform.OS === 'android') {
+          try {
+            Linking.openURL(ACCOUNT_URL);
+            return;
+          } catch (error) {
+            logger.error(NAMESPACE, 'Error opening account page', error);
+          }
+        }
+
         try {
-          Linking.openURL(ACCOUNT_URL);
+          const { isAvailable, openAuth } = InAppBrowser;
+          if (!(await isAvailable())) {
+            logger.error(NAMESPACE, 'InAppBrowser is not available');
+            return;
+          }
+          const result = await openAuth(ACCOUNT_URL, ACCOUNT_URL, {
+            ephemeralWebSession: false,
+          });
+          logger.info(NAMESPACE, 'Account page opened', result);
         } catch (error) {
           logger.error(NAMESPACE, 'Error opening account page', error);
         }

@@ -24,6 +24,7 @@ const AUTH_CONFIG = {
   redirectUrl: 'com.galaxy://callback',
   scopes: ['openid', 'profile'],
   postLogoutRedirectUrl: 'com.galaxy://callback',
+  iosPrefersEphemeralSession: false,
 };
 
 const base64UrlDecode = str => {
