@@ -11,8 +11,9 @@ import { useSettingsStore } from '../zustand/settings';
 import LabeledSwitch from './LabeledSwitch';
 import RoomSelect from './RoomSelect';
 
-import SelectUiLanguage from './SelectUiLanguage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import VersionInfo from '../components/VersionInfo';
+import SelectUiLanguage from './SelectUiLanguage';
 
 export const SettingsNotJoinedLandscape = () => {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export const SettingsNotJoinedLandscape = () => {
   const handleToggleAudioMode = () => toggleAudioMode();
   const handleCammute = () => toggleCammute();
   const insets = useSafeAreaInsets();
+
   return (
     <View
       style={[
@@ -29,7 +31,6 @@ export const SettingsNotJoinedLandscape = () => {
         baseStyles.viewBackground,
         {
           paddingTop: insets.top,
-          paddingBottom: insets.bottom,
           paddingLeft: insets.left,
           paddingRight: insets.right,
         },
@@ -37,14 +38,16 @@ export const SettingsNotJoinedLandscape = () => {
     >
       <PageHeader page={t('settings.page')} />
       {/*user settings*/}
-      <View style={styles.forms}>
-        <View style={{ width: '43%' }}>
-          <AccountSettings />
-          <MyVideo styles={{ aspectRatio: 16 / 9, width: '100%' }} />
+      <View style={[styles.forms, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={{ width: '43%', justifyContent: 'space-between' }}>
+          <MyVideo
+            styles={{ aspectRatio: 16 / 9, width: '100%', alignSelf: 'center' }}
+          />
+          <VersionInfo />
         </View>
         <View style={{ width: '50%' }}>
+          <AccountSettings />
           <SelectUiLanguage />
-
           <LabeledSwitch
             label={t('settings.cammute')}
             value={cammute}

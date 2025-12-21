@@ -8,14 +8,13 @@ import ListInModal from '../components/ListInModal';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
-import IconWithText from '../settings/IconWithText';
 import { useUserStore } from '../zustand/user';
 import RemoveUserModal from './RemoveUserModal';
 import kc from './keycloak';
 
 const NAMESPACE = 'AccountSettings';
 
-const AccountSettings = ({ withTitle = true }) => {
+const AccountSettings = () => {
   const { t } = useTranslation();
   const { user, removeMember } = useUserStore();
   const [removeUserModalVisible, setRemoveUserModalVisible] = useState(false);
@@ -76,13 +75,6 @@ const AccountSettings = ({ withTitle = true }) => {
         onClose={() => setRemoveUserModalVisible(false)}
         onConfirm={handleRemoveMember}
       />
-      {withTitle && (
-        <IconWithText
-          style={styles.title}
-          iconName="account-circle"
-          text={t('user.title')}
-        />
-      )}
       <TextDisplayWithButton label={t('user.name')}>
         <ListInModal
           toggleModal={toggleOptionsModal}
