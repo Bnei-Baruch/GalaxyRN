@@ -30,13 +30,16 @@ const ButtonsPanePortrait = ({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
+  const paddingBottom = Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 8;
+  const paddingTop = Platform.OS === 'ios' ? insets.top + 8 : 8;
+
   return (
     <View
       style={[
         styles.container,
         {
-          paddingBottom: Math.max(insets.bottom, 16),
-          paddingTop: insets.top + 8,
+          paddingBottom,
+          paddingTop,
         },
       ]}
     >

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import logger from '../../../services/logger';
-import BottomBarIconWithText from '../../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../../zustand/shidur';
 import { bottomBar } from '../../helper';
 import AudioSelectModal from './AudioSelectModal';

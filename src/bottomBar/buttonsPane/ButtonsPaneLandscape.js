@@ -32,8 +32,11 @@ const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
       style={[
         styles.container,
         {
-          paddingBottom: Math.max(insets.bottom, 16),
-          paddingTop: insets.top + 8,
+          paddingBottom:
+            Platform.OS === 'ios'
+              ? Math.max(insets.bottom, 16)
+              : insets.bottom + 8,
+          paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 0,
         },
       ]}
     >

@@ -16,7 +16,12 @@ export const BottomBar = () => {
     <View
       style={[
         styles.container,
-        { bottom: Math.max(insets.bottom, 16) },
+        {
+          bottom:
+            Platform.OS === 'ios'
+              ? Math.max(insets.bottom, 16)
+              : insets.bottom + 8,
+        },
         { left: insets.left + 8 },
         { right: insets.right + 8 },
       ]}
