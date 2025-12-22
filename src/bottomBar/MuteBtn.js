@@ -4,7 +4,6 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../settings/BottomBarIconWithText';
 import { useMyStreamStore } from '../zustand/myStream';
 import { bottomBar } from './helper';
-
 export const MuteBtn = () => {
   const { mute, toggleMute } = useMyStreamStore();
   const handlePress = () => toggleMute();

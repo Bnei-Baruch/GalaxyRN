@@ -7,12 +7,10 @@ import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useChatStore } from '../../zustand/chat';
 import { modalModes } from '../../zustand/helper';
 import { bottomBar } from '../helper';
-
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
   const { t } = useTranslation();
   const handlePress = () => setChatMode(modalModes.chat);
-
   return (
     <>
       <Pressable onPress={handlePress} style={bottomBar.btn}>
