@@ -8,14 +8,15 @@ import ListInModal from '../components/ListInModal';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
-import IconWithText from '../settings/IconWithText';
 import { useUserStore } from '../zustand/user';
 import RemoveUserModal from './RemoveUserModal';
 import kc from './keycloak';
 
 const NAMESPACE = 'AccountSettings';
 
-const AccountSettings = ({ withTitle = true }) => {
+import { InAppBrowser } from 'react-native-inappbrowser-reborn';
+
+const AccountSettings = () => {
   const { t } = useTranslation();
   const { user, removeMember } = useUserStore();
   const [removeUserModalVisible, setRemoveUserModalVisible] = useState(false);
@@ -31,11 +32,24 @@ const AccountSettings = ({ withTitle = true }) => {
       key: 'account',
       value: 'account',
       text: t('user.account'),
-      action: () => {
+      action: async () => {
         try {
-          Linking.openURL(ACCOUNT_URL);
+          const { isAvailable, openAuth } = InAppBrowser;
+          if (!(await isAvailable())) {
+            logger.error(NAMESPACE, 'InAppBrowser is not available');
+            throw new Error('InAppBrowser is not available');
+          }
+          const result = await openAuth(ACCOUNT_URL, ACCOUNT_URL, {
+            ephemeralWebSession: false,
+          });
+          logger.info(NAMESPACE, 'Account page opened', result);
         } catch (error) {
-          logger.error(NAMESPACE, 'Error opening account page', error);
+          logger.error(NAMESPACE, 'Error opening InAppBrowser', error);
+          try {
+            Linking.openURL(ACCOUNT_URL);
+          } catch (error) {
+            logger.error(NAMESPACE, 'Error opening Linking.openURL', error);
+          }
         }
       },
     },
@@ -76,13 +90,6 @@ const AccountSettings = ({ withTitle = true }) => {
         onClose={() => setRemoveUserModalVisible(false)}
         onConfirm={handleRemoveMember}
       />
-      {withTitle && (
-        <IconWithText
-          style={styles.title}
-          iconName="account-circle"
-          text={t('user.title')}
-        />
-      )}
       <TextDisplayWithButton label={t('user.name')}>
         <ListInModal
           toggleModal={toggleOptionsModal}

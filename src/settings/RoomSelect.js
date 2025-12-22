@@ -4,7 +4,6 @@ import {
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -67,8 +66,8 @@ const RoomSelect = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'position' : 'padding'}
-      keyboardVerticalOffset={45}
+      behavior={'padding'}
+      style={styles.keyboardAvoidingView}
     >
       <View style={[styles.container, baseStyles.viewBackground]}>
         <TextDisplayWithButton label={t('settings.selectRoom')}>
@@ -118,6 +117,9 @@ const RoomSelect = () => {
 };
 
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    zIndex: 2,
+  },
   container: {
     paddingTop: 10,
   },
@@ -138,7 +140,6 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#222',
     maxHeight: 200,
-    zIndex: 1,
   },
   itemText: {
     padding: 10,

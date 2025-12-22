@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import ScreenTitle from '../../components/ScreenTitle';
 import WIP from '../../components/WIP';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useMaterials } from '../../zustand/fetchMaterials';
 import { bottomBar } from '../helper';
 import { StudyMaterialItem } from './StudyMaterialItem';

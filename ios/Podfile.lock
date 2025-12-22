@@ -1549,6 +1549,8 @@ PODS:
     - React-logger (= 0.77.3)
     - React-perflogger (= 0.77.3)
     - React-utils (= 0.77.3)
+  - RNInAppBrowser (3.7.0):
+    - React-Core
   - RNSecureStorage (3.0.1):
     - React
   - RNSentry (7.7.0):
@@ -1676,6 +1678,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNSecureStorage (from `../node_modules/rn-secure-storage`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -1839,6 +1842,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNSecureStorage:
     :path: "../node_modules/rn-secure-storage"
   RNSentry:
@@ -1926,6 +1931,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 9b3704075c2fe8fd7c739779655fb88700a1ca30
   ReactCodegen: c9645fb81bcaf5afebaebb25874bcd5224cd40f1
   ReactCommon: 271491c2343c91609d3dc18bb4b4ebe67160de03
+  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
   RNSentry: 445327aa467d49531b155fe870fead7a65b510ab
   RNVectorIcons: 912e23787f83a9754f9fb9fa9a108554e4fb1958

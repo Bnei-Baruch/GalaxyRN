@@ -28,7 +28,7 @@ export const useChatStore = create((set, get) => ({
       set(
         produce(state => {
           state.chatNewMsgs++;
-          state.roomMsgs.push(msg);
+          state.roomMsgs.unshift(msg);
         })
       );
     }
@@ -41,7 +41,7 @@ export const useChatStore = create((set, get) => ({
       set(
         produce(state => {
           state.supportCount++;
-          state.supportMsgs.push(msg);
+          state.supportMsgs.unshift(msg);
         })
       );
     }
