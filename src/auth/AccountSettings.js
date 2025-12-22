@@ -1,7 +1,7 @@
 import { ACCOUNT_URL } from '@env';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Platform, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
@@ -33,27 +33,23 @@ const AccountSettings = () => {
       value: 'account',
       text: t('user.account'),
       action: async () => {
-        if (Platform.OS === 'android') {
-          try {
-            Linking.openURL(ACCOUNT_URL);
-            return;
-          } catch (error) {
-            logger.error(NAMESPACE, 'Error opening account page', error);
-          }
-        }
-
         try {
           const { isAvailable, openAuth } = InAppBrowser;
           if (!(await isAvailable())) {
             logger.error(NAMESPACE, 'InAppBrowser is not available');
-            return;
+            throw new Error('InAppBrowser is not available');
           }
           const result = await openAuth(ACCOUNT_URL, ACCOUNT_URL, {
             ephemeralWebSession: false,
           });
           logger.info(NAMESPACE, 'Account page opened', result);
         } catch (error) {
-          logger.error(NAMESPACE, 'Error opening account page', error);
+          logger.error(NAMESPACE, 'Error opening InAppBrowser', error);
+          try {
+            Linking.openURL(ACCOUNT_URL);
+          } catch (error) {
+            logger.error(NAMESPACE, 'Error opening Linking.openURL', error);
+          }
         }
       },
     },

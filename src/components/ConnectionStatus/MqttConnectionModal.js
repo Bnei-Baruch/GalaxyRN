@@ -29,12 +29,7 @@ const MqttConnectionModal = () => {
 
   if (!mqtt.wasConnected) {
     return (
-      <Modal
-        visible={true}
-        animationType="fade"
-        transparent={false}
-        statusBarTranslucent={true}
-      >
+      <Modal visible={true} animationType="fade" transparent={false}>
         <WIP isReady={false} />
       </Modal>
     );
@@ -45,12 +40,7 @@ const MqttConnectionModal = () => {
   };
 
   return (
-    <Modal
-      visible={true}
-      animationType="fade"
-      transparent={false}
-      statusBarTranslucent={true}
-    >
+    <Modal visible={true} animationType="fade" transparent={false}>
       <View style={styles.modalContainer}>
         <View style={styles.iconContainer}>
           <Icon name="warning" size={48} color="#ff6b6b" />

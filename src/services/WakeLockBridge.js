@@ -1,5 +1,5 @@
 import { NativeModules, Platform } from 'react-native';
-import logger from "./logger";
+import logger from './logger';
 
 const NAMESPACE = 'WakeLockBridge';
 
@@ -8,7 +8,7 @@ if (Platform.OS === 'ios') {
   NativeAudio = NativeModules.KeepAwakeModule;
 } else if (Platform.OS === 'android') {
   NativeAudio = NativeModules.WakeLockModule;
-  logger.debug(NAMESPACE, "NativeAudio on Android:", NativeModules);
+  logger.debug(NAMESPACE, 'NativeAudio on Android:', NativeModules);
 }
 
 const WakeLockBridge = {
@@ -27,10 +27,10 @@ const WakeLockBridge = {
     if (NativeAudio && NativeAudio.releaseScreenOn) {
       NativeAudio.releaseScreenOn();
     } else {
-      logger.warn(NAMESPACE, 'releaseScreenOn is not available on this platform');
+      logger.warn(NAMESPACE, 'releaseScreenOn is not available');
     }
   },
-  raw: NativeAudio
+  raw: NativeAudio,
 };
 
-export default WakeLockBridge; 
+export default WakeLockBridge;

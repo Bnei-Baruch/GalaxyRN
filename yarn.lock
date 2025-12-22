@@ -3321,7 +3321,7 @@ __metadata:
     react-native-background-timer: ^2.4.1
     react-native-crisp-chat-sdk: ^0.19.0
     react-native-dotenv: ^3.4.11
-    react-native-inappbrowser-reborn: ^3.7.0
+    react-native-inappbrowser-reborn: ^3.6.3
     react-native-orientation-locker: ^1.7.0
     react-native-render-html: ^6.1.0
     react-native-safe-area-context: ^5.1.0
@@ -8761,7 +8761,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-inappbrowser-reborn@npm:^3.7.0":
+"react-native-inappbrowser-reborn@npm:^3.6.3":
   version: 3.7.0
   resolution: "react-native-inappbrowser-reborn@npm:3.7.0"
   dependencies:

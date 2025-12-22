@@ -38,7 +38,6 @@ export const ChatModal = () => {
       onRequestClose={closeModal}
       animationType="none"
       presentationStyle="overFullScreen"
-      statusBarTranslucent={true}
       supportedOrientations={['portrait', 'landscape']}
     >
       <KeyboardAvoidingView behavior={'padding'} style={styles.modalContainer}>
