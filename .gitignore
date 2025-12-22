@@ -59,6 +59,8 @@ keystore*.properties
 *.keystore
 !debug.keystore
 /android/app/keystore*.jks
+!/android/app/build/dependency-locks/
+!/android/app/build/dependency-locks/*
 
 # Bundle artifacts
 *.jsbundle
