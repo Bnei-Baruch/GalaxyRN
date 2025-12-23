@@ -33,6 +33,15 @@ const AccountSettings = () => {
       value: 'account',
       text: t('user.account'),
       action: async () => {
+        if (Platform.OS === 'android') {
+          try {
+            Linking.openURL(ACCOUNT_URL);
+          } catch (error) {
+            logger.error(NAMESPACE, 'Error opening Linking.openURL', error);
+          }
+          return;
+        }
+
         try {
           const { isAvailable, openAuth } = InAppBrowser;
           if (!(await isAvailable())) {
