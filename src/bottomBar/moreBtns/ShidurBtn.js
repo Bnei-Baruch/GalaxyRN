@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
 export const ShidurBtn = () => {
@@ -18,7 +18,7 @@ export const ShidurBtn = () => {
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }
         showtext={true}
-        direction={['vertical','vertical']}
+        direction={['vertical', 'vertical']}
       />
     </Pressable>
   );

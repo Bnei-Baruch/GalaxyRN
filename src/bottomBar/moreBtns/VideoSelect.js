@@ -7,7 +7,7 @@ import ListInModal from '../../components/ListInModal';
 import { baseStyles } from '../../constants';
 import { videos_options2 } from '../../consts';
 import logger from '../../services/logger';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../helper';
 

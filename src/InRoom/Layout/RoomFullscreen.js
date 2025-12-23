@@ -35,7 +35,6 @@ const RoomFullscreen = ({ shidur }) => {
       onRequestClose={handleClose}
       animationType="none"
       presentationStyle="fullScreen"
-      statusBarTranslucent={true}
       supportedOrientations={['landscape']}
     >
       <View style={styles.container}>

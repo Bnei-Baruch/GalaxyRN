@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import AudioBridge from '../../services/AudioBridge';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useAudioDevicesStore } from '../../zustand/audioDevices';
 import { bottomBar } from '../helper';
 

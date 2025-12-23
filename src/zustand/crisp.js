@@ -1,5 +1,4 @@
 import { CRISP_WEBSITE_ID } from '@env';
-import { Platform } from 'react-native';
 import {
   configure,
   resetSession,
@@ -42,13 +41,7 @@ export const useCrispStore = create((set, get) => ({
         display,
         id
       );
-      //TODO: check if this is needed
-      if (Platform.OS === 'android') {
-        logger.info(NAMESPACE, 'Configuring Crisp SDK for Android');
-        configure(CRISP_WEBSITE_ID);
-      } else {
-        logger.info(NAMESPACE, 'Using pre-configured Crisp SDK for iOS');
-      }
+      configure(CRISP_WEBSITE_ID);
 
       try {
         if (email) {

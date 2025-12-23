@@ -30,12 +30,7 @@ const NetConnectionModal = () => {
   }
 
   return (
-    <Modal
-      visible={true}
-      animationType="fade"
-      transparent={false}
-      statusBarTranslucent={true}
-    >
+    <Modal visible={true} animationType="fade" transparent={false}>
       <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Icon name="warning" size={48} color="#ff6b6b" />

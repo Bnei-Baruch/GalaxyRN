@@ -8,10 +8,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import logger from '../../services/logger';
 import { useInitsStore } from '../../zustand/inits';
 import { useUiActions } from '../../zustand/uiActions';
 import ButtonsPaneLandscape from './ButtonsPaneLandscape';
 import ButtonsPanePortrait from './ButtonsPanePortrait';
+
+const NAMESPACE = 'ButtonsPaneModal';
 
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
@@ -50,7 +53,7 @@ const normalizeTranslateValue = value => {
   return 0;
 };
 
-const ButtonsPaneModal = ({ bottomBarBtns }) => {
+const ButtonsPaneModal = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
   const { isPortrait } = useInitsStore();
   const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
@@ -146,6 +149,13 @@ const ButtonsPaneModal = ({ bottomBarBtns }) => {
     };
   }, [moreModal, panelEntrance, shouldRenderModal]);
 
+  const handleClose = () => {
+    logger.debug(NAMESPACE, 'handleClose');
+    logger.debug(NAMESPACE, 'toggleMoreModal');
+    toggleMoreModal(false);
+    logger.debug(NAMESPACE, 'toggleMoreModal done');
+  };
+
   return (
     <View style={styles.container}>
       <Modal
@@ -153,23 +163,23 @@ const ButtonsPaneModal = ({ bottomBarBtns }) => {
         presentationStyle="overFullScreen"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={toggleMoreModal}
+        onRequestClose={handleClose}
         supportedOrientations={['portrait', 'landscape']}
       >
-        <TouchableWithoutFeedback onPress={toggleMoreModal}>
-          {isPortrait ? (
-            <ButtonsPanePortrait
-              bottomBarBtns={bottomBarBtns}
-              animatedTopPanelStyle={animatedTopPanelStyle}
-              animatedBottomPanelStyle={animatedBottomPanelStyle}
-            />
-          ) : (
-            <ButtonsPaneLandscape
-              bottomBarBtns={bottomBarBtns}
-              animatedTopPanelStyle={animatedTopPanelStyle}
-              animatedBottomPanelStyle={animatedBottomPanelStyle}
-            />
-          )}
+        <TouchableWithoutFeedback onPress={handleClose}>
+          <View style={[styles.modalContainer]}>
+            {isPortrait ? (
+              <ButtonsPanePortrait
+                animatedTopPanelStyle={animatedTopPanelStyle}
+                animatedBottomPanelStyle={animatedBottomPanelStyle}
+              />
+            ) : (
+              <ButtonsPaneLandscape
+                animatedTopPanelStyle={animatedTopPanelStyle}
+                animatedBottomPanelStyle={animatedBottomPanelStyle}
+              />
+            )}
+          </View>
         </TouchableWithoutFeedback>
       </Modal>
     </View>
@@ -182,22 +192,8 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'space-between',
-    flexDirection: 'column',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
-  modalContainerLandscape: {
-    justifyContent: 'flex-end',
-  },
-  panelWrapper: {
-    borderRadius: 32,
-    padding: 16,
-  },
-  panelWrapperLandscape: {},
-  panelWrapperTop: {
-    position: 'relative',
-  },
-  panelWrapperBottom: {},
   panelWrapperTopStart: {
     transform: [{ translateY: '-50%' }],
   },
@@ -209,66 +205,6 @@ const styles = StyleSheet.create({
   },
   panelWrapperBottomEnd: {
     transform: [{ translateY: 0 }],
-  },
-  buttonsSection: {
-    marginBottom: 24,
-    flexShrink: 1,
-  },
-  buttonsSectionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'stretch',
-    display: 'flex',
-  },
-  columnsSpacer: {
-    width: 24,
-  },
-  firstColumn: {
-    width: '50%',
-    paddingRight: 12,
-  },
-  lastColumn: {
-    width: '50%',
-    paddingLeft: 12,
-  },
-  buttonsSectionLast: {
-    marginBottom: 0,
-  },
-  buttonsBlock: {},
-  buttonsRow: {
-    flexDirection: 'row',
-    marginHorizontal: -4,
-    marginTop: 8,
-  },
-  button_50: {
-    width: '50%',
-  },
-  button_33: {
-    width: '33.3333333%',
-  },
-  button_25: {
-    width: '25%',
-  },
-  text: {
-    marginLeft: 8,
-    color: '#7f7f7f',
-  },
-  tooltip: {
-    width: '70%',
-    maxHeight: Dimensions.get('window').height * 0.8,
-    bottom: 0,
-    borderRadius: 5,
-    elevation: 5,
-    shadowColor: '#FFF',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    alignSelf: 'center',
-    backgroundColor: '#1c1c1c',
-    color: 'white',
-    paddingTop: 15,
-  },
-  selected: {
-    backgroundColor: '#222222',
   },
 });
 export default ButtonsPaneModal;
