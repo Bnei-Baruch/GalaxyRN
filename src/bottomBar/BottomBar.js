@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
 import { BottomBarBtns } from './BottomBarBtns';
+import { TopBarBtns } from './TopBarBtns';
 
 export const BottomBar = () => {
   const { showBars } = useUiActions();
@@ -22,10 +23,12 @@ export const BottomBar = () => {
               ? Math.max(insets.bottom, 16)
               : insets.bottom + 8,
         },
+        { top: insets.top + 8 },
         { left: insets.left + 8 },
         { right: insets.right + 8 },
       ]}
     >
+      <TopBarBtns />
       <BottomBarBtns />
     </View>
   );
@@ -34,9 +37,12 @@ export const BottomBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 30,
-    right: 30,
+    // left: 30,
+    // right: 30,
+    justifyContent: 'space-between',
+    // top:0,
     alignItems: 'center',
+    // backgroundColor:'red',
     zIndex: 100,
   },
 });
