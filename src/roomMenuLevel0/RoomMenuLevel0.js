@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
-import { BottomBarBtns } from './BottomBarBtns';
-import { TopBarBtns } from './TopBarBtns';
+import { BottomBar } from './BottomBar';
+import { TopBar } from './TopBar';
 
-export const BottomBar = () => {
+export const RoomMenuLevel0 = () => {
   const { showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
   const insets = useSafeAreaInsets();
@@ -28,8 +28,8 @@ export const BottomBar = () => {
         { right: insets.right + 8 },
       ]}
     >
-      <TopBarBtns />
-      <BottomBarBtns />
+      <TopBar />
+      <BottomBar />
     </View>
   );
 };

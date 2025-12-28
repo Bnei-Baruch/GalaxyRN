@@ -8,13 +8,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import logger from '../../services/logger';
-import { useInitsStore } from '../../zustand/inits';
-import { useUiActions } from '../../zustand/uiActions';
-import ButtonsPaneLandscape from './ButtonsPaneLandscape';
-import ButtonsPanePortrait from './ButtonsPanePortrait';
+import logger from '../services/logger';
+import { useInitsStore } from '../zustand/inits';
+import { useUiActions } from '../zustand/uiActions';
+import MenuLandscape from './MenuLandscape';
+import MenuPortrait from './MenuPortrait';
 
-const NAMESPACE = 'ButtonsPaneModal';
+const NAMESPACE = 'Menu';
 
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
@@ -53,7 +53,7 @@ const normalizeTranslateValue = value => {
   return 0;
 };
 
-const ButtonsPaneModal = () => {
+const Menu = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
   const { isPortrait } = useInitsStore();
   const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
@@ -169,12 +169,12 @@ const ButtonsPaneModal = () => {
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={[styles.modalContainer]}>
             {isPortrait ? (
-              <ButtonsPanePortrait
+              <MenuPortrait
                 animatedTopPanelStyle={animatedTopPanelStyle}
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
             ) : (
-              <ButtonsPaneLandscape
+              <MenuLandscape
                 animatedTopPanelStyle={animatedTopPanelStyle}
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
@@ -207,4 +207,4 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 0 }],
   },
 });
-export default ButtonsPaneModal;
+export default Menu;

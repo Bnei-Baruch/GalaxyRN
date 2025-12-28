@@ -9,7 +9,7 @@ import { videos_options2 } from '../../consts';
 import logger from '../../services/logger';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../zustand/shidur';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 
 const NAMESPACE = 'VideoSelect';
 

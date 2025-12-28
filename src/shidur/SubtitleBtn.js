@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { topMenuBtns } from '../bottomBar/moreBtns/helper';
+import { topMenuBtns } from '../roomMenuLevel1/btns/helper';
 import { useSubtitleStore } from '../zustand/subtitle';
 
 export const SubtitleBtn = () => {

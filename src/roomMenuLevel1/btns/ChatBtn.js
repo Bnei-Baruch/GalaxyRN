@@ -6,7 +6,7 @@ import { ChatModal } from '../../chat/ChatModal';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useChatStore } from '../../zustand/chat';
 import { modalModes } from '../../zustand/helper';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 export const ChatBtn = () => {
   const { setChatMode } = useChatStore();
   const { t } = useTranslation();

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../zustand/shidur';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 export const TranslationBtn = () => {
   const toggleIsOriginal = useShidurStore(state => state.toggleIsOriginal);
   const audio = useShidurStore(state => state.audio);

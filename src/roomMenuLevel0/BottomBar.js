@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { baseStyles } from '../constants';
-import { AudioModeBtn } from './AudioModeBtn';
-import { CammuteBtn } from './CammuteBtn';
-import { MoreBtn } from './MoreBtn';
-import { MuteBtn } from './MuteBtn';
-import { QuestionBtn } from './QuestionBtn';
+import { AudioModeBtn } from './bottomBarBtns/AudioModeBtn';
+import { CammuteBtn } from './bottomBarBtns/CammuteBtn';
+import { MoreBtn } from './bottomBarBtns/MoreBtn';
+import { MuteBtn } from './bottomBarBtns/MuteBtn';
+import { QuestionBtn } from './bottomBarBtns/QuestionBtn';
 
-export const BottomBarBtns = () => {
+export const BottomBar = () => {
   return (
     <View style={[styles.container, baseStyles.panelBackground]}>
       <MuteBtn />

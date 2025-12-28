@@ -2,19 +2,12 @@ import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { baseStyles } from '../constants';
 import { useRoomStore } from '../zustand/fetchRooms';
-import { AudioModeBtn } from './AudioModeBtn';
-import { CammuteBtn } from './CammuteBtn';
-import { MoreBtn } from './MoreBtn';
-import { MuteBtn } from './MuteBtn';
-import { QuestionBtn } from './QuestionBtn';
-import { LeaveBtn } from './moreBtns/LeaveBtn';
-import { useTranslation } from 'react-i18next';
+import { LeaveBtn } from './topBarBtns/LeaveBtn';
 import Text from '../components/CustomText';
-import { AudioDevicesBtn } from './moreBtns/AudioDevicesBtn';
+import { AudioDevicesBtn } from './topBarBtns/AudioDevicesBtn';
 
-export const TopBarBtns = () => {
-     const { t } = useTranslation();
-     const { room } = useRoomStore();
+export const TopBar = () => {
+  const { room } = useRoomStore();
   return (
       <View style={[styles.container, baseStyles.panelBackground]}>
         <AudioDevicesBtn />

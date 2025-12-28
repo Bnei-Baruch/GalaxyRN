@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
-import { bottomBar } from '../helper';
-export const ShidurBtn = () => {
-  const { isShidur, toggleIsShidur } = useSettingsStore();
+import { bottomBar } from '../../roomMenuLevel0/helper';
+export const HideSelfBtn = () => {
+  const { hideSelf, toggleHideSelf } = useSettingsStore();
   const { t } = useTranslation();
   return (
-    <Pressable onPress={toggleIsShidur} style={bottomBar.btn}>
+    <Pressable onPress={toggleHideSelf} style={bottomBar.btn}>
       <BottomBarIconWithText
-        iconName="desktop-windows"
-        text={t('bottomBar.shidur')}
+        iconName="account-box"
+        text={t('bottomBar.self')}
         extraStyle={
-          !isShidur
+          hideSelf
             ? ['toggle_off', 'toggle_off_icon']
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }

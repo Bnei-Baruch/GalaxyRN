@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useUserStore } from '../../zustand/user';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();

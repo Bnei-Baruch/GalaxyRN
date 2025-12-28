@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import logger from '../../../services/logger';
 import BottomBarIconWithText from '../../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../../zustand/shidur';
-import { bottomBar } from '../../helper';
+import { bottomBar } from '../../../roomMenuLevel0/helper';
 import AudioSelectModal from './AudioSelectModal';
 
 const NAMESPACE = 'AudioSelectBtn';

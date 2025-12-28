@@ -1,29 +1,26 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, View } from 'react-native';
+import { Animated, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Text from '../../components/CustomText';
-import { baseStyles } from '../../constants';
-import { useRoomStore } from '../../zustand/fetchRooms';
-import { BottomBarBtns } from '../BottomBarBtns';
-import { AudioDevicesBtn } from '../moreBtns/AudioDevicesBtn';
-import { BroadcastMuteBtn } from '../moreBtns/BroadcastMuteBtn';
-import { ChatBtn } from '../moreBtns/ChatBtn';
-import { DonateBtn } from '../moreBtns/DonateBtn';
-import { GroupsBtn } from '../moreBtns/GroupsBtn';
-import { HideSelfBtn } from '../moreBtns/HideSelfBtn';
-import { LeaveBtn } from '../moreBtns/LeaveBtn';
-import { ShidurBtn } from '../moreBtns/ShidurBtn';
-import { StudyMaterialsBtn } from '../moreBtns/StudyMaterialsBtn';
-import { SubtitleBtn } from '../moreBtns/SubtitleBtn';
-import { TranslationBtn } from '../moreBtns/TranslationBtn';
-import VideoSelect from '../moreBtns/VideoSelect';
-import { VoteBtn } from '../moreBtns/VoteBtn';
-import AudioSelectBtn from '../moreBtns/audioSelect/AudioSelectBtn';
+import Text from '../components/CustomText';
+import { baseStyles } from '../constants';
+import { BottomBar } from '../roomMenuLevel0/BottomBar';
+import { TopBar } from '../roomMenuLevel0/TopBar';
+import { BroadcastMuteBtn } from './btns/BroadcastMuteBtn';
+import { ChatBtn } from './btns/ChatBtn';
+import { DonateBtn } from './btns/DonateBtn';
+import { GroupsBtn } from './btns/GroupsBtn';
+import { HideSelfBtn } from './btns/HideSelfBtn';
+import { ShidurBtn } from './btns/ShidurBtn';
+import { StudyMaterialsBtn } from './btns/StudyMaterialsBtn';
+import { SubtitleBtn } from './btns/SubtitleBtn';
+import { TranslationBtn } from './btns/TranslationBtn';
+import VideoSelect from './btns/VideoSelect';
+import { VoteBtn } from './btns/VoteBtn';
+import AudioSelectBtn from './btns/audioSelect/AudioSelectBtn';
 import { buttonsPaneStyles as styles } from './helper';
 
-const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
-  const { room } = useRoomStore();
+const MenuLandscape = ({ animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
@@ -40,6 +37,9 @@ const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
         },
       ]}
     >
+            <View style={styles.bottomBarContainer}>
+        <TopBar />
+      </View>
       <Animated.View
         style={[
           styles.panelWrapper,
@@ -96,7 +96,7 @@ const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
             </View>
           </View>
           <View style={[styles.lastColumn]}>
-            <View style={[styles.buttonsSection]}>
+            {/* <View style={[styles.buttonsSection]}>
               <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
                 {t('bottomBar.roomSettings')} - {room?.description}
               </Text>
@@ -110,7 +110,7 @@ const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
                   </View>
                 </View>
               </View>
-            </View>
+            </View> */}
             <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
               <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
                 {t('bottomBar.broadcastsettings')}
@@ -141,10 +141,10 @@ const ButtonsPaneLandscape = ({ animatedBottomPanelStyle }) => {
         </View>
       </Animated.View>
       <View style={styles.bottomBarContainer}>
-        <BottomBarBtns />
+        <BottomBar />
       </View>
     </View>
   );
 };
 
-export default ButtonsPaneLandscape;
+export default MenuLandscape;

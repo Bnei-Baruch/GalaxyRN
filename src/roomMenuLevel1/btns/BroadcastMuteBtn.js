@@ -1,20 +1,20 @@
-import React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
-import { useSubtitleStore } from '../../zustand/subtitle';
-import { bottomBar } from '../helper';
-export const SubtitleBtn = () => {
-  const { toggleIsOpen, lastMsg, isOpen } = useSubtitleStore();
+import { useShidurStore } from '../../zustand/shidur';
+import { bottomBar } from '../../roomMenuLevel0/helper';
+export const BroadcastMuteBtn = () => {
+  const { isMuted, setIsMuted } = useShidurStore();
+  const toggleMute = () => setIsMuted();
   const { t } = useTranslation();
-  const toggle = () => toggleIsOpen();
   return (
-    <Pressable onPress={toggle} style={bottomBar.btn}>
+    <Pressable onPress={toggleMute} style={bottomBar.btn}>
       <BottomBarIconWithText
-        iconName="subtitles"
-        text={t('bottomBar.broadcastsubtitles')}
+        iconName="volume-up"
+        text={t('bottomBar.broadcastsound')}
         extraStyle={
-          !isOpen
+          isMuted
             ? ['toggle_off', 'toggle_off_icon']
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }

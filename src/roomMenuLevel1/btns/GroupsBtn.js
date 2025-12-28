@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
-import { bottomBar } from '../helper';
-export const HideSelfBtn = () => {
-  const { hideSelf, toggleHideSelf } = useSettingsStore();
+import { bottomBar } from '../../roomMenuLevel0/helper';
+export const GroupsBtn = () => {
+  const { showGroups, toggleShowGroups } = useSettingsStore();
   const { t } = useTranslation();
   return (
-    <Pressable onPress={toggleHideSelf} style={bottomBar.btn}>
+    <Pressable onPress={toggleShowGroups} style={bottomBar.btn}>
       <BottomBarIconWithText
-        iconName="account-box"
-        text={t('bottomBar.self')}
+        iconName="public"
+        text={t('bottomBar.kliOlami')}
         extraStyle={
-          hideSelf
+          !showGroups
             ? ['toggle_off', 'toggle_off_icon']
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }

@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Pressable } from 'react-native';
 
-import { ChatCounter } from '../chat/ChatCounter';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
-import { useUiActions } from '../zustand/uiActions';
-import { bottomBar } from './helper';
+import { ChatCounter } from '../../chat/ChatCounter';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
+import { useUiActions } from '../../zustand/uiActions';
+import { bottomBar } from '../helper';
 export const MoreBtn = () => {
   const { toggleMoreModal, moreModal, toggleShowBars } = useUiActions();
 
