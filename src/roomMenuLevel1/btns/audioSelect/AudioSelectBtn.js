@@ -26,7 +26,7 @@ const AudioSelectBtn = () => {
           text={t(audio.text) + ' - ' + t(audio.description)}
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction={['vertical', 'vertical']}
+          direction={['vertical', 'horizontal']}
         />
       </Pressable>
 

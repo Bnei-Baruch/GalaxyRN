@@ -23,21 +23,24 @@ import { buttonsPaneStyles as styles } from './helper';
 const MenuLandscape = ({ animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const paddingBottom = insets.bottom + 8;
+  const paddingTop = insets.top + 8;
+  const paddingLeft = insets.left + 8;
+  const paddingRight = insets.right + 8;
 
   return (
     <View
       style={[
         styles.container,
         {
-          paddingBottom:
-            Platform.OS === 'ios'
-              ? Math.max(insets.bottom, 16)
-              : insets.bottom + 8,
-          paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 0,
+          paddingBottom,
+          paddingTop,
+          paddingLeft,
+          paddingRight,
         },
       ]}
     >
-            <View style={styles.bottomBarContainer}>
+      <View style={styles.barContainer}>
         <TopBar />
       </View>
       <Animated.View
@@ -53,64 +56,30 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
       >
         <View style={styles.buttonsSectionsRow}>
           <View style={[styles.firstColumn]}>
-            <View style={[styles.buttonsSection]}>
+            <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
               <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
                 {t('bottomBar.show')}
               </Text>
               <View style={styles.buttonsBlock}>
                 <View style={styles.buttonsRow}>
-                  <View style={styles.button_33}>
+                  <View style={styles.button_100}>
                     <ShidurBtn />
                   </View>
-                  <View style={styles.button_33}>
+                </View>
+                <View style={styles.buttonsRow}>
+                  <View style={styles.button_100}>
                     <GroupsBtn />
                   </View>
-                  <View style={styles.button_33}>
+                </View>
+                <View style={styles.buttonsRow}>
+                  <View style={styles.button_100}>
                     <HideSelfBtn />
                   </View>
                 </View>
               </View>
             </View>
-            <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
-              <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                {t('bottomBar.open')}
-              </Text>
-              <View style={styles.buttonsBlock}>
-                <View style={styles.buttonsRow}>
-                  <View style={styles.button_50}>
-                    <ChatBtn />
-                  </View>
-                  <View style={styles.button_50}>
-                    <VoteBtn />
-                  </View>
-                </View>
-                <View style={styles.buttonsRow}>
-                  <View style={styles.button_50}>
-                    <StudyMaterialsBtn />
-                  </View>
-                  <View style={styles.button_50}>
-                    <DonateBtn />
-                  </View>
-                </View>
-              </View>
-            </View>
           </View>
-          <View style={[styles.lastColumn]}>
-            {/* <View style={[styles.buttonsSection]}>
-              <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-                {t('bottomBar.roomSettings')} - {room?.description}
-              </Text>
-              <View style={styles.buttonsBlock}>
-                <View style={styles.buttonsRow}>
-                  <View style={styles.button_50}>
-                    <AudioDevicesBtn />
-                  </View>
-                  <View style={styles.button_50}>
-                    <LeaveBtn />
-                  </View>
-                </View>
-              </View>
-            </View> */}
+          <View style={[styles.column]}>
             <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
               <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
                 {t('bottomBar.broadcastsettings')}
@@ -138,9 +107,34 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
               </View>
             </View>
           </View>
+          <View style={[styles.lastColumn]}>
+            <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
+              <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
+                {t('bottomBar.open')}
+              </Text>
+              <View style={styles.buttonsBlock}>
+                <View style={styles.buttonsRow}>
+                  <View style={styles.button_50}>
+                    <ChatBtn />
+                  </View>
+                  <View style={styles.button_50}>
+                    <VoteBtn />
+                  </View>
+                </View>
+                <View style={styles.buttonsRow}>
+                  <View style={styles.button_50}>
+                    <StudyMaterialsBtn />
+                  </View>
+                  <View style={styles.button_50}>
+                    <DonateBtn />
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
         </View>
       </Animated.View>
-      <View style={styles.bottomBarContainer}>
+      <View style={styles.barContainer}>
         <BottomBar />
       </View>
     </View>

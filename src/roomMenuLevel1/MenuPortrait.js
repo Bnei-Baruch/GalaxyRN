@@ -27,8 +27,10 @@ const MenuPortrait = ({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  const paddingBottom = Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : 8;
-  const paddingTop = Platform.OS === 'ios' ? insets.top + 8 : 8;
+  const paddingBottom = insets.bottom + 8;
+  const paddingTop = insets.top + 8;
+  const paddingLeft = insets.left + 8;
+  const paddingRight = insets.right + 8;
 
   return (
     <View
@@ -37,6 +39,9 @@ const MenuPortrait = ({
         {
           paddingBottom,
           paddingTop,
+          paddingLeft,
+          paddingRight,
+
         },
       ]}
     >
@@ -67,7 +72,7 @@ const MenuPortrait = ({
           </View>
         </View>
       </Animated.View> */}
-            <View style={styles.bottomBarContainer}>
+          <View style={styles.barContainer}>
         <TopBar />
       </View>
       <Animated.View
@@ -149,7 +154,7 @@ const MenuPortrait = ({
           </View>
         </View>
       </Animated.View>
-      <View style={styles.bottomBarContainer}>
+      <View style={styles.barContainer}>
         <BottomBar />
       </View>
     </View>

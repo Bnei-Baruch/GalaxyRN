@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RoomMenuLevel0 } from '../roomMenuLevel0/RoomMenuLevel0';
-import Menu from '../roomMenuLevel1/Menu';
+import { MenuLevel0 } from '../roomMenuLevel0/MenuLevel0';
+import MenuLevel1 from '../roomMenuLevel1/MenuLevel1';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -28,8 +28,8 @@ const Room = () => {
       ]}
     >
       <RoomLayout />
-      <RoomMenuLevel0 />
-      <Menu />
+      <MenuLevel0 />
+      <MenuLevel1 />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>

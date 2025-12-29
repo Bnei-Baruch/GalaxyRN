@@ -14,7 +14,7 @@ import { useUiActions } from '../zustand/uiActions';
 import MenuLandscape from './MenuLandscape';
 import MenuPortrait from './MenuPortrait';
 
-const NAMESPACE = 'Menu';
+const NAMESPACE = 'MenuLevel1';
 
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
@@ -53,7 +53,7 @@ const normalizeTranslateValue = value => {
   return 0;
 };
 
-const Menu = () => {
+const MenuLevel1 = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
   const { isPortrait } = useInitsStore();
   const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   panelWrapperTopStart: {
     transform: [{ translateY: '-50%' }],
@@ -207,4 +207,4 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 0 }],
   },
 });
-export default Menu;
+export default MenuLevel1;

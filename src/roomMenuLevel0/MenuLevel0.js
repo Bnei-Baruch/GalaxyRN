@@ -6,7 +6,7 @@ import { useUiActions } from '../zustand/uiActions';
 import { BottomBar } from './BottomBar';
 import { TopBar } from './TopBar';
 
-export const RoomMenuLevel0 = () => {
+export const MenuLevel0 = () => {
   const { showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
   const insets = useSafeAreaInsets();
@@ -18,14 +18,11 @@ export const RoomMenuLevel0 = () => {
       style={[
         styles.container,
         {
-          bottom:
-            Platform.OS === 'ios'
-              ? Math.max(insets.bottom, 16)
-              : insets.bottom + 8,
+          paddingBottom: insets.bottom + 8,
+          paddingTop: insets.top + 8,
+          paddingLeft: insets.left + 8,
+          paddingRight: insets.right + 8,
         },
-        { top: insets.top + 8 },
-        { left: insets.left + 8 },
-        { right: insets.right + 8 },
       ]}
     >
       <TopBar />
@@ -33,16 +30,16 @@ export const RoomMenuLevel0 = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    // left: 30,
-    // right: 30,
     justifyContent: 'space-between',
-    // top:0,
     alignItems: 'center',
-    // backgroundColor:'red',
     zIndex: 100,
+    backgroundColor:'red',
+    bottom:0,
+    top:0,
+    left:0,
+    right:0,    
   },
 });

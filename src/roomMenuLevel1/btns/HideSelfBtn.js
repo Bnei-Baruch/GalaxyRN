@@ -18,7 +18,7 @@ export const HideSelfBtn = () => {
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }
         showtext={true}
-        direction={['vertical', 'vertical']}
+        direction={['vertical', 'horizontal']}
       />
     </Pressable>
   );
