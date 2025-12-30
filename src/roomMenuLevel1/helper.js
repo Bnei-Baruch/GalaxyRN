@@ -11,8 +11,9 @@ export const buttonsPaneStyles = StyleSheet.create({
   panelWrapper: {
     borderRadius: 32,
     padding: 16,
+    alignSelf: 'stretch',
     // opacity:0.5,
-    width: '100%',
+    // width: '100%'
     // backgroundColor:'green'
   },
   buttonsSection: {

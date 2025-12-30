@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../constants';
 import { AudioModeBtn } from './bottomBarBtns/AudioModeBtn';
 import { CammuteBtn } from './bottomBarBtns/CammuteBtn';
@@ -8,8 +9,20 @@ import { MuteBtn } from './bottomBarBtns/MuteBtn';
 import { QuestionBtn } from './bottomBarBtns/QuestionBtn';
 
 export const BottomBar = () => {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={[styles.container, baseStyles.panelBackground]}>
+    <View
+      style={[
+        styles.container,
+        baseStyles.panelBackground,
+        {
+          marginBottom: insets.bottom,
+          marginLeft: insets.left + 8,
+          marginRight: insets.right + 8,
+        },
+      ]}
+    >
       <MuteBtn />
       <CammuteBtn />
       <QuestionBtn />

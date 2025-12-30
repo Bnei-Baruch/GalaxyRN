@@ -18,10 +18,10 @@ export const MenuLevel0 = () => {
       style={[
         styles.container,
         {
-          paddingBottom: insets.bottom + 8,
-          paddingTop: insets.top + 8,
-          paddingLeft: insets.left + 8,
-          paddingRight: insets.right + 8,
+          // paddingBottom: insets.bottom + 8,
+          // paddingTop: insets.top + 8,
+          // paddingLeft: insets.left + 8,
+          // paddingRight: insets.right + 8,
         },
       ]}
     >
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     top:0,
     left:0,
     right:0,    
+    // backgroundColor:'rgba(0,255,0,0.3)',
   },
   toggleblock:{
     // flex:1,

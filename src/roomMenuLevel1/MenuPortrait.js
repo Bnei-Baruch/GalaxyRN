@@ -27,20 +27,20 @@ const MenuPortrait = ({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  const paddingBottom = insets.bottom + 8;
-  const paddingTop = insets.top + 8;
-  const paddingLeft = insets.left + 8;
-  const paddingRight = insets.right + 8;
+  // const paddingBottom = insets.bottom + 8;
+  // const paddingTop = insets.top + 8;
+  // const paddingLeft = insets.left + 8;
+  // const paddingRight = insets.right + 8;
 
   return (
     <View
       style={[
         styles.container,
         {
-          paddingBottom,
-          paddingTop,
-          paddingLeft,
-          paddingRight,
+          // paddingBottom,
+          // paddingTop,
+          // paddingLeft,
+          // paddingRight,
 
         },
       ]}

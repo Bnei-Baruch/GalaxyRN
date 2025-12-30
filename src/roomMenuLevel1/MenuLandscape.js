@@ -23,20 +23,20 @@ import { buttonsPaneStyles as styles } from './helper';
 const MenuLandscape = ({ animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const paddingBottom = insets.bottom + 8;
-  const paddingTop = insets.top + 8;
-  const paddingLeft = insets.left + 8;
-  const paddingRight = insets.right + 8;
+  // const paddingBottom = insets.bottom + 8;
+  // const paddingTop = insets.top + 8;
+  const marginnLeft = insets.left;
+  const marginnRight = insets.right;
 
   return (
     <View
       style={[
         styles.container,
         {
-          paddingBottom,
-          paddingTop,
-          paddingLeft,
-          paddingRight,
+          // paddingBottom,
+          // paddingTop,
+          // paddingLeft,
+          // paddingRight,
         },
       ]}
     >
@@ -49,8 +49,8 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
           baseStyles.panelBackground,
           animatedBottomPanelStyle,
           {
-            marginLeft: insets.left + 8,
-            marginRight: insets.right + 8,
+            marginLeft: marginnLeft,
+            marginRight: marginnRight,
           },
         ]}
       >

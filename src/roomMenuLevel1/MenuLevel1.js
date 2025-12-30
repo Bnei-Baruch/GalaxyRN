@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    // backgroundColor: 'rgba(0, 0, 255, 1)',
   },
   panelWrapperTopStart: {
     transform: [{ translateY: '-50%' }],
