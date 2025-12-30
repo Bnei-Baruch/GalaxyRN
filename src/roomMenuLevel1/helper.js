@@ -55,11 +55,11 @@ export const buttonsPaneStyles = StyleSheet.create({
     color: '#7f7f7f',
   },
   firstColumn: {
-    width: '20%',
+    width: '30%',
     paddingRight: 12,
   },
   column: {
-    width: '50%',
+    width: '40%',
   },
   lastColumn: {
     width: '30%',

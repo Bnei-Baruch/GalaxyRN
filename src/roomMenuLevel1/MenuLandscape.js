@@ -62,18 +62,18 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
               </Text>
               <View style={styles.buttonsBlock}>
                 <View style={styles.buttonsRow}>
-                  <View style={styles.button_100}>
+                  <View style={styles.button_50}>
                     <ShidurBtn />
+                  </View>
+                {/* </View>
+                <View style={styles.buttonsRow}> */}
+                  <View style={styles.button_50}>
+                    <HideSelfBtn />
                   </View>
                 </View>
                 <View style={styles.buttonsRow}>
                   <View style={styles.button_100}>
                     <GroupsBtn />
-                  </View>
-                </View>
-                <View style={styles.buttonsRow}>
-                  <View style={styles.button_100}>
-                    <HideSelfBtn />
                   </View>
                 </View>
               </View>

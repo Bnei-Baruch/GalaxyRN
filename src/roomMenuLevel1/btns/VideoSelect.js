@@ -54,7 +54,7 @@ const VideoSelect = () => {
         text={t(selected.text) + ' - ' + t(selected.description)}
         extraStyle={['rest', 'resticon']}
         showtext={true}
-        direction={['vertical', 'horizontal']}
+        direction={['vertical', 'vertical']}
       />
     </View>
   );
