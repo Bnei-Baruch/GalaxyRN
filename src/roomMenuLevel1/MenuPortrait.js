@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Platform, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
@@ -20,59 +20,13 @@ import { VoteBtn } from './btns/VoteBtn';
 import AudioSelectBtn from './btns/audioSelect/AudioSelectBtn';
 import { buttonsPaneStyles as styles } from './helper';
 
-const MenuPortrait = ({
-  animatedTopPanelStyle,
-  animatedBottomPanelStyle,
-}) => {
+const MenuPortrait = ({ animatedTopPanelStyle, animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  // const paddingBottom = insets.bottom + 8;
-  // const paddingTop = insets.top + 8;
-  // const paddingLeft = insets.left + 8;
-  // const paddingRight = insets.right + 8;
-
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          // paddingBottom,
-          // paddingTop,
-          // paddingLeft,
-          // paddingRight,
-
-        },
-      ]}
-    >
-      {/* <Animated.View
-        style={[
-          styles.panelWrapper,
-          baseStyles.panelBackground,
-          animatedTopPanelStyle,
-          {
-            marginLeft: insets.left + 8,
-            marginRight: insets.right + 8,
-          },
-        ]}
-      >
-        <View style={[styles.buttonsSection, styles.buttonsSectionLast]}>
-          <Text style={[baseStyles.text, styles.text]} numberOfLines={1}>
-            {t('bottomBar.roomSettings')} - {room?.description}
-          </Text>
-          <View style={styles.buttonsBlock}>
-            <View style={styles.buttonsRow}>
-              <View style={styles.button_50}>
-                <AudioDevicesBtn />
-              </View>
-              <View style={styles.button_50}>
-                <LeaveBtn />
-              </View>
-            </View>
-          </View>
-        </View>
-      </Animated.View> */}
-          <View style={styles.barContainer}>
+    <View style={styles.container}>
+      <View style={styles.barContainer}>
         <TopBar />
       </View>
       <Animated.View

@@ -19,7 +19,7 @@ export const SwitchDeviceBtn = () => {
         extraStyle={
           wip ? ['rest_disabled', 'rest_disabled_icon'] : ['rest', 'resticon']
         }
-        showtext={[ false, true ]}
+        showtext={[false, true]}
         direction={['horizontal', 'horizontal']}
       />
     </Pressable>

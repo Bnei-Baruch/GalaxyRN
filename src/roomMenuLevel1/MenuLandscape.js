@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Platform, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
@@ -23,23 +23,11 @@ import { buttonsPaneStyles as styles } from './helper';
 const MenuLandscape = ({ animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  // const paddingBottom = insets.bottom + 8;
-  // const paddingTop = insets.top + 8;
   const marginnLeft = insets.left;
   const marginnRight = insets.right;
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          // paddingBottom,
-          // paddingTop,
-          // paddingLeft,
-          // paddingRight,
-        },
-      ]}
-    >
+    <View style={styles.container}>
       <View style={styles.barContainer}>
         <TopBar />
       </View>
@@ -65,8 +53,6 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
                   <View style={styles.button_50}>
                     <ShidurBtn />
                   </View>
-                {/* </View>
-                <View style={styles.buttonsRow}> */}
                   <View style={styles.button_50}>
                     <HideSelfBtn />
                   </View>
@@ -114,18 +100,18 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
               </Text>
               <View style={styles.buttonsBlock}>
                 <View style={styles.buttonsRow}>
-                  <View >
+                  <View>
                     <ChatBtn />
                   </View>
-                  <View >
+                  <View>
                     <VoteBtn />
                   </View>
                 </View>
                 <View style={styles.buttonsRow}>
-                  <View >
+                  <View>
                     <StudyMaterialsBtn />
                   </View>
-                  <View >
+                  <View>
                     <DonateBtn />
                   </View>
                 </View>

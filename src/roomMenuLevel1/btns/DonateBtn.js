@@ -26,7 +26,7 @@ export const DonateBtn = () => {
         iconName="favorite"
         text={t('moreOpts.donate')}
         extraStyle={['rest', 'resticon']}
-        showtext={[ true, false ]}
+        showtext={[true, false]}
         direction={['horizontal', 'horizontal']}
       />
     </Pressable>

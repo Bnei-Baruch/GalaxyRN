@@ -24,7 +24,7 @@ export const StudyMaterialsBtn = () => {
           iconName="book"
           text={t('moreOpts.materials')}
           extraStyle={['rest', 'resticon']}
-          showtext={[ true, false ]}
+          showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />
       </Pressable>
