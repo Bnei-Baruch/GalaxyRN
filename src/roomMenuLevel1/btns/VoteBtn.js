@@ -25,7 +25,7 @@ export const VoteBtn = () => {
           iconName="thumbs-up-down"
           text={t('bottomBar.vote')}
           extraStyle={['rest', 'resticon']}
-          showtext={true}
+          showtext={[ true, false ]}
           direction={['horizontal', 'horizontal]}']}
         />
       </Pressable>

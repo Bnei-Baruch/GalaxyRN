@@ -18,7 +18,7 @@ export const ChatBtn = () => {
           iconName="chat"
           text={t('bottomBar.chat')}
           extraStyle={['rest', 'resticon']}
-          showtext={true}
+          showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />
         <ChatCounter />

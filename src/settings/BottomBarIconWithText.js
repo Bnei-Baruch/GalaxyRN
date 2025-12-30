@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, StyleSheet, useWindowDimensions } from 'react-native';
+import { Animated, Platform, StyleSheet, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
@@ -25,10 +25,21 @@ const BottomBarIconWithText = ({
   const iconVariant = extraStylesArray[1];
   const textVariant = extraStylesArray[1];
 
+  const resolvedShowText = React.useMemo(() => {
+    if (Array.isArray(showtext)) {
+      const portraitValue = showtext[0];
+      const landscapeValue = showtext.length > 1 ? showtext[1] : showtext[0];
+      return isPortrait ? portraitValue : landscapeValue;
+    }
+    return showtext;
+  }, [isPortrait, showtext]);
+
+  const shouldShowText = resolvedShowText ?? true;
+
   const buttonStyles = React.useMemo(() => {
     const _styles = [
       styles.container,
-      Platform.OS === 'android' && showtext
+      Platform.OS === 'android' && shouldShowText
         ? { paddingVertical: 8 }
         : { paddingVertical: 12 },
     ];
@@ -38,7 +49,7 @@ const BottomBarIconWithText = ({
         ? styles[containerVariant]
         : containerVariant,
     ].filter(Boolean);
-  }, [containerVariant, showtext]);
+  }, [containerVariant, shouldShowText]);
 
   const iconBaseStyles = React.useMemo(
     () =>
@@ -220,7 +231,7 @@ const BottomBarIconWithText = ({
   );
 
   const containerDirectionStyle = React.useMemo(() => {
-    if (showtext === false) {
+    if (shouldShowText === false) {
       return [styles.notext, styles.icon_notext];
     }
 
@@ -231,7 +242,7 @@ const BottomBarIconWithText = ({
     }
 
     return [styles.horizontal, styles.icon_horizontal];
-  }, [direction, isPortrait, showtext]);
+  }, [direction, isPortrait, shouldShowText]);
 
   return (
     <Animated.View
@@ -250,7 +261,7 @@ const BottomBarIconWithText = ({
         name={iconName}
         size={24}
       />
-      {(showtext === undefined || showtext) && (
+      {(shouldShowText === undefined || shouldShowText) && (
         <AnimatedText
           style={[...textBaseStyles, animatedTextStyle]}
           numberOfLines={1}

@@ -27,7 +27,7 @@ export const buttonsPaneStyles = StyleSheet.create({
   buttonsSectionsRow: {
     flexDirection: 'row',
     justifyContent: 'stretch',
-    display: 'flex',
+    // display: 'flex',
   },
   buttonsSectionLast: {
     marginBottom: 0,
@@ -55,14 +55,20 @@ export const buttonsPaneStyles = StyleSheet.create({
     color: '#7f7f7f',
   },
   firstColumn: {
-    width: '30%',
+    // width: '36%',
+    flex: 1,
     paddingRight: 12,
+    flexGrow: 1,
   },
   column: {
-    width: '40%',
+    flex: 1,
+    flexGrow: 1.5,
+    // width: '50%',
   },
   lastColumn: {
-    width: '30%',
+    // flex: 1,
+    // flexShrink: 1,
+    // width: '14%',
     paddingLeft: 12,
   },
   barContainer: {
