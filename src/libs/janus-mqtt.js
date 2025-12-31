@@ -73,6 +73,7 @@ export class JanusMqtt {
 
     const transaction = randomString(12);
     const msg = { janus: 'create', transaction, token };
+    logger.debug(NAMESPACE, 'init transaction:', transaction);
 
     // Create connectSpan in the init scope so it can be accessed in the promise chain
     const connectSpan = addSpan(this.sentrySession, 'janus.connect');
@@ -99,7 +100,12 @@ export class JanusMqtt {
     };
 
     return new Promise((resolve, reject) => {
-      logger.debug(NAMESPACE, 'in Promise');
+      logger.debug(
+        NAMESPACE,
+        'in Promise, transaction:',
+        transaction,
+        this.sentrySession
+      );
 
       this.transactions[transaction] = {
         resolve: json => {

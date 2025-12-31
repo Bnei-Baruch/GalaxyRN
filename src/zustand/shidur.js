@@ -14,6 +14,7 @@ import { configByName, gatewayNames } from '../libs/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
+  addFinishSpan,
   addSpan,
   finishSpan,
   setSpanAttributes,
@@ -124,10 +125,8 @@ export const useShidurStore = create((set, get) => ({
   kliOlamiUrl: null,
   trlUrl: null,
   audioUrl: null,
-  readyShidur: false,
   isOnAir: false,
   isPlay: false,
-  janusReady: false,
   isMuted: false,
   shidurWIP: false,
   cleanWIP: false,
@@ -218,7 +217,6 @@ export const useShidurStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);
     }
 
-    let janusReady = false;
     try {
       logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
       janus = new JanusMqtt(user, srv);
@@ -232,12 +230,10 @@ export const useShidurStore = create((set, get) => ({
 
       await janus.init(config?.token);
       logger.debug(NAMESPACE, 'init janus ready');
-      janusReady = true;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
       throw error;
     }
-    set({ janusReady });
     finishSpan(span, 'ok', NAMESPACE);
   },
 
@@ -258,7 +254,7 @@ export const useShidurStore = create((set, get) => ({
       finishSpan(span, 'internal_error', NAMESPACE);
     }
     janus = null;
-    set({ cleanWIP: false, janusReady: false });
+    set({ cleanWIP: false });
     finishSpan(span, 'ok', NAMESPACE);
   },
 
@@ -285,17 +281,25 @@ export const useShidurStore = create((set, get) => ({
     set({ video, audio });
   },
 
-  initShidur: async (isPlay = get().isPlay) => {
-    const span = addSpan(ROOM_SESSION, 'shidur.initShidur', {
-      NAMESPACE,
-      isPlay,
-    });
-    set({ shidurWIP: true, isPlay, cleanWIP: false });
-
-    logger.debug(NAMESPACE, 'initShidur');
-
+  prepareShidur: async (isPlay = get().isPlay) => {
+    addFinishSpan(ROOM_SESSION, 'shidur.prepareShidur', { NAMESPACE });
+    set({ isPlay, cleanWIP: false, shidurWIP: false });
     try {
       await get().initMedias();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during prepareShidur:', error);
+    }
+
+    if (isPlay) {
+      await get().initShidur();
+    }
+  },
+
+  initShidur: async () => {
+    const span = addSpan(ROOM_SESSION, 'shidur.init', { NAMESPACE });
+    set({ shidurWIP: true });
+
+    try {
       await rejectTimeoutPromise(get().initJanus(), 10000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
@@ -305,20 +309,13 @@ export const useShidurStore = create((set, get) => ({
       throw error;
     }
 
-    if (!useSettingsStore.getState().isShidur || !isPlay) {
-      set({ shidurWIP: false });
-      setSpanAttributes(span, { isPlay });
-      finishSpan(span, 'ok', NAMESPACE);
-      return;
-    }
-
     try {
       await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
-      set({ readyShidur: true, shidurWIP: false });
+      set({ shidurWIP: false });
       finishSpan(span, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
-      set({ shidurWIP: false, readyShidur: false });
+      set({ shidurWIP: false });
       setSpanAttributes(span, { error });
       finishSpan(span, 'internal_error', NAMESPACE);
       throw error;
@@ -412,7 +409,7 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'cleanShidur');
     await Promise.all([get().cleanVideoHandle(), get().cleanAudioHandles()]);
 
-    set({ readyShidur: false, isPlay: false, url: null });
+    set({ isPlay: false, url: null });
     logger.debug(NAMESPACE, 'cleanShidur done');
   },
 
@@ -551,17 +548,14 @@ export const useShidurStore = create((set, get) => ({
   },
 
   toggleIsPlay: async () => {
-    const { initVideoHandle, initAudioHandles, readyShidur, isMuted } = get();
+    const { initShidur, isMuted } = get();
     const isPlay = !get().isPlay;
-    logger.debug(NAMESPACE, 'toggleIsPlay', isPlay, readyShidur);
-    if (!readyShidur) {
-      set({ isPlay });
-      await Promise.all([initVideoHandle(), initAudioHandles()]);
-      useUiActions.getState().toggleShowBars();
-      set({ readyShidur: true });
-      return;
+    logger.debug(NAMESPACE, 'toggleIsPlay', isPlay);
+    if (isPlay) {
+      await initShidur();
     }
 
+    useUiActions.getState().toggleShowBars();
     videoStream?.getVideoTracks().forEach(t => (t.enabled = isPlay));
     audioStream
       ?.getAudioTracks()
@@ -574,6 +568,8 @@ export const useShidurStore = create((set, get) => ({
     if (!useSettingsStore.getState().showGroups) return;
 
     if (kliOlamiStream) return;
+
+    await get().initJanus();
 
     kliOlamiJanus = new StreamingPlugin(config?.iceServers);
     kliOlamiJanus.onTrack = stream => {
