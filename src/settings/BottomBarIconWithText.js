@@ -39,9 +39,9 @@ const BottomBarIconWithText = ({
   const buttonStyles = React.useMemo(() => {
     const _styles = [
       styles.container,
-      Platform.OS === 'android' && shouldShowText
-        ? { paddingVertical: 8 }
-        : { paddingVertical: 12 },
+      // Platform.OS === 'android' && shouldShowText
+      //   ? { paddingVertical: 12 }
+      //   : { paddingVertical: 12 },
     ];
     return [
       ..._styles,
@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 24,
     alignItems: 'center',
+    paddingVertical: 12,
   },
   notext: {
     paddingHorizontal: 12,

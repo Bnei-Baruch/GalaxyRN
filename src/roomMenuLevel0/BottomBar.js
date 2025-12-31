@@ -17,7 +17,7 @@ export const BottomBar = () => {
         styles.container,
         baseStyles.panelBackground,
         {
-          marginBottom: insets.bottom,
+          marginBottom: insets.bottom + (require('react-native').Platform.OS === 'android' ? 8 : 0),
           marginLeft: insets.left + 8,
           marginRight: insets.right + 8,
         },

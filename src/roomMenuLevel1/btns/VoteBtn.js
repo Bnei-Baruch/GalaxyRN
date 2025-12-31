@@ -24,7 +24,7 @@ export const VoteBtn = () => {
         <BottomBarIconWithText
           iconName="thumbs-up-down"
           text={t('bottomBar.vote')}
-          extraStyle={['rest', 'resticon']}
+          extraStyle={['rest', 'rest_icon']}
           showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />

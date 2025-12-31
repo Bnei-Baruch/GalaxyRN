@@ -25,7 +25,7 @@ export const DonateBtn = () => {
       <BottomBarIconWithText
         iconName="favorite"
         text={t('moreOpts.donate')}
-        extraStyle={['rest', 'resticon']}
+        extraStyle={['rest', 'rest_icon']}
         showtext={[true, false]}
         direction={['horizontal', 'horizontal']}
       />

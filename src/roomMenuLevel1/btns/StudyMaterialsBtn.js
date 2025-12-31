@@ -23,7 +23,7 @@ export const StudyMaterialsBtn = () => {
         <BottomBarIconWithText
           iconName="book"
           text={t('moreOpts.materials')}
-          extraStyle={['rest', 'resticon']}
+          extraStyle={['rest', 'rest_icon']}
           showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />

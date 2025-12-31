@@ -17,7 +17,7 @@ export const ChatBtn = () => {
         <BottomBarIconWithText
           iconName="chat"
           text={t('bottomBar.chat')}
-          extraStyle={['rest', 'resticon']}
+          extraStyle={['rest', 'rest_icon']}
           showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />

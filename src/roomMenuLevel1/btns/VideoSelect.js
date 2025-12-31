@@ -52,7 +52,7 @@ const VideoSelect = () => {
       <BottomBarIconWithText
         iconName="video-settings"
         text={t(selected.text) + ' - ' + t(selected.description)}
-        extraStyle={['rest', 'resticon']}
+        extraStyle={['rest', 'rest_icon']}
         showtext={true}
         direction={['vertical', 'horizontal']}
       />

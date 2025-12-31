@@ -24,7 +24,7 @@ const AudioSelectBtn = () => {
         <BottomBarIconWithText
           iconName="record-voice-over"
           text={t(audio.text) + ' - ' + t(audio.description)}
-          extraStyle={['rest', 'resticon']}
+          extraStyle={['rest', 'rest_icon']}
           showtext={true}
           direction={['vertical', 'horizontal']}
         />
