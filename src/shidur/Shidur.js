@@ -62,7 +62,7 @@ const Shidur = () => {
             <PlayPauseOverlay />
           )}
 
-          {(showBars || !isPlay) && (
+          {showBars && (
             <View style={styles.toolbar}>
               <View style={styles.toolbarBtnsGroup}>
                 <PlayPauseBtn />

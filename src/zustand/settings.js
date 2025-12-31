@@ -33,7 +33,7 @@ export const useSettingsStore = create((set, get) => ({
     if (!isShidur) {
       await useShidurStore.getState().cleanShidur();
     } else {
-      await useShidurStore.getState().initShidur();
+      await useShidurStore.getState().prepareShidur();
     }
     set({ isShidur });
     useUiActions.getState().updateWidth(isShidur);
