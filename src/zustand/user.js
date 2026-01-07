@@ -66,6 +66,7 @@ export const useUserStore = create((set, get) => ({
     return opts;
   },
 
+  //TODO: ceck if room need all users state
   sendUserState: (updatedOpts = {}) => {
     const opts = {
       ...get().buildUserState(),
@@ -85,11 +86,18 @@ export const useUserStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error sending room message', error);
     }
 
-    logger.debug(NAMESPACE, 'Sending gxydb message', opts);
+    get().sendGxydbState(opts);
+  },
+
+  sendGxydbState: opts => {
+    logger.debug(NAMESPACE, 'Sending gxydb state', opts);
+    opts = opts || get().buildUserState();
+
+    logger.debug(NAMESPACE, 'Sending gxydb state', opts);
     try {
       mqtt.send(JSON.stringify(opts), false, 'gxydb/users');
     } catch (error) {
-      logger.error(NAMESPACE, 'Error sending gxydb message', error);
+      logger.error(NAMESPACE, 'Error sending gxydb state', error);
     }
   },
   removeMember: async () => {
