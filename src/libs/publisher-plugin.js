@@ -3,6 +3,7 @@ import { RTCPeerConnection } from 'react-native-webrtc';
 import logger from '../services/logger';
 import { randomString } from '../tools';
 import { useFeedsStore } from '../zustand/feeds';
+import { useUserStore } from '../zustand/user';
 import {
   addConnectionListener,
   removeConnectionListener,
