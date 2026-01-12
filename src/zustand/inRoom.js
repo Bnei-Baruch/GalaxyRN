@@ -83,7 +83,7 @@ export const useInRoomStore = create((set, get) => ({
 
     try {
       await Promise.all([
-        useShidurStore.getState().initShidur(isPlay),
+        useShidurStore.getState().prepareShidur(isPlay),
         useFeedsStore.getState().initFeeds(),
       ]);
       finishSpan(janusInitSpan, 'ok', NAMESPACE);

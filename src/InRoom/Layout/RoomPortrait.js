@@ -7,16 +7,13 @@ import {
   View,
 } from 'react-native';
 
-import WIP from '../../components/WIP';
 import { baseStyles } from '../../constants';
 import logger from '../../services/logger';
-import { useShidurStore } from '../../zustand/shidur';
 import { useUiActions } from '../../zustand/uiActions';
 
 const NAMESPACE = 'RoomPortrait';
 
 const RoomPortrait = ({ shidur, kliOlami, members }) => {
-  const { janusReady } = useShidurStore();
   const { setFeedsScrollY, toggleShowBars } = useUiActions();
 
   const handleAnyPress = () => {
@@ -39,12 +36,10 @@ const RoomPortrait = ({ shidur, kliOlami, members }) => {
         onScroll={handleScroll}
       >
         <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
-          <WIP isReady={janusReady}>
-            <View style={[baseStyles.full, { width }]}>
-              {shidur}
-              {kliOlami}
-            </View>
-          </WIP>
+          <View style={[baseStyles.full, { width }]}>
+            {shidur}
+            {kliOlami}
+          </View>
           {members}
         </Pressable>
       </ScrollView>
