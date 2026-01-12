@@ -6,9 +6,9 @@ PODS:
   - AppAuth/ExternalUserAgent (2.0.0):
     - AppAuth/Core
   - boost (1.84.0)
-  - Crisp (2.8.2):
-    - Crisp/Crisp (= 2.8.2)
-  - Crisp/Crisp (2.8.2)
+  - Crisp (2.9.0):
+    - Crisp/Crisp (= 2.9.0)
+  - Crisp/Crisp (2.9.0)
   - DoubleConversion (1.1.6)
   - fast_float (6.1.4)
   - FBLazyVector (0.77.3)
@@ -1225,8 +1225,8 @@ PODS:
     - React-Core
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-crisp-chat-sdk (0.16.1):
-    - Crisp (= 2.8.2)
+  - react-native-crisp-chat-sdk (0.19.0):
+    - Crisp (= 2.9.0)
     - React
   - react-native-netinfo (11.4.1):
     - React-Core
@@ -1549,6 +1549,8 @@ PODS:
     - React-logger (= 0.77.3)
     - React-perflogger (= 0.77.3)
     - React-utils (= 0.77.3)
+  - RNInAppBrowser (3.7.0):
+    - React-Core
   - RNSecureStorage (3.0.1):
     - React
   - RNSentry (7.7.0):
@@ -1676,6 +1678,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNSecureStorage (from `../node_modules/rn-secure-storage`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -1839,6 +1842,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNSecureStorage:
     :path: "../node_modules/rn-secure-storage"
   RNSentry:
@@ -1851,7 +1856,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
-  Crisp: 6747c96b2b2c2a81babf1eaecd1688a65d98edd4
+  Crisp: 90172ba9f1f54d18501f4d2baaf81ee10a13c95a
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 23d8c5470c648a635893dc0956c6dbaead54b656
@@ -1890,7 +1895,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: c32cbd3d9c334a51311ab9d717e2c72c7032a256
   react-native-app-auth: 9b0a0e3ca279c3426a451e2607c8483808b8ed4a
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-crisp-chat-sdk: ad0ebdfae82665d23bc63c3b2e8caa379418782f
+  react-native-crisp-chat-sdk: c08aa730e0d054cba86d2b6d93310af2d6aa2278
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-orientation-locker: 5819fd23ca89cbac0d736fb4314745f62716d517
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
@@ -1926,6 +1931,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 9b3704075c2fe8fd7c739779655fb88700a1ca30
   ReactCodegen: c9645fb81bcaf5afebaebb25874bcd5224cd40f1
   ReactCommon: 271491c2343c91609d3dc18bb4b4ebe67160de03
+  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
   RNSentry: 445327aa467d49531b155fe870fead7a65b510ab
   RNVectorIcons: 912e23787f83a9754f9fb9fa9a108554e4fb1958

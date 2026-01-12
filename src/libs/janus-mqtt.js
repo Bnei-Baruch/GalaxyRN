@@ -2,6 +2,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 import { randomString, rejectTimeoutPromise } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
+import { useUserStore } from '../zustand/user';
 import { waitConnection } from './connection-monitor';
 import mqtt from './mqtt';
 import { CONNECTION } from './sentry/constants';
@@ -73,6 +74,7 @@ export class JanusMqtt {
 
     const transaction = randomString(12);
     const msg = { janus: 'create', transaction, token };
+    logger.debug(NAMESPACE, 'init transaction:', transaction);
 
     // Create connectSpan in the init scope so it can be accessed in the promise chain
     const connectSpan = addSpan(this.sentrySession, 'janus.connect');
@@ -99,7 +101,12 @@ export class JanusMqtt {
     };
 
     return new Promise((resolve, reject) => {
-      logger.debug(NAMESPACE, 'in Promise');
+      logger.debug(
+        NAMESPACE,
+        'in Promise, transaction:',
+        transaction,
+        this.sentrySession
+      );
 
       this.transactions[transaction] = {
         resolve: json => {
@@ -269,12 +276,10 @@ export class JanusMqtt {
           transaction: transactionId,
         });
 
-        if (
-          type === 'keepalive' &&
-          this.user.role === 'user' &&
-          this.txTopic.match('gxy')
-        ) {
+        //TODO: check if need request object
+        if (type === 'keepalive' && this.txTopic.match('gxy')) {
           request.user = this.user;
+          useUserStore.getState().sendGxydbState();
         }
 
         this.transactions[request.transaction] = {
@@ -613,14 +618,6 @@ export class JanusMqtt {
       logger.error(NAMESPACE, `Janus error response`, json);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
-        if (transaction.request) {
-          logger.debug(
-            NAMESPACE,
-            'rejecting transaction',
-            transaction.request,
-            json
-          );
-        }
         transaction.reject(json);
       } else {
         logger.error(

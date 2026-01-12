@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import mqtt from '../libs/mqtt';
 import AudioBridge from '../services/AudioBridge';
-import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
 import { rejectTimeoutPromise } from '../tools';
 
@@ -71,7 +70,6 @@ export const useInRoomStore = create((set, get) => ({
 
     try {
       AudioBridge.requestAudioFocus();
-      await WakeLockBridge.keepScreenOn();
       useMyStreamStore.getState().toggleMute(true);
       finishSpan(deviceSpan, 'ok', NAMESPACE);
     } catch (error) {
@@ -85,7 +83,7 @@ export const useInRoomStore = create((set, get) => ({
 
     try {
       await Promise.all([
-        useShidurStore.getState().initShidur(isPlay),
+        useShidurStore.getState().prepareShidur(isPlay),
         useFeedsStore.getState().initFeeds(),
       ]);
       finishSpan(janusInitSpan, 'ok', NAMESPACE);
@@ -144,7 +142,6 @@ export const useInRoomStore = create((set, get) => ({
     try {
       useUiActions.getState().toggleMoreModal(false);
       AudioBridge.abandonAudioFocus();
-      WakeLockBridge.releaseScreenOn();
       finishSpan(deviceCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error cleaning up device states', error);

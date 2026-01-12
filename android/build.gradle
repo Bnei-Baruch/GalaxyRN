@@ -1,7 +1,7 @@
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"
-        minSdkVersion = 24
+        minSdkVersion = 26
         compileSdkVersion = 35
         targetSdkVersion = 35
         ndkVersion = "28.0.12674087"
@@ -25,6 +25,9 @@ buildscript {
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
+     dependencyLocking {
+        lockAllConfigurations()
+    }
     repositories {
         google()
         mavenCentral()

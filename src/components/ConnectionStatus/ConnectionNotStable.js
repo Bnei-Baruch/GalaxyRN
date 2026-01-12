@@ -18,12 +18,7 @@ const ConnectionNotStable = () => {
   if (!netWIP) return null;
 
   return (
-    <Modal
-      visible={true}
-      animationType="fade"
-      transparent={true}
-      statusBarTranslucent={true}
-    >
+    <Modal visible={true} animationType="fade" transparent={true}>
       <View style={[baseStyles.full, { paddingTop: insets.top }]}>
         <View style={styles.container}>
           <ActivityIndicator

@@ -1,6 +1,6 @@
 {
   "name": "GalaxyRN",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "private": true,
   "scripts": {
     "start": "react-native start",
@@ -14,6 +14,7 @@
     "bundle:ios": "mkdir -p ios/main/assets && react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios/main/assets/ --sourcemap-output ios/main.jsbundle.map",
     "release:android": "cd android && ./gradlew clean && cd .. && yarn bundle:android && cd android && ./gradlew bundleRelease",
     "release:ios": "yarn bundle:ios && yarn sentry:ios",
+    "lock": "cd android && ./gradlew :app:dependencies --write-locks && cd ..",
     "archive:ios": "yarn release:ios && cd ios && xcodebuild -workspace GalaxyRN.xcworkspace -scheme 'GalaxyRN Release' -configuration Release -destination 'generic/platform=iOS' -archivePath build/GalaxyRN.xcarchive archive | xcpretty || xcodebuild -workspace GalaxyRN.xcworkspace -scheme 'GalaxyRN Release' -configuration Release -destination 'generic/platform=iOS' -archivePath build/GalaxyRN.xcarchive archive",
     "sentry:android": "npx -y dotenv -e .env -- sh -c 'sentry-cli sourcemaps inject --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" ./android/app/src/main/assets/index.android.bundle ./android/app/src/main/assets/index.android.bundle.map && sentry-cli sourcemaps upload --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" --dist android ./android/app/src/main/assets/index.android.bundle ./android/app/src/main/assets/index.android.bundle.map'",
     "sentry:ios": "npx -y dotenv -e .env -- sh -c 'sentry-cli sourcemaps inject --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" ./ios/main.jsbundle ./ios/main.jsbundle.map && sentry-cli sourcemaps upload --org \"$SENTRY_ORG\" --project \"$SENTRY_PROJECT\" --release \"GalaxyRN@$npm_package_version\" --dist ios ./ios/main.jsbundle ./ios/main.jsbundle.map'",
@@ -31,7 +32,8 @@
     "react-native": "0.77.3",
     "react-native-app-auth": "^8.1.0",
     "react-native-background-timer": "^2.4.1",
-    "react-native-crisp-chat-sdk": "^0.16.1",
+    "react-native-crisp-chat-sdk": "^0.19.0",
+    "react-native-inappbrowser-reborn": "^3.6.3",
     "react-native-orientation-locker": "^1.7.0",
     "react-native-render-html": "^6.1.0",
     "react-native-safe-area-context": "^5.1.0",

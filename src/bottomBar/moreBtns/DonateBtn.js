@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable } from 'react-native';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { bottomBar } from '../helper';
 const PARAMS =
   '"utm_source"=arvut_system&"&"utm_medium"="button"&"utm_campaign"="donations"&"utm_id"="donations"&"utm_content"="header_button_donate"&"utm_term"="heb"';

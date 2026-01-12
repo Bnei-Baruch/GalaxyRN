@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import TextInput from '../components/CustomTextInput';
@@ -38,7 +38,7 @@ export const RoomChatForm = () => {
     <View
       style={[
         styles.inputContainer,
-        { paddingBottom: Math.max(insets.bottom, 10) + 10 },
+        { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0 },
       ]}
     >
       <TextInput

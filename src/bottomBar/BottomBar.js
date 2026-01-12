@@ -3,8 +3,9 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
+import { BottomBarBtns } from './BottomBarBtns';
 
-export const BottomBar = ({ bottomBarBtns }) => {
+export const BottomBar = () => {
   const { showBars } = useUiActions();
   const { isFullscreen } = useSettingsStore();
   const insets = useSafeAreaInsets();
@@ -15,12 +16,17 @@ export const BottomBar = ({ bottomBarBtns }) => {
     <View
       style={[
         styles.container,
-        { bottom: Math.max(insets.bottom, 16) },
+        {
+          bottom:
+            Platform.OS === 'ios'
+              ? Math.max(insets.bottom, 16)
+              : insets.bottom + 8,
+        },
         { left: insets.left + 8 },
         { right: insets.right + 8 },
       ]}
     >
-      {bottomBarBtns}
+      <BottomBarBtns />
     </View>
   );
 };

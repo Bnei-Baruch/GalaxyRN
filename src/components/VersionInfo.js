@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { topMenuBtns } from '../bottomBar/moreBtns/helper';
 import { baseStyles } from '../constants';
 import { useVersionStore } from '../zustand/version';
 import Text from './CustomText';
+
 const VersionInfo = () => {
   const { t } = useTranslation();
   const { currentVersion, latestVersion, updateAvailable, openAppStore } =
@@ -13,48 +13,47 @@ const VersionInfo = () => {
   if (!latestVersion) return null;
 
   return (
-    <>
-      <View style={[topMenuBtns.btn, styles.container]}>
-        <Text style={[styles.text, baseStyles.text]}>
+    <View style={[styles.container]}>
+      <View style={styles.textContainer}>
+        <Text style={[baseStyles.text, styles.text]}>
           {t('update.currentVersion')}: {currentVersion}
         </Text>
+        {updateAvailable && (
+          <Text style={[baseStyles.text, styles.text]}>
+            {t('update.latestVersion')}: {latestVersion}
+          </Text>
+        )}
       </View>
 
       {updateAvailable && (
-        <View style={[topMenuBtns.btn, styles.container]}>
-          <Text style={[styles.text, baseStyles.text]}>
-            {t('update.latestVersion')}: {latestVersion}
-          </Text>
-          <TouchableOpacity onPress={openAppStore}>
-            <Text style={[styles.download, baseStyles.text]}>
-              {t('update.updateNow')}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={openAppStore} style={styles.button}>
+          <Text style={baseStyles.text}>{t('update.updateNow')}</Text>
+        </TouchableOpacity>
       )}
-      <View style={styles.divider} />
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  textContainer: {
+    justifyContent: 'space-between',
   },
   text: {
     fontSize: 12,
-    marginVertical: 2,
   },
-  download: {
-    fontSize: 10,
-    backgroundColor: 'blue',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  button: {
     borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  divider: {
-    height: 10,
+    backgroundColor: '#03A9F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    height: 40,
+    lineHeight: 40,
   },
 });
 

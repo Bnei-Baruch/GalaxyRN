@@ -1,6 +1,5 @@
 #import "AppDelegate.h"
 #import <React/RCTLinkingManager.h>
-#import <Crisp/Crisp.h>
 
 #import <React/RCTBundleURLProvider.h>
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
@@ -15,14 +14,7 @@
   
   
   // Initialize Crisp SDK with website ID - move to background thread
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    NSString *websiteID = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CRISP_WEBSITE_ID"];
-    if (websiteID) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [CrispSDK configureWithWebsiteID:websiteID];
-      });
-    }
-  });
+
   
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }

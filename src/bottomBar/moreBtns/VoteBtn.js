@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithTextAnimated';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useUserStore } from '../../zustand/user';
 import { bottomBar } from '../helper';
 export const VoteBtn = () => {
@@ -26,7 +26,7 @@ export const VoteBtn = () => {
           text={t('bottomBar.vote')}
           extraStyle={['rest', 'resticon']}
           showtext={true}
-          direction={['horizontal','horizontal]}']}
+          direction={['horizontal', 'horizontal]}']}
         />
       </Pressable>
       {open && (
