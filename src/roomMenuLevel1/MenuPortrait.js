@@ -33,7 +33,7 @@ const MenuPortrait = ({ animatedBottomPanelStyle }) => {
           {
             marginLeft: insets.left + 8,
             marginRight: insets.right + 8,
-            marginTop: insets.top + 8,
+            marginTop: insets.top,
           },
         ]}
       >
