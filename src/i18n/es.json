@@ -15,7 +15,8 @@
     "search": "Search...",
     "join": "Unirse a la sala",
     "selectRoom": "Seleccionar Ten",
-    "backToTen": "Volver a Ten"
+    "backToTen": "Volver a Ten",
+    "noRoomsFound": "No se encontraron salas"
   },
   "user": {
     "title": "Configuración de usuario",

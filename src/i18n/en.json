@@ -16,7 +16,8 @@
     "search": "Search...",
     "join": "Join Room",
     "selectRoom": "Select Ten",
-    "backToTen": "Back To Ten"
+    "backToTen": "Back To Ten",
+    "noRoomsFound": "No rooms found"
   },
   "permissions": {
     "title": "User Permission",

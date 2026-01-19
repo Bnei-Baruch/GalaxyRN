@@ -1,118 +1,60 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
   StyleSheet,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Text from '../components/CustomText';
-import TextInput from '../components/CustomTextInput';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import { useRoomStore } from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
+import RoomSelectModal from './RoomSelectModal';
 
 const NAMESPACE = 'RoomSelect';
 
 const RoomSelect = () => {
-  const [searchText, setSearchText] = useState();
-  const [rooms, setRooms] = useState([]);
   const [open, setOpen] = useState(false);
+  const [rooms, setRooms] = useState([]);
+  const { fetchRooms } = useRoomStore();
 
-  const { fetchRooms, setRoom, room } = useRoomStore();
+  const { room } = useRoomStore();
   const { joinRoom } = useInRoomStore();
   const { t } = useTranslation();
 
+  logger.debug(NAMESPACE, 'rendered open', open, 'rooms', rooms.length);
+
   useEffect(() => {
+    logger.debug(NAMESPACE, 'useEffect fetchRooms');
     fetchRooms().then(rooms => setRooms(rooms));
   }, []);
 
-  useEffect(() => {
-    room && setSearchText(room.description);
-  }, [room]);
+  const toggleOpen = () => setOpen(!open);
 
-  const filteredOptions = rooms?.filter(o => {
-    const _sText = searchText?.toLowerCase().trim();
-    if (!_sText) return true;
-    return o.description.toLowerCase().includes(_sText);
-  });
-
-  logger.debug(NAMESPACE, 'rooms rendered', filteredOptions[0]);
-
-  const handleSearch = text => {
-    const searchValue = text.toLowerCase().trim();
-    setSearchText(text);
-    const _room = filteredOptions.find(
-      o => o.description.toLowerCase() === searchValue
-    );
-    _room ? setRoom(_room) : setRoom(null);
-  };
-
-  const handleSelect = value => {
-    setRoom(value);
-    Keyboard.dismiss();
-    toggleOpen(false);
-  };
-
-  const toggleOpen = (_open = !open) => setOpen(_open);
-
-  const handleJoin = () => {
-    joinRoom();
-  };
+  const handleJoin = () => joinRoom();
 
   return (
-    <KeyboardAvoidingView
-      behavior={'padding'}
-      style={styles.keyboardAvoidingView}
-    >
-      <View style={[styles.container, baseStyles.viewBackground]}>
-        <TextDisplayWithButton label={t('settings.selectRoom')}>
-          <View style={styles.triggerContainer}>
-            <View style={styles.triggerTextContainer}>
-              <TextInput
-                style={[styles.searchInput, baseStyles.text]}
-                placeholder={t('settings.search')}
-                value={searchText}
-                onChangeText={handleSearch}
-                onFocus={() => toggleOpen(true)}
-                onBlur={() => toggleOpen(false)}
-                autoCorrect={false}
-                autoComplete="off"
-              />
-            </View>
+    <View style={[styles.container, baseStyles.viewBackground]}>
+      <TextDisplayWithButton label={t('settings.selectRoom')}>
+        <View style={styles.triggerContainer}>
+          <View style={styles.triggerTextContainer} onPress={toggleOpen}>
+            <Text style={styles.triggerText} onPress={toggleOpen}>{room ? room.description : t('settings.selectRoom')}</Text>
 
-            <TouchableOpacity
-              onPress={handleJoin}
-              disabled={!room}
-              style={[styles.button, !room && styles.buttonDisabled]}
-            >
-              <Text style={styles.buttonText}>{t('settings.join')}</Text>
-            </TouchableOpacity>
           </View>
-        </TextDisplayWithButton>
-        {open &&
-          filteredOptions.length > 0 &&
-          (filteredOptions.length > 1 || !room) && (
-            <FlatList
-              keyboardShouldPersistTaps={'handled'}
-              style={styles.list}
-              data={filteredOptions}
-              keyExtractor={item => item.room}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleSelect(item)}>
-                  <Text style={[styles.itemText, baseStyles.text]}>
-                    {item.description}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          )}
-      </View>
-    </KeyboardAvoidingView>
+
+          <TouchableOpacity
+            onPress={handleJoin}
+            disabled={!room}
+            style={[styles.button, !room && styles.buttonDisabled]}
+          >
+            <Text style={styles.buttonText}>{t('settings.join')}</Text>
+          </TouchableOpacity>
+        </View>
+      </TextDisplayWithButton>
+      <RoomSelectModal open={open} toggleOpen={toggleOpen} rooms={rooms} />
+    </View >
   );
 };
 
@@ -135,11 +77,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#9e9e9e',
     borderRadius: 5,
-    bottom: 70,
-    position: 'absolute',
-    width: '100%',
     backgroundColor: '#222',
-    maxHeight: 200,
   },
   itemText: {
     padding: 10,

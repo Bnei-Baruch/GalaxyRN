@@ -17,7 +17,8 @@
     "search": "Search...",
     "join": "Войти в комнату",
     "selectRoom": "Выбрать 10",
-    "backToTen": "Назад к 10"
+    "backToTen": "Назад к 10",
+    "noRoomsFound": "Не найдено комнат"
   },
   "user": {
     "title": "Пользовательские настройки",

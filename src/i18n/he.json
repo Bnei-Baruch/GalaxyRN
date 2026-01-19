@@ -16,7 +16,8 @@
     "search": "Search...",
     "join": "כנס לחדר",
     "selectRoom": "בחר Ten",
-    "backToTen": "חזור ל-Ten"
+    "backToTen": "חזור ל-Ten",
+    "noRoomsFound": "לא נמצאו חדרים"
   },
   "user": {
     "title": "הגדרות משתמש",
