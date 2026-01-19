@@ -290,6 +290,7 @@ export const useShidurStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error during prepareShidur:', error);
     }
 
+    logger.debug(NAMESPACE, 'prepareShidur initShidur isPlay', isPlay);
     if (isPlay) {
       await get().initShidur();
     }
