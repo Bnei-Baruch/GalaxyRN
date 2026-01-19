@@ -1,20 +1,25 @@
 import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import { useRoomStore } from '../zustand/fetchRooms';
-import { LeaveBtn } from './topBarBtns/LeaveBtn';
-import Text from '../components/CustomText';
+import { useUiActions } from '../zustand/uiActions';
 import { AudioDevicesBtn } from './topBarBtns/AudioDevicesBtn';
+import { LeaveBtn } from './topBarBtns/LeaveBtn';
 
 export const TopBar = () => {
   const { room } = useRoomStore();
+  const { showBars } = useUiActions();
   const insets = useSafeAreaInsets();
   
+  if (!showBars) return null;
+  
   return (
+    <View style={styles.container}>
     <View
       style={[
-        styles.container,
+        styles.buttonsContainer,
         baseStyles.panelBackground,
         {
           paddingTop: Math.max(insets.top, 16),
@@ -29,14 +34,22 @@ export const TopBar = () => {
       </Text>
       <LeaveBtn />
     </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  buttonsContainer: {
     flexDirection: 'row',
-    paddingBottom: 16,
     alignItems: 'center',
+    paddingBottom: 16,
   },
   text: {
     flexGrow: 10,

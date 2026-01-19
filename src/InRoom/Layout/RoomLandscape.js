@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../../constants';
 import logger from '../../services/logger';
 import { useUiActions } from '../../zustand/uiActions';
@@ -8,6 +9,7 @@ const NAMESPACE = 'RoomLandscape';
 
 const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
   const { setFeedsScrollY, width, toggleShowBars } = useUiActions();
+  const insets = useSafeAreaInsets();
 
   const isShidur = !!shidur;
 
@@ -20,7 +22,7 @@ const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
     setFeedsScrollY(scrollY);
   };
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingLeft: insets.left, paddingRight: insets.right }]}>
       {isShidur && (
         <Pressable onPress={handleAnyPress} style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>

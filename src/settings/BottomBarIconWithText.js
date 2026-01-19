@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, Platform, StyleSheet, useWindowDimensions } from 'react-native';
+import { Animated, StyleSheet, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
@@ -37,14 +37,8 @@ const BottomBarIconWithText = ({
   const shouldShowText = resolvedShowText ?? true;
 
   const buttonStyles = React.useMemo(() => {
-    const _styles = [
-      styles.container,
-      // Platform.OS === 'android' && shouldShowText
-      //   ? { paddingVertical: 12 }
-      //   : { paddingVertical: 12 },
-    ];
     return [
-      ..._styles,
+      styles.container,
       typeof containerVariant === 'string'
         ? styles[containerVariant]
         : containerVariant,

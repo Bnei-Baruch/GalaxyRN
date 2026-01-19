@@ -59,14 +59,6 @@ const MenuLevel1 = () => {
   const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
   const modalVisible = moreModal || shouldRenderModal;
 
-  const translateYStart = useMemo(
-    () => getTranslateYValue(styles.panelWrapperTopStart),
-    [isPortrait]
-  );
-  const translateYEnd = useMemo(
-    () => getTranslateYValue(styles.panelWrapperTopEnd),
-    [isPortrait]
-  );
   const translateYBottomStart = useMemo(
     () => getTranslateYValue(styles.panelWrapperBottomStart),
     [isPortrait]
@@ -77,20 +69,6 @@ const MenuLevel1 = () => {
   );
   const panelEntrance = useRef(new Animated.Value(0)).current;
 
-  const animatedTopPanelStyle = useMemo(
-    () => ({
-      transform: [
-        {
-          translateY: panelEntrance.interpolate({
-            inputRange: [0, 1],
-            outputRange: [translateYStart, translateYEnd],
-            extrapolate: 'clamp',
-          }),
-        },
-      ],
-    }),
-    [panelEntrance, translateYStart, translateYEnd]
-  );
 
   const animatedBottomPanelStyle = useMemo(
     () => ({
@@ -165,17 +143,16 @@ const MenuLevel1 = () => {
         visible={modalVisible}
         onRequestClose={handleClose}
         supportedOrientations={['portrait', 'landscape']}
+        statusBarTranslucent={true}
       >
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={[styles.modalContainer]}>
             {isPortrait ? (
               <MenuPortrait
-                animatedTopPanelStyle={animatedTopPanelStyle}
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
             ) : (
               <MenuLandscape
-                animatedTopPanelStyle={animatedTopPanelStyle}
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
             )}
@@ -192,12 +169,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-  },
-  panelWrapperTopStart: {
-    transform: [{ translateY: '-50%' }],
-  },
-  panelWrapperTopEnd: {
-    transform: [{ translateY: 0 }],
   },
   panelWrapperBottomStart: {
     transform: [{ translateY: '100%' }],

@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import { BottomBar } from '../roomMenuLevel0/BottomBar';
-import { TopBar } from '../roomMenuLevel0/TopBar';
 import { BroadcastMuteBtn } from './btns/BroadcastMuteBtn';
 import { ChatBtn } from './btns/ChatBtn';
 import { DonateBtn } from './btns/DonateBtn';
@@ -20,15 +19,12 @@ import { VoteBtn } from './btns/VoteBtn';
 import AudioSelectBtn from './btns/audioSelect/AudioSelectBtn';
 import { buttonsPaneStyles as styles } from './helper';
 
-const MenuPortrait = ({ animatedTopPanelStyle, animatedBottomPanelStyle }) => {
+const MenuPortrait = ({ animatedBottomPanelStyle }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
-      <View style={styles.barContainer}>
-        <TopBar />
-      </View>
       <Animated.View
         style={[
           styles.panelWrapper,
@@ -37,6 +33,7 @@ const MenuPortrait = ({ animatedTopPanelStyle, animatedBottomPanelStyle }) => {
           {
             marginLeft: insets.left + 8,
             marginRight: insets.right + 8,
+            marginTop: insets.top + 8,
           },
         ]}
       >
