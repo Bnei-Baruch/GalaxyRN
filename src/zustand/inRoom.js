@@ -141,6 +141,7 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'exitRoom AudioBridge.abandonAudioFocus()');
     try {
       useUiActions.getState().toggleMoreModal(false);
+      useMyStreamStore.getState().toggleMute(false);
       AudioBridge.abandonAudioFocus();
       finishSpan(deviceCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
