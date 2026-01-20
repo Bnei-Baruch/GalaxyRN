@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
-  Keyboard,
   KeyboardAvoidingView,
   Modal,
+  Pressable,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -16,59 +16,68 @@ import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
 import { useRoomStore } from '../zustand/fetchRooms';
-
+import JoinRoomBtn from './JoinRoomBtn';
 
 const NAMESPACE = 'RoomSelectModal';
 
-const RoomSelectModal = ({ open, toggleOpen, rooms }) => {
-  logger.debug(NAMESPACE, 'RoomSelectModal rendered open', open, 'rooms', rooms);
-
-  const [searchText, setSearchText] = useState();
-
-  useEffect(() => {
-    setSearchText(room?.description || '');
-  }, [room]);
-
-  const { setRoom, room } = useRoomStore();
+const RoomSelectModal = () => {
+  const { selectRoomOpen, setSelectRoomOpen } = useRoomStore();
+  const { rooms, setRoom, room } = useRoomStore();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  const filteredOptions = rooms?.filter(o => {
-    const _sText = searchText?.toLowerCase().trim();
+  const [searchText, setSearchText] = useState('');
+  const refInput = useRef(null);
+
+  useEffect(() => {
+    room && setSearchText(room.description);
+  }, [room]);
+
+
+  const _sText = searchText?.toLowerCase().trim();
+  const filteredOptions = useMemo(() => rooms?.filter(o => {
     if (!_sText) return true;
     return o.description.toLowerCase().includes(_sText);
-  });
-
-  logger.debug(NAMESPACE, 'rooms rendered', filteredOptions.length, 'searchText', searchText);
+  }), [_sText]);
 
   const handleSearch = text => {
-    const searchValue = text.toLowerCase().trim();
     setSearchText(text);
     const _room = filteredOptions.find(
-      o => o.description.toLowerCase() === searchValue
+      o => o.description.toLowerCase() === text.toLowerCase()
     );
-    _room ? setRoom(_room) : setRoom(null);
+
+    if (_room) {
+      setRoom(_room);
+    }
   };
 
-  const handleSelect = value => {
-    setRoom(value);
-    Keyboard.dismiss();
-    toggleOpen();
+  const handleSelect = value => setRoom(value);
+
+  const closeModal = () => {
+    logger.debug(NAMESPACE, 'closeModal');
+    setSelectRoomOpen(false);
+  };
+
+  const handleModalShow = () => {
+    setTimeout(() => {
+      refInput.current?.focus();
+    }, 100);
   };
 
 
   return (
     <Modal
-      visible={open}
-      onRequestClose={toggleOpen}
-      animationType="none"
+      visible={selectRoomOpen}
+      onRequestClose={closeModal}
+      onShow={handleModalShow}
+      animationType="fade"
       presentationStyle="overFullScreen"
       supportedOrientations={['portrait']}
-      keyboardShouldPersistTaps="always"
     >
 
       <KeyboardAvoidingView behavior={'padding'}
         style={[styles.modalContainer, {
+          flex: 1,
           paddingTop: insets.top + 8,
           paddingBottom: insets.bottom + 8,
           paddingLeft: insets.left + 8,
@@ -84,8 +93,11 @@ const RoomSelectModal = ({ open, toggleOpen, rooms }) => {
             autoCorrect={false}
             autoComplete="off"
             placeholderTextColor="white"
+            ref={refInput}
           />
-          <TouchableOpacity onPress={toggleOpen} style={styles.closeButton}>
+          <JoinRoomBtn />
+
+          <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
             <Icon name="close" color="white" size={20} />
           </TouchableOpacity>
         </View>
@@ -98,11 +110,11 @@ const RoomSelectModal = ({ open, toggleOpen, rooms }) => {
               keyExtractor={item => item.room}
               scrollEnabled={true}
               renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleSelect(item)}>
+                <Pressable key={item.room} onPress={() => handleSelect(item)} style={styles.item}>
                   <Text style={[styles.itemText, baseStyles.text]}>
                     {item.description}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             />
           ) : (
@@ -122,14 +134,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   inputContainer: {
-    position: 'relative',
     marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    justifyContent: 'space-between',
   },
   searchInput: {
+    flex: 1,
     color: 'white',
     fontSize: 16,
     borderWidth: 1,
-    borderRadius: 5,
+    borderTopLeftRadius: 5,
+    borderBottomLeftRadius: 5,
     borderColor: '#9e9e9e',
     backgroundColor: '#222',
     paddingHorizontal: 10,
@@ -152,26 +169,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: -20,
-    right: -15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
-  triggerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'nowrap',
-  },
-  triggerTextContainer: {
-    justifyContent: 'center',
-    paddingVertical: 8,
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-  triggerText: {
-    fontSize: 16,
-    color: 'white',
+    top: -25,
+    right: 0,
   },
 });
 
