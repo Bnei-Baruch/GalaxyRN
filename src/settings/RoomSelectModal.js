@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   inputContainer: {
-    marginTop: 8,
+    paddingTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'nowrap',
@@ -169,8 +169,13 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: -25,
+    top: -20,
     right: 0,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
 });
 
