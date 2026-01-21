@@ -6,7 +6,7 @@ import ScreenTitle from '../../components/ScreenTitle';
 import WIP from '../../components/WIP';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useMaterials } from '../../zustand/fetchMaterials';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 import { StudyMaterialItem } from './StudyMaterialItem';
 
 export const StudyMaterialsBtn = () => {
@@ -23,8 +23,8 @@ export const StudyMaterialsBtn = () => {
         <BottomBarIconWithText
           iconName="book"
           text={t('moreOpts.materials')}
-          extraStyle={['rest', 'resticon']}
-          showtext={true}
+          extraStyle={['rest', 'rest_icon']}
+          showtext={[true, false]}
           direction={['horizontal', 'horizontal']}
         />
       </Pressable>

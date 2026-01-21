@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 const PARAMS =
   '"utm_source"=arvut_system&"&"utm_medium"="button"&"utm_campaign"="donations"&"utm_id"="donations"&"utm_content"="header_button_donate"&"utm_term"="heb"';
 const iso2ByIso1 = {
@@ -25,8 +25,8 @@ export const DonateBtn = () => {
       <BottomBarIconWithText
         iconName="favorite"
         text={t('moreOpts.donate')}
-        extraStyle={['rest', 'resticon']}
-        showtext={true}
+        extraStyle={['rest', 'rest_icon']}
+        showtext={[true, false]}
         direction={['horizontal', 'horizontal']}
       />
     </Pressable>

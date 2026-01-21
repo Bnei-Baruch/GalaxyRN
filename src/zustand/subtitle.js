@@ -26,7 +26,7 @@ const ORIGINAL_LANG = 'he';
 let subLang = ORIGINAL_LANG;
 
 export const useSubtitleStore = create((set, get) => ({
-  isOpen: false,
+  isOpen: true,
   toggleIsOpen: isOpen => set(state => ({ isOpen: isOpen ?? !state.isOpen })),
 
   lastMsg: null,

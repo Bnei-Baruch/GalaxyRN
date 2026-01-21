@@ -8,13 +8,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import logger from '../../services/logger';
-import { useInitsStore } from '../../zustand/inits';
-import { useUiActions } from '../../zustand/uiActions';
-import ButtonsPaneLandscape from './ButtonsPaneLandscape';
-import ButtonsPanePortrait from './ButtonsPanePortrait';
+import logger from '../services/logger';
+import { useInitsStore } from '../zustand/inits';
+import { useUiActions } from '../zustand/uiActions';
+import MenuLandscape from './MenuLandscape';
+import MenuPortrait from './MenuPortrait';
 
-const NAMESPACE = 'ButtonsPaneModal';
+const NAMESPACE = 'MenuLevel1';
 
 const PANEL_ANIMATION_IN = 200;
 const PANEL_ANIMATION_OUT = 150;
@@ -53,20 +53,12 @@ const normalizeTranslateValue = value => {
   return 0;
 };
 
-const ButtonsPaneModal = () => {
+const MenuLevel1 = () => {
   const { toggleMoreModal, moreModal } = useUiActions();
   const { isPortrait } = useInitsStore();
   const [shouldRenderModal, setShouldRenderModal] = useState(moreModal);
   const modalVisible = moreModal || shouldRenderModal;
 
-  const translateYStart = useMemo(
-    () => getTranslateYValue(styles.panelWrapperTopStart),
-    [isPortrait]
-  );
-  const translateYEnd = useMemo(
-    () => getTranslateYValue(styles.panelWrapperTopEnd),
-    [isPortrait]
-  );
   const translateYBottomStart = useMemo(
     () => getTranslateYValue(styles.panelWrapperBottomStart),
     [isPortrait]
@@ -77,20 +69,6 @@ const ButtonsPaneModal = () => {
   );
   const panelEntrance = useRef(new Animated.Value(0)).current;
 
-  const animatedTopPanelStyle = useMemo(
-    () => ({
-      transform: [
-        {
-          translateY: panelEntrance.interpolate({
-            inputRange: [0, 1],
-            outputRange: [translateYStart, translateYEnd],
-            extrapolate: 'clamp',
-          }),
-        },
-      ],
-    }),
-    [panelEntrance, translateYStart, translateYEnd]
-  );
 
   const animatedBottomPanelStyle = useMemo(
     () => ({
@@ -165,17 +143,16 @@ const ButtonsPaneModal = () => {
         visible={modalVisible}
         onRequestClose={handleClose}
         supportedOrientations={['portrait', 'landscape']}
+        statusBarTranslucent={true}
       >
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={[styles.modalContainer]}>
             {isPortrait ? (
-              <ButtonsPanePortrait
-                animatedTopPanelStyle={animatedTopPanelStyle}
+              <MenuPortrait
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
             ) : (
-              <ButtonsPaneLandscape
-                animatedTopPanelStyle={animatedTopPanelStyle}
+              <MenuLandscape
                 animatedBottomPanelStyle={animatedBottomPanelStyle}
               />
             )}
@@ -192,13 +169,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  panelWrapperTopStart: {
-    transform: [{ translateY: '-50%' }],
-  },
-  panelWrapperTopEnd: {
-    transform: [{ translateY: 0 }],
   },
   panelWrapperBottomStart: {
     transform: [{ translateY: '100%' }],
@@ -207,4 +177,4 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 0 }],
   },
 });
-export default ButtonsPaneModal;
+export default MenuLevel1;

@@ -1,25 +1,23 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
-import { useMyStreamStore } from '../zustand/myStream';
-import { bottomBar } from './helper';
-export const MuteBtn = () => {
-  const { mute, toggleMute } = useMyStreamStore();
-  const handlePress = () => toggleMute();
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
+import { useMyStreamStore } from '../../zustand/myStream';
+import { bottomBar } from '../helper';
+export const CammuteBtn = () => {
+  const { cammute, toggleCammute } = useMyStreamStore();
+  const handlePress = () => toggleCammute();
   const { t } = useTranslation();
   let iconName, text, extraStyle;
-
-  if (mute) {
-    iconName = 'mic-off';
-    text = t('bottomBar.unmute');
+  if (cammute) {
+    iconName = 'videocam-off';
+    text = t('bottomBar.stopVideo');
     extraStyle = ['toggle_on', 'toggle_on_icon'];
   } else {
-    iconName = 'mic';
-    text = t('bottomBar.mute');
+    iconName = 'videocam';
+    text = t('bottomBar.startVideo');
     extraStyle = ['toggle_off', 'toggle_off_icon'];
   }
-
   return (
     <Pressable onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText

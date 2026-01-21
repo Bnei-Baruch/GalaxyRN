@@ -1,179 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
+  Pressable,
   StyleSheet,
-  TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Text from '../components/CustomText';
-import TextInput from '../components/CustomTextInput';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
-import logger from '../services/logger';
 import { useRoomStore } from '../zustand/fetchRooms';
-import { useInRoomStore } from '../zustand/inRoom';
+import JoinRoomBtn from './JoinRoomBtn';
+import RoomSelectModal from './RoomSelectModal';
 
 const NAMESPACE = 'RoomSelect';
 
 const RoomSelect = () => {
-  const [searchText, setSearchText] = useState();
-  const [rooms, setRooms] = useState([]);
-  const [open, setOpen] = useState(false);
+  const { setSelectRoomOpen } = useRoomStore();
 
-  const { fetchRooms, setRoom, room } = useRoomStore();
-  const { joinRoom } = useInRoomStore();
+  const { room } = useRoomStore();
   const { t } = useTranslation();
 
-  useEffect(() => {
-    fetchRooms().then(rooms => setRooms(rooms));
-  }, []);
-
-  useEffect(() => {
-    room && setSearchText(room.description);
-  }, [room]);
-
-  const filteredOptions = rooms?.filter(o => {
-    const _sText = searchText?.toLowerCase().trim();
-    if (!_sText) return true;
-    return o.description.toLowerCase().includes(_sText);
-  });
-
-  logger.debug(NAMESPACE, 'rooms rendered', filteredOptions[0]);
-
-  const handleSearch = text => {
-    const searchValue = text.toLowerCase().trim();
-    setSearchText(text);
-    const _room = filteredOptions.find(
-      o => o.description.toLowerCase() === searchValue
-    );
-    _room ? setRoom(_room) : setRoom(null);
-  };
-
-  const handleSelect = value => {
-    setRoom(value);
-    Keyboard.dismiss();
-    toggleOpen(false);
-  };
-
-  const toggleOpen = (_open = !open) => setOpen(_open);
-
-  const handleJoin = () => {
-    joinRoom();
-  };
+  const toggleOpen = () => setSelectRoomOpen(true);
 
   return (
-    <KeyboardAvoidingView
-      behavior={'padding'}
-      style={styles.keyboardAvoidingView}
-    >
-      <View style={[styles.container, baseStyles.viewBackground]}>
-        <TextDisplayWithButton label={t('settings.selectRoom')}>
-          <View style={styles.triggerContainer}>
-            <View style={styles.triggerTextContainer}>
-              <TextInput
-                style={[styles.searchInput, baseStyles.text]}
-                placeholder={t('settings.search')}
-                value={searchText}
-                onChangeText={handleSearch}
-                onFocus={() => toggleOpen(true)}
-                onBlur={() => toggleOpen(false)}
-                autoCorrect={false}
-                autoComplete="off"
-              />
-            </View>
-
-            <TouchableOpacity
-              onPress={handleJoin}
-              disabled={!room}
-              style={[styles.button, !room && styles.buttonDisabled]}
-            >
-              <Text style={styles.buttonText}>{t('settings.join')}</Text>
-            </TouchableOpacity>
-          </View>
-        </TextDisplayWithButton>
-        {open &&
-          filteredOptions.length > 0 &&
-          (filteredOptions.length > 1 || !room) && (
-            <FlatList
-              keyboardShouldPersistTaps={'handled'}
-              style={styles.list}
-              data={filteredOptions}
-              keyExtractor={item => item.room}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleSelect(item)}>
-                  <Text style={[styles.itemText, baseStyles.text]}>
-                    {item.description}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          )}
-      </View>
-    </KeyboardAvoidingView>
+    <View style={[styles.container, baseStyles.viewBackground]}>
+      <TextDisplayWithButton label={t('settings.selectRoom')}>
+        <View style={styles.triggerContainer}>
+          <Pressable style={styles.textContainer} onPress={toggleOpen}>
+            <Text style={styles.text}>
+              {room ? room.description : t('settings.selectRoom')}
+            </Text>
+          </Pressable>
+          <JoinRoomBtn />
+        </View>
+      </TextDisplayWithButton>
+      <RoomSelectModal />
+    </View >
   );
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
-    zIndex: 2,
-  },
   container: {
     paddingTop: 10,
-  },
-  searchInput: {
-    flex: 1,
-    paddingHorizontal: 10,
-    border: 'none',
-    color: 'white',
-    paddingVertical: 0,
-    marginVertical: 0,
-  },
-  list: {
-    borderWidth: 1,
-    borderColor: '#9e9e9e',
-    borderRadius: 5,
-    bottom: 70,
-    position: 'absolute',
-    width: '100%',
-    backgroundColor: '#222',
-    maxHeight: 200,
-  },
-  itemText: {
-    padding: 10,
-  },
-  button: {
-    borderTopEndRadius: 5,
-    borderBottomEndRadius: 5,
-    backgroundColor: '#03A9F4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#9e9e9e',
-    height: 40,
-  },
-  buttonDisabled: {
-    backgroundColor: '#9e9e9e',
-  },
-  buttonText: {
-    color: 'white',
   },
   triggerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'nowrap',
   },
-  triggerTextContainer: {
+  textContainer: {
     justifyContent: 'center',
     paddingVertical: 8,
     flex: 1,
     paddingHorizontal: 10,
   },
-  triggerText: {
+  text: {
     fontSize: 16,
     color: 'white',
   },

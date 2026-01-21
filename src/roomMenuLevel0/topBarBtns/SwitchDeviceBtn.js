@@ -17,9 +17,9 @@ export const SwitchDeviceBtn = () => {
         iconName={selected.icon}
         text={t('bottomBar.audioSource')}
         extraStyle={
-          wip ? ['rest_disabled', 'rest_disabled_icon'] : ['rest', 'resticon']
+          wip ? ['rest_disabled', 'rest_disabled_icon'] : ['rest', 'rest_icon']
         }
-        showtext={true}
+        showtext={[false, true]}
         direction={['horizontal', 'horizontal']}
       />
     </Pressable>

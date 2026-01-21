@@ -13,6 +13,7 @@ import logger from '../services/logger';
 import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
+import { useRoomStore } from './fetchRooms';
 import { modalModes } from './helper';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
@@ -85,6 +86,9 @@ export const useInitsStore = create((set, get) => ({
 
       logger.debug(NAMESPACE, 'init done');
       get().setIsAppInited(true);
+
+      logger.debug(NAMESPACE, 'fetchRooms');
+      useRoomStore.getState().fetchRooms();
     } catch (error) {
       get().setIsAppInited(false);
       logger.error(NAMESPACE, 'Error initializing app', error);

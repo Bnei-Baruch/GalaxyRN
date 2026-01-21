@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useUserStore } from '../../zustand/user';
-import { bottomBar } from '../helper';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
@@ -24,9 +24,9 @@ export const VoteBtn = () => {
         <BottomBarIconWithText
           iconName="thumbs-up-down"
           text={t('bottomBar.vote')}
-          extraStyle={['rest', 'resticon']}
-          showtext={true}
-          direction={['horizontal', 'horizontal]}']}
+          extraStyle={['rest', 'rest_icon']}
+          showtext={[true, false]}
+          direction={['horizontal', 'horizontal']}
         />
       </Pressable>
       {open && (

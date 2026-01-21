@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomBar } from '../bottomBar/BottomBar';
-import ButtonsPaneModal from '../bottomBar/buttonsPane/ButtonsPaneModal';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
 import { baseStyles } from '../constants';
+import { BottomBarLevel0 } from '../roomMenuLevel0/BottomBarLevel0';
+import { TopBar } from '../roomMenuLevel0/TopBar';
+import MenuLevel1 from '../roomMenuLevel1/MenuLevel1';
 import { useInRoomStore } from '../zustand/inRoom';
 import ForegroundListener from './ForegroundListener';
 import RoomLayout from './Layout/RoomLayout';
@@ -28,8 +29,9 @@ const Room = () => {
       ]}
     >
       <RoomLayout />
-      <BottomBar />
-      <ButtonsPaneModal />
+      <TopBar />
+      <BottomBarLevel0 />
+      <MenuLevel1 />
       <ConnectionNotStable />
       <ForegroundListener />
     </View>

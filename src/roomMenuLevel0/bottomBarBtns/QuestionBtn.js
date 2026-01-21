@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
-import { useInRoomStore } from '../zustand/inRoom';
-import { useSettingsStore } from '../zustand/settings';
-import { useShidurStore } from '../zustand/shidur';
-import { bottomBar } from './helper';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
+import { useInRoomStore } from '../../zustand/inRoom';
+import { useSettingsStore } from '../../zustand/settings';
+import { useShidurStore } from '../../zustand/shidur';
+import { bottomBar } from '../helper';
 export const QuestionBtn = () => {
   const { question, toggleQuestion } = useSettingsStore();
   const { isPlay, isOnAir } = useShidurStore();

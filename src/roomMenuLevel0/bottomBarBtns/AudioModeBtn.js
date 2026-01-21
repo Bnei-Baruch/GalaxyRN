@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
-import BottomBarIconWithText from '../settings/BottomBarIconWithText';
-import { useSettingsStore } from '../zustand/settings';
-import { bottomBar } from './helper';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
+import { useSettingsStore } from '../../zustand/settings';
+import { bottomBar } from '../helper';
 export const AudioModeBtn = () => {
   const { audioMode, toggleAudioMode } = useSettingsStore();
   const { t } = useTranslation();

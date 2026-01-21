@@ -1,20 +1,19 @@
-import React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
-import { useSubtitleStore } from '../../zustand/subtitle';
-import { bottomBar } from '../helper';
-export const SubtitleBtn = () => {
-  const { toggleIsOpen, lastMsg, isOpen } = useSubtitleStore();
+import { useSettingsStore } from '../../zustand/settings';
+import { bottomBar } from '../../roomMenuLevel0/helper';
+export const HideSelfBtn = () => {
+  const { hideSelf, toggleHideSelf } = useSettingsStore();
   const { t } = useTranslation();
-  const toggle = () => toggleIsOpen();
   return (
-    <Pressable onPress={toggle} style={bottomBar.btn}>
+    <Pressable onPress={toggleHideSelf} style={bottomBar.btn}>
       <BottomBarIconWithText
-        iconName="subtitles"
-        text={t('bottomBar.broadcastsubtitles')}
+        iconName="account-box"
+        text={t('bottomBar.self')}
         extraStyle={
-          !isOpen
+          hideSelf
             ? ['toggle_off', 'toggle_off_icon']
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }

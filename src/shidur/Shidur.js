@@ -56,7 +56,6 @@ const Shidur = () => {
                   <Icon name="graphic-eq" color="white" size={70} />
                 </View>
               )}
-              <Subtitle />
             </View>
           ) : (
             <PlayPauseOverlay />
@@ -73,6 +72,8 @@ const Shidur = () => {
               </View>
             </View>
           )}
+
+          <Subtitle />
         </View>
       </WIP>
     </View>

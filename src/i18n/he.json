@@ -13,10 +13,11 @@
     "cammute": "להפסיק וידאו",
     "audioMode": "מצב שמע",
     "isMuted": "השתק שידור",
-    "search": "Search...",
+    "search": "חפש...",
     "join": "כנס לחדר",
     "selectRoom": "בחר Ten",
-    "backToTen": "חזור ל-Ten"
+    "backToTen": "חזור ל-Ten",
+    "noRoomsFound": "לא נמצאו חדרים"
   },
   "user": {
     "title": "הגדרות משתמש",
