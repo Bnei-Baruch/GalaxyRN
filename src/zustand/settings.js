@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import logger from '../services/logger';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
@@ -26,6 +27,17 @@ export const useSettingsStore = create((set, get) => ({
     set({ question });
   },
 
+  isKliOlamiFullscreen: false,
+  toggleIsKliOlamiFullscreen: (isKliOlamiFullscreen = !get().isKliOlamiFullscreen) => {
+    if (isKliOlamiFullscreen) {
+      useFeedsStore.getState().feedAudioModeOn();
+      useShidurStore.getState().setVideo(NO_VIDEO_OPTION_VALUE, false);
+    } else {
+      useShidurStore.getState().exitAudioMode();
+    }
+    set({ isKliOlamiFullscreen });
+  },
+
   isShidur: true,
   toggleIsShidur: async () => {
     const isShidur = !get().isShidur;
@@ -47,8 +59,16 @@ export const useSettingsStore = create((set, get) => ({
     set({ audioMode });
   },
 
-  showGroups: false,
-  toggleShowGroups: () => set(state => ({ showGroups: !state.showGroups })),
+  isKliOlami: false,
+  toggleIsKliOlami: (isKliOlami = !get().isKliOlami) => {
+    logger.debug(NAMESPACE, 'toggleIsKliOlami', isKliOlami);
+    set({ isKliOlami });
+    if (isKliOlami) {
+      useShidurStore.getState().initKliOlami();
+    } else {
+      useShidurStore.getState().cleanKliOlami();
+    }
+  },
 
   hideSelf: false,
   toggleHideSelf: () => set(state => ({ hideSelf: !state.hideSelf })),
