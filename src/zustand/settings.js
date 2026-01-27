@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 
+import { STORAGE_KEYS } from '../constants';
 import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import logger from '../services/logger';
+import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
 import { useShidurStore } from './shidur';
@@ -53,9 +55,16 @@ export const useSettingsStore = create((set, get) => ({
 
   audioMode: false,
   toggleAudioMode: async (audioMode = !get().audioMode) => {
-    audioMode
-      ? useInRoomStore.getState().enterAudioMode()
-      : useInRoomStore.getState().exitAudioMode();
+    logger.debug(NAMESPACE, 'toggleAudioMode', audioMode);
+    try {
+      audioMode
+        ? useInRoomStore.getState().enterAudioMode()
+        : useInRoomStore.getState().exitAudioMode();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during toggleAudioMode:', error);
+    }
+    setToStorage(STORAGE_KEYS.IS_AUDIO_MODE, audioMode.toString());
+    logger.debug(NAMESPACE, 'toggleAudioMode done', audioMode);
     set({ audioMode });
   },
 

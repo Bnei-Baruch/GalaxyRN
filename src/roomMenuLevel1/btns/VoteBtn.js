@@ -1,3 +1,4 @@
+import { VOTE_URL } from '@env';
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,9 +11,10 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { WebView } from 'react-native-webview';
+import { bottomBar } from '../../roomMenuLevel0/helper';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useUserStore } from '../../zustand/user';
-import { bottomBar } from '../../roomMenuLevel0/helper';
+
 export const VoteBtn = () => {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
@@ -45,13 +47,13 @@ export const VoteBtn = () => {
               <WebView
                 style={styles.item}
                 source={{
-                  uri: `https://vote.kli.one/button.html?answerId=1&userId=${user?.id}`,
+                  uri: `${VOTE_URL}?answerId=1&userId=${user?.id}`,
                 }}
               />
               <WebView
                 style={styles.item}
                 source={{
-                  uri: `https://vote.kli.one/button.html?answerId=2&userId=${user?.id}`,
+                  uri: `${VOTE_URL}?answerId=2&userId=${user?.id}`,
                 }}
               />
             </View>

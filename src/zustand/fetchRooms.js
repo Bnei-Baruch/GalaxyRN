@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { STORAGE_KEYS } from '../constants';
 import api from '../services/Api';
 import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../tools';
@@ -17,7 +18,7 @@ export const useRoomStore = create((set, get) => ({
     }
 
     try {
-      await setToStorage('room', room.room.toString());
+      await setToStorage(STORAGE_KEYS.ROOM, room.room.toString());
     } catch (error) {
       logger.error(NAMESPACE, 'Error setting room to storage', error);
       throw new Error('Error setting room to storage');
@@ -46,7 +47,7 @@ export const useRoomStore = create((set, get) => ({
 
 
     try {
-      const id = await getFromStorage('room');
+      const id = await getFromStorage(STORAGE_KEYS.ROOM);
       const room = get().rooms.find(x => x.room === Number.parseInt(id));
       logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 

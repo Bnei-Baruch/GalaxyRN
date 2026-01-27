@@ -1,22 +1,19 @@
+import { STUDY_MATERIALS_URL } from '@env';
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 import ScreenTitle from '../../components/ScreenTitle';
-import WIP from '../../components/WIP';
-import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
-import { useMaterials } from '../../zustand/fetchMaterials';
 import { bottomBar } from '../../roomMenuLevel0/helper';
-import { StudyMaterialItem } from './StudyMaterialItem';
+import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 
 export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
-  const { fetchMaterials, materials, isLoading } = useMaterials();
-  const { t } = useTranslation();
-  const toggleModal = () => {
-    if (!open) fetchMaterials();
-    setOpen(!open);
-  };
+  const { t, i18n } = useTranslation();
+
+  const toggleModal = () => setOpen(!open);
+
   return (
     <>
       <Pressable onPress={toggleModal} style={bottomBar.btn}>
@@ -38,13 +35,11 @@ export const StudyMaterialsBtn = () => {
       >
         <View style={styles.modal}>
           <ScreenTitle text={t('moreOpts.materials')} close={toggleModal} />
-          <WIP isReady={!isLoading}>
-            <ScrollView>
-              {materials.map(m => (
-                <StudyMaterialItem msg={m} key={m.Title} />
-              ))}
-            </ScrollView>
-          </WIP>
+
+          <WebView
+            style={styles.item}
+            source={{ uri: `${STUDY_MATERIALS_URL}?language=${i18n.language}` }}
+          />
         </View>
       </Modal>
     </>
