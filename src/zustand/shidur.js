@@ -576,7 +576,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initKliOlami: async () => {
-    if (!useSettingsStore.getState().showGroups) return;
+    if (!useSettingsStore.getState().isKliOlami) return;
 
     if (kliOlamiStream) return;
 
@@ -614,6 +614,12 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'enterAudioMode shidur not active');
       set({ video: NO_VIDEO_OPTION_VALUE });
       return;
+    }
+
+    try {
+      get().cleanKliOlami();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during enterAudioMode:', error);
     }
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
   },

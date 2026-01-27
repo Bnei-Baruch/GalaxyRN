@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
 import Text from '../components/CustomText';
 import WIP from '../components/WIP';
-import { SHIDUR_BAR_ZINDEX, baseStyles } from '../constants';
+import { baseStyles } from '../constants';
 import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { withProfiler } from '../libs/sentry/sentryHOC';
 import logger from '../services/logger';
@@ -17,6 +17,8 @@ import { FullscreenBtn } from './FullscreenBtn';
 import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
+import commonStyles from './style';
+
 
 const NAMESPACE = 'Shidur';
 
@@ -62,12 +64,12 @@ const Shidur = () => {
           )}
 
           {showBars && (
-            <View style={styles.toolbar}>
-              <View style={styles.toolbarBtnsGroup}>
+            <View style={commonStyles.toolbar}>
+              <View style={commonStyles.toolbarBtnsGroup}>
                 <PlayPauseBtn />
               </View>
 
-              <View style={styles.toolbarBtnsGroup}>
+              <View style={commonStyles.toolbarBtnsGroup}>
                 <FullscreenBtn />
               </View>
             </View>
@@ -106,22 +108,6 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9,
     width: '100%',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  toolbar: {
-    padding: 4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    zIndex: SHIDUR_BAR_ZINDEX,
-  },
-  toolbarBtnsGroup: {
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
     alignItems: 'center',
   },
   noVideo: {

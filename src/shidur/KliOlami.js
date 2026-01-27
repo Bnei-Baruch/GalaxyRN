@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { RTCView } from 'react-native-webrtc';
 
@@ -6,19 +6,14 @@ import { useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
+import { KliOlamiFullscreenBtn } from './KliOlamiFullscreenBtn';
+import commonStyles from './style';
 
 export const KliOlami = () => {
-  const { kliOlamiUrl, initKliOlami, cleanKliOlami } = useShidurStore();
+  const { kliOlamiUrl } = useShidurStore();
   const { isShidur } = useSettingsStore();
   const { isPortrait } = useInitsStore();
-  const { width } = useUiActions();
-
-  useEffect(() => {
-    initKliOlami();
-    return () => {
-      cleanKliOlami();
-    };
-  }, []);
+  const { width, showBars } = useUiActions();
 
   return (
     <View
@@ -27,13 +22,25 @@ export const KliOlami = () => {
         !isShidur && !isPortrait && { width, alignSelf: 'center' },
       ]}
     >
-      {kliOlamiUrl && (
-        <RTCView
-          streamURL={kliOlamiUrl}
-          style={styles.viewer}
-          objectFit="contain"
-        />
-      )}
+      {
+        kliOlamiUrl && (
+          <RTCView
+            streamURL={kliOlamiUrl}
+            style={styles.viewer}
+            objectFit="contain"
+          />
+        )
+      }
+
+      {
+        showBars && kliOlamiUrl && (
+          <View style={[commonStyles.toolbar, { justifyContent: 'flex-end' }]}>
+            <View style={commonStyles.toolbarBtnsGroup}>
+              <KliOlamiFullscreenBtn />
+            </View>
+          </View>
+        )
+      }
     </View>
   );
 };

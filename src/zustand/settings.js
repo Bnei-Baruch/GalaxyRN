@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { STORAGE_KEYS } from '../constants';
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import logger from '../services/logger';
 import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
@@ -26,6 +27,17 @@ export const useSettingsStore = create((set, get) => ({
   toggleQuestion: (question = !get().question) => {
     useUserStore.getState().sendUserState({ question });
     set({ question });
+  },
+
+  isKliOlamiFullscreen: false,
+  toggleIsKliOlamiFullscreen: (isKliOlamiFullscreen = !get().isKliOlamiFullscreen) => {
+    if (isKliOlamiFullscreen) {
+      useFeedsStore.getState().feedAudioModeOn();
+      useShidurStore.getState().setVideo(NO_VIDEO_OPTION_VALUE, false);
+    } else {
+      useShidurStore.getState().exitAudioMode();
+    }
+    set({ isKliOlamiFullscreen });
   },
 
   isShidur: true,
@@ -56,8 +68,16 @@ export const useSettingsStore = create((set, get) => ({
     set({ audioMode });
   },
 
-  showGroups: false,
-  toggleShowGroups: () => set(state => ({ showGroups: !state.showGroups })),
+  isKliOlami: false,
+  toggleIsKliOlami: (isKliOlami = !get().isKliOlami) => {
+    logger.debug(NAMESPACE, 'toggleIsKliOlami', isKliOlami);
+    set({ isKliOlami });
+    if (isKliOlami) {
+      useShidurStore.getState().initKliOlami();
+    } else {
+      useShidurStore.getState().cleanKliOlami();
+    }
+  },
 
   hideSelf: false,
   toggleHideSelf: () => set(state => ({ hideSelf: !state.hideSelf })),

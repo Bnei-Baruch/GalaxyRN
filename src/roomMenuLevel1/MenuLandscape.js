@@ -8,8 +8,8 @@ import { BottomBar } from '../roomMenuLevel0/BottomBar';
 import { BroadcastMuteBtn } from './btns/BroadcastMuteBtn';
 import { ChatBtn } from './btns/ChatBtn';
 import { DonateBtn } from './btns/DonateBtn';
-import { GroupsBtn } from './btns/GroupsBtn';
 import { HideSelfBtn } from './btns/HideSelfBtn';
+import { KliOlamiBtn } from './btns/KliOlamiBtn';
 import { ShidurBtn } from './btns/ShidurBtn';
 import { StudyMaterialsBtn } from './btns/StudyMaterialsBtn';
 import { SubtitleBtn } from './btns/SubtitleBtn';
@@ -57,7 +57,7 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
                 </View>
                 <View style={styles.buttonsRow}>
                   <View style={styles.button_100}>
-                    <GroupsBtn />
+                    <KliOlamiBtn />
                   </View>
                 </View>
               </View>
