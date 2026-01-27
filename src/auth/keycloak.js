@@ -3,6 +3,7 @@ import { decode } from 'base-64';
 import { authorize, logout, refresh } from 'react-native-app-auth';
 import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage from 'rn-secure-storage';
+import { STORAGE_KEYS } from '../constants';
 import { getUserRole, userRolesEnum } from '../enums';
 import mqtt from '../libs/mqtt';
 import {
@@ -112,7 +113,7 @@ class Keycloak {
     this.session = null;
 
     try {
-      await RNSecureStorage.removeItem('user_session');
+      await RNSecureStorage.removeItem(STORAGE_KEYS.USER_SESSION);
     } catch (err) {
       logger.debug(
         NAMESPACE,
@@ -154,7 +155,7 @@ class Keycloak {
       mqtt.setToken(accessToken);
       api.setAccessToken(accessToken);
 
-      setToStorage('user_session', JSON.stringify(session));
+      setToStorage(STORAGE_KEYS.USER_SESSION, JSON.stringify(session));
       logger.debug(NAMESPACE, 'Session set successfully');
 
       return session;
@@ -246,7 +247,7 @@ class Keycloak {
 
   startFromStorage = async () => {
     logger.debug(NAMESPACE, 'Starting from storage...');
-    const session = await getFromStorage('user_session')
+    const session = await getFromStorage(STORAGE_KEYS.USER_SESSION)
       .then(s => {
         logger.debug(
           NAMESPACE,

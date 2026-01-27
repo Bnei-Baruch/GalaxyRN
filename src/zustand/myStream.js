@@ -1,8 +1,9 @@
 import { NativeModules, Platform } from 'react-native';
 import { mediaDevices } from 'react-native-webrtc';
 import { create } from 'zustand';
+import { STORAGE_KEYS } from '../constants';
 import logger from '../services/logger';
-import { getFromStorage, setToStorage } from '../tools';
+import { setToStorage } from '../tools';
 import { useUserStore } from './user';
 
 const NAMESPACE = 'MyStream';
@@ -29,7 +30,6 @@ export const useMyStreamStore = create((set, get) => ({
   timestamp: Date.now(),
 
   myInit: async () => {
-    const cammute = await getFromStorage('cammute').then(x => x === 'true');
     get().myAbort();
 
     try {
@@ -47,7 +47,7 @@ export const useMyStreamStore = create((set, get) => ({
       throw e;
     }
 
-    set(() => ({ stream, cammute }));
+    set(() => ({ stream }));
   },
 
   myAbort: () => {
@@ -76,7 +76,7 @@ export const useMyStreamStore = create((set, get) => ({
   toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {
     useUserStore.getState().sendUserState({ camera: !cammute });
     stream?.getVideoTracks().forEach(track => (track.enabled = !cammute));
-    set(() => ({ cammute }));
-    updateStorage && (await setToStorage('cammute', cammute));
+    set({ cammute });
+    updateStorage && (await setToStorage(STORAGE_KEYS.CAMMUTE, cammute.toString()));
   },
 }));

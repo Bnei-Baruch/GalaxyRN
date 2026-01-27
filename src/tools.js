@@ -10,6 +10,10 @@ export const sleep = time =>
 
 export const getFromStorage = async (key, def) => {
   let res;
+  if (!(await RNSecureStorage.exist(key))) {
+    return def;
+  }
+
   try {
     res = await RNSecureStorage.getItem(key);
   } catch (err) {
@@ -29,6 +33,12 @@ export const setToStorage = async (key, val) => {
     return err;
   }
 };
+
+export const getBooleanFromStorage = async (key, def) => {
+  const value = await getFromStorage(key, def);
+  return value === 'true';
+};
+
 
 export const deepClone = obj => {
   return JSON.parse(JSON.stringify(obj));
@@ -66,7 +76,7 @@ export const getDateString = jsonDate => {
   return dateString;
 };
 
-export const noop = () => {};
+export const noop = () => { };
 
 export const fixTextEncoding = text => {
   if (!text || typeof text !== 'string') {
