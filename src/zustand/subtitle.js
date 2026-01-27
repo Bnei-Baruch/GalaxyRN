@@ -1,10 +1,11 @@
 import { SUBTITLES_TOPIC } from '@env';
 import { create } from 'zustand';
+import { STORAGE_KEYS } from '../constants';
 import { subtitle_options } from '../consts';
 import i18n from '../i18n/i18n';
 import mqtt from '../libs/mqtt';
 import logger from '../services/logger';
-import { rejectTimeoutPromise } from '../tools';
+import { rejectTimeoutPromise, setToStorage } from '../tools';
 import { useShidurStore } from './shidur';
 
 const NAMESPACE = 'Subtitle';
@@ -27,7 +28,11 @@ let subLang = ORIGINAL_LANG;
 
 export const useSubtitleStore = create((set, get) => ({
   isOpen: true,
-  toggleIsOpen: isOpen => set(state => ({ isOpen: isOpen ?? !state.isOpen })),
+  toggleIsOpen: (isOpen = !get().isOpen) => {
+    logger.debug(NAMESPACE, 'toggleIsOpen', isOpen);
+    setToStorage(STORAGE_KEYS.IS_SUBTITLES, isOpen.toString());
+    set({ isOpen });
+  },
 
   lastMsg: null,
   isConnected: false,

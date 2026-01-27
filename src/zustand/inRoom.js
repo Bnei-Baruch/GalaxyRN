@@ -4,6 +4,7 @@ import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import { rejectTimeoutPromise } from '../tools';
 
+import { STORAGE_KEYS } from '../constants';
 import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
@@ -13,7 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
-import { getFromStorage } from '../tools';
+import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
 import { useRoomStore } from './fetchRooms';
@@ -246,10 +247,8 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'exitAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.exit');
     try {
-      const cammute = await getFromStorage('cammute', false).then(
-        x => x === 'true'
-      );
-      useMyStreamStore.getState().toggleCammute(cammute);
+      const cammute = await getBooleanFromStorage(STORAGE_KEYS.CAMMUTE, true);
+      useMyStreamStore.getState().toggleCammute(cammute, false);
 
       if (!get().isInRoom) return;
 
