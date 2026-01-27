@@ -96,7 +96,7 @@ class Api {
     }
   };
 
-  makeOptions = payload => {
+  makePostOptions = payload => {
     const options = {
       ...this.defaultOptions(),
       method: 'POST',
@@ -108,7 +108,7 @@ class Api {
     return options;
   };
   sendQuestion = data => {
-    const options = this.makeOptions(data);
+    const options = this.makePostOptions(data);
     return this.logAndParse(
       `send question`,
       fetch(`${QST_BACKEND}/ask`, options)
@@ -133,7 +133,7 @@ class Api {
         );
       }
 
-      const options = this.makeOptions(data);
+      const options = this.makePostOptions(data);
       return this.logAndParse(
         `fetch questions`,
         fetch(`${QST_BACKEND}/feed`, options)
@@ -146,12 +146,19 @@ class Api {
 
   fetchStrServer = data => {
     logger.debug(NAMESPACE, 'fetchStrServer - request data:', data);
-    const options = this.makeOptions(data);
+    const options = this.makePostOptions(data);
     const url = `${STRDB_BACKEND}/server`;
     return this.logAndParse(
       `fetch str server for: ${data}`,
       fetch(url, options)
     );
+  };
+
+  fetchGxyServer = async (data) => {
+    logger.debug(NAMESPACE, 'fetchGxyServer - request data:', data);
+    const options = this.makePostOptions(data);
+    const url = `${API_BACKEND}/v2/room_server`;
+    return this.logAndParse(`fetch gxy server`, fetch(url, options));
   };
 
   fetchVHInfo = async () => {

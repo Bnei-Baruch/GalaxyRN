@@ -5,6 +5,7 @@ import { configByName } from '../libs/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
+import api from '../services/Api';
 import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import { deepClone, rejectTimeoutPromise } from '../tools';
@@ -83,21 +84,37 @@ export const useFeedsStore = create((set, get) => ({
       })
     );
   },
+  config: null,
+  initConfig: async () => {
+    if (get().config) return get().config;
+
+    const { user } = useUserStore.getState();
+    const { geoInfo } = useUserStore.getState();
+    const { room } = useRoomStore.getState();
+
+
+    const gxyServer = await api.fetchGxyServer({ ...user, geo: geoInfo, room: room.room });
+    if (!gxyServer?.janus) {
+      throw new Error(`gxy server is ${gxyServer} in initConfig`);
+    }
+
+    const config = configByName(gxyServer.janus);
+    if (!config) {
+      throw new Error('Config is null after configByName');
+    }
+
+    set({ config });
+    return config;
+  },
 
   initFeeds: async () => {
     logger.debug(NAMESPACE, 'initFeeds');
 
     const { user } = useUserStore.getState();
-    const { room } = useRoomStore.getState();
+    const config = await get().initConfig();
 
-    if (!room?.janus) {
-      throw new Error(`room is ${room} in initFeeds`);
-    }
-
-    const config = configByName(room.janus);
-    logger.debug(NAMESPACE, 'joinRoom config', config);
     janus = new JanusMqtt(user, config.name);
-    logger.debug(NAMESPACE, 'joinRoom janus');
+    logger.debug(NAMESPACE, 'initFeeds janus');
 
     try {
       await rejectTimeoutPromise(janus.init(config.token), 10000);
@@ -114,15 +131,11 @@ export const useFeedsStore = create((set, get) => ({
 
   initPublisher: async () => {
     logger.debug(NAMESPACE, 'initPublisher');
-    const { room } = useRoomStore.getState();
     const { user } = useUserStore.getState();
     const { cammute } = useMyStreamStore.getState();
+    const { room } = useRoomStore.getState();
 
-    if (!room?.janus) {
-      throw new Error(`room is ${room} in initPublisher`);
-    }
-
-    const config = configByName(room.janus);
+    const config = await get().initConfig();
 
     videoroom = new PublisherPlugin(config.iceServers);
     videoroom.subTo = async pubs => {
@@ -210,12 +223,9 @@ export const useFeedsStore = create((set, get) => ({
       is_group: false,
       is_desktop: false,
     };
-    logger.info(
-      NAMESPACE,
-      `Videoroom init: d - ${JSON.stringify(d)} room - ${room.room}`
-    );
+    logger.info(NAMESPACE, `Videoroom init: d - ${JSON.stringify(d)}`);
 
-    const data = await videoroom.join(room.room, d);
+    const data = await videoroom.join(room?.room, d);
     logger.info(NAMESPACE, 'Joined respond');
 
     useUserStore.getState().setJanusInfo({
@@ -256,17 +266,8 @@ export const useFeedsStore = create((set, get) => ({
 
   initSubscriber: async () => {
     logger.debug(NAMESPACE, 'initSubscriber');
-    const { room } = useRoomStore.getState();
 
-    if (!room?.janus) {
-      throw new Error(`room is ${room} in initSubscriber`);
-    }
-
-    const config = configByName(room.janus);
-
-    /**
-     * Subscribe to members of the room
-     */
+    const config = await get().initConfig();
     subscriber = new SubscriberPlugin(config.iceServers);
     subscriber.onTrack = (track, stream, on) => {
       const { id } = stream;
@@ -448,7 +449,6 @@ export const useFeedsStore = create((set, get) => ({
 
   cleanFeeds: async () => {
     logger.debug(NAMESPACE, 'cleanFeeds');
-    // Clean up Janus
     if (janus) {
       logger.info(NAMESPACE, 'cleanFeeds janus');
       try {
@@ -459,11 +459,10 @@ export const useFeedsStore = create((set, get) => ({
       janus = null;
     }
 
-    // Reset all module states
     videoroom = null;
     subscriber = null;
     _subscriberJoined = false;
-    set({ feedById: {}, feedIds: [] });
+    set({ feedById: {}, feedIds: [], config: null });
   },
 
   feedAudioModeOn: async () => {

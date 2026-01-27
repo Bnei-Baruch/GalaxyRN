@@ -1,3 +1,4 @@
+import { STUDY_MATERIALS_URL } from '@env';
 import * as React from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +38,7 @@ export const StudyMaterialsBtn = () => {
 
           <WebView
             style={styles.item}
-            source={{ uri: `https://study.kli.one/widget-simple.html?language=${i18n.language}` }}
+            source={{ uri: `${STUDY_MATERIALS_URL}?language=${i18n.language}` }}
           />
         </View>
       </Modal>
