@@ -348,14 +348,10 @@ export class JanusMqtt {
       ignoreReplyType,
     });
 
-    if (
-      transactionId &&
-      Object.prototype.hasOwnProperty.call(this.transactions, transactionId) &&
-      (ignoreReplyType || this.transactions[transactionId].replyType === type)
-    ) {
-      const ret = this.transactions[transactionId];
+    const _transaction = transactionId && this.transactions[transactionId];
+    if (_transaction && (ignoreReplyType || _transaction.replyType === type)) {
       delete this.transactions[transactionId];
-      return ret;
+      return _transaction;
     }
     addFinishSpan(this.sentrySession, 'janus.getTransaction', {
       ...json,

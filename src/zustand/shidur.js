@@ -1,5 +1,6 @@
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
+import { STORAGE_KEYS } from '../constants';
 import {
   NO_VIDEO_OPTION_VALUE,
   dualLanguageOptions,
@@ -19,14 +20,17 @@ import {
   finishSpan,
   setSpanAttributes,
 } from '../libs/sentry/sentryHelper';
+
 import { StreamingPlugin } from '../libs/streaming-plugin';
 import api from '../services/Api';
 import logger from '../services/logger';
-import { getFromStorage, rejectTimeoutPromise, setToStorage } from '../tools';
+import { getBooleanFromStorage, getFromStorage, rejectTimeoutPromise, setToStorage } from '../tools';
 import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
+
+
 
 const NAMESPACE = 'Shidur';
 
@@ -98,15 +102,13 @@ const getOptionByKey = key => {
 };
 
 const getAudioKey = async () => {
-  const isOriginal = await getFromStorage('is_original', false).then(
-    x => x === 'true'
-  );
+  const isOriginal = await getBooleanFromStorage(STORAGE_KEYS.IS_ORIGINAL, false);
   logger.debug(NAMESPACE, 'initMedias audio', isOriginal);
   if (isOriginal) {
     return 'wo_original';
   }
 
-  let audioKey = await getFromStorage('audio');
+  let audioKey = await getFromStorage(STORAGE_KEYS.AUDIO);
   if (!audioKey) {
     const systemLang = getSystemLanguage();
     audioKey = `wo_${systemLang}`;
@@ -156,13 +158,19 @@ export const useShidurStore = create((set, get) => ({
       video,
       updateState,
     });
+
+    if (updateState) {
+      await setToStorage(STORAGE_KEYS.VIDEO, video.toString());
+      logger.debug(NAMESPACE, 'setVideo to storage', video);
+    }
+
     if (!janus) {
+      logger.debug(NAMESPACE, 'setVideo skipped, no janus');
+      set({ video });
+      finishSpan(span, 'no_janus', NAMESPACE);
       return;
     }
 
-    if (updateState) {
-      await setToStorage('video', video);
-    }
     if (video === NO_VIDEO_OPTION_VALUE) {
       await get().cleanVideoHandle();
     } else {
@@ -171,6 +179,7 @@ export const useShidurStore = create((set, get) => ({
       } else {
         set({ video });
         await get().initVideoHandle();
+        finishSpan(span, 'no_video_janus', NAMESPACE);
         return;
       }
     }
@@ -269,7 +278,8 @@ export const useShidurStore = create((set, get) => ({
     if (useSettingsStore.getState().audioMode) {
       video = NO_VIDEO_OPTION_VALUE;
     } else {
-      video = await getFromStorage('video', 1).then(x => Number(x));
+      video = await getFromStorage(STORAGE_KEYS.VIDEO, 1).then(x => Number(x));
+      logger.debug(NAMESPACE, 'initMedias video from storage', video);
     }
     logger.debug(NAMESPACE, 'initMedias video', video);
 
@@ -514,7 +524,7 @@ export const useShidurStore = create((set, get) => ({
       const col = 4;
       logger.debug(NAMESPACE, 'Switch audio stream: ', gxycol[col]);
       audioJanus.switch(gxycol[col]);
-      const _langtext = await getFromStorage('audio');
+      const _langtext = await getFromStorage(STORAGE_KEYS.AUDIO);
       const id = trllang[_langtext];
       logger.debug(NAMESPACE, 'streamGalaxy trl stream id', id);
       // Don't bring translation on toggle trl stream
@@ -566,7 +576,7 @@ export const useShidurStore = create((set, get) => ({
   },
 
   initKliOlami: async () => {
-    if (!useSettingsStore.getState().showGroups) return;
+    if (!useSettingsStore.getState().isKliOlami) return;
 
     if (kliOlamiStream) return;
 
@@ -605,6 +615,12 @@ export const useShidurStore = create((set, get) => ({
       set({ video: NO_VIDEO_OPTION_VALUE });
       return;
     }
+
+    try {
+      get().cleanKliOlami();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during enterAudioMode:', error);
+    }
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
   },
 
@@ -625,7 +641,7 @@ export const useShidurStore = create((set, get) => ({
     if (useSettingsStore.getState().audioMode) {
       video = NO_VIDEO_OPTION_VALUE;
     } else {
-      video = await getFromStorage('video', 1).then(x => Number(x));
+      video = await getFromStorage(STORAGE_KEYS.VIDEO, 1).then(x => Number(x));
     }
     console.log('exitAudioMode video', video, currentVideo);
     if (video !== currentVideo) {
@@ -669,11 +685,11 @@ export const useShidurStore = create((set, get) => ({
 
     if (!isOriginal) {
       await Promise.all([
-        setToStorage('audio', audio.key),
-        setToStorage('is_original', false),
+        setToStorage(STORAGE_KEYS.AUDIO, audio.key),
+        setToStorage(STORAGE_KEYS.IS_ORIGINAL, false),
       ]);
     } else {
-      await setToStorage('is_original', true);
+      await setToStorage(STORAGE_KEYS.IS_ORIGINAL, 'true');
     }
 
     setSpanAttributes(span, { audio, NAMESPACE });
@@ -682,11 +698,9 @@ export const useShidurStore = create((set, get) => ({
   },
 
   toggleIsOriginal: async () => {
-    const isOriginal = await getFromStorage('is_original', false).then(
-      x => x === 'true'
-    );
+    const isOriginal = await getBooleanFromStorage(STORAGE_KEYS.IS_ORIGINAL, false);
     logger.debug(NAMESPACE, 'toggleIsOriginal', (!isOriginal).toString());
-    await setToStorage('is_original', (!isOriginal).toString());
+    await setToStorage(STORAGE_KEYS.IS_ORIGINAL, (!isOriginal).toString());
     const key = await getAudioKey();
     logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);

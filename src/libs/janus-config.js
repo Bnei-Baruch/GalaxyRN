@@ -1,4 +1,7 @@
 let _janusConfig = null;
+import logger from '../services/logger';
+
+const NAMESPACE = 'JanusConfig';
 
 export const setJanusConfig = config => {
   if (!config) {
@@ -21,6 +24,8 @@ export const gatewayNames = (type = 'rooms') => {
 
 export const configByName = name => {
   const { gateways, ice_servers } = _janusConfig;
+
+  logger.debug(NAMESPACE, 'configByName', name, gateways, ice_servers);
 
   let gateway = null;
   for (const type in gateways) {

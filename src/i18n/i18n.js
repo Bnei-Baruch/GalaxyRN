@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { STORAGE_KEYS } from '../constants';
 import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../tools';
 
@@ -11,7 +12,7 @@ export const DEFAULT_LANGUAGE = 'en';
 
 export const setLanguage = value => {
   i18n.changeLanguage(value);
-  setToStorage('lng', value);
+  setToStorage(STORAGE_KEYS.LANGUAGE, value);
 };
 
 export const getSystemLanguage = () => {
@@ -31,7 +32,7 @@ const languageDetector = {
   type: 'languageDetector',
   async: true,
   detect: async callback => {
-    const storedLang = await getFromStorage('lng');
+    const storedLang = await getFromStorage(STORAGE_KEYS.LANGUAGE);
     logger.debug(NAMESPACE, `Stored language: ${storedLang}`);
     if (storedLang) {
       callback(storedLang);

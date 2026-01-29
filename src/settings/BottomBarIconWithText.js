@@ -25,20 +25,25 @@ const BottomBarIconWithText = ({
   const iconVariant = extraStylesArray[1];
   const textVariant = extraStylesArray[1];
 
+  const resolvedShowText = React.useMemo(() => {
+    if (Array.isArray(showtext)) {
+      const portraitValue = showtext[0];
+      const landscapeValue = showtext.length > 1 ? showtext[1] : showtext[0];
+      return isPortrait ? portraitValue : landscapeValue;
+    }
+    return showtext;
+  }, [isPortrait, showtext]);
+
+  const shouldShowText = resolvedShowText ?? true;
+
   const buttonStyles = React.useMemo(() => {
-    const _styles = [
-      styles.container,
-      Platform.OS === 'android' && showtext
-        ? { paddingVertical: 8 }
-        : { paddingVertical: 12 },
-    ];
     return [
-      ..._styles,
+      styles.container,
       typeof containerVariant === 'string'
         ? styles[containerVariant]
         : containerVariant,
     ].filter(Boolean);
-  }, [containerVariant, showtext]);
+  }, [containerVariant, shouldShowText]);
 
   const iconBaseStyles = React.useMemo(
     () =>
@@ -220,7 +225,7 @@ const BottomBarIconWithText = ({
   );
 
   const containerDirectionStyle = React.useMemo(() => {
-    if (showtext === false) {
+    if (shouldShowText === false) {
       return [styles.notext, styles.icon_notext];
     }
 
@@ -231,7 +236,7 @@ const BottomBarIconWithText = ({
     }
 
     return [styles.horizontal, styles.icon_horizontal];
-  }, [direction, isPortrait, showtext]);
+  }, [direction, isPortrait, shouldShowText]);
 
   return (
     <Animated.View
@@ -250,7 +255,7 @@ const BottomBarIconWithText = ({
         name={iconName}
         size={24}
       />
-      {(showtext === undefined || showtext) && (
+      {(shouldShowText === undefined || shouldShowText) && (
         <AnimatedText
           style={[...textBaseStyles, animatedTextStyle]}
           numberOfLines={1}
@@ -268,6 +273,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 24,
     alignItems: 'center',
+    paddingVertical: 12,
   },
   notext: {
     paddingHorizontal: 12,

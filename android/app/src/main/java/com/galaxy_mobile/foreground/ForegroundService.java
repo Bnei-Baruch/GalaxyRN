@@ -193,7 +193,6 @@ public class ForegroundService extends Service {
 
         try {
             ForegroundService.mIsServiceStarted = false;
-            ForegroundService.mIsMicOn = false;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);
             } else {

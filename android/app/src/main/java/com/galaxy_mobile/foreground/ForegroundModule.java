@@ -101,12 +101,13 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
                 GxyLogger.d(TAG, "ProcessLifecycleOwner event: " + event);
 
                 if (event == Lifecycle.Event.ON_STOP) {
-                    GxyLogger.d(TAG, "App entered background");
+                    GxyLogger.d(TAG, "App entered background Mic is on: " + this.isMicOn);
                     handleAppBackgrounded();
                 } else if (event == Lifecycle.Event.ON_START) {
-                    GxyLogger.d(TAG, "App entered foreground");
+                    GxyLogger.d(TAG, "App entered foreground Mic is on: " + this.isMicOn);
                     handleAppForegrounded();
                 }
+
             };
 
             ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
@@ -137,8 +138,15 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             enableKeepScreenOn();
             return;
         }
-        foregroundService.stop(this.context);
-        GxyLogger.d(TAG, "Stopped foreground service");
+        /* TODO: check if can make it on other way.
+        If mic is on, don't stop the foreground service.
+        Cause after impossible to start the foreground microphone again. 
+        */
+        GxyLogger.d(TAG, "Mic is on: " + this.isMicOn);
+        if (!this.isMicOn) {
+            foregroundService.stop(this.context);
+            GxyLogger.d(TAG, "Mic is off, stopped foreground service");
+        } 
         enableKeepScreenOn();
     }
 
@@ -199,9 +207,9 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
+        this.isMicOn = true;
         if (foregroundService == null) {
             GxyLogger.d(TAG, "Cannot setMicOn: ForegroundService not initialized");
-            this.isMicOn = true;
             return;
         }
         foregroundService.setMicOn(this.context);
@@ -213,9 +221,9 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
+        this.isMicOn = false;
         if (foregroundService == null) {
             GxyLogger.d(TAG, "Cannot setMicOff: ForegroundService not initialized");
-            this.isMicOn = false;
             return;
         }
         foregroundService.setMicOff(this.context);

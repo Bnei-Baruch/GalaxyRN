@@ -2,6 +2,7 @@ import { DeviceEventEmitter, Dimensions, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
+import { STORAGE_KEYS } from '../constants';
 import { setJanusConfig } from '../libs/janus-config';
 import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
@@ -10,14 +11,17 @@ import api from '../services/Api';
 import CallsBridge from '../services/CallsBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
+import { getBooleanFromStorage } from '../tools';
 import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
+import { useRoomStore } from './fetchRooms';
 import { modalModes } from './helper';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
+import { useSubtitleStore } from './subtitle';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
@@ -71,6 +75,8 @@ export const useInitsStore = create((set, get) => ({
     get().setIsPortrait(height > width);
 
     try {
+      logger.debug(NAMESPACE, 'init settings from storage');
+      await get().settingsFromStorage();
       logger.debug(NAMESPACE, 'keepScreenOn');
       await WakeLockBridge.keepScreenOn();
       logger.debug(NAMESPACE, 'initServices');
@@ -85,6 +91,9 @@ export const useInitsStore = create((set, get) => ({
 
       logger.debug(NAMESPACE, 'init done');
       get().setIsAppInited(true);
+
+      logger.debug(NAMESPACE, 'fetchRooms');
+      useRoomStore.getState().fetchRooms();
     } catch (error) {
       get().setIsAppInited(false);
       logger.error(NAMESPACE, 'Error initializing app', error);
@@ -316,5 +325,41 @@ export const useInitsStore = create((set, get) => ({
         error
       );
     }
+  },
+
+  settingsFromStorage: async () => {
+    logger.debug(NAMESPACE, 'settingsFromStorage');
+    try {
+      const cammute = await getBooleanFromStorage(STORAGE_KEYS.CAMMUTE, true);
+      logger.debug(NAMESPACE, 'cammute from storage:', cammute);
+      useMyStreamStore.getState().toggleCammute(cammute, false);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during toggleCammute:', error);
+    }
+
+    try {
+      const isSubtitles = await getBooleanFromStorage(STORAGE_KEYS.IS_SUBTITLES, true);
+      logger.debug(NAMESPACE, 'isSubtitles from storage:', isSubtitles);
+      useSubtitleStore.getState().toggleIsOpen(isSubtitles);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during toggleIsOpen:', error);
+    }
+
+    try {
+      const audioMode = await getBooleanFromStorage(STORAGE_KEYS.IS_AUDIO_MODE, false);
+      logger.debug(NAMESPACE, 'audioMode from storage:', audioMode);
+      useSettingsStore.getState().toggleAudioMode(audioMode);
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during toggleAudioMode:', error);
+    }
+
+    try {
+      await useShidurStore.getState().initMedias();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during initMedias:', error);
+    }
+
+
+    logger.debug(NAMESPACE, 'settingsFromStorage done');
   },
 }));

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { topMenuBtns } from '../bottomBar/moreBtns/helper';
+import { topMenuBtns } from '../roomMenuLevel1/btns/helper';
 import { useShidurStore } from '../zustand/shidur';
 import { useUiActions } from '../zustand/uiActions';
 
