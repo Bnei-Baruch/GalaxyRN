@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { SHIDUR_BAR_ZINDEX } from '../consts';
+import { SHIDUR_BAR_ZINDEX } from '../constants';
 
 const styles = StyleSheet.create({
     toolbar: {
