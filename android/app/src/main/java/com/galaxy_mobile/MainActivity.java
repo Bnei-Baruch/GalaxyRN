@@ -22,6 +22,9 @@ import com.galaxy_mobile.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
+import com.oney.WebRTCModule.WebRTCModuleOptions;
+import org.webrtc.audio.JavaAudioDeviceModule;
+import android.media.AudioAttributes;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -45,6 +48,15 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        
+        WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
+        AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build();
+        options.audioDeviceModule = JavaAudioDeviceModule.builder(this)
+                .setAudioAttributes(audioAttributes)
+                .createAudioDeviceModule();
 
         permissionHelper = new PermissionHelper(this);
 
