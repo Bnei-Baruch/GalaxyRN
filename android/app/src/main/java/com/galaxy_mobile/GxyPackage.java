@@ -35,7 +35,6 @@ public class GxyPackage implements ReactPackage {
         return Collections.emptyList();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
