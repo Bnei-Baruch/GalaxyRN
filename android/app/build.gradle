@@ -142,7 +142,6 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-    implementation 'androidx.media:media:1.4.0'
     
 
     if (hermesEnabled.toBoolean()) {
