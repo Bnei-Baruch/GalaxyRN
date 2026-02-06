@@ -3,11 +3,9 @@ import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
 import { STORAGE_KEYS } from '../constants';
-import { setJanusConfig } from '../libs/janus-config';
 import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
-import api from '../services/Api';
 import CallsBridge from '../services/CallsBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
@@ -57,8 +55,6 @@ export const useInitsStore = create((set, get) => ({
   mqttIsOn: false,
   setMqttIsOn: (mqttIsOn = true) => set({ mqttIsOn }),
 
-  configReady: false,
-
   setIsPortrait: isPortrait => {
     if (get().isPortrait !== isPortrait) {
       useUiActions.getState().updateWidth();
@@ -85,8 +81,6 @@ export const useInitsStore = create((set, get) => ({
       await useAudioDevicesStore.getState().initAudioDevices();
       logger.debug(NAMESPACE, 'myInit');
       await useMyStreamStore.getState().myInit();
-
-      await get().initConfig();
       await get().initMQTT();
 
       logger.debug(NAMESPACE, 'init done');
@@ -165,8 +159,6 @@ export const useInitsStore = create((set, get) => ({
           // Remove question mark when sndman unmute our room
           toggleQuestion(false);
         }
-      } else if (type === 'reload-config') {
-        // this.reloadConfig();
       } else if (type === 'client-reload-all') {
         restartRoom();
       } else if (type === 'client-state') {
@@ -223,21 +215,6 @@ export const useInitsStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error resetting MQTT:', error);
       await get().terminateApp();
     }
-  },
-
-  initConfig: async () => {
-    logger.debug(NAMESPACE, 'initConfig');
-    useUserStore.getState().setGeoInfo();
-
-    try {
-      const configData = await api.fetchConfig();
-      logger.debug(NAMESPACE, 'got config: ', configData);
-      setJanusConfig(configData);
-    } catch (err) {
-      logger.error(NAMESPACE, 'error initializing app', err);
-      throw err;
-    }
-    logger.debug(NAMESPACE, 'initConfig done');
   },
 
   initServices: async () => {

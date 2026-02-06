@@ -18,12 +18,6 @@ class Api {
   }
 
   // Galaxy API
-  fetchConfig = () =>
-    this.logAndParse(
-      'fetch config',
-      fetch(this.urlFor('/v2/config'), this.defaultOptions())
-    );
-
   fetchAvailableRooms = () =>
     this.logAndParse(
       'fetch available rooms',

@@ -1,7 +1,6 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 import { userRolesEnum } from '../enums';
-import { configByName } from '../libs/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
@@ -96,40 +95,24 @@ export const useFeedsStore = create((set, get) => ({
       })
     );
   },
-  config: null,
-  initConfig: async () => {
-    if (get().config) return get().config;
-
-    const { user } = useUserStore.getState();
-    const { geoInfo } = useUserStore.getState();
-    const { room } = useRoomStore.getState();
-
-
-    const gxyServer = await api.fetchGxyServer({ ...user, geo: geoInfo, room: room.room });
-    if (!gxyServer?.janus) {
-      throw new Error(`gxy server is ${gxyServer} in initConfig`);
-    }
-
-    const config = configByName(gxyServer.janus);
-    if (!config) {
-      throw new Error('Config is null after configByName');
-    }
-
-    set({ config });
-    return config;
-  },
 
   initFeeds: async () => {
     logger.debug(NAMESPACE, 'initFeeds');
 
     const { user } = useUserStore.getState();
-    const config = await get().initConfig();
+    const { geoInfo } = useUserStore.getState();
+    const { room } = useRoomStore.getState();
 
-    janus = new JanusMqtt(user, config.name);
+    const gxyServer = await api.fetchGxyServer({ ...user, geo: geoInfo, room: room.room });
+    if (!gxyServer?.janus) {
+      throw new Error(`gxy server is ${gxyServer} in initFeeds`);
+    }
+
+    janus = new JanusMqtt(user, gxyServer.janus);
     logger.debug(NAMESPACE, 'initFeeds janus');
 
     try {
-      await rejectTimeoutPromise(janus.init(config.token), 10000);
+      await rejectTimeoutPromise(janus.init(), 10000);
       logger.info(NAMESPACE, 'joinRoom on janus.init');
       await Promise.all([get().initSubscriber(), get().initPublisher()]);
     } catch (err) {
@@ -147,9 +130,7 @@ export const useFeedsStore = create((set, get) => ({
     const { cammute } = useMyStreamStore.getState();
     const { room } = useRoomStore.getState();
 
-    const config = await get().initConfig();
-
-    videoroom = new PublisherPlugin(config.iceServers);
+    videoroom = new PublisherPlugin();
     videoroom.subTo = async pubs => {
       logger.debug(NAMESPACE, 'videoroom.subTo start');
       try {
@@ -279,8 +260,7 @@ export const useFeedsStore = create((set, get) => ({
   initSubscriber: async () => {
     logger.debug(NAMESPACE, 'initSubscriber');
 
-    const config = await get().initConfig();
-    subscriber = new SubscriberPlugin(config.iceServers);
+    subscriber = new SubscriberPlugin();
     subscriber.onTrack = (track, stream, on) => {
       const { id } = stream;
       logger.info(
@@ -474,7 +454,7 @@ export const useFeedsStore = create((set, get) => ({
     videoroom = null;
     subscriber = null;
     _subscriberJoined = false;
-    set({ feedById: {}, feedIds: [], config: null });
+    set({ feedById: {}, feedIds: [] });
   },
 
   feedAudioModeOn: async () => {

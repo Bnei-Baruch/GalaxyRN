@@ -18,7 +18,7 @@ import {
 const NAMESPACE = 'SubscriberPlugin';
 
 export class SubscriberPlugin {
-  constructor(list = [{ urls: getEnvValue('STUN_SRV_GXY') }]) {
+  constructor() {
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
@@ -28,7 +28,7 @@ export class SubscriberPlugin {
     this.onUpdate = null;
     this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
-      iceServers: list,
+      iceServers: [{ urls: getEnvValue('STUN_SRV_GXY') }],
     });
 
     addConnectionListener(this.id, async () => {
