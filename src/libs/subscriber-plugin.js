@@ -1,5 +1,5 @@
-import { STUN_SRV_GXY } from '@env';
 import { RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import { getEnvValue } from '../services/env';
 import logger from '../services/logger';
 import { randomString } from '../tools';
 import { useFeedsStore } from '../zustand/feeds';
@@ -18,7 +18,7 @@ import {
 const NAMESPACE = 'SubscriberPlugin';
 
 export class SubscriberPlugin {
-  constructor(list = [{ urls: STUN_SRV_GXY }]) {
+  constructor(list = [{ urls: getEnvValue('STUN_SRV_GXY') }]) {
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;

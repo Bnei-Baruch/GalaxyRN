@@ -1,15 +1,14 @@
 import {
-  API_BACKEND,
-  GEO_IP_INFO,
   KEYCLOAK_API,
   QST_BACKEND,
-  STRDB_BACKEND,
-  STUDY_MATERIALS,
+  STUDY_MATERIALS
 } from '@env';
 import mqtt from '../libs/mqtt';
+import { getEnvValue } from './env';
 import logger from './logger';
 
 const NAMESPACE = 'Api';
+
 
 class Api {
   static encode = encodeURIComponent;
@@ -31,7 +30,7 @@ class Api {
       fetch(this.urlFor('/groups'), this.defaultOptions())
     );
 
-  urlFor = path => API_BACKEND + path;
+  urlFor = path => getEnvValue('API_BACKEND') + path;
 
   defaultOptions = () => {
     return {
@@ -147,7 +146,7 @@ class Api {
   fetchStrServer = data => {
     logger.debug(NAMESPACE, 'fetchStrServer - request data:', data);
     const options = this.makePostOptions(data);
-    const url = `${STRDB_BACKEND}/server`;
+    const url = `${getEnvValue('STRDB_BACKEND')}/server`;
     return this.logAndParse(
       `fetch str server for: ${data}`,
       fetch(url, options)
@@ -157,7 +156,7 @@ class Api {
   fetchGxyServer = async (data) => {
     logger.debug(NAMESPACE, 'fetchGxyServer - request data:', data);
     const options = this.makePostOptions(data);
-    const url = `${API_BACKEND}/v2/room_server`;
+    const url = `${getEnvValue('API_BACKEND')}/v2/room_server`;
     return this.logAndParse(`fetch gxy server`, fetch(url, options));
   };
 
@@ -199,7 +198,7 @@ class Api {
       country: 'XX',
     };
     try {
-      const response = await fetch(GEO_IP_INFO);
+      const response = await fetch(getEnvValue('GEO_IP_INFO'));
       if (response.ok) {
         return await response.json();
       } else {
