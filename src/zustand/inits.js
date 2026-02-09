@@ -9,6 +9,7 @@ import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import api from '../services/Api';
 import CallsBridge from '../services/CallsBridge';
+import ForegroundBridge from '../services/ForegroundBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
 import { getBooleanFromStorage } from '../tools';
@@ -75,6 +76,9 @@ export const useInitsStore = create((set, get) => ({
     get().setIsPortrait(height > width);
 
     try {
+      logger.debug(NAMESPACE, 'startForegroundListener');
+      await ForegroundBridge.startForegroundListener();
+      logger.debug(NAMESPACE, 'startForegroundListener done');
       logger.debug(NAMESPACE, 'init settings from storage');
       await get().settingsFromStorage();
       logger.debug(NAMESPACE, 'keepScreenOn');

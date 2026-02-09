@@ -1,7 +1,8 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { mediaDevices } from 'react-native-webrtc';
 import { create } from 'zustand';
 import { STORAGE_KEYS } from '../constants';
+import ForegroundBridge from '../services/ForegroundBridge';
 import logger from '../services/logger';
 import { setToStorage } from '../tools';
 import { useUserStore } from './user';
@@ -64,9 +65,9 @@ export const useMyStreamStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'toggleMute', mute);
     try {
       if (mute) {
-        NativeModules.ForegroundModule?.setMicOff();
+        ForegroundBridge.setMicOff();
       } else {
-        NativeModules.ForegroundModule?.setMicOn();
+        ForegroundBridge.setMicOn();
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error toggling mute:', error);

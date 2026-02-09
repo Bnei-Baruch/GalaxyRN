@@ -24,6 +24,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 
 import com.galaxy_mobile.MainApplication;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
 
 /**
@@ -38,37 +39,21 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
     private ForegroundService foregroundService;
     private Handler mainHandler;
-    private final ReactApplicationContext context;
     private LifecycleEventObserver lifecycleObserver;
     private boolean isInitialized = false;
     private boolean isMicOn = false;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        GxyLogger.d(TAG, "ForegroundModule constructor called - context: " + reactContext);
-
-        this.context = reactContext;
+        GxyLogger.d(TAG, "ForegroundModule constructor called");
         this.isMicOn = false;
     }
 
     public void initializeAfterPermissions() {
         GxyLogger.d(TAG, "Initializing ForegroundModule after permissions granted");
 
-        // Prevent multiple initializations
-        if (isInitialized) {
-            GxyLogger.d(TAG, "ForegroundModule already initialized, skipping re-initialization");
-            return;
-        }
 
-        this.foregroundService = new ForegroundService();
-        if (this.isMicOn) {
-            this.foregroundService.setMicOff(this.context);
-        } else {
-            this.foregroundService.setMicOn(this.context);
-        }
-        this.mainHandler = new Handler(Looper.getMainLooper());
-        initLifecycleObserver();
-        isInitialized = true;
+        foregroundService = new ForegroundService();
         GxyLogger.d(TAG, "ForegroundModule initialized");
 
     }
@@ -79,12 +64,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    /**
-     * Initializes the lifecycle observer to detect app foreground/background state
-     *
-     * @param reactContext The React application context
-     */
     private void initLifecycleObserver() {
+        mainHandler = new Handler(Looper.getMainLooper());
         mainHandler.post(() -> {
             // Remove old observer if exists (safety check)
             if (lifecycleObserver != null) {
@@ -102,9 +83,11 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
                 if (event == Lifecycle.Event.ON_STOP) {
                     GxyLogger.d(TAG, "App entered background Mic is on: " + this.isMicOn);
+                    ForegroundService.isActive = false;
                     handleAppBackgrounded();
                 } else if (event == Lifecycle.Event.ON_START) {
                     GxyLogger.d(TAG, "App entered foreground Mic is on: " + this.isMicOn);
+                    ForegroundService.isActive = true;
                     handleAppForegrounded();
                 }
 
@@ -124,7 +107,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             return;
         }
         try {
-            foregroundService.start(this.context);
+            foregroundService.start();
             GxyLogger.d(TAG, "Started foreground service");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to start foreground service when app backgrounded", e);
@@ -144,7 +127,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         */
         GxyLogger.d(TAG, "Mic is on: " + this.isMicOn);
         if (!this.isMicOn) {
-            foregroundService.stop(this.context);
+            foregroundService.stop();
             GxyLogger.d(TAG, "Mic is off, stopped foreground service");
         } 
         enableKeepScreenOn();
@@ -201,9 +184,14 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         });
     }
 
-    /**
-     * On setMicOn, start the foreground service with microphone access
-     */
+    
+    @ReactMethod
+    public void startForegroundListener(Promise promise) {
+        GxyLogger.d(TAG, "startForegroundListener");
+        initLifecycleObserver();
+        promise.resolve(true);
+    }
+
     @ReactMethod
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
@@ -212,7 +200,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             GxyLogger.d(TAG, "Cannot setMicOn: ForegroundService not initialized");
             return;
         }
-        foregroundService.setMicOn(this.context);
+        foregroundService.setMicOn();
     }
 
     /**
@@ -226,6 +214,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
             GxyLogger.d(TAG, "Cannot setMicOff: ForegroundService not initialized");
             return;
         }
-        foregroundService.setMicOff(this.context);
+        foregroundService.setMicOff();
     }
 }
