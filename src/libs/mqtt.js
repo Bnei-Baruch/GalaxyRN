@@ -1,6 +1,6 @@
-import { MQTT_URL } from '@env';
 import mqtt from 'mqtt';
 import BackgroundTimer from 'react-native-background-timer';
+import { getEnvValue } from '../services/env';
 import logger from '../services/logger';
 
 import { useChatStore } from '../zustand/chat';
@@ -82,9 +82,10 @@ class MqttMsg {
     };
 
     const connectSpan = addSpan(CONNECTION, 'mqtt.connect');
-    logger.debug(NAMESPACE, 'Connecting to MQTT:', MQTT_URL);
+    const mqttUrl = getEnvValue('MQTT_URL');
+    logger.debug(NAMESPACE, 'Connecting to MQTT:', mqttUrl);
     try {
-      this.mq = await mqtt.connectAsync(`wss://${MQTT_URL}`, options);
+      this.mq = await mqtt.connectAsync(`wss://${mqttUrl}`, options);
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
       finishSpan(connectSpan, 'ok', NAMESPACE);
     } catch (error) {
@@ -212,10 +213,10 @@ class MqttMsg {
     );
     let properties = !!rxTopic
       ? {
-          userProperties: user,
-          responseTopic: rxTopic,
-          correlationData,
-        }
+        userProperties: user,
+        responseTopic: rxTopic,
+        correlationData,
+      }
       : { userProperties: user };
 
     logger.debug(NAMESPACE, 'send properties', properties);
