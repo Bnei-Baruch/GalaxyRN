@@ -27,6 +27,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
 
+
 /**
  * React Native module that manages foreground service and screen behavior
  * based on application lifecycle.
@@ -37,25 +38,14 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public static final String NAME = "ForegroundModule";
     private static final String TAG = "ForegroundModule";
 
-    private ForegroundService foregroundService;
     private Handler mainHandler;
     private LifecycleEventObserver lifecycleObserver;
-    private boolean isInitialized = false;
+    private boolean isForeground = true;
     private boolean isMicOn = false;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
         GxyLogger.d(TAG, "ForegroundModule constructor called");
-        this.isMicOn = false;
-    }
-
-    public void initializeAfterPermissions() {
-        GxyLogger.d(TAG, "Initializing ForegroundModule after permissions granted");
-
-
-        foregroundService = new ForegroundService();
-        GxyLogger.d(TAG, "ForegroundModule initialized");
-
     }
 
     @NonNull
@@ -67,34 +57,22 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private void initLifecycleObserver() {
         mainHandler = new Handler(Looper.getMainLooper());
         mainHandler.post(() -> {
-            // Remove old observer if exists (safety check)
-            if (lifecycleObserver != null) {
-                try {
-                    ProcessLifecycleOwner.get().getLifecycle().removeObserver(lifecycleObserver);
-                    GxyLogger.d(TAG, "Removed old lifecycle observer");
-                } catch (Exception e) {
-                    GxyLogger.e(TAG, "Error removing old observer", e);
-                }
-            }
-
             // Create and add new observer
             lifecycleObserver = (source, event) -> {
                 GxyLogger.d(TAG, "ProcessLifecycleOwner event: " + event);
 
                 if (event == Lifecycle.Event.ON_STOP) {
                     GxyLogger.d(TAG, "App entered background Mic is on: " + this.isMicOn);
-                    ForegroundService.isActive = false;
                     handleAppBackgrounded();
                 } else if (event == Lifecycle.Event.ON_START) {
                     GxyLogger.d(TAG, "App entered foreground Mic is on: " + this.isMicOn);
-                    ForegroundService.isActive = true;
                     handleAppForegrounded();
                 }
 
             };
 
             ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
-            GxyLogger.d(TAG, "Lifecycle observer added successfully");
+            GxyLogger.d(TAG, "initLifecycleObserver completed");
         });
     }
 
@@ -102,12 +80,9 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
      * Handles actions when app goes to background
      */
     private void handleAppBackgrounded() {
-        if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot start foreground service: not initialized");
-            return;
-        }
         try {
-            foregroundService.start();
+            startService();
+            this.isForeground = false;
             GxyLogger.d(TAG, "Started foreground service");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to start foreground service when app backgrounded", e);
@@ -116,20 +91,12 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     }
 
     private void handleAppForegrounded() {
-        if (foregroundService == null) {
-            GxyLogger.w(TAG, "Cannot stop foreground service: not initialized");
-            enableKeepScreenOn();
-            return;
-        }
-        /* TODO: check if can make it on other way.
-        If mic is on, don't stop the foreground service.
-        Cause after impossible to start the foreground microphone again. 
-        */
+        this.isForeground = true;
         GxyLogger.d(TAG, "Mic is on: " + this.isMicOn);
         if (!this.isMicOn) {
-            foregroundService.stop();
             GxyLogger.d(TAG, "Mic is off, stopped foreground service");
-        } 
+            stopService();
+        }
         enableKeepScreenOn();
     }
 
@@ -184,7 +151,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         });
     }
 
-    
     @ReactMethod
     public void startForegroundListener(Promise promise) {
         GxyLogger.d(TAG, "startForegroundListener");
@@ -196,11 +162,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn");
         this.isMicOn = true;
-        if (foregroundService == null) {
-            GxyLogger.d(TAG, "Cannot setMicOn: ForegroundService not initialized");
-            return;
-        }
-        foregroundService.setMicOn();
+        startService();
     }
 
     /**
@@ -208,12 +170,29 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
      */
     @ReactMethod
     public void setMicOff() {
-        GxyLogger.d(TAG, "setMicOff");
         this.isMicOn = false;
-        if (foregroundService == null) {
-            GxyLogger.d(TAG, "Cannot setMicOff: ForegroundService not initialized");
+        if (this.isForeground) {
+            GxyLogger.d(TAG, "Mic is off, stopped foreground service");
+            stopService();
+        }
+    }
+
+    private void startService() {
+        GxyLogger.d(TAG, "startService");
+        Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
+        intent.setAction(ForegroundService.START_SERVICE_ACTION);
+        intent.putExtra(ForegroundService.MIC_STATE_EXTRA, isMicOn);
+        getCurrentActivity().startForegroundService(intent);
+    }
+
+    private void stopService() {
+        if (!ForegroundService.isRunning) {
+            GxyLogger.d(TAG, "Skipping stopService");
             return;
         }
-        foregroundService.setMicOff();
+        GxyLogger.d(TAG, "stopService");
+        Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
+        intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
+        getCurrentActivity().startForegroundService(intent);
     }
 }

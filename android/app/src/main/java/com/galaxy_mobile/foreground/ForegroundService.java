@@ -24,11 +24,13 @@ import com.facebook.react.bridge.ReactApplicationContext;
 
 public class ForegroundService extends Service {
     private static final String TAG = "ForegroundService";
-    public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
+    public static volatile boolean isRunning = false;
+
+    public static final String START_SERVICE_ACTION = "START_SERVICE";
+    public static final String STOP_SERVICE_ACTION = "STOP_SERVICE";
+    public static final String MIC_STATE_EXTRA = "MIC_STATE";
 
     private boolean mIsMicOn = false;
-    public static boolean isActive = true;
-    private PlayerNotification notification;
 
     @Nullable
     @Override
@@ -39,60 +41,41 @@ public class ForegroundService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        GxyLogger.i(TAG, "ForegroundService: onCreate");
+        GxyLogger.i(TAG, "onCreate");
         PlayerNotification.initChannel(getApplicationContext());
-    }
-
-    public void start() {
-        GxyLogger.i(TAG, "Starting foreground service. Service started: " + mIsMicOn);
-        Context context = getApplicationContext();
-
-        Intent intent = new Intent(context, ForegroundService.class);
-        intent.setAction(APP_TO_FOREGROUND_ACTION);
-
-        GxyLogger.d(TAG, "Starting foreground service");
-
-        try {
-            ComponentName cn = context.startForegroundService(intent);
-            if (cn == null) {
-                GxyLogger.w(TAG, "Foreground service not started");
-            } else {
-                GxyLogger.i(TAG, "Foreground service started successfully");
-            }
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error starting foreground service", e);
-        }
-    }
-
-    public void stop() {
-        GxyLogger.i(TAG, "Stopping foreground service.");
-        cleanup();
-        stopSelf();
-    }
-
-    public void setMicOn() {
-        GxyLogger.i(TAG, "setMicOn called");
-        mIsMicOn = true;
-        start();
-    }
-
-    public void setMicOff() {
-        GxyLogger.i(TAG, "setMicOff called");
-        mIsMicOn = false;
-        stop();
+        GxyLogger.i(TAG, "onCreate completed");
+        isRunning = true;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        GxyLogger.i(TAG, "onStartCommand" + intent.getAction());
-        Context context = getApplicationContext();
-        notification = new PlayerNotification(context);
+        String action = intent.getAction();
+        GxyLogger.i(TAG, "onStartCommand: " + action);
+
+        if (action.equals(STOP_SERVICE_ACTION)) {
+            stop();
+            return START_NOT_STICKY;
+        }
+
+        boolean isMicOn = false;
+        if (action.equals(START_SERVICE_ACTION)) {
+            isMicOn = intent.getBooleanExtra(ForegroundService.MIC_STATE_EXTRA, false);
+            start(isMicOn);
+            return START_STICKY;
+        }
+        GxyLogger.e(TAG, "Invalid action: " + action);
+        return START_NOT_STICKY;
+    }
+
+    private void start(boolean isMicOn) {
+        GxyLogger.i(TAG, "Starting foreground service with isMicOn: " + isMicOn);
+        PlayerNotification notification = new PlayerNotification(getApplicationContext());
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
                 StringBuilder typesLog = new StringBuilder("Starting with MEDIA_PLAYBACK");
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && mIsMicOn) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && isMicOn) {
                     serviceType |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
                     typesLog.append(" + MICROPHONE");
                 }
@@ -103,7 +86,6 @@ public class ForegroundService extends Service {
                     typesLog.append(" + CONNECTED_DEVICE");
                 }
 
-                GxyLogger.i(TAG, typesLog.toString());
                 startForeground(PlayerNotification.NOTIFICATION_ID, notification.getNotification(), serviceType);
                 GxyLogger.i(TAG, "Successfully started as foreground service");
             } else {
@@ -115,7 +97,12 @@ public class ForegroundService extends Service {
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error starting foreground", e);
         }
-        return START_NOT_STICKY;
+    }
+
+    public void stop() {
+        GxyLogger.i(TAG, "Stopping foreground service.");
+        cleanup();
+        stopSelf();
     }
 
     @Override
@@ -144,6 +131,7 @@ public class ForegroundService extends Service {
     public void onDestroy() {
         GxyLogger.i(TAG, "ForegroundService: onDestroy");
         cleanup();
+        isRunning = false;
         super.onDestroy();
     }
 
@@ -157,18 +145,6 @@ public class ForegroundService extends Service {
             GxyLogger.d(TAG, "Foreground service cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during cleanup", e);
-        }
-    }
-
-    public static void moveAppToForeground(ReactApplicationContext context) {
-        if (isActive) {
-            GxyLogger.w(TAG, "App is already in foreground, skipping move to foreground");
-            return;
-        }
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
-        if (launchIntent != null) {
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            context.startActivity(launchIntent);
         }
     }
 }

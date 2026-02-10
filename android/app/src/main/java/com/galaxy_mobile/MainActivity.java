@@ -17,7 +17,6 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.galaxy_mobile.foreground.ForegroundService;
 import com.galaxy_mobile.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
 import com.galaxy_mobile.logger.GxyLogger;

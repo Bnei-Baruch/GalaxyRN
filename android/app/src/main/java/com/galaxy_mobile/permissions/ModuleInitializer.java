@@ -6,8 +6,6 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.galaxy_mobile.callManager.CallListenerModule;
 import com.galaxy_mobile.callManager.PhoneCallListener;
 import com.galaxy_mobile.audioManager.AudioDeviceModule;
-import com.galaxy_mobile.WakeLockModule;
-import com.galaxy_mobile.foreground.ForegroundModule;
 import com.galaxy_mobile.permissions.PermissionsModule;
 
 public class ModuleInitializer {
@@ -25,7 +23,6 @@ public class ModuleInitializer {
         initializeCallListenerModule();
         initializeAudioDeviceModule();
         initializePermissionsModule();
-        initializeForegroundModule();
 
         GxyLogger.d(TAG, "All modules initialization completed");
     }
@@ -104,30 +101,6 @@ public class ModuleInitializer {
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error initializing PermissionsModule after permissions: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Initialize the ForegroundModule after permissions are granted
-     */
-    private void initializeForegroundModule() {
-        try {
-            if (reactContext != null) {
-                GxyLogger.d(TAG, "Initializing ForegroundModule after permissions granted");
-
-                // Get the AudioDeviceModule instance from React Native module registry
-                ForegroundModule foregroundModule = reactContext.getNativeModule(ForegroundModule.class);
-                if (foregroundModule != null) {
-                    foregroundModule.initializeAfterPermissions();
-                    GxyLogger.d(TAG, "ForegroundModule.initializeAfterPermissions() called successfully");
-                } else {
-                    GxyLogger.w(TAG, "ForegroundModule not found in React Native module registry");
-                }
-            } else {
-                GxyLogger.w(TAG, "ReactApplicationContext is null, cannot initialize ForegroundModule");
-            }
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error initializing ForegroundModule after permissions: " + e.getMessage(), e);
         }
     }
 }
