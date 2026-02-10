@@ -11,7 +11,6 @@ import {
 } from '../consts';
 import i18n, { getSystemLanguage } from '../i18n/i18n';
 import { waitConnection } from '../libs/connection-monitor';
-import { configByName, gatewayNames } from '../libs/janus-config';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
@@ -47,7 +46,6 @@ let audioStream = null;
 let trlAudioJanus = null;
 let trlAudioStream = null;
 
-let config = null;
 let attempts = 0;
 
 const initStream = async (media, _janusStream) => {
@@ -211,17 +209,6 @@ export const useShidurStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'init janus fetchStrServer result', res);
         return res?.server;
       });
-
-      if (!srv) {
-        const gw_list = gatewayNames('streaming');
-        let inst = gw_list[Math.floor(Math.random() * gw_list.length)];
-
-        config = configByName(inst);
-        srv = config.name;
-        logger.debug(NAMESPACE, 'init janus build', inst, config);
-      } else {
-        config = configByName(srv);
-      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);
     }
@@ -237,7 +224,7 @@ export const useShidurStore = create((set, get) => ({
         }
       };
 
-      await janus.init(config?.token);
+      await janus.init();
       logger.debug(NAMESPACE, 'init janus ready');
     } catch (error) {
       logger.error(NAMESPACE, 'Error during init janus:', error);
@@ -342,7 +329,7 @@ export const useShidurStore = create((set, get) => ({
     }
 
     try {
-      videoJanus = new StreamingPlugin(config?.iceServers);
+      videoJanus = new StreamingPlugin();
       videoJanus.onTrack = stream => {
         logger.info(NAMESPACE, 'videoStream got track: ', stream);
         logger.debug(NAMESPACE, 'videoStream previous stream: ', videoStream);
@@ -367,7 +354,7 @@ export const useShidurStore = create((set, get) => ({
     if (!audioJanus) {
       const audioPromise = new Promise((resolve, reject) => {
         try {
-          audioJanus = new StreamingPlugin(config?.iceServers);
+          audioJanus = new StreamingPlugin();
         } catch (error) {
           logger.error(NAMESPACE, 'Error during initAudioHandles:', error);
           reject(error);
@@ -391,7 +378,7 @@ export const useShidurStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'initAudioHandles trlAudioJanus id', id);
       const trlPromise = new Promise((resolve, reject) => {
         try {
-          trlAudioJanus = new StreamingPlugin(config?.iceServers);
+          trlAudioJanus = new StreamingPlugin();
         } catch (error) {
           logger.error(NAMESPACE, 'Error during initAudioHandles:', error);
           reject(error);
@@ -582,7 +569,7 @@ export const useShidurStore = create((set, get) => ({
 
     await get().initJanus();
 
-    kliOlamiJanus = new StreamingPlugin(config?.iceServers);
+    kliOlamiJanus = new StreamingPlugin();
     kliOlamiJanus.onTrack = stream => {
       logger.info(NAMESPACE, 'kliOlamiStream got track: ', stream);
       cleanStream(kliOlamiStream);

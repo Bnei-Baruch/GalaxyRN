@@ -1,9 +1,9 @@
-import { STUN_SRV_GXY } from '@env';
 import {
   MediaStream,
   RTCPeerConnection,
   RTCSessionDescription,
 } from 'react-native-webrtc';
+import { getEnvValue } from '../services/env';
 import logger from '../services/logger';
 import { randomString } from '../tools';
 import { useShidurStore } from '../zustand/shidur';
@@ -22,7 +22,7 @@ import {
 const NAMESPACE = 'StreamingPlugin';
 
 export class StreamingPlugin {
-  constructor(list = [{ urls: STUN_SRV_GXY }]) {
+  constructor() {
     this.id = randomString(12);
     this.janus = undefined;
     this.janusHandleId = undefined;
@@ -32,7 +32,7 @@ export class StreamingPlugin {
     this.pluginName = 'janus.plugin.streaming';
     this.isDestroyed = false;
     this.pc = new RTCPeerConnection({
-      iceServers: list,
+      iceServers: [{ urls: getEnvValue('STUN_SRV_GXY') }],
     });
 
     this.initPcEvents();

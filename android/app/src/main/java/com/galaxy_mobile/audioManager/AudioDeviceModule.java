@@ -33,7 +33,6 @@ import static com.galaxy_mobile.audioManager.AudioHelper.BUILTIN_EARPIECE_GROUP;
 import static com.galaxy_mobile.audioManager.AudioHelper.BUILTIN_SPEAKER_GROUP;
 import static com.galaxy_mobile.audioManager.AudioHelper.BLUETOOTH_GROUP;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
 @ReactModule(name = AudioDeviceModule.NAME)
 public class AudioDeviceModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
     public static final String NAME = "AudioDeviceModule";

@@ -100,8 +100,8 @@ android {
         applicationId "com.galaxy_mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 105
-        versionName "2.4.1"
+        versionCode 106
+        versionName "2.5.0"
         renderscriptTargetApi rootProject.ext.targetSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
@@ -142,10 +142,7 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
-    // Sentry Android native SDK - version is managed by @sentry/react-native
-    // implementation 'io.sentry:sentry-android:7.4.0'   
-    // SoLoader - version is managed by React Native automatically
-    // implementation 'com.facebook.soloader:soloader:0.10.5'
+    
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

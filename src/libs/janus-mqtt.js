@@ -30,7 +30,6 @@ export class JanusMqtt {
     this.transactions = {};
     this.pluginHandles = {};
     this.keeptry = 0;
-    this.token = null;
     this.connect = null;
     this.isJanusInitialized = false;
     this.keepAliveTimer = null;
@@ -39,14 +38,14 @@ export class JanusMqtt {
     // Стрелочные функции автоматически связывают this
   }
 
-  init = async token => {
+  init = async () => {
     startTransaction(this.sentrySession, 'Janus Init', 'janus.init');
     if (!(await waitConnection())) {
       logger.warn(NAMESPACE, 'Connection unavailable in init');
       finishTransaction(this.sentrySession, 'no_connection');
       return;
     }
-    this.token = token;
+
     logger.debug(NAMESPACE, 'init this.user', this.user);
 
     const subscribeSpan = addSpan(this.sentrySession, 'janus.subscribeTopics', {
@@ -73,7 +72,7 @@ export class JanusMqtt {
     mqtt.mq.on(this.srv, this.onMessage);
 
     const transaction = randomString(12);
-    const msg = { janus: 'create', transaction, token };
+    const msg = { janus: 'create', transaction };
     logger.debug(NAMESPACE, 'init transaction:', transaction);
 
     // Create connectSpan in the init scope so it can be accessed in the promise chain
@@ -270,7 +269,6 @@ export class JanusMqtt {
 
       try {
         const request = Object.assign({}, payload, {
-          token: this.token,
           janus: type,
           session_id: this.sessionId,
           transaction: transactionId,

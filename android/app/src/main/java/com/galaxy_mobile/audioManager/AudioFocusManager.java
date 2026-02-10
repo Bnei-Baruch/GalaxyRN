@@ -12,7 +12,6 @@ import androidx.annotation.RequiresApi;
 
 import com.facebook.react.bridge.ReactContext;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
 public class AudioFocusManager {
     private static final String TAG = "AudioFocusManager";
 
