@@ -14,6 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
+import ForegroundBridge from '../services/ForegroundBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
@@ -102,6 +103,7 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     attempts = 0;
+    ForegroundBridge.updateForegroundService();
   },
 
   subscribeMqtt: async () => {
@@ -154,6 +156,7 @@ export const useInRoomStore = create((set, get) => ({
 
     exitWIP = false;
     set({ isInRoom: false });
+    ForegroundBridge.updateForegroundService();
   },
 
   exitNetResources: async () => {

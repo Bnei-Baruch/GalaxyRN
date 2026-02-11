@@ -1,36 +1,32 @@
 package com.galaxy_mobile.foreground;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import com.galaxy_mobile.logger.GxyLogger;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import com.galaxy_mobile.R;
 import com.galaxy_mobile.MainApplication;
-import com.galaxy_mobile.foreground.PlayerNotification;
-import com.galaxy_mobile.foreground.PlayerActionReceiver;
-import com.galaxy_mobile.logger.GxyLogger;
-import com.facebook.react.bridge.ReactApplicationContext;
+import com.galaxy_mobile.foreground.PlayerNotificationBuilder;
 
 public class ForegroundService extends Service {
     private static final String TAG = "ForegroundService";
     public static volatile boolean isRunning = false;
+    private PlayerNotificationBuilder notificationBuilder;
 
     public static final String START_SERVICE_ACTION = "START_SERVICE";
     public static final String STOP_SERVICE_ACTION = "STOP_SERVICE";
-    public static final String MIC_STATE_EXTRA = "MIC_STATE";
 
-    private boolean mIsMicOn = false;
+    public static final String MIC_STATE_EXTRA = "MIC_STATE";
+    public static final String IN_ROOM_EXTRA = "IN_ROOM_EXTRA";
+    public static final String ROOM_EXTRA = "ROOM_EXTRA";
+    public static final String UPDATE_SERVICE_EXTRA = "UPDATE_SERVICE";
+
+    public static boolean isMicOn = false;
+    public static boolean isInRoom = false;
+    public static String room = "Not in room";
 
     @Nullable
     @Override
@@ -42,7 +38,7 @@ public class ForegroundService extends Service {
     public void onCreate() {
         super.onCreate();
         GxyLogger.i(TAG, "onCreate");
-        PlayerNotification.initChannel(getApplicationContext());
+        notificationBuilder = new PlayerNotificationBuilder(getApplicationContext());
         GxyLogger.i(TAG, "onCreate completed");
         isRunning = true;
     }
@@ -56,20 +52,19 @@ public class ForegroundService extends Service {
             stop();
             return START_NOT_STICKY;
         }
-
-        boolean isMicOn = false;
         if (action.equals(START_SERVICE_ACTION)) {
-            isMicOn = intent.getBooleanExtra(ForegroundService.MIC_STATE_EXTRA, false);
-            start(isMicOn);
+            start();
             return START_STICKY;
         }
-        GxyLogger.e(TAG, "Invalid action: " + action);
+        GxyLogger.d(TAG, "Invalid action: " + action);
         return START_NOT_STICKY;
     }
 
-    private void start(boolean isMicOn) {
-        GxyLogger.i(TAG, "Starting foreground service with isMicOn: " + isMicOn);
-        PlayerNotification notification = new PlayerNotification(getApplicationContext());
+    private void start() {
+        GxyLogger.i(TAG,
+                "Starting foreground service: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room);
+                
+        Notification notification = notificationBuilder.build(isMicOn, isInRoom, room);
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
@@ -86,10 +81,10 @@ public class ForegroundService extends Service {
                     typesLog.append(" + CONNECTED_DEVICE");
                 }
 
-                startForeground(PlayerNotification.NOTIFICATION_ID, notification.getNotification(), serviceType);
+                startForeground(PlayerNotificationBuilder.NOTIFICATION_ID, notification, serviceType);
                 GxyLogger.i(TAG, "Successfully started as foreground service");
             } else {
-                startForeground(PlayerNotification.NOTIFICATION_ID, notification.getNotification());
+                startForeground(PlayerNotificationBuilder.NOTIFICATION_ID, notification);
                 GxyLogger.i(TAG, "Successfully started as foreground service (legacy)");
             }
 
@@ -108,7 +103,7 @@ public class ForegroundService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        GxyLogger.i(TAG, "ForegroundService: onTaskRemoved - app swiped away from recent tasks");
+        GxyLogger.i(TAG, "onTaskRemoved - app swiped away from recent tasks");
 
         try {
             // cleanup on swipe close from background
@@ -120,7 +115,7 @@ public class ForegroundService extends Service {
 
             cleanup();
             stopSelf();
-            GxyLogger.i(TAG, "ForegroundService: onTaskRemoved completed");
+            GxyLogger.i(TAG, "onTaskRemoved completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error in onTaskRemoved", e);
             stopSelf();
@@ -129,7 +124,7 @@ public class ForegroundService extends Service {
 
     @Override
     public void onDestroy() {
-        GxyLogger.i(TAG, "ForegroundService: onDestroy");
+        GxyLogger.i(TAG, "onDestroy");
         cleanup();
         isRunning = false;
         super.onDestroy();

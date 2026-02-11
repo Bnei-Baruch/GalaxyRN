@@ -41,6 +41,7 @@ try {
 }
 
 let subscription = null;
+let playerActionSubscription = null;
 
 export const useInitsStore = create((set, get) => ({
   permReady: false,
@@ -239,6 +240,23 @@ export const useInitsStore = create((set, get) => ({
         }
       );
       logger.debug(NAMESPACE, 'appTerminating listener set up successfully');
+
+      playerActionSubscription = DeviceEventEmitter.addListener(
+        'nativePlayerAction',
+        async data => {
+          logger.debug(NAMESPACE, 'nativePlayerAction event: ', data);
+          if (data.action === 'joinRoom') {
+            await useInRoomStore.getState().joinRoom(true);
+          } else if (data.action === 'leaveRoom') {
+            await useInRoomStore.getState().exitRoom();
+          } else if (data.action === 'mute') {
+            await useMyStreamStore.getState().toggleMute(true);
+          } else if (data.action === 'unmute') {
+            await useMyStreamStore.getState().toggleMute(false);
+          }
+        }
+      );
+      logger.debug(NAMESPACE, 'nativePlayerAction listener set up successfully');
     }
     logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
 
@@ -296,6 +314,12 @@ export const useInitsStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'remove event listener');
         subscription.remove();
         subscription = null;
+      }
+
+      if (playerActionSubscription) {
+        logger.debug(NAMESPACE, 'remove playerActionSubscription');
+        playerActionSubscription.remove();
+        playerActionSubscription = null;
       }
 
       logger.debug(NAMESPACE, 'terminateServices completed successfully');

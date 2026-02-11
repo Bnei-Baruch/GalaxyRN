@@ -27,11 +27,6 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
 
-
-/**
- * React Native module that manages foreground service and screen behavior
- * based on application lifecycle.
- */
 @ReactModule(name = ForegroundModule.NAME)
 public class ForegroundModule extends ReactContextBaseJavaModule {
 
@@ -41,7 +36,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private Handler mainHandler;
     private LifecycleEventObserver lifecycleObserver;
     private boolean isForeground = true;
-    private boolean isMicOn = false;
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -57,15 +51,14 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private void initLifecycleObserver() {
         mainHandler = new Handler(Looper.getMainLooper());
         mainHandler.post(() -> {
-            // Create and add new observer
             lifecycleObserver = (source, event) -> {
                 GxyLogger.d(TAG, "ProcessLifecycleOwner event: " + event);
 
                 if (event == Lifecycle.Event.ON_STOP) {
-                    GxyLogger.d(TAG, "App entered background Mic is on: " + this.isMicOn);
+                    GxyLogger.d(TAG, "App entered background");
                     handleAppBackgrounded();
                 } else if (event == Lifecycle.Event.ON_START) {
-                    GxyLogger.d(TAG, "App entered foreground Mic is on: " + this.isMicOn);
+                    GxyLogger.d(TAG, "App entered foreground");
                     handleAppForegrounded();
                 }
 
@@ -76,9 +69,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         });
     }
 
-    /**
-     * Handles actions when app goes to background
-     */
     private void handleAppBackgrounded() {
         try {
             startService();
@@ -92,8 +82,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
     private void handleAppForegrounded() {
         this.isForeground = true;
-        GxyLogger.d(TAG, "Mic is on: " + this.isMicOn);
-        if (!this.isMicOn) {
+        if (!ForegroundService.isMicOn) {
             GxyLogger.d(TAG, "Mic is off, stopped foreground service");
             stopService();
         }
@@ -119,9 +108,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         disableKeepScreenOn();
     }
 
-    /**
-     * Enables the KEEP_SCREEN_ON flag to prevent the screen from turning off
-     */
     private void enableKeepScreenOn() {
         Activity activity = getCurrentActivity();
         if (activity == null) {
@@ -135,9 +121,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         });
     }
 
-    /**
-     * Disables the KEEP_SCREEN_ON flag to allow normal screen timeout behavior
-     */
     private void disableKeepScreenOn() {
         Activity activity = getCurrentActivity();
         if (activity == null) {
@@ -159,21 +142,14 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setMicOn() {
-        GxyLogger.d(TAG, "setMicOn");
-        this.isMicOn = true;
-        startService();
-    }
-
-    /**
-     * On setMicOff, stop the foreground service
-     */
-    @ReactMethod
-    public void setMicOff() {
-        this.isMicOn = false;
-        if (this.isForeground) {
-            GxyLogger.d(TAG, "Mic is off, stopped foreground service");
+    public void updateForegroundService(boolean isMicOn, boolean isInRoom, String room) {
+        ForegroundService.isMicOn = isMicOn;
+        ForegroundService.isInRoom = isInRoom;
+        ForegroundService.room = room;
+        if (!isMicOn && this.isForeground) {
             stopService();
+        } else {
+            startService();
         }
     }
 
@@ -181,7 +157,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         GxyLogger.d(TAG, "startService");
         Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
         intent.setAction(ForegroundService.START_SERVICE_ACTION);
-        intent.putExtra(ForegroundService.MIC_STATE_EXTRA, isMicOn);
         getCurrentActivity().startForegroundService(intent);
     }
 

@@ -64,11 +64,7 @@ export const useMyStreamStore = create((set, get) => ({
     if (Platform.OS !== 'android') return;
     logger.debug(NAMESPACE, 'toggleMute', mute);
     try {
-      if (mute) {
-        ForegroundBridge.setMicOff();
-      } else {
-        ForegroundBridge.setMicOn();
-      }
+      ForegroundBridge.updateForegroundService();
     } catch (error) {
       logger.error(NAMESPACE, 'Error toggling mute:', error);
     }
