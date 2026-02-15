@@ -30,7 +30,6 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.galaxy_mobile.uiState.GxyPipBuilder;
 import com.galaxy_mobile.foreground.ForegroundService;
 
-
 @ReactModule(name = GxyUIStateModule.NAME)
 public class GxyUIStateModule extends ReactContextBaseJavaModule {
 
@@ -151,20 +150,21 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void updateUIState(boolean isMicOn, boolean isInRoom, String room, boolean isCammute) {
-        GxyLogger.d(TAG, "updateUIState: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room + " isCammute: " + isCammute);
+        GxyLogger.d(TAG, "updateUIState: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room
+                + " isCammute: " + isCammute);
         boolean needPIPUpdate = (isMicOn != GxyUIStateModule.isMicOn) || (isInRoom != GxyUIStateModule.isInRoom)
-        || (isCammute != GxyUIStateModule.isCammute);
-        
+                || (isCammute != GxyUIStateModule.isCammute);
+
         boolean needForegroundUpdate = (isMicOn != GxyUIStateModule.isMicOn) || (isInRoom != GxyUIStateModule.isInRoom)
-        || (room != GxyUIStateModule.room);
+                || (room != GxyUIStateModule.room);
 
         GxyLogger.d(TAG, "needPIPUpdate: " + needPIPUpdate + " needForegroundUpdate: " + needForegroundUpdate);
-        
+
         GxyUIStateModule.isMicOn = isMicOn;
         GxyUIStateModule.isInRoom = isInRoom;
         GxyUIStateModule.room = room;
         GxyUIStateModule.isCammute = isCammute;
-        
+
         if (needForegroundUpdate) {
             if (!isMicOn && isForeground) {
                 stopService();
@@ -172,10 +172,19 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
                 startService();
             }
         }
-        
+
         if (needPIPUpdate) {
             Activity activity = getCurrentActivity();
-            if (activity != null && activity.isInPictureInPictureMode()) {
+            if (activity == null) {
+                GxyLogger.d(TAG, "activity is null, skipping PIP update");
+                return;
+            }
+
+            if (activity.isInPictureInPictureMode()) {
+                if (!isInRoom) {
+                    activity.moveTaskToBack(true);
+                    return;
+                }
                 GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
                 pipBuilder.build();
             }
