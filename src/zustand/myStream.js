@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import { mediaDevices } from 'react-native-webrtc';
 import { create } from 'zustand';
 import { STORAGE_KEYS } from '../constants';
-import ForegroundBridge from '../services/ForegroundBridge';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { setToStorage } from '../tools';
 import { useUserStore } from './user';
@@ -64,16 +64,19 @@ export const useMyStreamStore = create((set, get) => ({
     if (Platform.OS !== 'android') return;
     logger.debug(NAMESPACE, 'toggleMute', mute);
     try {
-      ForegroundBridge.updateForegroundService();
+      GxyUIStateBridge.updateUIState();
     } catch (error) {
       logger.error(NAMESPACE, 'Error toggling mute:', error);
     }
   },
 
   toggleCammute: async (cammute = !get().cammute, updateStorage = true) => {
+    logger.debug(NAMESPACE, 'toggleCammute', cammute);
     useUserStore.getState().sendUserState({ camera: !cammute });
     stream?.getVideoTracks().forEach(track => (track.enabled = !cammute));
+
     set({ cammute });
+    GxyUIStateBridge.updateUIState();
     updateStorage && (await setToStorage(STORAGE_KEYS.CAMMUTE, cammute.toString()));
   },
 }));

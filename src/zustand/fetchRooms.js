@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { STORAGE_KEYS } from '../constants';
 import api from '../services/Api';
-import ForegroundBridge from '../services/ForegroundBridge';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../tools';
 
@@ -26,7 +26,7 @@ export const useRoomStore = create((set, get) => ({
     }
 
     set({ room });
-    ForegroundBridge.updateForegroundService();
+    GxyUIStateBridge.updateUIState();
   },
 
   isLoading: false,

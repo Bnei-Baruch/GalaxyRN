@@ -7,7 +7,7 @@ import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import CallsBridge from '../services/CallsBridge';
-import ForegroundBridge from '../services/ForegroundBridge';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
 import { getBooleanFromStorage } from '../tools';
@@ -42,6 +42,7 @@ try {
 
 let subscription = null;
 let playerActionSubscription = null;
+let pipSubscription = null;
 
 export const useInitsStore = create((set, get) => ({
   permReady: false,
@@ -74,8 +75,10 @@ export const useInitsStore = create((set, get) => ({
 
     try {
       logger.debug(NAMESPACE, 'startForegroundListener');
-      await ForegroundBridge.startForegroundListener();
+      await GxyUIStateBridge.startForegroundListener();
       logger.debug(NAMESPACE, 'startForegroundListener done');
+      logger.debug(NAMESPACE, 'activatePip');
+      await GxyUIStateBridge.activatePip();
       logger.debug(NAMESPACE, 'init settings from storage');
       await get().settingsFromStorage();
       logger.debug(NAMESPACE, 'keepScreenOn');
@@ -253,6 +256,10 @@ export const useInitsStore = create((set, get) => ({
             await useMyStreamStore.getState().toggleMute(true);
           } else if (data.action === 'unmute') {
             await useMyStreamStore.getState().toggleMute(false);
+          } else if (data.action === 'camMute') {
+            await useMyStreamStore.getState().toggleCammute(true);
+          } else if (data.action === 'camUnmute') {
+            await useMyStreamStore.getState().toggleCammute(false);
           }
         }
       );
@@ -289,6 +296,19 @@ export const useInitsStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error initializing app', error);
       throw error;
     }
+
+    try {
+      pipSubscription = DeviceEventEmitter.addListener(
+        'isInPIPMode',
+        async data => {
+          logger.debug(NAMESPACE, 'isInPIPMode event: ', data);
+          useSettingsStore.getState().toggleIsPIPMode(data.active);
+        }
+      );
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error initializing pip subscription:', error);
+      throw error;
+    }
   },
 
   terminateServices: () => {
@@ -320,6 +340,12 @@ export const useInitsStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'remove playerActionSubscription');
         playerActionSubscription.remove();
         playerActionSubscription = null;
+      }
+
+      if (pipSubscription) {
+        logger.debug(NAMESPACE, 'remove pipSubscription');
+        pipSubscription.remove();
+        pipSubscription = null;
       }
 
       logger.debug(NAMESPACE, 'terminateServices completed successfully');

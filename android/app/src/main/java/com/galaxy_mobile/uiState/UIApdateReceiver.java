@@ -1,4 +1,4 @@
-package com.galaxy_mobile.foreground;
+package com.galaxy_mobile.uiState;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,13 +10,15 @@ import com.facebook.react.bridge.WritableMap;
 import com.galaxy_mobile.SendEventToClient;
 import com.galaxy_mobile.logger.GxyLogger;
 
-public class PlayerActionReceiver extends BroadcastReceiver {
-  private static final String TAG = "PlayerActionReceiver";
+public class UIApdateReceiver extends BroadcastReceiver {
+  private static final String TAG = "UIApdateReceiver";
 
   public static final String ACTION_JOIN_ROOM = "com.galaxy_mobile.ACTION_JOIN_ROOM";
   public static final String ACTION_LEAVE_ROOM = "com.galaxy_mobile.ACTION_LEAVE_ROOM";
   public static final String ACTION_MUTE = "com.galaxy_mobile.ACTION_MUTE";
   public static final String ACTION_UNMUTE = "com.galaxy_mobile.ACTION_UNMUTE";
+  public static final String ACTION_CAM_MUTE = "com.galaxy_mobile.ACTION_CAM_MUTE";
+  public static final String ACTION_CAM_UNMUTE = "com.galaxy_mobile.ACTION_CAM_UNMUTE";
   public static final String PLAYER_ACTION = "nativePlayerAction";
 
   @Override
@@ -35,6 +37,12 @@ public class PlayerActionReceiver extends BroadcastReceiver {
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     } else if (ACTION_UNMUTE.equals(action)) {
       params.putString("action", "unmute");
+      SendEventToClient.sendEvent(PLAYER_ACTION, params);
+    } else if (ACTION_CAM_MUTE.equals(action)) {
+      params.putString("action", "camMute");
+      SendEventToClient.sendEvent(PLAYER_ACTION, params);
+    } else if (ACTION_CAM_UNMUTE.equals(action)) {
+      params.putString("action", "camUnmute");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     }
   }

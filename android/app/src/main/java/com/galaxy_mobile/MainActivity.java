@@ -1,29 +1,31 @@
 package com.galaxy_mobile;
 
-import android.content.Intent;
-import android.media.AudioManager;
-import android.os.Bundle;
-import android.util.Log;
-import android.os.Process;
-import android.content.IntentFilter;
 import android.content.Context;
-import android.view.WindowManager;
+import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.os.Build;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.defaults.DefaultReactActivityDelegate;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.galaxy_mobile.permissions.PermissionHelper;
 import com.facebook.react.ReactInstanceManager;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
+import com.galaxy_mobile.permissions.PermissionHelper;
+import com.galaxy_mobile.SendEventToClient;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
+import com.galaxy_mobile.uiState.GxyUIStateModule;
+
+
 import org.webrtc.audio.JavaAudioDeviceModule;
-import android.media.AudioAttributes;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
@@ -47,7 +49,7 @@ public class MainActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        
+
         WebRTCModuleOptions options = WebRTCModuleOptions.getInstance();
         AudioAttributes audioAttributes = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
@@ -76,6 +78,25 @@ public class MainActivity extends ReactActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onUserLeaveHint() {
+        GxyLogger.d(TAG, "onUserLeaveHint");
+        if (GxyUIStateModule.isInRoom) {
+            enterPictureInPictureMode();
+        }
+        super.onUserLeaveHint();
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        WritableMap data = Arguments.createMap();
+        data.putBoolean("active", isInPictureInPictureMode);
+        SendEventToClient.sendEvent("isInPIPMode", data);
+        if (isInPictureInPictureMode) {
+            GxyUIStateModule.startForegroundService(this);
+        }
     }
 
     @Override

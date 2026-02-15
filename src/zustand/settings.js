@@ -89,4 +89,9 @@ export const useSettingsStore = create((set, get) => ({
     set(state => ({ debugMode: !state.debugMode }));
     setIsDebug(state.debugMode);
   },
+  isPIPMode: false,
+  toggleIsPIPMode: (isPIPMode = !get().isPIPMode) => {
+    logger.debug(NAMESPACE, 'toggleIsPIPMode', isPIPMode);
+    set({ isPIPMode });
+  },
 }));

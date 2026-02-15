@@ -1,4 +1,4 @@
-package com.galaxy_mobile.foreground;
+package com.galaxy_mobile.uiState;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,19 +27,27 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
 
-@ReactModule(name = ForegroundModule.NAME)
-public class ForegroundModule extends ReactContextBaseJavaModule {
+import com.galaxy_mobile.uiState.GxyPipBuilder;
+import com.galaxy_mobile.foreground.ForegroundService;
 
-    public static final String NAME = "ForegroundModule";
-    private static final String TAG = "ForegroundModule";
+
+@ReactModule(name = GxyUIStateModule.NAME)
+public class GxyUIStateModule extends ReactContextBaseJavaModule {
+
+    public static final String NAME = "GxyUIStateModule";
+    private static final String TAG = "GxyUIStateModule";
 
     private Handler mainHandler;
     private LifecycleEventObserver lifecycleObserver;
-    private boolean isForeground = true;
+    public static boolean isForeground = true;
+    public static boolean isMicOn = false;
+    public static boolean isInRoom = false;
+    public static String room = "Not in room";
+    public static boolean isCammute = false;
 
-    public ForegroundModule(ReactApplicationContext reactContext) {
+    public GxyUIStateModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        GxyLogger.d(TAG, "ForegroundModule constructor called");
+        GxyLogger.d(TAG, "GxyUIStateModule constructor called");
     }
 
     @NonNull
@@ -72,7 +80,7 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     private void handleAppBackgrounded() {
         try {
             startService();
-            this.isForeground = false;
+            isForeground = false;
             GxyLogger.d(TAG, "Started foreground service");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Failed to start foreground service when app backgrounded", e);
@@ -81,8 +89,8 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     }
 
     private void handleAppForegrounded() {
-        this.isForeground = true;
-        if (!ForegroundService.isMicOn) {
+        isForeground = true;
+        if (!GxyUIStateModule.isMicOn) {
             GxyLogger.d(TAG, "Mic is off, stopped foreground service");
             stopService();
         }
@@ -142,15 +150,44 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void updateForegroundService(boolean isMicOn, boolean isInRoom, String room) {
-        ForegroundService.isMicOn = isMicOn;
-        ForegroundService.isInRoom = isInRoom;
-        ForegroundService.room = room;
-        if (!isMicOn && this.isForeground) {
-            stopService();
-        } else {
-            startService();
+    public void updateUIState(boolean isMicOn, boolean isInRoom, String room, boolean isCammute) {
+        GxyLogger.d(TAG, "updateUIState: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room + " isCammute: " + isCammute);
+        boolean needPIPUpdate = (isMicOn != GxyUIStateModule.isMicOn) || (isInRoom != GxyUIStateModule.isInRoom)
+        || (isCammute != GxyUIStateModule.isCammute);
+        
+        boolean needForegroundUpdate = (isMicOn != GxyUIStateModule.isMicOn) || (isInRoom != GxyUIStateModule.isInRoom)
+        || (room != GxyUIStateModule.room);
+
+        GxyLogger.d(TAG, "needPIPUpdate: " + needPIPUpdate + " needForegroundUpdate: " + needForegroundUpdate);
+        
+        GxyUIStateModule.isMicOn = isMicOn;
+        GxyUIStateModule.isInRoom = isInRoom;
+        GxyUIStateModule.room = room;
+        GxyUIStateModule.isCammute = isCammute;
+        
+        if (needForegroundUpdate) {
+            if (!isMicOn && isForeground) {
+                stopService();
+            } else {
+                startService();
+            }
         }
+        
+        if (needPIPUpdate) {
+            Activity activity = getCurrentActivity();
+            if (activity != null && activity.isInPictureInPictureMode()) {
+                GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
+                pipBuilder.build();
+            }
+        }
+    }
+
+    @ReactMethod
+    public void activatePip(Promise promise) {
+        GxyLogger.d(TAG, "activatePip");
+        GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
+        pipBuilder.build();
+        promise.resolve(true);
     }
 
     private void startService() {
@@ -170,4 +207,17 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
         getCurrentActivity().startForegroundService(intent);
     }
+
+    /**
+     * Start the foreground service from MainActivity (used in pip mode)
+     * 
+     * @param activity
+     */
+    public static void startForegroundService(Activity activity) {
+        GxyLogger.d(TAG, "startForegroundService");
+        Intent intent = new Intent(activity, ForegroundService.class);
+        intent.setAction(ForegroundService.START_SERVICE_ACTION);
+        activity.startForegroundService(intent);
+    }
+
 }

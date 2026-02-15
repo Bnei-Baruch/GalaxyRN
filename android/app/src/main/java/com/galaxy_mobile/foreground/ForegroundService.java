@@ -61,10 +61,9 @@ public class ForegroundService extends Service {
     }
 
     private void start() {
-        GxyLogger.i(TAG,
-                "Starting foreground service: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room);
-                
-        Notification notification = notificationBuilder.build(isMicOn, isInRoom, room);
+        GxyLogger.i(TAG, "Starting foreground service");
+
+        Notification notification = notificationBuilder.build();
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;

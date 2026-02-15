@@ -14,7 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
-import ForegroundBridge from '../services/ForegroundBridge';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
@@ -103,7 +103,7 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     attempts = 0;
-    ForegroundBridge.updateForegroundService();
+    GxyUIStateBridge.updateUIState();
   },
 
   subscribeMqtt: async () => {
@@ -156,7 +156,7 @@ export const useInRoomStore = create((set, get) => ({
 
     exitWIP = false;
     set({ isInRoom: false });
-    ForegroundBridge.updateForegroundService();
+    GxyUIStateBridge.updateUIState();
   },
 
   exitNetResources: async () => {
@@ -232,7 +232,7 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'enterAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.enter');
     try {
-      useMyStreamStore.getState().toggleCammute(true, false);
+      //useMyStreamStore.getState().toggleCammute(true, false);
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 

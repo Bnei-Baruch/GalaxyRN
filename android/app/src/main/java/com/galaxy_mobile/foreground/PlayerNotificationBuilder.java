@@ -13,9 +13,10 @@ import androidx.media.app.NotificationCompat.MediaStyle;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.galaxy_mobile.SendEventToClient;
 import com.galaxy_mobile.logger.GxyLogger;
-import com.galaxy_mobile.foreground.PlayerActionReceiver;
+import com.galaxy_mobile.uiState.UIApdateReceiver;
 import com.galaxy_mobile.MainActivity;
 import com.galaxy_mobile.R;
+import com.galaxy_mobile.uiState.GxyUIStateModule;
 
 public class PlayerNotificationBuilder {
     public static final String CHANNEL_ID = "PlayerNotificationChannel";
@@ -56,12 +57,12 @@ public class PlayerNotificationBuilder {
         manager.createNotificationChannel(channel);
     }
 
-    public Notification build(boolean isMicOn, boolean isInRoom, String room) {
-        GxyLogger.i(TAG, "buildNotification called: isMicOn: " + isMicOn + " isInRoom: " + isInRoom);
+    public Notification build() {
+        GxyLogger.i(TAG, "buildNotification called");
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.arvut)
-                .setContentTitle(room)
+                .setContentTitle(GxyUIStateModule.room)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -72,11 +73,11 @@ public class PlayerNotificationBuilder {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
         MediaStyle style = new MediaStyle();
-        if (isInRoom) {
+        if (GxyUIStateModule.isInRoom) {
             style.setShowActionsInCompactView(0, 1);
             builder.addAction(buildLeaveRoomAction());
             builder.setStyle(style);
-            if (isMicOn) {
+            if (GxyUIStateModule.isMicOn) {
                 builder.addAction(buildMuteAction());
             } else {
                 builder.addAction(buildUnmuteAction());
@@ -106,7 +107,7 @@ public class PlayerNotificationBuilder {
         GxyLogger.i(TAG, "buildMuteAction called");
         int requestCode = 1;
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-        Intent intent = new Intent(context, PlayerActionReceiver.class).setAction(PlayerActionReceiver.ACTION_MUTE);
+        Intent intent = new Intent(context, UIApdateReceiver.class).setAction(UIApdateReceiver.ACTION_MUTE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
         return new NotificationCompat.Action.Builder(
                 R.drawable.mic_24px,
@@ -118,7 +119,7 @@ public class PlayerNotificationBuilder {
         GxyLogger.i(TAG, "buildUnmuteAction called");
         int requestCode = 2;
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-        Intent intent = new Intent(context, PlayerActionReceiver.class).setAction(PlayerActionReceiver.ACTION_UNMUTE);
+        Intent intent = new Intent(context, UIApdateReceiver.class).setAction(UIApdateReceiver.ACTION_UNMUTE);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
         return new NotificationCompat.Action.Builder(
                 R.drawable.mic_off_24px,
@@ -130,8 +131,8 @@ public class PlayerNotificationBuilder {
         GxyLogger.i(TAG, "buildJoinRoomAction called");
         int requestCode = 3;
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-        Intent intent = new Intent(context, PlayerActionReceiver.class)
-                .setAction(PlayerActionReceiver.ACTION_JOIN_ROOM);
+        Intent intent = new Intent(context, UIApdateReceiver.class)
+                .setAction(UIApdateReceiver.ACTION_JOIN_ROOM);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
         return new NotificationCompat.Action.Builder(
                 R.drawable.play_arrow_24px,
@@ -143,8 +144,8 @@ public class PlayerNotificationBuilder {
         GxyLogger.i(TAG, "buildLeaveRoomAction called");
         int requestCode = 4;
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-        Intent intent = new Intent(context, PlayerActionReceiver.class)
-                .setAction(PlayerActionReceiver.ACTION_LEAVE_ROOM);
+        Intent intent = new Intent(context, UIApdateReceiver.class)
+                .setAction(UIApdateReceiver.ACTION_LEAVE_ROOM);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
         return new NotificationCompat.Action.Builder(
                 R.drawable.stop_24px,
