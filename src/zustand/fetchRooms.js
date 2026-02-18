@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { STORAGE_KEYS } from '../constants';
 import api from '../services/Api';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../tools';
 
@@ -25,13 +26,13 @@ export const useRoomStore = create((set, get) => ({
     }
 
     set({ room });
+    GxyUIStateBridge.updateUIState();
   },
 
   isLoading: false,
   error: null,
 
   fetchRooms: async () => {
-
     logger.debug(NAMESPACE, 'fetchRooms', get().rooms.length);
     if (get().rooms.length === 0) {
       logger.debug(NAMESPACE, 'fetchRooms fetching rooms');
@@ -51,7 +52,7 @@ export const useRoomStore = create((set, get) => ({
       const room = get().rooms.find(x => x.room === Number.parseInt(id));
       logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 
-      set({ room });
+      get().setRoom(room);
     } catch (err) {
       logger.error(NAMESPACE, 'saved room: ', err);
     }

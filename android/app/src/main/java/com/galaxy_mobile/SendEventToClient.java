@@ -29,7 +29,7 @@ public class SendEventToClient {
                 return;
             }
 
-            GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName);
+            GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName + " with params: " + params.toString());
             SendEventToClient.context
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit(eventName, params);

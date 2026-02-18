@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, Dimensions } from 'react-native';
-import MyRTCView from './MyRTCView';
-import { useMyStreamStore } from '../zustand/myStream';
+import { Dimensions, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { baseStyles } from '../constants';
+import logger from '../services/logger';
+import { useMyStreamStore } from '../zustand/myStream';
+import MyRTCView from './MyRTCView';
 
 const MyVideo = ({ styles }) => {
   const { cammute } = useMyStreamStore();
   const { width, height } = Dimensions.get('window');
   const iconSize = Math.min(width, height) * 0.25; // 25% of the smallest screen dimension
 
+  logger.debug('MyVideo', 'render', cammute);
   return (
     <View style={styles}>
       {
