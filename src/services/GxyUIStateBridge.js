@@ -34,6 +34,7 @@ const GxyUIStateBridge = {
       logger.warn(NAMESPACE, 'updateUIState is not available');
     }
   },
+
   activatePip: async () => {
     if (NativeGxyUIState && NativeGxyUIState.activatePip) {
       return await NativeGxyUIState.activatePip();

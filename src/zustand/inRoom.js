@@ -232,7 +232,6 @@ export const useInRoomStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'enterAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.enter');
     try {
-      //useMyStreamStore.getState().toggleCammute(true, false);
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
