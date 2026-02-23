@@ -52,7 +52,9 @@ public class GxyPipBuilder {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         Rect rect = new Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
         builder.setSourceRectHint(rect);
-        builder.setSeamlessResizeEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setSeamlessResizeEnabled(true);
+        }
         List<RemoteAction> actions = buildActions();
         builder.setActions(actions);
         return builder.build();

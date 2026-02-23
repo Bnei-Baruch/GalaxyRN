@@ -91,6 +91,7 @@ public class MainActivity extends ReactActivity {
 
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode);
         WritableMap data = Arguments.createMap();
         data.putBoolean("active", isInPictureInPictureMode);
         SendEventToClient.sendEvent("isInPIPMode", data);
