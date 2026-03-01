@@ -30,7 +30,7 @@ const Feeds = () => {
 
   const renderMy = () => {
     if (hideSelf || isFullscreen) return null;
-    if ((audioMode && cammute) || isInBackground) {
+    if (audioMode && cammute) {
       return <MyAudioMode key="my" />;
     }
     return <MyRoomMedia key="my" />;

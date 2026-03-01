@@ -26,10 +26,10 @@
     <uses-permission
         android:name="android.permission.POST_NOTIFICATIONS"
         android:targetSdkVersion="33" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <!-- Google Play Services permission for Advertising ID (required for Android 13+) -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
@@ -53,6 +53,8 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|locale|layoutDirection|fontScale|density|navigation|colorMode|mcc|mnc"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask"
@@ -62,7 +64,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <!-- Foreground service for maintaining app functionality while in background -->
         <service
             android:name=".foreground.ForegroundService"
@@ -70,5 +72,14 @@
             android:exported="false"
             android:stopWithTask="false"
             android:foregroundServiceType="mediaPlayback|microphone|connectedDevice" />
+        <receiver android:name=".uiState.UIApdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.galaxy_mobile.ACTION_MUTE" />
+                <action android:name="com.galaxy_mobile.ACTION_UNMUTE" />
+                <action android:name="com.galaxy_mobile.ACTION_JOIN_ROOM" />
+                <action android:name="com.galaxy_mobile.ACTION_LEAVE_ROOM" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

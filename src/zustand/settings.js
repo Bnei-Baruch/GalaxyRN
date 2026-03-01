@@ -6,6 +6,7 @@ import logger from '../services/logger';
 import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
+import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -88,5 +89,13 @@ export const useSettingsStore = create((set, get) => ({
   toggleDebugMode: () => {
     set(state => ({ debugMode: !state.debugMode }));
     setIsDebug(state.debugMode);
+  },
+  isPIPMode: false,
+  toggleIsPIPMode: (isPIPMode = !get().isPIPMode) => {
+    logger.debug(NAMESPACE, 'toggleIsPIPMode', isPIPMode);
+    if (!isPIPMode && useInRoomStore.getState().isInBackground) {
+      useMyStreamStore.getState().toggleCammute(true, false)
+    }
+    set({ isPIPMode });
   },
 }));
