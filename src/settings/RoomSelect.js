@@ -12,8 +12,6 @@ import { useRoomStore } from '../zustand/fetchRooms';
 import JoinRoomBtn from './JoinRoomBtn';
 import RoomSelectModal from './RoomSelectModal';
 
-const NAMESPACE = 'RoomSelect';
-
 const RoomSelect = () => {
   const { setSelectRoomOpen } = useRoomStore();
 

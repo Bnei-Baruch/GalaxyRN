@@ -48,7 +48,7 @@ export const useRoomStore = create((set, get) => ({
 
     try {
       const id = await getFromStorage(STORAGE_KEYS.ROOM);
-      const room = get().rooms.find(x => x.room === Number.parseInt(id));
+      const room = get().rooms.find(x => x.room === id);
       logger.debug(NAMESPACE, 'room from RNSecureStorage', id, room);
 
       set({ room });
