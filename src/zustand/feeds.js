@@ -107,7 +107,7 @@ export const useFeedsStore = create((set, get) => ({
     if (!gxyServer?.janus) {
       throw new Error(`gxy server is ${gxyServer} in initFeeds`);
     }
-
+    useUserStore.getState().setJanusSrv(gxyServer.janus);
     janus = new JanusMqtt(user, gxyServer.janus);
     logger.debug(NAMESPACE, 'initFeeds janus');
 
