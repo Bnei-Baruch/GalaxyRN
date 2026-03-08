@@ -156,7 +156,7 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
                 || (isCammute != GxyUIStateModule.isCammute);
 
         boolean needForegroundUpdate = (isMicOn != GxyUIStateModule.isMicOn) || (isInRoom != GxyUIStateModule.isInRoom)
-                || (room != GxyUIStateModule.room);
+                || !room.equals(GxyUIStateModule.room);
 
         GxyLogger.d(TAG, "needPIPUpdate: " + needPIPUpdate + " needForegroundUpdate: " + needForegroundUpdate);
 

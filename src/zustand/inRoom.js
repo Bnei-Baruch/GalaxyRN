@@ -1,4 +1,3 @@
-import { RTCAudioSession } from 'react-native-webrtc';
 import { create } from 'zustand';
 import mqtt from '../libs/mqtt';
 import AudioBridge from '../services/AudioBridge';
@@ -147,7 +146,6 @@ export const useInRoomStore = create((set, get) => ({
     try {
       useUiActions.getState().toggleMoreModal(false);
       useMyStreamStore.getState().toggleMute(false);
-      RTCAudioSession.audioSessionDidDeactivate();
       AudioBridge.abandonAudioFocus();
       finishSpan(deviceCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {

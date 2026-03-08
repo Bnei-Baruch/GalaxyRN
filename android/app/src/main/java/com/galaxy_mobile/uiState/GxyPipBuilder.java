@@ -74,13 +74,14 @@ public class GxyPipBuilder {
         String title = "Mute";
         int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
 
+        GxyLogger.d(TAG, "buildMuteAction: isMicOn: " + GxyUIStateModule.isMicOn);
         if (GxyUIStateModule.isMicOn) {
-            icon = Icon.createWithResource(context, R.drawable.mic_off_24px);
+            icon = Icon.createWithResource(context, R.drawable.mic_24px);
         } else {
             requestCode = 2;
             title = "Unmute";
             action = UIApdateReceiver.ACTION_UNMUTE;
-            icon = Icon.createWithResource(context, R.drawable.mic_24px);
+            icon = Icon.createWithResource(context, R.drawable.mic_off_24px);
         }
 
         Intent intent = new Intent(context, UIApdateReceiver.class).setAction(action);
@@ -95,13 +96,14 @@ public class GxyPipBuilder {
         Icon icon = null;
         String title = "Camera Off";
 
+        GxyLogger.d(TAG, "buildCamMuteAction: isCammute: " + GxyUIStateModule.isCammute);
         if (GxyUIStateModule.isCammute) {
             requestCode = 2;
             title = "Camera On";
             action = UIApdateReceiver.ACTION_CAM_UNMUTE;
-            icon = Icon.createWithResource(context, R.drawable.video_camera_front_24px);
-        } else {
             icon = Icon.createWithResource(context, R.drawable.video_camera_front_off_24px);
+        } else {
+            icon = Icon.createWithResource(context, R.drawable.video_camera_front_24px);
         }
 
         Intent intent = new Intent(context, UIApdateReceiver.class).setAction(action);

@@ -27,10 +27,10 @@ public class UIApdateReceiver extends BroadcastReceiver {
     GxyLogger.i(TAG, "onReceive called with action: " + action);
     WritableMap params = Arguments.createMap();
     if (ACTION_JOIN_ROOM.equals(action)) {
-      params.putString("action", "joinRoom");
+      params.putString("action", "join_room");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     } else if (ACTION_LEAVE_ROOM.equals(action)) {
-      params.putString("action", "leaveRoom");
+      params.putString("action", "leave_room");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     } else if (ACTION_MUTE.equals(action)) {
       params.putString("action", "mute");
@@ -39,10 +39,10 @@ public class UIApdateReceiver extends BroadcastReceiver {
       params.putString("action", "unmute");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     } else if (ACTION_CAM_MUTE.equals(action)) {
-      params.putString("action", "camMute");
+      params.putString("action", "cam_mute");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     } else if (ACTION_CAM_UNMUTE.equals(action)) {
-      params.putString("action", "camUnmute");
+      params.putString("action", "cam_unmute");
       SendEventToClient.sendEvent(PLAYER_ACTION, params);
     }
   }

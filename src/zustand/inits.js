@@ -244,17 +244,17 @@ export const useInitsStore = create((set, get) => ({
         'nativePlayerAction',
         async data => {
           logger.debug(NAMESPACE, 'nativePlayerAction event: ', data);
-          if (data.action === 'joinRoom') {
+          if (data.action === 'join_room') {
             await useInRoomStore.getState().joinRoom(true);
-          } else if (data.action === 'leaveRoom') {
+          } else if (data.action === 'leave_room') {
             await useInRoomStore.getState().exitRoom();
           } else if (data.action === 'mute') {
             await useMyStreamStore.getState().toggleMute(true);
           } else if (data.action === 'unmute') {
             await useMyStreamStore.getState().toggleMute(false);
-          } else if (data.action === 'camMute') {
+          } else if (data.action === 'cam_mute') {
             await useMyStreamStore.getState().toggleCammute(true);
-          } else if (data.action === 'camUnmute') {
+          } else if (data.action === 'cam_unmute') {
             await useMyStreamStore.getState().toggleCammute(false);
           }
         }

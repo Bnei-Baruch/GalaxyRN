@@ -15,6 +15,7 @@ const collectData = () => {
   logger.debug(NAMESPACE, 'collectData: isMicOn: ' + isMicOn + ' isInRoom: ' + isInRoom + ' room: ' + room + ' isCammute: ' + isCammute);
   return { isMicOn, isInRoom, room, isCammute };
 };
+
 const GxyUIStateBridge = {
   startForegroundListener: async () => {
     if (NativeGxyUIState && NativeGxyUIState.startForegroundListener) {
