@@ -28,13 +28,13 @@ let _subscriberJoined = false;
 //TODO: Remove this function after string id will deployed
 const patchFeedId = (id) => {
   logger.debug(NAMESPACE, 'patchFeedId id', id);
-  const patchId = parseInt(id);
-  if (isNaN(patchId)) {
-    logger.debug(NAMESPACE, 'patchFeedId id is not a number', id);
-    return id;
+  const isNumber = /^\d+$/.test(id);
+  if (isNumber) {
+    logger.debug(NAMESPACE, 'patchFeedId id is a number', id);
+    return parseInt(id);
   }
-  logger.debug(NAMESPACE, 'patchFeedId id is a number', patchId);
-  return patchId;
+  logger.debug(NAMESPACE, 'patchFeedId id is not a number', id);
+  return id;
 };
 
 export const useFeedsStore = create((set, get) => ({
@@ -107,7 +107,7 @@ export const useFeedsStore = create((set, get) => ({
     if (!gxyServer?.janus) {
       throw new Error(`gxy server is ${gxyServer} in initFeeds`);
     }
-
+    useUserStore.getState().setJanusSrv(gxyServer.janus);
     janus = new JanusMqtt(user, gxyServer.janus);
     logger.debug(NAMESPACE, 'initFeeds janus');
 
