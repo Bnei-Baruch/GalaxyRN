@@ -8,7 +8,6 @@ import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
-import WakeLockBridge from '../services/WakeLockBridge';
 import logger from '../services/logger';
 import { getBooleanFromStorage } from '../tools';
 import { useAudioDevicesStore } from './audioDevices';
@@ -81,8 +80,6 @@ export const useInitsStore = create((set, get) => ({
       await GxyUIStateBridge.activatePip();
       logger.debug(NAMESPACE, 'init settings from storage');
       await get().settingsFromStorage();
-      logger.debug(NAMESPACE, 'keepScreenOn');
-      await WakeLockBridge.keepScreenOn();
       logger.debug(NAMESPACE, 'initServices');
       await get().initServices();
       logger.debug(NAMESPACE, 'initAudioDevices');
@@ -111,7 +108,6 @@ export const useInitsStore = create((set, get) => ({
     useAudioDevicesStore.getState().abortAudioDevices();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
-    WakeLockBridge.releaseScreenOn();
   },
 
   initMQTT: async () => {
