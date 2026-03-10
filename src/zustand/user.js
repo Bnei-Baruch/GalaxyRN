@@ -5,6 +5,7 @@ import api from '../services/Api';
 import logger from '../services/logger';
 
 import { useRoomStore } from './fetchRooms';
+import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
 import { useSettingsStore } from './settings';
 
@@ -67,17 +68,14 @@ export const useUserStore = create((set, get) => ({
     return opts;
   },
 
-  //TODO: ceck if room need all users state
   sendUserState: (updatedOpts = {}) => {
+    if (!useInRoomStore.getState().isInRoom) {
+      return;
+    }
     const opts = {
       ...get().buildUserState(),
       ...updatedOpts,
     };
-
-    if (!opts.room) {
-      logger.warn(NAMESPACE, 'No room specified in sendUserState', opts);
-      return;
-    }
 
     const msg = { type: 'client-state', user: opts };
     logger.debug(NAMESPACE, 'Sending room message', msg);
