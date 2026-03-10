@@ -13,6 +13,8 @@ public class SendEventToClient {
     static final String TAG = SendEventToClient.class.getSimpleName();
     static ReactContext context = null;
 
+    public static final String SYSTEM_EVENT = "system_event";
+
     static public void init(ReactContext context) {
         SendEventToClient.context = context;
     }

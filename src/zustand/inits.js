@@ -41,7 +41,7 @@ try {
 
 let subscription = null;
 let playerActionSubscription = null;
-let pipSubscription = null;
+let systemEventSubscription = null;
 
 export const useInitsStore = create((set, get) => ({
   permReady: false,
@@ -73,9 +73,9 @@ export const useInitsStore = create((set, get) => ({
     get().setIsPortrait(height > width);
 
     try {
-      logger.debug(NAMESPACE, 'startForegroundListener');
-      await GxyUIStateBridge.startForegroundListener();
-      logger.debug(NAMESPACE, 'startForegroundListener done');
+      logger.debug(NAMESPACE, 'startForeground');
+      await GxyUIStateBridge.startForeground();
+      logger.debug(NAMESPACE, 'startForeground done');
       logger.debug(NAMESPACE, 'activatePip');
       await GxyUIStateBridge.activatePip();
       logger.debug(NAMESPACE, 'init settings from storage');
@@ -106,6 +106,7 @@ export const useInitsStore = create((set, get) => ({
     get().setIsAppInited(false);
     get().terminateServices();
     useAudioDevicesStore.getState().abortAudioDevices();
+    GxyUIStateBridge.stopForeground();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
   },
@@ -226,24 +227,35 @@ export const useInitsStore = create((set, get) => ({
     BackgroundTimer.start();
     let _isPlay = false;
     if (Platform.OS === 'android') {
-      terminateSubscription = DeviceEventEmitter.addListener(
-        'appTerminating',
+      systemEventSubscription = DeviceEventEmitter.addListener(
+        'system_event',
         async event => {
-          logger.debug(NAMESPACE, 'appTerminating event: ', event);
-          logger.debug(NAMESPACE, 'appTerminating');
-          await useInRoomStore.getState().exitRoom();
-          await useInitsStore.getState().abortMqtt();
-          await useInitsStore.getState().terminateApp();
-          terminateSubscription.remove();
-          terminateSubscription = null;
+          logger.debug(NAMESPACE, 'system_event event: ', event);
+          if (event.action === 'terminate') {
+            logger.debug(NAMESPACE, 'terminate');
+            await useInRoomStore.getState().exitRoom();
+            await useInitsStore.getState().abortMqtt();
+            await useInitsStore.getState().terminateApp();
+            systemEventSubscription.remove();
+            systemEventSubscription = null;
+          } else if (event.action === 'is_pip_mode') {
+            logger.debug(NAMESPACE, 'is_pip_mode');
+            useSettingsStore.getState().toggleIsPIPMode(event.active);
+          } else if (event.action === 'screen_off') {
+            logger.debug(NAMESPACE, 'screen_off');
+            useInRoomStore.getState().enterAudioMode();
+            useMyStreamStore.getState().toggleCammute(true, false);
+          } else {
+            logger.debug(NAMESPACE, 'unhandled system_event:', event.action);
+          }
         }
       );
-      logger.debug(NAMESPACE, 'appTerminating listener set up successfully');
+      logger.debug(NAMESPACE, 'system_event listener set up successfully');
 
       playerActionSubscription = DeviceEventEmitter.addListener(
-        'nativePlayerAction',
+        'native_player_event',
         async data => {
-          logger.debug(NAMESPACE, 'nativePlayerAction event: ', data);
+          logger.debug(NAMESPACE, 'native_player_event event: ', data);
           if (data.action === 'join_room') {
             await useInRoomStore.getState().joinRoom(true);
           } else if (data.action === 'leave_room') {
@@ -259,7 +271,7 @@ export const useInitsStore = create((set, get) => ({
           }
         }
       );
-      logger.debug(NAMESPACE, 'nativePlayerAction listener set up successfully');
+      logger.debug(NAMESPACE, 'native_player_event listener set up successfully');
     }
     logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
 
@@ -292,27 +304,10 @@ export const useInitsStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error initializing app', error);
       throw error;
     }
-
-    try {
-      pipSubscription = DeviceEventEmitter.addListener(
-        'isInPIPMode',
-        async data => {
-          logger.debug(NAMESPACE, 'isInPIPMode event: ', data);
-          useSettingsStore.getState().toggleIsPIPMode(data.active);
-        }
-      );
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error initializing pip subscription:', error);
-      throw error;
-    }
   },
 
   terminateServices: () => {
-    logger.debug(
-      NAMESPACE,
-      'terminateServices - starting comprehensive cleanup'
-    );
-
+    logger.debug(NAMESPACE, 'terminateServices');
     try {
       BackgroundTimer.stop();
 
@@ -338,10 +333,10 @@ export const useInitsStore = create((set, get) => ({
         playerActionSubscription = null;
       }
 
-      if (pipSubscription) {
-        logger.debug(NAMESPACE, 'remove pipSubscription');
-        pipSubscription.remove();
-        pipSubscription = null;
+      if (systemEventSubscription) {
+        logger.debug(NAMESPACE, 'remove systemEventSubscription');
+        systemEventSubscription.remove();
+        systemEventSubscription = null;
       }
 
       logger.debug(NAMESPACE, 'terminateServices completed successfully');

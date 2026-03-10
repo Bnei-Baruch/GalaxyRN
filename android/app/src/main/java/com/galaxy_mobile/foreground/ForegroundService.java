@@ -6,10 +6,16 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
-import com.galaxy_mobile.logger.GxyLogger;
 import androidx.annotation.Nullable;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
 import com.galaxy_mobile.MainApplication;
-import com.galaxy_mobile.foreground.PlayerNotificationBuilder;
+import com.galaxy_mobile.SendEventToClient;
+import com.galaxy_mobile.logger.GxyLogger;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
 
 public class ForegroundService extends Service {
     private static final String TAG = "ForegroundService";
@@ -24,9 +30,18 @@ public class ForegroundService extends Service {
     public static final String ROOM_EXTRA = "ROOM_EXTRA";
     public static final String UPDATE_SERVICE_EXTRA = "UPDATE_SERVICE";
 
-    public static boolean isMicOn = false;
-    public static boolean isInRoom = false;
     public static String room = "Not in room";
+
+    private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                WritableMap params = Arguments.createMap();
+                params.putString("action", "screen_off");
+                SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, params);
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -39,8 +54,12 @@ public class ForegroundService extends Service {
         super.onCreate();
         GxyLogger.i(TAG, "onCreate");
         notificationBuilder = new PlayerNotificationBuilder(getApplicationContext());
-        GxyLogger.i(TAG, "onCreate completed");
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(screenReceiver, filter);
         isRunning = true;
+        GxyLogger.i(TAG, "onCreate completed");
     }
 
     @Override
@@ -69,7 +88,7 @@ public class ForegroundService extends Service {
                 int serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
                 StringBuilder typesLog = new StringBuilder("Starting with MEDIA_PLAYBACK");
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && isMicOn) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     serviceType |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
                     typesLog.append(" + MICROPHONE");
                 }
@@ -139,6 +158,12 @@ public class ForegroundService extends Service {
             GxyLogger.d(TAG, "Foreground service cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during cleanup", e);
+        }
+
+        try {
+            unregisterReceiver(screenReceiver);
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error unregistering screen receiver", e);
         }
     }
 }

@@ -91,13 +91,12 @@ public class MainActivity extends ReactActivity {
 
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        GxyLogger.d(TAG, "onPictureInPictureModeChanged: " + isInPictureInPictureMode);
         super.onPictureInPictureModeChanged(isInPictureInPictureMode);
         WritableMap data = Arguments.createMap();
+        data.putString("action", "is_pip_mode");
         data.putBoolean("active", isInPictureInPictureMode);
-        SendEventToClient.sendEvent("isInPIPMode", data);
-        if (isInPictureInPictureMode) {
-            GxyUIStateModule.startForegroundService(this);
-        }
+        SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, data);
     }
 
     @Override

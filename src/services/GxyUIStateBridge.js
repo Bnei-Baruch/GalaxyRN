@@ -17,11 +17,19 @@ const collectData = () => {
 };
 
 const GxyUIStateBridge = {
-  startForegroundListener: async () => {
-    if (NativeGxyUIState && NativeGxyUIState.startForegroundListener) {
-      return await NativeGxyUIState.startForegroundListener();
+  startForeground: async () => {
+    if (NativeGxyUIState && NativeGxyUIState.startForeground) {
+      return await NativeGxyUIState.startForeground();
     } else {
-      logger.warn(NAMESPACE, 'startForegroundListener is not available');
+      logger.warn(NAMESPACE, 'startForeground is not available');
+      return false;
+    }
+  },
+  stopForeground: async () => {
+    if (NativeGxyUIState && NativeGxyUIState.stopForeground) {
+      return await NativeGxyUIState.stopForeground();
+    } else {
+      logger.warn(NAMESPACE, 'stopForeground is not available');
       return false;
     }
   },

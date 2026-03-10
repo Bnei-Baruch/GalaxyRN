@@ -49,7 +49,7 @@ public class PlayerNotificationBuilder {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 "Arvut System Notification",
-                NotificationManager.IMPORTANCE_HIGH);
+                NotificationManager.IMPORTANCE_LOW);
         channel.setShowBadge(false);
         channel.setSound(null, null);
         channel.enableVibration(false);

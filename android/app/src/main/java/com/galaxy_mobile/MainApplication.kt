@@ -10,7 +10,9 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactInstanceManager
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -72,8 +74,9 @@ class MainApplication : Application(), ReactApplication {
                     try {
                         rim.currentReactContext?.let { reactContext ->
                             if (reactContext.hasActiveCatalystInstance()) {
-                                reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-                                    .emit("appTerminating", null)
+                                val params: WritableMap = Arguments.createMap()
+                                params.putString("action", "terminate")
+                                SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, params)
                                 GxyLogger.d(TAG, "Sent termination signal to JS - Activity status: irrelevant")
                                 Thread.sleep(1000)
                             }

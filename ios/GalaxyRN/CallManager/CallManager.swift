@@ -39,7 +39,6 @@ class CallManager: RCTEventEmitter {
 
     @objc
     func startCall(handle: String, isVideo: Bool) async {
-        UIApplication.shared.isIdleTimerDisabled = true
         let cxHandle = CXHandle(type: .generic, value: handle)
         let action = CXStartCallAction(call: uuid, handle: cxHandle)
         action.isVideo = isVideo
@@ -54,7 +53,6 @@ class CallManager: RCTEventEmitter {
 
     @objc
     func endCall() async {
-        UIApplication.shared.isIdleTimerDisabled = false
         let action = CXEndCallAction(call: uuid)
         let transaction = CXTransaction(action: action)
 

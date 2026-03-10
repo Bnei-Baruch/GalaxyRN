@@ -63,10 +63,12 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
 
                 if (event == Lifecycle.Event.ON_STOP) {
                     GxyLogger.d(TAG, "App entered background");
-                    handleAppBackgrounded();
+                    isForeground = false;
+                    disableKeepScreenOn();
                 } else if (event == Lifecycle.Event.ON_START) {
                     GxyLogger.d(TAG, "App entered foreground");
-                    handleAppForegrounded();
+                    isForeground = true;
+                    enableKeepScreenOn();
                 }
 
             };
@@ -74,26 +76,6 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
             ProcessLifecycleOwner.get().getLifecycle().addObserver(lifecycleObserver);
             GxyLogger.d(TAG, "initLifecycleObserver completed");
         });
-    }
-
-    private void handleAppBackgrounded() {
-        try {
-            startService();
-            isForeground = false;
-            GxyLogger.d(TAG, "Started foreground service");
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Failed to start foreground service when app backgrounded", e);
-        }
-        disableKeepScreenOn();
-    }
-
-    private void handleAppForegrounded() {
-        isForeground = true;
-        if (!GxyUIStateModule.isMicOn) {
-            GxyLogger.d(TAG, "Mic is off, stopped foreground service");
-            stopService();
-        }
-        enableKeepScreenOn();
     }
 
     @Override
@@ -142,9 +124,35 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void startForegroundListener(Promise promise) {
-        GxyLogger.d(TAG, "startForegroundListener");
+    public void startForeground(Promise promise) {
+        GxyLogger.d(TAG, "startForeground");
         initLifecycleObserver();
+        isForeground = true;
+        startService();
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    public void stopForeground(Promise promise) {
+        GxyLogger.d(TAG, "stopForeground");
+
+        if (!ForegroundService.isRunning) {
+            GxyLogger.d(TAG, "Skipping stopForeground");
+            promise.resolve(true);
+            return;
+        }
+
+        Activity activity = getCurrentActivity();
+        if (activity == null) {
+            GxyLogger.d(TAG, "activity is null, skipping stopForeground");
+            promise.resolve(true);
+            return;
+        }
+        Intent intent = new Intent(activity, ForegroundService.class);
+        intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
+        activity.startForegroundService(intent);
+        
+        GxyLogger.d(TAG, "stopForeground completed");
         promise.resolve(true);
     }
 
@@ -166,11 +174,7 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         GxyUIStateModule.isCammute = isCammute;
 
         if (needForegroundUpdate) {
-            if (!isMicOn && isForeground) {
-                stopService();
-            } else {
-                startService();
-            }
+            startService();
         }
 
         if (needPIPUpdate) {
@@ -180,14 +184,8 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
                 return;
             }
 
-            if (activity.isInPictureInPictureMode()) {
-                if (!isInRoom) {
-                    activity.moveTaskToBack(true);
-                    return;
-                }
-                GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
-                pipBuilder.build();
-            }
+            GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
+            pipBuilder.build();
         }
     }
 
@@ -205,28 +203,4 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         intent.setAction(ForegroundService.START_SERVICE_ACTION);
         getCurrentActivity().startForegroundService(intent);
     }
-
-    private void stopService() {
-        if (!ForegroundService.isRunning) {
-            GxyLogger.d(TAG, "Skipping stopService");
-            return;
-        }
-        GxyLogger.d(TAG, "stopService");
-        Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
-        intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
-        getCurrentActivity().startForegroundService(intent);
-    }
-
-    /**
-     * Start the foreground service from MainActivity (used in pip mode)
-     * 
-     * @param activity
-     */
-    public static void startForegroundService(Activity activity) {
-        GxyLogger.d(TAG, "startForegroundService");
-        Intent intent = new Intent(activity, ForegroundService.class);
-        intent.setAction(ForegroundService.START_SERVICE_ACTION);
-        activity.startForegroundService(intent);
-    }
-
 }
