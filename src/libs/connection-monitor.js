@@ -19,7 +19,7 @@ export const NET_INFO_STATE_CONNECTED = 'CONNECTED';
 export const NET_INFO_STATE_DISCONNECTED = 'DISCONNECTED';
 
 const NAMESPACE = 'ConnectionMonitor';
-const MAX_CONNECTION_TIMEOUT = 3;
+const MAX_CONNECTION_TIMEOUT = 20;
 const MAX_MQTT_RECONNECT_FREQUENCY = 3 * 1000;
 
 let netInfoUnsubscribe,
