@@ -35,6 +35,7 @@ const AuthenticationCheck = () => {
   }
 
   if (!vhinfo?.active) {
+    logger.debug(NAMESPACE, 'vhinfo?.active false');
     return (
       <WIP isReady={!!vhinfo}>
         <UserPermissions />

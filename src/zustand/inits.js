@@ -23,6 +23,7 @@ import { useSubtitleStore } from './subtitle';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
+
 const NAMESPACE = 'Inits';
 
 const CLIENT_RECONNECT_TYPES = [
@@ -30,6 +31,11 @@ const CLIENT_RECONNECT_TYPES = [
   'client-reload',
   'client-disconnect',
 ];
+export const AppInitStates = {
+  READY: 1,
+  DISCONNECTED: -1,
+  NOT_JOINED: 0,
+};
 
 let eventEmitter;
 try {
@@ -48,11 +54,17 @@ export const useInitsStore = create((set, get) => ({
   setPermReady: (permReady = true) => set({ permReady }),
 
   wip: false,
-  isAppInited: false,
-  setIsAppInited: (isAppInited = true) => set({ isAppInited, wip: false }),
+  appInitState: AppInitStates.NOT_JOINED,
+  setAppInitState: (appInitState = AppInitStates.READY) => set({ appInitState, wip: false }),
 
   netIsOn: true,
-  setNetIsOn: (netIsOn = true) => set({ netIsOn }),
+  setNetIsOn: (netIsOn = true) => {
+    logger.debug(NAMESPACE, 'setNetIsOn', netIsOn);
+    if (!get().netIsOn && netIsOn && get().appInitState === AppInitStates.DISCONNECTED) {
+      get().initApp();
+    }
+    set({ netIsOn });
+  },
 
   mqttIsOn: false,
   setMqttIsOn: (mqttIsOn = true) => set({ mqttIsOn }),
@@ -65,7 +77,7 @@ export const useInitsStore = create((set, get) => ({
   },
 
   initApp: async () => {
-    if (get().isAppInited || get().wip) return;
+    if ((get().appInitState === AppInitStates.READY) || get().wip) return;
 
     set({ wip: true });
 
@@ -89,26 +101,27 @@ export const useInitsStore = create((set, get) => ({
       await get().initMQTT();
 
       logger.debug(NAMESPACE, 'init done');
-      get().setIsAppInited(true);
+      get().setAppInitState(AppInitStates.READY);
 
       logger.debug(NAMESPACE, 'fetchRooms');
       useRoomStore.getState().fetchRooms();
     } catch (error) {
-      get().setIsAppInited(false);
+      get().setAppInitState(AppInitStates.NOT_JOINED);
       logger.error(NAMESPACE, 'Error initializing app', error);
     }
   },
 
   terminateApp: () => {
-    logger.debug(NAMESPACE, 'terminateApp');
-    if (!get().isAppInited || get().wip) return;
+    logger.debug(NAMESPACE, 'terminateApp', get().appInitState);
+    if (!(get().appInitState === AppInitStates.READY) || get().wip) return;
 
-    get().setIsAppInited(false);
     get().terminateServices();
     useAudioDevicesStore.getState().abortAudioDevices();
     GxyUIStateBridge.stopForeground();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
+
+    logger.debug(NAMESPACE, 'terminateApp setAppInitState');
   },
 
   initMQTT: async () => {
@@ -319,7 +332,6 @@ export const useInitsStore = create((set, get) => ({
     try {
       useSettingsStore.getState().toggleIsFullscreen(false);
       useChatStore.getState().setChatMode(modalModes.close);
-      useUserStore.getState().setVhinfo(null);
 
       if (subscription) {
         logger.debug(NAMESPACE, 'remove event listener');
