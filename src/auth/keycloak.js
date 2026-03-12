@@ -71,6 +71,7 @@ class Keycloak {
    * Initiates the login process
    */
   login = async () => {
+    logger.debug(NAMESPACE, 'login');
     useUserStore.getState().setWIP(true);
 
     await authorize(AUTH_CONFIG)
@@ -93,6 +94,7 @@ class Keycloak {
    * Logs the user out and cleans up resources
    */
   logout = async () => {
+    logger.debug(NAMESPACE, 'logout');
     this.clearTimeout();
 
     addBreadcrumb('auth', 'User logging out');

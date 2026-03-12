@@ -1,5 +1,6 @@
 #import "AppDelegate.h"
 #import <React/RCTLinkingManager.h>
+#import "WebRTCModuleOptions.h"
 
 #import <React/RCTBundleURLProvider.h>
 #import <ReactAppDependencyProvider/RCTAppDependencyProvider.h>
@@ -11,9 +12,9 @@
   self.moduleName = @"GalaxyRN";
   self.dependencyProvider = [RCTAppDependencyProvider new];
   self.initialProps = @{};
+
+  [WebRTCModuleOptions sharedInstance].enableMultitaskingCameraAccess = YES;
   
-  
-  // Initialize Crisp SDK with website ID - move to background thread
 
   
   return [super application:application didFinishLaunchingWithOptions:launchOptions];

@@ -13,6 +13,8 @@ public class SendEventToClient {
     static final String TAG = SendEventToClient.class.getSimpleName();
     static ReactContext context = null;
 
+    public static final String SYSTEM_EVENT = "system_event";
+
     static public void init(ReactContext context) {
         SendEventToClient.context = context;
     }
@@ -29,7 +31,7 @@ public class SendEventToClient {
                 return;
             }
 
-            GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName);
+            GxyLogger.d(TAG, "Emitting event to JavaScript: " + eventName + " with params: " + params.toString());
             SendEventToClient.context
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit(eventName, params);

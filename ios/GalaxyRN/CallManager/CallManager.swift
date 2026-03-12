@@ -1,54 +1,70 @@
-import Foundation
 import AVFoundation
 import CallKit
+import Foundation
 import React
 import UIKit
 
 @objc(CallManager)
-class CallManager: RCTEventEmitter, CXCallObserverDelegate {
+class CallManager: RCTEventEmitter {
     // MARK: - Properties
     var hasListeners = false
-    private var audioSession: AVAudioSession?
+    var audioSession: AVAudioSession?
+    var uuid: UUID = UUID()
+
     private var isScreenLocked: Bool = false
     private let callObserver = CXCallObserver()
-    
+    private let callController = CXCallController()
+    private var provider: CXProvider?
+
     // MARK: - Initialization
     override init() {
         super.init()
         setupModule()
     }
-    
+
     // MARK: - Setup
     private func setupModule() {
         callObserver.setDelegate(self, queue: nil)
+
+        let configuration = CXProviderConfiguration(localizedName: "Galaxy")
+        configuration.supportsVideo = true
+        configuration.supportedHandleTypes = [.generic]
+
+        let callProvider = CXProvider(configuration: configuration)
+        callProvider.setDelegate(self, queue: nil)
+        provider = callProvider
     }
-    
-    // MARK: - CXCallObserverDelegate
-    func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
-        let callState: String
-        
-        if call.hasEnded {
-            callState = CallEvents.ON_END_CALL.rawValue
-        } else if call.isOutgoing && !call.hasConnected {
-            callState = CallEvents.ON_START_CALL.rawValue
-        } else if !call.isOutgoing && !call.hasConnected && !call.hasEnded {
-            callState = CallEvents.ON_START_CALL.rawValue
-        } else if call.hasConnected && !call.hasEnded {
-            callState = CallEvents.ON_START_CALL.rawValue
-        } else {
-            callState = CallEvents.OTHERS.rawValue
-        }
-        sendCallState(state: callState)
-    }
-    
+
     // MARK: - Public Methods
+
     @objc
-    func keepScreenAwake(_ keepAwake: Bool) {
-        UIApplication.shared.isIdleTimerDisabled = keepAwake
+    func startCall(handle: String, isVideo: Bool) async {
+        let cxHandle = CXHandle(type: .generic, value: handle)
+        let action = CXStartCallAction(call: uuid, handle: cxHandle)
+        action.isVideo = isVideo
+        let transaction = CXTransaction(action: action)
+
+        do {
+            try await callController.request(transaction)
+        } catch {
+            NLOG("[callManager swift] startCall error: \(error)")
+        }
     }
-    
+
+    @objc
+    func endCall() async {
+        let action = CXEndCallAction(call: uuid)
+        let transaction = CXTransaction(action: action)
+
+        do {
+            try await callController.request(transaction)
+        } catch {
+            NLOG("[callManager swift] endCall error: \(error)")
+        }
+    }
+
     @objc
     override static func moduleName() -> String! {
         return "CallManager"
     }
-} 
+}

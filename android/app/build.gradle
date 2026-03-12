@@ -100,8 +100,8 @@ android {
         applicationId "com.galaxy_mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 108
-        versionName "2.7.0"
+        versionCode 111
+        versionName "2.7.3"
         renderscriptTargetApi rootProject.ext.targetSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
@@ -142,6 +142,7 @@ android {
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
+    implementation 'androidx.media:media:1.4.0'
     
 
     if (hermesEnabled.toBoolean()) {

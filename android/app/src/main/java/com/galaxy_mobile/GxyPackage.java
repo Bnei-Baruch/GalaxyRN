@@ -17,9 +17,8 @@ import java.util.List;
 
 import com.galaxy_mobile.audioManager.AudioDeviceModule;
 import com.galaxy_mobile.callManager.CallListenerModule;
-import com.galaxy_mobile.foreground.ForegroundModule;
+import com.galaxy_mobile.uiState.GxyUIStateModule;
 import com.galaxy_mobile.permissions.PermissionsModule;
-import com.galaxy_mobile.WakeLockModule;
 import com.galaxy_mobile.SendLogsModule;
 import com.galaxy_mobile.SendEventToClient;
 
@@ -44,12 +43,11 @@ public class GxyPackage implements ReactPackage {
         // Add modules
         try {
             GxyLogger.i(TAG, "Adding standard modules");
-            modules.add(new ForegroundModule(reactContext));
             modules.add(new PermissionsModule(reactContext));
-            modules.add(new WakeLockModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
             modules.add(new CallListenerModule(reactContext));
             modules.add(new SendLogsModule(reactContext));
+            modules.add(new GxyUIStateModule(reactContext));
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
         }

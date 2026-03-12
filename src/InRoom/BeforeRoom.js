@@ -11,21 +11,21 @@ import RequiredUpdate from '../services/RequiredUpdate';
 import logger from '../services/logger';
 import { SettingsNotJoined } from '../settings/SettingsNotJoined';
 import { useInRoomStore } from '../zustand/inRoom';
-import { useInitsStore } from '../zustand/inits';
+import { AppInitStates, useInitsStore } from '../zustand/inits';
 import { useVersionStore } from '../zustand/version';
+
 const NAMESPACE = 'BeforeRoom';
 
 const BeforeRoom = () => {
   const { forceUpdate } = useVersionStore();
   const isInRoom = useInRoomStore(state => state.isInRoom);
-  const isAppInited = useInitsStore(state => state.isAppInited);
+  const appInitState = useInitsStore(state => state.appInitState);
   const wip = useInitsStore(state => state.wip);
   const initApp = useInitsStore(state => state.initApp);
   const terminateApp = useInitsStore(state => state.terminateApp);
 
-  logger.debug(NAMESPACE, 'render', isInRoom, isAppInited, wip);
   useEffect(() => {
-    logger.debug(NAMESPACE, 'useEffect', isAppInited, wip);
+    logger.debug(NAMESPACE, 'useEffect');
     initApp();
     return () => {
       logger.debug(NAMESPACE, 'useEffect terminateApp');
@@ -33,8 +33,10 @@ const BeforeRoom = () => {
     };
   }, []);
 
-  if (!isAppInited || wip) {
-    logger.debug(NAMESPACE, '!isAppInited');
+  logger.debug(NAMESPACE, 'appInitState', appInitState, wip);
+
+  if (appInitState === AppInitStates.NOT_JOINED || wip) {
+    logger.debug(NAMESPACE, '!appInitState');
     return <WIP isReady={false} />;
   }
 

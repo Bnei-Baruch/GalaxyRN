@@ -1,6 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
 import BackgroundTimer from 'react-native-background-timer';
-import kc from '../auth/keycloak';
 import logger from '../services/logger';
 import { rejectTimeoutPromise, sleep } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -217,17 +216,18 @@ const onNoNetwork = async () => {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }
 
+  try {
+    useInitsStore.getState().terminateApp();
+  } catch (e) {
+    logger.debug(NAMESPACE, 'Error in terminateApp', e);
+  }
+
   const _netIsOn = isNetConnected();
   useInitsStore.getState().setMqttIsOn(false);
   useSettingsStore.getState().setNetWIP(false);
   useInitsStore.getState().setNetIsOn(_netIsOn);
   wip = false;
 
-  try {
-    kc.logout();
-  } catch (e) {
-    logger.debug(NAMESPACE, 'Error in logout', e);
-  }
 };
 
 const monitorNetInfo = async () => {
