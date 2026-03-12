@@ -1,21 +1,18 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Modal } from 'react-native';
 import mqtt from '../../libs/mqtt';
 import logger from '../../services/logger';
-import { useInitsStore } from '../../zustand/inits';
+import { AppInitStates, useInitsStore } from '../../zustand/inits';
 import { useSettingsStore } from '../../zustand/settings';
-import Text from '../CustomText';
 import WIP from '../WIP';
 import ConnectionNotStable from './ConnectionNotStable';
 
 const NAMESPACE = 'MqttConnectionModal';
 
 const MqttConnectionModal = () => {
-  const { t } = useTranslation();
-  const { mqttIsOn, resetMqtt } = useInitsStore();
+  const { mqttIsOn } = useInitsStore();
   const netWIP = useSettingsStore(state => state.netWIP);
+  const appInitState = useInitsStore(state => state.appInitState);
 
   logger.debug(NAMESPACE, 'render', mqttIsOn, netWIP, mqtt.mq?.connected);
 
@@ -27,7 +24,7 @@ const MqttConnectionModal = () => {
     return null;
   }
 
-  if (!mqtt.wasConnected) {
+  if (AppInitStates.READY !== appInitState || !mqtt.wasConnected) {
     return (
       <Modal visible={true} animationType="fade" transparent={false}>
         <WIP isReady={false} />
@@ -35,59 +32,7 @@ const MqttConnectionModal = () => {
     );
   }
 
-  const handleRestartMqtt = async () => {
-    await resetMqtt();
-  };
-
-  return (
-    <Modal visible={true} animationType="fade" transparent={false}>
-      <View style={styles.modalContainer}>
-        <View style={styles.iconContainer}>
-          <Icon name="warning" size={48} color="#ff6b6b" />
-        </View>
-        <Text style={styles.text}>{t('connection.noConnection')}</Text>
-
-        <TouchableOpacity style={styles.button} onPress={handleRestartMqtt}>
-          <ConnectionNotStable />
-          <Text style={styles.buttonText}>{t('settings.tryConnect')}</Text>
-        </TouchableOpacity>
-      </View>
-    </Modal>
-  );
+  return null;
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  iconContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  text: {
-    color: 'white',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 20,
-  },
-  button: {
-    borderRadius: 5,
-    backgroundColor: '#03A9F4',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    minWidth: 150,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-});
 
 export default MqttConnectionModal;

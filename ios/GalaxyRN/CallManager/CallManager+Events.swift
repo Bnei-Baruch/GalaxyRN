@@ -16,11 +16,16 @@ extension CallManager {
       hasListeners = false
   }
   
-  func sendCallState(state: String) {
+  func sendCallState(state: String, callUUID: String? = nil, error: String? = nil) {
     if hasListeners {
-      sendEvent(withName: CallManagerConstants.eventName, body: [
-            "state": state,
-        ])
+      var body: [String: Any] = ["state": state]
+      if let callUUID = callUUID {
+        body["callUUID"] = callUUID
+      }
+      if let error = error {
+        body["error"] = error
+      }
+      sendEvent(withName: CallManagerConstants.eventName, body: body)
     }
   }
 }

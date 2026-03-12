@@ -7,7 +7,7 @@ import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import CallsBridge from '../services/CallsBridge';
-import WakeLockBridge from '../services/WakeLockBridge';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { getBooleanFromStorage } from '../tools';
 import { useAudioDevicesStore } from './audioDevices';
@@ -23,6 +23,7 @@ import { useSubtitleStore } from './subtitle';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
+
 const NAMESPACE = 'Inits';
 
 const CLIENT_RECONNECT_TYPES = [
@@ -30,6 +31,11 @@ const CLIENT_RECONNECT_TYPES = [
   'client-reload',
   'client-disconnect',
 ];
+export const AppInitStates = {
+  READY: 1,
+  DISCONNECTED: -1,
+  NOT_JOINED: 0,
+};
 
 let eventEmitter;
 try {
@@ -40,17 +46,25 @@ try {
 }
 
 let subscription = null;
+let playerActionSubscription = null;
+let systemEventSubscription = null;
 
 export const useInitsStore = create((set, get) => ({
   permReady: false,
   setPermReady: (permReady = true) => set({ permReady }),
 
   wip: false,
-  isAppInited: false,
-  setIsAppInited: (isAppInited = true) => set({ isAppInited, wip: false }),
+  appInitState: AppInitStates.NOT_JOINED,
+  setAppInitState: (appInitState = AppInitStates.READY) => set({ appInitState, wip: false }),
 
   netIsOn: true,
-  setNetIsOn: (netIsOn = true) => set({ netIsOn }),
+  setNetIsOn: (netIsOn = true) => {
+    logger.debug(NAMESPACE, 'setNetIsOn', netIsOn);
+    if (!get().netIsOn && netIsOn && get().appInitState === AppInitStates.DISCONNECTED) {
+      get().initApp();
+    }
+    set({ netIsOn });
+  },
 
   mqttIsOn: false,
   setMqttIsOn: (mqttIsOn = true) => set({ mqttIsOn }),
@@ -63,7 +77,7 @@ export const useInitsStore = create((set, get) => ({
   },
 
   initApp: async () => {
-    if (get().isAppInited || get().wip) return;
+    if ((get().appInitState === AppInitStates.READY) || get().wip) return;
 
     set({ wip: true });
 
@@ -71,10 +85,13 @@ export const useInitsStore = create((set, get) => ({
     get().setIsPortrait(height > width);
 
     try {
+      logger.debug(NAMESPACE, 'startForeground');
+      await GxyUIStateBridge.startForeground();
+      logger.debug(NAMESPACE, 'startForeground done');
+      logger.debug(NAMESPACE, 'activatePip');
+      await GxyUIStateBridge.activatePip();
       logger.debug(NAMESPACE, 'init settings from storage');
       await get().settingsFromStorage();
-      logger.debug(NAMESPACE, 'keepScreenOn');
-      await WakeLockBridge.keepScreenOn();
       logger.debug(NAMESPACE, 'initServices');
       await get().initServices();
       logger.debug(NAMESPACE, 'initAudioDevices');
@@ -84,26 +101,27 @@ export const useInitsStore = create((set, get) => ({
       await get().initMQTT();
 
       logger.debug(NAMESPACE, 'init done');
-      get().setIsAppInited(true);
+      get().setAppInitState(AppInitStates.READY);
 
       logger.debug(NAMESPACE, 'fetchRooms');
       useRoomStore.getState().fetchRooms();
     } catch (error) {
-      get().setIsAppInited(false);
+      get().setAppInitState(AppInitStates.NOT_JOINED);
       logger.error(NAMESPACE, 'Error initializing app', error);
     }
   },
 
   terminateApp: () => {
-    logger.debug(NAMESPACE, 'terminateApp');
-    if (!get().isAppInited || get().wip) return;
+    logger.debug(NAMESPACE, 'terminateApp', get().appInitState);
+    if (!(get().appInitState === AppInitStates.READY) || get().wip) return;
 
-    get().setIsAppInited(false);
     get().terminateServices();
     useAudioDevicesStore.getState().abortAudioDevices();
+    GxyUIStateBridge.stopForeground();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
-    WakeLockBridge.releaseScreenOn();
+
+    logger.debug(NAMESPACE, 'terminateApp setAppInitState');
   },
 
   initMQTT: async () => {
@@ -222,19 +240,51 @@ export const useInitsStore = create((set, get) => ({
     BackgroundTimer.start();
     let _isPlay = false;
     if (Platform.OS === 'android') {
-      terminateSubscription = DeviceEventEmitter.addListener(
-        'appTerminating',
+      systemEventSubscription = DeviceEventEmitter.addListener(
+        'system_event',
         async event => {
-          logger.debug(NAMESPACE, 'appTerminating event: ', event);
-          logger.debug(NAMESPACE, 'appTerminating');
-          await useInRoomStore.getState().exitRoom();
-          await useInitsStore.getState().abortMqtt();
-          await useInitsStore.getState().terminateApp();
-          terminateSubscription.remove();
-          terminateSubscription = null;
+          logger.debug(NAMESPACE, 'system_event event: ', event);
+          if (event.action === 'terminate') {
+            logger.debug(NAMESPACE, 'terminate');
+            await useInRoomStore.getState().exitRoom();
+            await useInitsStore.getState().abortMqtt();
+            await useInitsStore.getState().terminateApp();
+            systemEventSubscription.remove();
+            systemEventSubscription = null;
+          } else if (event.action === 'is_pip_mode') {
+            logger.debug(NAMESPACE, 'is_pip_mode');
+            useSettingsStore.getState().toggleIsPIPMode(event.active);
+          } else if (event.action === 'screen_off') {
+            logger.debug(NAMESPACE, 'screen_off');
+            useInRoomStore.getState().enterAudioMode();
+            useMyStreamStore.getState().toggleCammute(true, false);
+          } else {
+            logger.debug(NAMESPACE, 'unhandled system_event:', event.action);
+          }
         }
       );
-      logger.debug(NAMESPACE, 'appTerminating listener set up successfully');
+      logger.debug(NAMESPACE, 'system_event listener set up successfully');
+
+      playerActionSubscription = DeviceEventEmitter.addListener(
+        'native_player_event',
+        async data => {
+          logger.debug(NAMESPACE, 'native_player_event event: ', data);
+          if (data.action === 'join_room') {
+            await useInRoomStore.getState().joinRoom(true);
+          } else if (data.action === 'leave_room') {
+            await useInRoomStore.getState().exitRoom();
+          } else if (data.action === 'mute') {
+            await useMyStreamStore.getState().toggleMute(true);
+          } else if (data.action === 'unmute') {
+            await useMyStreamStore.getState().toggleMute(false);
+          } else if (data.action === 'cam_mute') {
+            await useMyStreamStore.getState().toggleCammute(true);
+          } else if (data.action === 'cam_unmute') {
+            await useMyStreamStore.getState().toggleCammute(false);
+          }
+        }
+      );
+      logger.debug(NAMESPACE, 'native_player_event listener set up successfully');
     }
     logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
 
@@ -270,11 +320,7 @@ export const useInitsStore = create((set, get) => ({
   },
 
   terminateServices: () => {
-    logger.debug(
-      NAMESPACE,
-      'terminateServices - starting comprehensive cleanup'
-    );
-
+    logger.debug(NAMESPACE, 'terminateServices');
     try {
       BackgroundTimer.stop();
 
@@ -286,12 +332,23 @@ export const useInitsStore = create((set, get) => ({
     try {
       useSettingsStore.getState().toggleIsFullscreen(false);
       useChatStore.getState().setChatMode(modalModes.close);
-      useUserStore.getState().setVhinfo(null);
 
       if (subscription) {
         logger.debug(NAMESPACE, 'remove event listener');
         subscription.remove();
         subscription = null;
+      }
+
+      if (playerActionSubscription) {
+        logger.debug(NAMESPACE, 'remove playerActionSubscription');
+        playerActionSubscription.remove();
+        playerActionSubscription = null;
+      }
+
+      if (systemEventSubscription) {
+        logger.debug(NAMESPACE, 'remove systemEventSubscription');
+        systemEventSubscription.remove();
+        systemEventSubscription = null;
       }
 
       logger.debug(NAMESPACE, 'terminateServices completed successfully');

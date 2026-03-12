@@ -1,12 +1,12 @@
 package com.galaxy_mobile.callManager;
 
-import android.util.Log;
+import android.app.Activity;
+import android.content.Intent;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableMap;
 import com.galaxy_mobile.SendEventToClient;
-import com.galaxy_mobile.foreground.ForegroundService;
 
 import io.sentry.Sentry;
 
@@ -43,8 +43,12 @@ public class CallEventManager {
      */
     public static void bringAppToForeground(ReactApplicationContext context) {
         try {
-            if (context != null) {
-                ForegroundService.moveAppToForeground(context);
+            if (context != null) {                
+                Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+                if (launchIntent != null) {
+                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    context.startActivity(launchIntent);
+                }
                 GxyLogger.d(TAG, "App brought to foreground after call");
             } else {
                 GxyLogger.w(TAG, "Cannot bring app to foreground: context is null");

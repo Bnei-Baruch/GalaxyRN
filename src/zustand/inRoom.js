@@ -14,6 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
@@ -102,6 +103,8 @@ export const useInRoomStore = create((set, get) => ({
     }
 
     attempts = 0;
+    GxyUIStateBridge.updateUIState();
+    CallsBridge.startCall();
   },
 
   subscribeMqtt: async () => {
@@ -154,6 +157,8 @@ export const useInRoomStore = create((set, get) => ({
 
     exitWIP = false;
     set({ isInRoom: false });
+    GxyUIStateBridge.updateUIState();
+    CallsBridge.endCall();
   },
 
   exitNetResources: async () => {
@@ -213,7 +218,7 @@ export const useInRoomStore = create((set, get) => ({
 
   enterBackground: async () => {
     set({ isInBackground: true });
-    get().enterAudioMode();
+    get().enterAudioMode(true);
     addFinishSpan(ROOM_SESSION, 'background', { NAMESPACE });
   },
 
@@ -225,16 +230,17 @@ export const useInRoomStore = create((set, get) => ({
     addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
-  enterAudioMode: async () => {
+  enterAudioMode: async (isPIPMode = false) => {
     logger.debug(NAMESPACE, 'enterAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.enter');
     try {
-      useMyStreamStore.getState().toggleCammute(true, false);
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
       const { enterAudioMode, cleanKliOlami } = useShidurStore.getState();
-      enterAudioMode();
+      if (!isPIPMode) {
+        enterAudioMode();
+      }
       cleanKliOlami(false);
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {

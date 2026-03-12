@@ -1,6 +1,6 @@
 {
   "name": "GalaxyRN",
-  "version": "2.7.0",
+  "version": "2.7.3",
   "private": true,
   "scripts": {
     "start": "react-native start",

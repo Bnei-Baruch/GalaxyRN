@@ -7,7 +7,7 @@ import {
   removeConnectionMonitor,
 } from '../../libs/connection-monitor';
 import logger from '../../services/logger';
-import { useInitsStore } from '../../zustand/inits';
+import { AppInitStates, useInitsStore } from '../../zustand/inits';
 import Text from '../CustomText';
 
 const NAMESPACE = 'NetConnectionModal';
@@ -15,7 +15,7 @@ const NAMESPACE = 'NetConnectionModal';
 const NetConnectionModal = () => {
   const { t } = useTranslation();
   const { netIsOn } = useInitsStore();
-  const isAppInited = useInitsStore(state => state.isAppInited);
+  const appInitState = useInitsStore(state => state.appInitState);
 
   useEffect(() => {
     initConnectionMonitor();
@@ -24,8 +24,8 @@ const NetConnectionModal = () => {
     };
   }, []);
 
-  if (netIsOn || isAppInited) {
-    logger.debug(NAMESPACE, 'render null', netIsOn, isAppInited);
+  if (netIsOn || appInitState === AppInitStates.NOT_JOINED) {
+    logger.debug(NAMESPACE, 'render null', netIsOn, appInitState);
     return null;
   }
 
