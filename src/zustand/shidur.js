@@ -24,7 +24,6 @@ import { StreamingPlugin } from '../libs/streaming-plugin';
 import api from '../services/Api';
 import logger from '../services/logger';
 import { getBooleanFromStorage, getFromStorage, rejectTimeoutPromise, setToStorage } from '../tools';
-import { useInRoomStore } from './inRoom';
 import { useSettingsStore } from './settings';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -216,12 +215,9 @@ export const useShidurStore = create((set, get) => ({
     try {
       logger.debug(NAMESPACE, 'new JanusMqtt', user, srv);
       janus = new JanusMqtt(user, srv);
-      janus.onStatus = (srv, status) => {
-        logger.debug(NAMESPACE, 'janus status: ', status);
-        if (status === 'offline') {
-          logger.warn(NAMESPACE, 'janus status: ', status);
-          useInRoomStore.getState().restartRoom();
-        }
+      janus.onOffline = () => {
+        logger.warn(NAMESPACE, 'janus offline');
+        get().restartShidur();
       };
 
       await janus.init();
@@ -418,12 +414,13 @@ export const useShidurStore = create((set, get) => ({
 
     try {
       if (videoJanus) {
-        await rejectTimeoutPromise(janus.detach(videoJanus), 2000);
+        await rejectTimeoutPromise(janus.detach(videoJanus), 1000);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanVideoHandle:', error);
     }
     videoJanus = null;
+    logger.debug(NAMESPACE, 'cleanVideoHandle done');
   },
 
   cleanAudioHandles: async () => {
@@ -432,7 +429,7 @@ export const useShidurStore = create((set, get) => ({
     audioStream = null;
     try {
       if (audioJanus) {
-        await rejectTimeoutPromise(janus.detach(audioJanus), 2000);
+        await rejectTimeoutPromise(janus.detach(audioJanus), 1000);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
@@ -444,12 +441,13 @@ export const useShidurStore = create((set, get) => ({
     trlAudioStream = null;
     try {
       if (trlAudioJanus) {
-        await rejectTimeoutPromise(janus.detach(trlAudioJanus), 2000);
+        await rejectTimeoutPromise(janus.detach(trlAudioJanus), 1000);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanAudioHandles:', error);
     }
     trlAudioJanus = null;
+    logger.debug(NAMESPACE, 'cleanAudioHandles done');
   },
 
   restartShidur: async () => {
@@ -462,18 +460,21 @@ export const useShidurStore = create((set, get) => ({
     set({ shidurWIP: true });
 
     try {
-      if (attempts > 3) {
-        throw new Error('Failed to restart shidur', attempts);
+      if (attempts > 10) {
+        attempts = 0;
+        useInRoomStore.getState().exitRoom();
+        logger.error(NAMESPACE, 'Failed to restart shidur', attempts);
+        return;
       }
       const isPlay = get().isPlay;
       logger.debug(NAMESPACE, 'restartShidur', isPlay);
-      await get().cleanShidur();
+      await get().cleanJanus();
       set({ isPlay });
-      await Promise.all([get().initVideoHandle(), get().initAudioHandles()]);
+      await get().initShidur();
       attempts = 0;
     } catch (error) {
       attempts++;
-      useInRoomStore.getState().restartRoom();
+      get().restartShidur();
       logger.error(NAMESPACE, 'Error during restartShidur:', error);
     } finally {
       set({ shidurWIP: false });
@@ -584,7 +585,7 @@ export const useShidurStore = create((set, get) => ({
     kliOlamiStream = null;
     try {
       if (kliOlamiJanus) {
-        await rejectTimeoutPromise(janus.detach(kliOlamiJanus), 2000);
+        await rejectTimeoutPromise(janus.detach(kliOlamiJanus), 1000);
       }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during cleanKliOlami:', error);

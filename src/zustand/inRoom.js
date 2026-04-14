@@ -14,6 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
+import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';

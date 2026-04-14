@@ -59,21 +59,16 @@ export const useFeedsStore = create((set, get) => ({
     });
 
     let notAddMy = false;
-    if (_ms.length === 0) {
-      return notAddMy ? [] : ['my'];
-    }
-
-    const feedIds = _ms.reduce((acc, x, i) => {
-      if (!x) return acc;
-
-      if (!notAddMy && x.display?.timestamp > timestamp) {
-        acc.push('my');
+    const feedIds = [];
+    for (const _f of _ms) {
+      if (!_f) continue;
+      if (!notAddMy && _f.display?.timestamp > timestamp) {
+        feedIds.push('my');
         notAddMy = true;
       }
 
-      acc.push(x.id);
-      return acc;
-    }, []);
+      feedIds.push(_f.id);
+    }
 
     if (!notAddMy) {
       feedIds.push('my');
@@ -109,6 +104,10 @@ export const useFeedsStore = create((set, get) => ({
     }
     useUserStore.getState().setJanusSrv(gxyServer.janus);
     janus = new JanusMqtt(user, gxyServer.janus);
+    janus.onOffline = async () => {
+      logger.debug(NAMESPACE, 'janus onOffline');
+      await get().restartFeeds();
+    };
     logger.debug(NAMESPACE, 'initFeeds janus');
 
     try {

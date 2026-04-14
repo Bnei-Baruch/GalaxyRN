@@ -84,7 +84,7 @@ export class PublisherPlugin {
       room: roomId,
       ptype: 'publisher',
       display: JSON.stringify(user),
-      metadata: useUserStore.buildUserState(),
+      metadata: useUserStore.getState().buildUserState(),
     };
     return new Promise((resolve, reject) => {
       this.transaction('message', { body }, 'event')
