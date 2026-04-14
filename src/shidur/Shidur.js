@@ -1,6 +1,6 @@
 import React, { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
 import Text from '../components/CustomText';
@@ -9,7 +9,6 @@ import { baseStyles } from '../constants';
 import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { withProfiler } from '../libs/sentry/sentryHOC';
 import logger from '../services/logger';
-import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { useSubtitleStore } from '../zustand/subtitle';
@@ -19,6 +18,7 @@ import { PlayPauseBtn } from './PlayPauseBtn';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import Subtitle from './Subtitle';
 import commonStyles from './style';
+import { styles } from './styles';
 
 
 const NAMESPACE = 'Shidur';
@@ -28,7 +28,6 @@ const Shidur = () => {
     useShidurStore();
   const audioKey = audio?.key;
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
-  const { cammute } = useMyStreamStore();
   const { showBars } = useUiActions();
   const netWIP = useSettingsStore(state => state.netWIP);
   const { t } = useTranslation();
@@ -54,7 +53,7 @@ const Shidur = () => {
                 </Text>
               )}
               {video !== NO_VIDEO_OPTION_VALUE && url ? (
-                <MemoizedRTCView streamURL={url} isShidurPIP={cammute} />
+                <MemoizedRTCView streamURL={url} />
               ) : (
                 <View style={styles.noVideo}>
                   <Icon name="graphic-eq" color="white" size={70} />
@@ -86,7 +85,7 @@ const Shidur = () => {
 
 // Memoized RTCView component
 const MemoizedRTCView = memo(
-  ({ streamURL, isShidurPIP = false }) => {
+  ({ streamURL }) => {
     logger.debug(NAMESPACE, `MemoizedRTCView render`, streamURL);
     return (
       <RTCView
@@ -94,7 +93,7 @@ const MemoizedRTCView = memo(
         style={styles.viewer}
         objectFit="contain"
         iosPIP={{
-          enabled: isShidurPIP,
+          enabled: true,
           stopAutomatically: false,
           preferredSize: {
             width: 100,
@@ -105,38 +104,8 @@ const MemoizedRTCView = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.streamURL === nextProps.streamURL &&
-      prevProps.isShidurPIP === nextProps.isShidurPIP;
+    return prevProps.streamURL === nextProps.streamURL;
   }
 );
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-  },
-  viewer: {
-    aspectRatio: 16 / 9,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noVideo: {
-    aspectRatio: 16 / 9,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  onAir: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'red',
-    zIndex: 10,
-    fontSize: 20,
-    padding: 10,
-    borderRadius: 20,
-  },
-});
 
 export default withProfiler(Shidur, { name: 'Shidur' });

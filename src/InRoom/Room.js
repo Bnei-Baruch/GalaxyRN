@@ -2,12 +2,12 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ConnectionNotStable from '../components/ConnectionStatus/ConnectionNotStable';
-import MyVideo from '../components/MyVideo';
 import { baseStyles } from '../constants';
 import { BottomBarLevel0 } from '../roomMenuLevel0/BottomBarLevel0';
 import { TopBar } from '../roomMenuLevel0/TopBar';
 import MenuLevel1 from '../roomMenuLevel1/MenuLevel1';
 import logger from '../services/logger';
+import ShidurPip from '../shidur/ShidurPip';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useSettingsStore } from '../zustand/settings';
 import ForegroundListener from './ForegroundListener';
@@ -25,8 +25,8 @@ const Room = () => {
   }, []);
 
   if (isPIPMode) {
-    logger.debug('Room', 'render MyRTCView');
-    return <MyVideo styles={{ flex: 1, alignItems: 'start', backgroundColor: 'black' }} />;
+    logger.debug('Room', 'render ShidurPip');
+    return <ShidurPip />;
   }
 
   return (
