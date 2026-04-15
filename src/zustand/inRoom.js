@@ -47,6 +47,8 @@ export const useInRoomStore = create((set, get) => ({
       return;
     }
 
+    useMyStreamStore.getState().setTimestamp();
+
     if (attempts > 2) {
       logger.warn(NAMESPACE, 'too many attempts, aborting');
       finishTransaction(ROOM_SESSION, 'aborted');

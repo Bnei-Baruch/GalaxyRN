@@ -30,7 +30,8 @@ export const useUserStore = create((set, get) => ({
 
   janusInfo: {},
   setJanusInfo: info => {
-    const janusInfo = { ...info, timestamp: Date.now() };
+    const timestamp = useMyStreamStore.getState().timestamp;
+    const janusInfo = { ...info, timestamp };
     set({ janusInfo });
   },
   janusSrv: "",

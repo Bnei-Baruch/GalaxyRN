@@ -10,9 +10,11 @@ import {
   clearUser as clearSentryUser,
   setUser as setSentryUser,
 } from '../libs/sentry/sentryHelper';
+import api from '../services/Api';
 import logger from '../services/logger';
 import { fixTextEncoding, getFromStorage, setToStorage } from '../tools';
 import { useUserStore } from '../zustand/user';
+
 
 const NAMESPACE = 'Keycloak';
 

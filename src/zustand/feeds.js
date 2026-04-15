@@ -48,6 +48,14 @@ export const useFeedsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'Feeds feedIds', timestamp);
 
     const _ms = Object.values(feedById);
+    logger.debug(NAMESPACE, 'Feeds feedIds _ms', _ms);
+    _ms.push({
+      id: 'my',
+      display: {
+        timestamp: timestamp,
+      },
+    });
+    logger.debug(NAMESPACE, 'Feeds feedIds _ms after my', _ms);
     _ms.sort((a, b) => {
       if (!!a.display?.is_group && !b.display?.is_group) {
         return -1;
@@ -58,22 +66,12 @@ export const useFeedsStore = create((set, get) => ({
       return a.display?.timestamp - b.display?.timestamp;
     });
 
-    let notAddMy = false;
     const feedIds = [];
     for (const _f of _ms) {
       if (!_f) continue;
-      if (!notAddMy && _f.display?.timestamp > timestamp) {
-        feedIds.push('my');
-        notAddMy = true;
-      }
-
       feedIds.push(_f.id);
     }
-
-    if (!notAddMy) {
-      feedIds.push('my');
-    }
-
+    logger.debug(NAMESPACE, 'Feeds feedIds feedIds', feedIds);
     set({ feedIds });
   },
 
