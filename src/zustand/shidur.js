@@ -612,27 +612,27 @@ export const useShidurStore = create((set, get) => ({
   },
 
   exitAudioMode: async () => {
-    const { initKliOlami, isPlay, video: currentVideo, setVideo } = get();
+    const { initKliOlami, isPlay, setVideo } = get();
     try {
       initKliOlami();
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initKliOlami:', error);
     }
 
+    const targetVideo = useSettingsStore.getState().audioMode
+      ? NO_VIDEO_OPTION_VALUE
+      : await getFromStorage(STORAGE_KEYS.VIDEO, 1).then(x => Number(x));
+
+    logger.debug(NAMESPACE, 'exitAudioMode targetVideo', targetVideo);
+
     if (!useSettingsStore.getState().isShidur || !isPlay) {
       logger.debug(NAMESPACE, 'exitAudioMode shidur not active');
+      set({ video: targetVideo });
       return;
     }
 
-    let video;
-    if (useSettingsStore.getState().audioMode) {
-      video = NO_VIDEO_OPTION_VALUE;
-    } else {
-      video = await getFromStorage(STORAGE_KEYS.VIDEO, 1).then(x => Number(x));
-    }
-    console.log('exitAudioMode video', video, currentVideo);
-    if (video !== currentVideo) {
-      setVideo(video, false);
+    if (targetVideo !== NO_VIDEO_OPTION_VALUE) {
+      setVideo(targetVideo, false);
     }
   },
 
