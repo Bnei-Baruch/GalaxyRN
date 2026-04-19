@@ -79,7 +79,7 @@
     "node": ">=18"
   },
   "config": {
-    "isProduction": false
+    "isProduction": true
   },
   "packageManager": "yarn@3.6.4",
   "resolutions": {
