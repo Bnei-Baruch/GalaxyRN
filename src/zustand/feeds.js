@@ -9,7 +9,6 @@ import AudioBridge from '../services/AudioBridge';
 import logger from '../services/logger';
 import { deepClone, rejectTimeoutPromise } from '../tools';
 import { useRoomStore } from './fetchRooms';
-import { useInRoomStore } from './inRoom';
 import { getStream, useMyStreamStore } from './myStream';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -24,6 +23,7 @@ let restartWIP = false;
 let exitWIP = false;
 
 let _subscriberJoined = false;
+let restartCount = 0;
 
 //TODO: Remove this function after string id will deployed
 const patchFeedId = (id) => {
@@ -40,7 +40,7 @@ const patchFeedId = (id) => {
 export const useFeedsStore = create((set, get) => ({
   feedById: {},
   feedIds: [],
-  restartCount: 0,
+  waitRestart: false,
 
   setFeedIds: () => {
     const { feedById } = get();
@@ -89,6 +89,15 @@ export const useFeedsStore = create((set, get) => ({
     );
   },
 
+  safeInitFeeds: async () => {
+    try {
+      await get().initFeeds();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error initializing feeds', error);
+      await get().restartFeeds();
+    }
+  },
+
   initFeeds: async () => {
     logger.debug(NAMESPACE, 'initFeeds');
 
@@ -96,29 +105,37 @@ export const useFeedsStore = create((set, get) => ({
     const { geoInfo } = useUserStore.getState();
     const { room } = useRoomStore.getState();
 
-    const gxyServer = await api.fetchGxyServer({ ...user, geo: geoInfo, room: room.room });
-    if (!gxyServer?.janus) {
-      throw new Error(`gxy server is ${gxyServer} in initFeeds`);
+    let gxyServer;
+    try {
+      gxyServer = await api.fetchGxyServer({ ...user, geo: geoInfo, room: room.room });
+      logger.debug(NAMESPACE, 'initFeeds gxyServer', gxyServer);
+      if (!gxyServer?.janus) {
+        throw new Error('gxy server is null in initFeeds');
+      }
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error fetching gxy server in initFeeds', error);
+      throw error;
     }
+
     useUserStore.getState().setJanusSrv(gxyServer.janus);
     janus = new JanusMqtt(user, gxyServer.janus);
-    janus.onOffline = async () => {
+    janus.onOffline = () => {
       logger.debug(NAMESPACE, 'janus onOffline');
-      await get().restartFeeds();
+      get().restartFeeds();
     };
     logger.debug(NAMESPACE, 'initFeeds janus');
 
     try {
-      await rejectTimeoutPromise(janus.init(), 10000);
+      await rejectTimeoutPromise(janus.init(), 3000);
       logger.info(NAMESPACE, 'joinRoom on janus.init');
       await Promise.all([get().initSubscriber(), get().initPublisher()]);
-    } catch (err) {
-      logger.error(NAMESPACE, 'Janus init error', err);
-      await useInRoomStore.getState().restartRoom();
-      return;
+    } catch (error) {
+      logger.error(NAMESPACE, 'Janus init error', error);
+      throw error;
     } finally {
       logger.debug(NAMESPACE, 'joinRoom finally');
     }
+    restartCount = 0;
   },
 
   initPublisher: async () => {
@@ -422,18 +439,31 @@ export const useFeedsStore = create((set, get) => ({
   },
 
   restartFeeds: async () => {
-    logger.debug(NAMESPACE, 'restartFeeds', restartWIP);
+    logger.debug(NAMESPACE, 'restartFeeds', restartWIP, exitWIP, restartCount);
 
     if (restartWIP || exitWIP) return;
+    if (restartCount > 3) {
+      restartCount = 0;
+      set({ waitRestart: true });
+      return;
+    }
     restartWIP = true;
     try {
       await get().cleanFeeds();
       await get().initFeeds();
+      restartCount = 0;
     } catch (error) {
       logger.error(NAMESPACE, 'Error restarting feeds', error);
+      restartCount++;
+      restartWIP = false;
+      await get().restartFeeds();
     }
-
     restartWIP = false;
+  },
+
+  retryFeedsAfterWait: async () => {
+    set({ waitRestart: false });
+    await get().restartFeeds();
   },
 
   cleanFeeds: async () => {
@@ -532,15 +562,5 @@ export const useFeedsStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'deactivateFeedsVideos params', params);
     return subscriber.unsub(params);
-  },
-
-  reconnectFeeds: async () => {
-    const { feedById } = get();
-    const ids = Object.keys(feedById);
-    logger.debug(NAMESPACE, 'reconnectFeeds ids', ids);
-    await get().deactivateFeedsVideos(ids);
-    logger.debug(NAMESPACE, 'reconnectFeeds videos deactivated');
-    await get().activateFeedsVideos(ids);
-    logger.debug(NAMESPACE, 'reconnectFeeds videos activated');
   },
 }));

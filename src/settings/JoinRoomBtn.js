@@ -11,12 +11,12 @@ import { useInRoomStore } from '../zustand/inRoom';
 
 const JoinRoomBtn = () => {
   const { room, setSelectRoomOpen } = useRoomStore();
-  const { joinRoom } = useInRoomStore();
+  const { safeJoinRoom } = useInRoomStore();
   const { t } = useTranslation();
 
 
   const handleJoin = () => {
-    joinRoom();
+    safeJoinRoom();
     setSelectRoomOpen(false);
   };
 

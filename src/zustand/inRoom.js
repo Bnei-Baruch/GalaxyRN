@@ -67,7 +67,7 @@ export const useInRoomStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error waiting for connection', error);
       finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().restartRoom();
+      throw error;
     }
     set({ isInRoom: true });
 
@@ -86,28 +86,29 @@ export const useInRoomStore = create((set, get) => ({
 
     const janusInitSpan = addSpan(ROOM_SESSION, 'janus.inits');
 
-    try {
-      await Promise.all([
-        useShidurStore.getState().prepareShidur(isPlay),
-        useFeedsStore.getState().initFeeds(),
-      ]);
-      finishSpan(janusInitSpan, 'ok', NAMESPACE);
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error initializing shidur and feeds', error);
-      finishSpan(janusInitSpan, 'internal_error', NAMESPACE);
-      finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().restartRoom();
-    }
+    await Promise.all([
+      useShidurStore.getState().prepareShidur(isPlay),
+      useFeedsStore.getState().safeInitFeeds(),
+    ]);
 
     try {
-      get().subscribeMqtt();
+      await get().subscribeMqtt();
     } catch (error) {
-      return get().restartRoom();
+      throw error;
     }
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
     CallsBridge.startCall();
+  },
+
+  safeJoinRoom: async (isPlay = false) => {
+    try {
+      await get().joinRoom(isPlay);
+    } catch (error) {
+      logger.error(NAMESPACE, 'safeJoinRoom error, restarting', error);
+      await get().restartRoom();
+    }
   },
 
   subscribeMqtt: async () => {

@@ -109,6 +109,7 @@
   },
   "connection": {
     "unstable": "Conexión inestable",
-    "noConnection": "Sin conexión a internet"
+    "noConnection": "Sin conexión a internet",
+    "mediaRecoverMessage": "La reproducción se detuvo tras errores de conexión repetidos. Puedes intentarlo de nuevo."
   }
 }

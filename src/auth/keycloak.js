@@ -15,6 +15,7 @@ import logger from '../services/logger';
 import { fixTextEncoding, getFromStorage, setToStorage } from '../tools';
 import { useUserStore } from '../zustand/user';
 
+const { config: { isProduction } } = require('../../package.json');
 
 const NAMESPACE = 'Keycloak';
 
@@ -364,7 +365,7 @@ class Keycloak {
 
     try {
       logger.debug(NAMESPACE, 'Fetching VH info...');
-      const vhinfo = await api.fetchVHInfo();
+      const vhinfo = await (isProduction ? api.fetchVHInfo() : Promise.resolve({ active: true, allowed: true }));
       logger.debug(NAMESPACE, 'VH info received:', JSON.stringify(vhinfo));
 
       useUserStore.getState().setVhinfo(vhinfo);

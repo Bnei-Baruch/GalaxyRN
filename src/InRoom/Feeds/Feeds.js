@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
+import MediaRecoverPanel from '../../components/MediaRecoverPanel';
 import { withProfiler } from '../../libs/sentry/sentryHOC';
 import logger from '../../services/logger';
 import { useFeedsStore } from '../../zustand/feeds';
@@ -20,6 +21,8 @@ const Feeds = () => {
   const setFeedsPos = useUiActions(state => state.setFeedsPos);
   const isInBackground = useInRoomStore(state => state.isInBackground);
   const feedIds = useFeedsStore(state => state.feedIds);
+  const waitRestart = useFeedsStore(state => state.waitRestart);
+  const retryFeedsAfterWait = useFeedsStore(state => state.retryFeedsAfterWait);
 
   const ref = useRef({});
 
@@ -50,6 +53,19 @@ const Feeds = () => {
   };
 
   logger.debug(NAMESPACE, 'render', feedIds.length);
+
+  if (waitRestart) {
+    return (
+      <View
+        style={[styles.container, styles.restartBackdrop]}
+        onLayout={handleLayout}
+        ref={ref}
+      >
+        <MediaRecoverPanel onRetry={() => void retryFeedsAfterWait()} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container} onLayout={handleLayout} ref={ref}>
       {feedIds.length > 0 ? feedIds.map(renderFeed) : renderMy()}
@@ -66,5 +82,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     minHeight: '100%',
+  },
+  restartBackdrop: {
+    backgroundColor: '#0a0a0a',
+    flexDirection: 'column',
   },
 });

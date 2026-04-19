@@ -27,4 +27,9 @@ export const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 20,
     },
+    restartScreen: {
+        backgroundColor: '#0a0a0a',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

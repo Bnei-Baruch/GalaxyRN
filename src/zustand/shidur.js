@@ -130,6 +130,7 @@ export const useShidurStore = create((set, get) => ({
   shidurWIP: false,
   cleanWIP: false,
   isAudioSelectOpen: false,
+  withRestart: false,
 
   setIsAudioSelectOpen: (isAudioSelectOpen = !get().isAudioSelectOpen) => {
     set({ isAudioSelectOpen });
@@ -210,6 +211,7 @@ export const useShidurStore = create((set, get) => ({
       });
     } catch (error) {
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);
+      throw error;
     }
 
     try {
@@ -285,7 +287,16 @@ export const useShidurStore = create((set, get) => ({
 
     logger.debug(NAMESPACE, 'prepareShidur initShidur isPlay', isPlay);
     if (isPlay) {
+      await get().safeInitShidur();
+    }
+  },
+
+  safeInitShidur: async () => {
+    try {
       await get().initShidur();
+    } catch (error) {
+      logger.error(NAMESPACE, 'Error during safeInitShidur:', error);
+      await get().restartShidur();
     }
   },
 
@@ -294,7 +305,7 @@ export const useShidurStore = create((set, get) => ({
     set({ shidurWIP: true });
 
     try {
-      await rejectTimeoutPromise(get().initJanus(), 10000);
+      await rejectTimeoutPromise(get().initJanus(), 3000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
       setSpanAttributes(span, { error });
@@ -460,10 +471,10 @@ export const useShidurStore = create((set, get) => ({
     set({ shidurWIP: true });
 
     try {
-      if (attempts > 10) {
-        attempts = 0;
-        useInRoomStore.getState().exitRoom();
+      if (attempts > 3) {
         logger.error(NAMESPACE, 'Failed to restart shidur', attempts);
+        attempts = 0;
+        set({ shidurWIP: false, withRestart: true });
         return;
       }
       const isPlay = get().isPlay;
@@ -474,11 +485,17 @@ export const useShidurStore = create((set, get) => ({
       attempts = 0;
     } catch (error) {
       attempts++;
+      set({ shidurWIP: false });
       get().restartShidur();
       logger.error(NAMESPACE, 'Error during restartShidur:', error);
-    } finally {
-      set({ shidurWIP: false });
+      return;
     }
+    set({ shidurWIP: false });
+  },
+
+  retryShidurAfterWait: async () => {
+    set({ withRestart: false });
+    await get().restartShidur();
   },
 
   streamGalaxy: async (isOnAir, onPlay = false) => {
@@ -547,11 +564,11 @@ export const useShidurStore = create((set, get) => ({
   },
 
   toggleIsPlay: async () => {
-    const { initShidur, isMuted } = get();
+    const { safeInitShidur, isMuted } = get();
     const isPlay = !get().isPlay;
     logger.debug(NAMESPACE, 'toggleIsPlay', isPlay);
     if (isPlay) {
-      await initShidur();
+      await safeInitShidur();
     }
 
     useUiActions.getState().toggleShowBars();

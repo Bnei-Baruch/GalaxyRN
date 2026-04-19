@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { RTCView } from 'react-native-webrtc';
+import MediaRecoverPanel from '../components/MediaRecoverPanel';
 import Text from '../components/CustomText';
 import WIP from '../components/WIP';
 import { baseStyles } from '../constants';
@@ -24,8 +25,17 @@ import { styles } from './styles';
 const NAMESPACE = 'Shidur';
 
 const Shidur = () => {
-  const { url, isPlay, video, isOnAir, audio, shidurWIP, cleanWIP } =
-    useShidurStore();
+  const {
+    url,
+    isPlay,
+    video,
+    isOnAir,
+    audio,
+    shidurWIP,
+    cleanWIP,
+    withRestart,
+    retryShidurAfterWait,
+  } = useShidurStore();
   const audioKey = audio?.key;
   const { init: initSubtitle, exit: exitSubtitle } = useSubtitleStore();
   const { showBars } = useUiActions();
@@ -40,6 +50,14 @@ const Shidur = () => {
       exitSubtitle();
     };
   }, [audioKey]);
+
+  if (withRestart) {
+    return (
+      <View style={[styles.mainContainer, styles.restartScreen]}>
+        <MediaRecoverPanel onRetry={() => void retryShidurAfterWait()} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.mainContainer}>
