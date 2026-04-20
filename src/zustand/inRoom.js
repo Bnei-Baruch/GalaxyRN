@@ -84,7 +84,7 @@ export const useInRoomStore = create((set, get) => ({
       return get().exitRoom();
     }
 
-    const janusInitSpan = addSpan(ROOM_SESSION, 'janus.inits');
+    addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
 
     await Promise.all([
       useShidurStore.getState().prepareShidur(isPlay),
@@ -99,7 +99,9 @@ export const useInRoomStore = create((set, get) => ({
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
-    CallsBridge.startCall();
+
+    const { room } = useRoomStore.getState();
+    CallsBridge.startCall(room?.room || 'unknown');
   },
 
   safeJoinRoom: async (isPlay = false) => {

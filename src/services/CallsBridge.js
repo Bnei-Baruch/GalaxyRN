@@ -27,9 +27,9 @@ try {
 }
 
 const CallsBridge = {
-  startCall: () => {
+  startCall: (handle) => {
     if (NativeCall && NativeCall.startCall) {
-      NativeCall.startCall(isVideo);
+      NativeCall.startCall(handle);
     }
   },
   endCall: () => {
