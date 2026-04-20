@@ -11,6 +11,8 @@ import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
 import ShidurMemoized from './ShidurMemoized';
 import { styles } from './styles';
+import { StyleSheet } from 'react-native';
+
 
 
 const PipShidur = () => {
@@ -20,9 +22,9 @@ const PipShidur = () => {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.mainContainer}>
+    <View style={[pipStyles.mainContainer, { backgroundColor: 'black' }]}>
       <WIP isReady={!shidurWIP && !cleanWIP && !netWIP}>
-        <View>
+        <View style={[styles.viewer, { aspectRatio: 1 }]}>
           {isPlay ? (
             <View>
               {isOnAir && (
@@ -33,7 +35,7 @@ const PipShidur = () => {
               {video !== NO_VIDEO_OPTION_VALUE && url ? (
                 <ShidurMemoized streamURL={url} />
               ) : (
-                <View style={styles.noVideo}>
+                <View style={[styles.noVideo]}>
                   <Icon name="graphic-eq" color="white" size={70} />
                 </View>
               )}
@@ -47,5 +49,12 @@ const PipShidur = () => {
   );
 };
 
-
+const pipStyles = StyleSheet.create({
+  mainContainer: {
+    aspectRatio: 1,
+  },
+  viewer: {
+    aspectRatio: 1,
+  }
+});
 export default PipShidur;

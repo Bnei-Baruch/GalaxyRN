@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { RTCView } from 'react-native-webrtc';
 import logger from '../services/logger';
+import { styles } from './styles';
 
 
 const NAMESPACE = 'ShidurMemoized';
