@@ -20,6 +20,7 @@ import { CONNECTION } from './sentry/constants';
 import { addFinishSpan, addSpan, finishSpan } from './sentry/sentryHelper';
 
 import { Buffer } from 'buffer';
+import kc from '../auth/keycloak';
 
 const mqttTimeout = 5 * 60;
 const mqttKeepalive = 15;
@@ -32,13 +33,12 @@ class MqttMsg {
     this.mq = null;
     this.mit = null;
     this.room = null;
-    this.token = null;
     this.initialized = false;
     this.wasConnected = false;
   }
 
   init = async () => {
-    const initSpan = addSpan(CONNECTION, 'mqtt.init');
+    const initSpan = addSpan(CONNECTION, 'mqtt.init', { NAMESPACE });
 
     if (this.mq) {
       finishSpan(initSpan, 'error_already_initialized', NAMESPACE);
@@ -52,8 +52,10 @@ class MqttMsg {
     logger.debug(NAMESPACE, 'MQTT init', user);
 
     const transformUrl = (url, options, client) => {
+      const token = kc.getToken();
+      logger.debug(NAMESPACE, 'transformUrl');
       client.options.clientId = id;
-      client.options.password = this.token;
+      client.options.password = token;
       return url;
     };
 
@@ -65,7 +67,7 @@ class MqttMsg {
       reconnectPeriod: 0,
       clean: false,
       username: user.email,
-      password: this.token,
+      password: kc.getToken(),
       transformWsUrl: transformUrl,
       properties: {
         sessionExpiryInterval: mqttTimeout,
@@ -155,6 +157,9 @@ class MqttMsg {
 
       if (data?.reasonCode === 142) {
         logger.warn(NAMESPACE, 'Session taken over by another client', data);
+      }
+      if (data?.reasonCode === 135) {
+        logger.warn(NAMESPACE, 'Not authorized', data);
       }
     });
 
@@ -330,10 +335,6 @@ class MqttMsg {
           callback(JSON.parse(data.toString()), topic);
       }
     });
-  };
-
-  setToken = token => {
-    this.token = token;
   };
 
   end = async () => {

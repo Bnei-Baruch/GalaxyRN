@@ -210,6 +210,13 @@ export class JanusMqtt {
     if (!this.findHandle(plugin.janusHandleId)) {
       throw new Error('unknown plugin');
     }
+
+    if (!this.isConnected) {
+      logger.debug(NAMESPACE, 'detach skipped, not connected');
+      delete this.pluginHandles[plugin.janusHandleId];
+      return true;
+    }
+
     const body = {
       plugin: plugin.pluginName,
       handle_id: plugin.janusHandleId,
@@ -425,12 +432,7 @@ export class JanusMqtt {
     }
 
     if (tD === 'status' && !json.online) {
-      addFinishSpan(this.sentrySession, 'janus.statusOffline');
-      logger.debug(NAMESPACE, 'status');
-      this.isConnected = false;
-      logger.debug(NAMESPACE, `Janus Server - ${this.srv} - Offline`);
-      useInRoomStore.getState().restartRoom();
-      alert('Janus Server - ' + this.srv + ' - Offline');
+      this._onOffline();
       return;
     }
 
@@ -700,5 +702,16 @@ export class JanusMqtt {
       return null;
     }
     return handler;
+  };
+
+  _onOffline = () => {
+    addFinishSpan(this.sentrySession, 'janus.statusOffline', { srv: this.srv, NAMESPACE, sessionId: this.sessionId });
+    this.isConnected = false;
+    this.clearKeepAliveTimer();
+    if (this.onOffline) {
+      this.onOffline();
+    } else {
+      useInRoomStore.getState().restartRoom();
+    }
   };
 }

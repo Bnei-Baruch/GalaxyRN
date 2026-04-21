@@ -3,7 +3,7 @@ import {
   QST_BACKEND,
   STUDY_MATERIALS
 } from '@env';
-import mqtt from '../libs/mqtt';
+import kc from '../auth/keycloak';
 import { getEnvValue } from './env';
 import logger from './logger';
 
@@ -11,12 +11,6 @@ const NAMESPACE = 'Api';
 
 
 class Api {
-  static encode = encodeURIComponent;
-
-  constructor() {
-    this.accessToken = null;
-  }
-
   // Galaxy API
   fetchAvailableRooms = () =>
     this.logAndParse(
@@ -29,7 +23,7 @@ class Api {
   defaultOptions = () => {
     return {
       headers: {
-        Authorization: `Bearer ${this.accessToken}`,
+        Authorization: `Bearer ${kc.getToken()}`,
       },
     };
   };
@@ -73,11 +67,6 @@ class Api {
       });
   };
 
-  setAccessToken = token => {
-    logger.debug(NAMESPACE, 'setAccessToken', token);
-    this.accessToken = token;
-    mqtt.setToken(token);
-  };
   fetchMaterials = async () => {
     try {
       const res = await fetch(STUDY_MATERIALS, { method: 'GET' });

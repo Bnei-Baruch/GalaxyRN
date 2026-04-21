@@ -14,6 +14,7 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
+import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
@@ -46,6 +47,8 @@ export const useInRoomStore = create((set, get) => ({
       return;
     }
 
+    useMyStreamStore.getState().setTimestamp();
+
     if (attempts > 2) {
       logger.warn(NAMESPACE, 'too many attempts, aborting');
       finishTransaction(ROOM_SESSION, 'aborted');
@@ -64,7 +67,7 @@ export const useInRoomStore = create((set, get) => ({
     } catch (error) {
       logger.error(NAMESPACE, 'Error waiting for connection', error);
       finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().restartRoom();
+      throw error;
     }
     set({ isInRoom: true });
 
@@ -81,30 +84,33 @@ export const useInRoomStore = create((set, get) => ({
       return get().exitRoom();
     }
 
-    const janusInitSpan = addSpan(ROOM_SESSION, 'janus.inits');
+    addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
+
+    await Promise.all([
+      useShidurStore.getState().prepareShidur(isPlay),
+      useFeedsStore.getState().safeInitFeeds(),
+    ]);
 
     try {
-      await Promise.all([
-        useShidurStore.getState().prepareShidur(isPlay),
-        useFeedsStore.getState().initFeeds(),
-      ]);
-      finishSpan(janusInitSpan, 'ok', NAMESPACE);
+      await get().subscribeMqtt();
     } catch (error) {
-      logger.error(NAMESPACE, 'Error initializing shidur and feeds', error);
-      finishSpan(janusInitSpan, 'internal_error', NAMESPACE);
-      finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().restartRoom();
-    }
-
-    try {
-      get().subscribeMqtt();
-    } catch (error) {
-      return get().restartRoom();
+      throw error;
     }
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
-    CallsBridge.startCall();
+
+    const { room } = useRoomStore.getState();
+    CallsBridge.startCall(room?.room || 'unknown');
+  },
+
+  safeJoinRoom: async (isPlay = false) => {
+    try {
+      await get().joinRoom(isPlay);
+    } catch (error) {
+      logger.error(NAMESPACE, 'safeJoinRoom error, restarting', error);
+      await get().restartRoom();
+    }
   },
 
   subscribeMqtt: async () => {

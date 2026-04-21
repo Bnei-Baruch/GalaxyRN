@@ -110,6 +110,7 @@
   },
   "connection": {
     "unstable": "Connection not stable",
-    "noConnection": "No internet connection"
+    "noConnection": "No internet connection",
+    "mediaRecoverMessage": "Media stopped after repeated connection errors. You can try again."
   }
 }

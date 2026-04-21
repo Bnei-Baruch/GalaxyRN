@@ -37,29 +37,32 @@ class CallManager: RCTEventEmitter {
 
     // MARK: - Public Methods
 
-    @objc
-    func startCall(handle: String, isVideo: Bool) async {
-        let cxHandle = CXHandle(type: .generic, value: handle)
-        let action = CXStartCallAction(call: uuid, handle: cxHandle)
-        action.isVideo = isVideo
-        let transaction = CXTransaction(action: action)
+    @objc(startCall:)
+    func startCall(handle: String) {
+        Task {
+            let cxHandle = CXHandle(type: .generic, value: handle)
+            let action = CXStartCallAction(call: uuid, handle: cxHandle)
+            let transaction = CXTransaction(action: action)
 
-        do {
-            try await callController.request(transaction)
-        } catch {
-            NLOG("[callManager swift] startCall error: \(error)")
+            do {
+                try await callController.request(transaction)
+            } catch {
+                NLOG("[callManager swift] startCall error: \(error)")
+            }
         }
     }
 
     @objc
-    func endCall() async {
-        let action = CXEndCallAction(call: uuid)
-        let transaction = CXTransaction(action: action)
+    func endCall() {
+        Task {
+            let action = CXEndCallAction(call: uuid)
+            let transaction = CXTransaction(action: action)
 
-        do {
-            try await callController.request(transaction)
-        } catch {
-            NLOG("[callManager swift] endCall error: \(error)")
+            do {
+                try await callController.request(transaction)
+            } catch {
+                NLOG("[callManager swift] endCall error: \(error)")
+            }
         }
     }
 
