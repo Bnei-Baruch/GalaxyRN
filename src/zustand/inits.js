@@ -120,7 +120,7 @@ export const useInitsStore = create((set, get) => ({
     GxyUIStateBridge.stopForeground();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
-
+    get().setAppInitState(AppInitStates.NOT_JOINED);
     logger.debug(NAMESPACE, 'terminateApp setAppInitState');
   },
 
