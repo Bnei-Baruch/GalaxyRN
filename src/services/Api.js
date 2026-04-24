@@ -175,23 +175,6 @@ class Api {
     }
   };
 
-  fetchGeoInfo = async () => {
-    const defaultInfo = {
-      ip: '127.0.0.1',
-      country: 'XX',
-    };
-    try {
-      const response = await fetch(getEnvValue('GEO_IP_INFO'));
-      if (response.ok) {
-        return await response.json();
-      } else {
-        return defaultInfo;
-      }
-    } catch (ex) {
-      logger.debug(NAMESPACE, `get geoInfo`, ex);
-      return defaultInfo;
-    }
-  };
   removeMember = () => {
     logger.info(NAMESPACE, 'Removing member');
     const options = this.defaultOptions();
@@ -204,6 +187,22 @@ class Api {
   };
 }
 
+
+
 const defaultApi = new Api();
 
 export default defaultApi;
+
+
+export const fetchGeoInfo = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch geo info, status: ${response.status}`);
+  }
+  const json = await response.json();
+  logger.debug(NAMESPACE, 'fetchGeoInfo', { url, json });
+  if (!json?.code) {
+    throw new Error('Invalid geo info response');
+  }
+  return json;
+};

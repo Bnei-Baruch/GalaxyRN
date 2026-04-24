@@ -8,6 +8,7 @@ import Text from '../components/CustomText';
 import WIP from '../components/WIP';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
+import SelectGeoRegion from '../settings/SelectGeoRegion';
 import SelectUiLanguage from '../settings/SelectUiLanguage';
 import { useUserStore } from '../zustand/user';
 import TermsOfUseModal from './TermsOfUseModal';
@@ -47,6 +48,7 @@ const LoginScreen = () => {
         <Image source={logo} style={styles.logo} />
         <View style={{ flex: 1 }}>
           <SelectUiLanguage />
+          <SelectGeoRegion />
         </View>
       </View>
 
@@ -57,6 +59,7 @@ const LoginScreen = () => {
           <Text style={styles.loginTxt}>{t('login')}</Text>
         </TouchableOpacity>
       </View>
+
 
       <View style={styles.termsContainer}>
         <TouchableOpacity onPress={handleTermsPress}>

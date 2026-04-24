@@ -367,3 +367,6 @@ export const LANGUAGES = [
   { code: 'yo', name: 'Yoruba', nativeName: 'Yorùbá' },
   { code: 'za', name: 'Zhuang, Chuang', nativeName: 'Saɯ cueŋƅ, Saw cuengh' },
 ];
+
+export const GEO_REGION_AUTO = 'AUTO';
+export const GEO_REGION_RU = 'RU';

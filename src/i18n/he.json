@@ -17,7 +17,8 @@
     "join": "כנס לחדר",
     "selectRoom": "בחר Ten",
     "backToTen": "חזור ל-Ten",
-    "noRoomsFound": "לא נמצאו חדרים"
+    "noRoomsFound": "לא נמצאו חדרים",
+    "geoRegion": "אזור"
   },
   "user": {
     "title": "הגדרות משתמש",

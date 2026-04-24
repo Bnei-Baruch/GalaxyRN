@@ -17,7 +17,8 @@
     "join": "Join Room",
     "selectRoom": "Select Ten",
     "backToTen": "Back To Ten",
-    "noRoomsFound": "No rooms found"
+    "noRoomsFound": "No rooms found",
+    "geoRegion": "Region"
   },
   "permissions": {
     "title": "User Permission",
