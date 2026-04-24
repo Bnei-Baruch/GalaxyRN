@@ -80,6 +80,7 @@ export class PublisherPlugin {
   join = (roomId, user) => {
     this.roomId = roomId;
     const body = {
+      id: user.id + "-" + randomString(3),
       request: 'join',
       room: roomId,
       ptype: 'publisher',
