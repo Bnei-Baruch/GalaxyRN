@@ -30,6 +30,10 @@ export const useMyStreamStore = create((set, get) => ({
   cammute: false,
   timestamp: Date.now(),
 
+  setTimestamp: () => {
+    set({ timestamp: Date.now() });
+  },
+
   myInit: async () => {
     get().myAbort();
 

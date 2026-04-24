@@ -5,7 +5,6 @@ import BackgroundTimer from 'react-native-background-timer';
 import RNSecureStorage from 'rn-secure-storage';
 import { STORAGE_KEYS } from '../constants';
 import { getUserRole, userRolesEnum } from '../enums';
-import mqtt from '../libs/mqtt';
 import {
   addBreadcrumb,
   clearUser as clearSentryUser,
@@ -15,6 +14,8 @@ import api from '../services/Api';
 import logger from '../services/logger';
 import { fixTextEncoding, getFromStorage, setToStorage } from '../tools';
 import { useUserStore } from '../zustand/user';
+
+const { config: { isProduction } } = require('../../package.json');
 
 const NAMESPACE = 'Keycloak';
 
@@ -154,9 +155,6 @@ class Keycloak {
       };
 
       this.session = session;
-      mqtt.setToken(accessToken);
-      api.setAccessToken(accessToken);
-
       setToStorage(STORAGE_KEYS.USER_SESSION, JSON.stringify(session));
       logger.debug(NAMESPACE, 'Session set successfully');
 
@@ -171,10 +169,12 @@ class Keycloak {
    * Calculates time until next token refresh
    */
   calculateTimeUntilRefresh = () => {
+    logger.debug(NAMESPACE, 'Calculating time until refresh', new Date(this.session?.payload?.exp * 1000).toISOString());
     if (!this.session?.payload?.exp) return -1;
 
     const expiryTime = this.session.payload.exp * 1000;
     const currentTime = new Date().getTime();
+    logger.debug(NAMESPACE, 'time until refresh', (expiryTime - currentTime) / 2);
     return (expiryTime - currentTime) / 2;
   };
 
@@ -192,9 +192,10 @@ class Keycloak {
     try {
       const timeToRefresh = this.calculateTimeUntilRefresh();
       logger.debug(NAMESPACE, 'Time until refresh:', timeToRefresh, 'ms');
+      logger.debug(NAMESPACE, 'Time until refresh', timeToRefresh / 1000, 'seconds');
       this.clearTimeout();
-
-      if (timeToRefresh > 0) {
+      //Refresh token before it expires by 10 seconds
+      if (timeToRefresh > 10000) {
         logger.debug(
           NAMESPACE,
           'Scheduling refresh in',
@@ -364,7 +365,7 @@ class Keycloak {
 
     try {
       logger.debug(NAMESPACE, 'Fetching VH info...');
-      const vhinfo = await api.fetchVHInfo();
+      const vhinfo = await (isProduction ? api.fetchVHInfo() : Promise.resolve({ active: true, allowed: true }));
       logger.debug(NAMESPACE, 'VH info received:', JSON.stringify(vhinfo));
 
       useUserStore.getState().setVhinfo(vhinfo);
@@ -392,6 +393,9 @@ class Keycloak {
       BackgroundTimer.clearTimeout(this.timeout);
       this.timeout = 0;
     }
+  };
+  getToken = () => {
+    return this.session?.accessToken;
   };
 }
 

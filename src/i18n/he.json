@@ -110,6 +110,7 @@
   },
   "connection": {
     "unstable": "החיבור אינו יציב",
-    "noConnection": "אין חיבור לאינטרנט"
+    "noConnection": "אין חיבור לאינטרנט",
+    "mediaRecoverMessage": "המדיה הופסקה אחרי שגיאות חיבור חוזרות. אפשר לנסות שוב."
   }
 }

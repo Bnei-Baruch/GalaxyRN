@@ -270,7 +270,7 @@ export const useInitsStore = create((set, get) => ({
         async data => {
           logger.debug(NAMESPACE, 'native_player_event event: ', data);
           if (data.action === 'join_room') {
-            await useInRoomStore.getState().joinRoom(true);
+            await useInRoomStore.getState().safeJoinRoom(true);
           } else if (data.action === 'leave_room') {
             await useInRoomStore.getState().exitRoom();
           } else if (data.action === 'mute') {
@@ -306,7 +306,7 @@ export const useInitsStore = create((set, get) => ({
             logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
           } else if (data.state === 'ON_END_CALL') {
             logger.debug(NAMESPACE, 'Processing ON_END_CALL');
-            useInRoomStore.getState().joinRoom(_isPlay);
+            useInRoomStore.getState().safeJoinRoom(_isPlay);
             logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
           } else {
             logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
