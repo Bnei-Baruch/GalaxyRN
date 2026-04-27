@@ -9,8 +9,7 @@ import {
     MSG_URL_RU,
     STRDB_BACKEND,
     STRDB_BACKEND_RU,
-    STUN_SERVER,
-    STUN_SERVER_RU,
+
     STUN_SRV_GXY,
     STUN_SRV_GXY_RU,
     STUN_SRV_STR,
@@ -26,7 +25,6 @@ const NAMESPACE = 'EnvPatch';
 
 const DEFAULT_ENV = {
     GEO_IP_INFO,
-    STUN_SERVER,
     STUN_SRV_STR,
     STUN_SRV_GXY,
     API_BACKEND,
@@ -38,7 +36,6 @@ const DEFAULT_ENV = {
 const ENV_BY_REGION = {
     [GEO_REGION_RU]: {
         GEO_IP_INFO: GEO_IP_INFO_RU,
-        STUN_SERVER: STUN_SERVER_RU,
         STUN_SRV_STR: STUN_SRV_STR_RU,
         STUN_SRV_GXY: STUN_SRV_GXY_RU,
         API_BACKEND: API_BACKEND_RU,

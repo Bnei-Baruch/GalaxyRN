@@ -130,6 +130,7 @@ class Api {
     logger.debug(NAMESPACE, 'fetchStrServer - request data:', data);
     const options = this.makePostOptions(data);
     const url = `${getEnvValue('STRDB_BACKEND')}/server`;
+    logger.debug(NAMESPACE, 'fetchStrServer - endpoint URL:', url, 'options:', options);
     return this.logAndParse(
       `fetch str server for: ${data}`,
       fetch(url, options)
@@ -140,6 +141,7 @@ class Api {
     logger.debug(NAMESPACE, 'fetchGxyServer - request data:', data);
     const options = this.makePostOptions(data);
     const url = `${getEnvValue('API_BACKEND')}/v2/room_server`;
+    logger.debug(NAMESPACE, 'fetchGxyServer - request url:', url);
     return this.logAndParse(`fetch gxy server`, fetch(url, options));
   };
 
