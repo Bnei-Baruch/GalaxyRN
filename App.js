@@ -52,6 +52,7 @@ if (!SENTRY_DSN) {
     autoInitializeNativeSdk: true,
     attachScreenshot: false,
     attachViewHierarchy: false,
+    enableTombstone: true,
   });
 }
 

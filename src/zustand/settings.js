@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { STORAGE_KEYS } from '../constants';
-import { NO_VIDEO_OPTION_VALUE } from '../consts';
+import { GEO_REGION_AUTO, NO_VIDEO_OPTION_VALUE } from '../consts';
 import logger from '../services/logger';
 import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
@@ -10,6 +10,7 @@ import { useMyStreamStore } from './myStream';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
+import { initEnv } from '../services/env';
 
 const NAMESPACE = 'settings';
 
@@ -97,5 +98,11 @@ export const useSettingsStore = create((set, get) => ({
       useMyStreamStore.getState().toggleCammute(true, false)
     }
     set({ isPIPMode });
+  },
+  geoRegion: GEO_REGION_AUTO,
+  setGeoRegion: async (geoRegion) => {
+    await setToStorage(STORAGE_KEYS.GEO_REGION, geoRegion);
+    await initEnv()
+    set({ geoRegion })
   },
 }));

@@ -123,7 +123,6 @@ export class JanusMqtt {
             NAMESPACE,
           });
           this.isConnected = true;
-          this.keepAlive();
 
           logger.debug(
             NAMESPACE,
@@ -133,6 +132,7 @@ export class JanusMqtt {
           mqtt.mq.on(this.sessionId, this.onMessage);
 
           resolve(this);
+          this.setKeepAliveTimer(1000);
         },
         reject: error => {
           reject(error);

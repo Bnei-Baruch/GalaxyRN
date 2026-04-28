@@ -16,7 +16,8 @@
     "join": "Unirse a la sala",
     "selectRoom": "Seleccionar Ten",
     "backToTen": "Volver a Ten",
-    "noRoomsFound": "No se encontraron salas"
+    "noRoomsFound": "No se encontraron salas",
+    "geoRegion": "Región"
   },
   "user": {
     "title": "Configuración de usuario",
