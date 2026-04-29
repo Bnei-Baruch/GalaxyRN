@@ -47,6 +47,7 @@ export const STORAGE_KEYS = {
   VIDEO: 'video',
   AUDIO: 'audio',
   LANGUAGE: 'lng',
+  GEO_REGION: 'geo_region',
   IS_SUBTITLES: 'is_subtitles',
   IS_AUDIO_MODE: 'is_audio_mode',
   IS_ORIGINAL: 'is_original',

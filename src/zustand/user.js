@@ -22,8 +22,7 @@ export const useUserStore = create((set, get) => ({
   setVhinfo: vhinfo => set({ vhinfo }),
 
   geoInfo: {},
-  setGeoInfo: async () => {
-    const geoInfo = await api.fetchGeoInfo();
+  setGeoInfo: async (geoInfo) => {
     geoInfo.country_code = geoInfo.code;
     set({ geoInfo });
   },

@@ -130,6 +130,7 @@ class Api {
     logger.debug(NAMESPACE, 'fetchStrServer - request data:', data);
     const options = this.makePostOptions(data);
     const url = `${getEnvValue('STRDB_BACKEND')}/server`;
+    logger.debug(NAMESPACE, 'fetchStrServer - endpoint URL:', url, 'options:', options);
     return this.logAndParse(
       `fetch str server for: ${data}`,
       fetch(url, options)
@@ -140,6 +141,7 @@ class Api {
     logger.debug(NAMESPACE, 'fetchGxyServer - request data:', data);
     const options = this.makePostOptions(data);
     const url = `${getEnvValue('API_BACKEND')}/v2/room_server`;
+    logger.debug(NAMESPACE, 'fetchGxyServer - request url:', url);
     return this.logAndParse(`fetch gxy server`, fetch(url, options));
   };
 
@@ -175,23 +177,6 @@ class Api {
     }
   };
 
-  fetchGeoInfo = async () => {
-    const defaultInfo = {
-      ip: '127.0.0.1',
-      country: 'XX',
-    };
-    try {
-      const response = await fetch(getEnvValue('GEO_IP_INFO'));
-      if (response.ok) {
-        return await response.json();
-      } else {
-        return defaultInfo;
-      }
-    } catch (ex) {
-      logger.debug(NAMESPACE, `get geoInfo`, ex);
-      return defaultInfo;
-    }
-  };
   removeMember = () => {
     logger.info(NAMESPACE, 'Removing member');
     const options = this.defaultOptions();
@@ -204,6 +189,22 @@ class Api {
   };
 }
 
+
+
 const defaultApi = new Api();
 
 export default defaultApi;
+
+
+export const fetchGeoInfo = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch geo info, status: ${response.status}`);
+  }
+  const json = await response.json();
+  logger.debug(NAMESPACE, 'fetchGeoInfo', { url, json });
+  if (!json?.code) {
+    throw new Error('Invalid geo info response');
+  }
+  return json;
+};
