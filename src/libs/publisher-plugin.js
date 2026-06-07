@@ -197,7 +197,7 @@ export class PublisherPlugin {
     }
   };
 
-  mute = (video, stream) => {
+  cammute = () => {
     let videoTransceiver = null;
     let tr = this.pc.getTransceivers();
     if (tr && tr.length > 0) {
@@ -209,21 +209,13 @@ export class PublisherPlugin {
       }
     }
 
-    let d = video ? 'inactive' : 'sendonly';
 
     if (videoTransceiver?.setDirection) {
-      videoTransceiver.setDirection(d);
+      videoTransceiver.setDirection('inactive');
     } else {
-      videoTransceiver.direction = d;
+      videoTransceiver.direction = 'inactive';
     }
 
-    if (!video && stream) {
-      const videoTracks = stream.getVideoTracks();
-      if (videoTracks.length > 0) {
-        videoTransceiver.sender.replaceTrack(videoTracks[0]);
-      }
-    }
-    if (stream) this.configure();
   };
 
   setBitrate = bitrate => {

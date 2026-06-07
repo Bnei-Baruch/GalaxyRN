@@ -563,4 +563,9 @@ export const useFeedsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'deactivateFeedsVideos params', params);
     return subscriber.unsub(params);
   },
+
+  mycamMute: async (mute = !useMyStreamStore.getState().cammute) => {
+    videoroom?.cammute(mute);
+  },
+
 }));
