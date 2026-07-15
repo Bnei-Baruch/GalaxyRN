@@ -91,8 +91,9 @@ export const useInitsStore = create((set, get) => ({
   },
 
   terminateApp: () => {
+    const { wip, isAppInited } = get();
     logger.debug(NAMESPACE, 'terminateApp', isAppInited, wip);
-    if (!get().isAppInited || get().wip) return;
+    if (!isAppInited || wip) return;
 
     get().setIsAppInited(false);
     get().terminateServices();

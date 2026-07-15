@@ -1,10 +1,9 @@
-import { NativeModules } from 'react-native';
 import logger from './logger';
+import NativeSendLogsModule from '../specs/NativeSendLogsModule';
 
 const NAMESPACE = 'SendLogsBridge';
 
-let NativeSendLogs = null;
-NativeSendLogs = NativeModules.SendLogsModule;
+const NativeSendLogs = NativeSendLogsModule;
 
 const SendLogsBridge = {
   sendLogs: async email => {

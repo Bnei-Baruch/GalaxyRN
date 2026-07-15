@@ -105,6 +105,18 @@
     "contactMessage": "Por favor contacta a help@kli.one",
     "sendButton": "Enviar"
   },
+  "androidPermissions": {
+    "title": "Se requieren permisos",
+    "message": "La aplicación necesita los siguientes permisos para funcionar correctamente.",
+    "camera": "Cámara",
+    "microphone": "Micrófono",
+    "bluetooth": "Bluetooth",
+    "notifications": "Notificaciones",
+    "phoneState": "Teléfono",
+    "granted": "Concedido",
+    "pending": "No concedido",
+    "openSettings": "Ir a configuración"
+  },
   "connection": {
     "unstable": "Conexión inestable",
     "noConnection": "Sin conexión a internet"

@@ -1,5 +1,5 @@
 // React Native modules
-import { DeviceEventEmitter, NativeModules } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 // External libraries
 import { create } from 'zustand';
@@ -8,71 +8,72 @@ import { create } from 'zustand';
 import logger from '../services/logger';
 
 const NAMESPACE = 'androidPermissions';
+const POLL_INTERVAL_MS = 1000;
 
-logger.debug(NAMESPACE, 'NativeModules on Android:', NativeModules);
-const permissionsModule = NativeModules.PermissionsModule;
+const getRequiredPermissions = () => {
+  const permissions = [
+    PermissionsAndroid.PERMISSIONS.CAMERA,
+    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
+  ];
 
-let subscription;
+  // Matches PermissionHelper.permissionsByVersion() on the native side.
+  if (Platform.Version >= 31) {
+    permissions.push(PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT);
+  }
+  if (Platform.Version >= 33) {
+    permissions.push(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+  }
+
+  return permissions;
+};
+
+let pollTimer = null;
+
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+};
 
 // Export the store
-export const useAndroidPermissionsStore = create((set, get) => ({
+export const useAndroidPermissionsStore = create((set) => ({
   permReady: false,
+  permissionStatuses: {},
   setPermReady: (permReady = true) => set({ permReady }),
 
   initPermissions: async () => {
     logger.debug(NAMESPACE, 'initPermissions');
-    if (!permissionsModule) {
-      logger.debug(NAMESPACE, 'Permissions module not found');
-      return;
-    }
+    stopPolling();
 
-    // Clean up existing subscription if any
-    if (subscription) {
-      logger.debug(NAMESPACE, 'Removing existing subscription');
-      subscription.remove();
-      subscription = null;
-    }
-
-    const permReady = await permissionsModule.getPermissionStatus();
-    logger.info(NAMESPACE, 'Permission status:', permReady);
-
-    if (permReady) {
-      set({ permReady: true });
-      logger.debug(NAMESPACE, 'permReady: already true');
-      return;
-    }
-
-    try {
-      logger.debug(NAMESPACE, 'Setting up permissions status listener');
-      subscription = DeviceEventEmitter.addListener(
-        'permissionsStatus',
-        event => {
-          logger.debug(NAMESPACE, 'initAndroidPermissions eventEmitter', event);
-          if (event && event.allGranted) {
-            logger.info(NAMESPACE, 'All Android permissions granted!');
-            set({ permReady: true });
-          }
-        }
+    const checkAll = async () => {
+      const permissions = getRequiredPermissions();
+      const results = await Promise.all(
+        permissions.map(permission => PermissionsAndroid.check(permission))
       );
-      logger.debug(
-        NAMESPACE,
-        'Permissions status listener set up successfully'
-      );
-    } catch (error) {
-      logger.error(
-        NAMESPACE,
-        'Error setting up permissions event emitter:',
-        error
-      );
-      set({ permReady: true });
+      const statuses = {};
+      permissions.forEach((permission, i) => {
+        statuses[permission] = results[i];
+      });
+      const allGranted = results.every(Boolean);
+      logger.debug(NAMESPACE, 'Permission status', statuses);
+      set({ permissionStatuses: statuses, permReady: allGranted });
+
+      if (allGranted) {
+        stopPolling();
+      }
+      return allGranted;
+    };
+
+    const alreadyGranted = await checkAll();
+    if (!alreadyGranted) {
+      pollTimer = setInterval(checkAll, POLL_INTERVAL_MS);
     }
   },
 
   terminatePermissions: () => {
     logger.debug(NAMESPACE, 'terminatePermissions');
-    if (subscription) {
-      subscription.remove();
-      subscription = null;
-    }
+    stopPolling();
   },
 }));

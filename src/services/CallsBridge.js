@@ -1,19 +1,20 @@
 import {
   DeviceEventEmitter,
   NativeEventEmitter,
-  NativeModules,
   Platform,
 } from 'react-native';
 import logger from './logger';
+import NativeCallManager from '../specs/NativeCallManager';
+import NativeCallListenerModule from '../specs/NativeCallListenerModule';
 
 const NAMESPACE = 'CallsBridge';
 
 let NativeCall = null;
 try {
   if (Platform.OS === 'ios') {
-    NativeCall = NativeModules.CallManager;
+    NativeCall = NativeCallManager;
   } else if (Platform.OS === 'android') {
-    NativeCall = NativeModules.CallListenerModule;
+    NativeCall = NativeCallListenerModule;
   }
 
   // Log warning if native module is undefined

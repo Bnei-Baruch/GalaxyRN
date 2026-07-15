@@ -23,6 +23,18 @@
     "contactMessage": "Please contact help@kli.one",
     "sendButton": "Send"
   },
+  "androidPermissions": {
+    "title": "Permissions Required",
+    "message": "The app needs the following permissions to work correctly.",
+    "camera": "Camera",
+    "microphone": "Microphone",
+    "bluetooth": "Bluetooth",
+    "notifications": "Notifications",
+    "phoneState": "Phone",
+    "granted": "Granted",
+    "pending": "Not granted",
+    "openSettings": "Go to Settings"
+  },
   "user": {
     "title": "User settings",
     "name": "Screen name",

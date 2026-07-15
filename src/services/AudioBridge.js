@@ -1,27 +1,23 @@
 import {
   DeviceEventEmitter,
   NativeEventEmitter,
-  NativeModules,
   Platform,
 } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from './logger';
+import NativeAudioManager from '../specs/NativeAudioManager';
+import NativeAudioDeviceModule from '../specs/NativeAudioDeviceModule';
 
 const NAMESPACE = 'AudioBridge';
 
 // Find the appropriate native module based on platform
 let NativeAudio = null;
 if (Platform.OS === 'ios') {
-  NativeAudio = NativeModules.AudioManager;
-  logger.debug(
-    NAMESPACE,
-    'NativeModules.AudioManager on iOS:',
-    NativeModules.AudioManager
-  );
+  NativeAudio = NativeAudioManager;
   logger.debug(NAMESPACE, 'NativeAudio on iOS:', NativeAudio);
 } else if (Platform.OS === 'android') {
-  NativeAudio = NativeModules.AudioDeviceModule;
-  logger.debug(NAMESPACE, 'NativeModules on Android:', NativeModules);
+  NativeAudio = NativeAudioDeviceModule;
+  logger.debug(NAMESPACE, 'NativeAudio on Android:', NativeAudio);
 }
 
 const AudioBridge = {
