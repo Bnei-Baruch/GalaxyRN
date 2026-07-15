@@ -1,31 +1,19 @@
 import Foundation
-import React
 import UIKit
 
-@objc(KeepAwakeModule)
-class KeepAwakeModule: NSObject {
-    
-    @objc
-    static func moduleName() -> String! {
-        return "KeepAwakeModule"
-    }
-    
-    @objc
-    func keepScreenOn() {
+@objcMembers public class KeepAwakeModuleImpl: NSObject {
+
+    public func keepScreenOn() {
+        NLOG("[keepAwake swift] keepScreenOn called")
         DispatchQueue.main.async {
             UIApplication.shared.isIdleTimerDisabled = true
         }
     }
-    
-    @objc
-    func releaseScreenOn() {
+
+    public func releaseScreenOn() {
+        NLOG("[keepAwake swift] releaseScreenOn called")
         DispatchQueue.main.async {
             UIApplication.shared.isIdleTimerDisabled = false
         }
     }
-    
-    @objc
-    static func requiresMainQueueSetup() -> Bool {
-        return true
-    }
-} 
+}

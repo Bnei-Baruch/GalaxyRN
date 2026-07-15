@@ -1,32 +1,30 @@
 import Foundation
 import AVFoundation
 import CallKit
-import React
-import UIKit
 
-@objc(CallManager)
-class CallManager: RCTEventEmitter, CXCallObserverDelegate {
+@objcMembers public class CallManagerImpl: NSObject, CXCallObserverDelegate {
     // MARK: - Properties
     var hasListeners = false
     private var audioSession: AVAudioSession?
     private var isScreenLocked: Bool = false
     private let callObserver = CXCallObserver()
-    
+    public weak var eventSender: EventSending?
+
     // MARK: - Initialization
-    override init() {
+    public override init() {
         super.init()
         setupModule()
     }
-    
+
     // MARK: - Setup
     private func setupModule() {
         callObserver.setDelegate(self, queue: nil)
     }
-    
+
     // MARK: - CXCallObserverDelegate
-    func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
+    public func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
         let callState: String
-        
+
         if call.hasEnded {
             callState = CallEvents.ON_END_CALL.rawValue
         } else if call.isOutgoing && !call.hasConnected {
@@ -40,15 +38,4 @@ class CallManager: RCTEventEmitter, CXCallObserverDelegate {
         }
         sendCallState(state: callState)
     }
-    
-    // MARK: - Public Methods
-    @objc
-    func keepScreenAwake(_ keepAwake: Bool) {
-        UIApplication.shared.isIdleTimerDisabled = keepAwake
-    }
-    
-    @objc
-    override static func moduleName() -> String! {
-        return "CallManager"
-    }
-} 
+}
