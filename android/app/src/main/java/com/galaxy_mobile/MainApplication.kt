@@ -64,7 +64,7 @@ class MainApplication : Application(), ReactApplication {
                     .cleanup()
             (reactContext.getNativeModule(AudioDeviceModule::class.java) as AudioDeviceModule)
                     .cleanup()
-            (reactContext.getNativeModule(WakeLockModule::class.java) as WakeLockModule).cleanup()
+            (reactContext.getNativeModule(KeepAwakeModule::class.java) as KeepAwakeModule).cleanup()
             (reactContext.getNativeModule(SendLogsModule::class.java) as SendLogsModule).cleanup()
             (reactContext.getNativeModule(ForegroundModule::class.java) as ForegroundModule)
                     .cleanup()

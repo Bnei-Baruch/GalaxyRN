@@ -5,16 +5,17 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import com.galaxy_mobile.logger.GxyLogger;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.facebook.fbreact.specs.NativeAudioDeviceModuleSpec;
+import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
-import com.galaxy_mobile.SendEventToClient;
+import com.galaxy_mobile.permissions.PermissionAware;
 
 import java.util.Arrays;
 
@@ -23,26 +24,22 @@ import static com.galaxy_mobile.audioManager.AudioHelper.BUILTIN_SPEAKER_GROUP;
 import static com.galaxy_mobile.audioManager.AudioHelper.BLUETOOTH_GROUP;
 
 @ReactModule(name = AudioDeviceModule.NAME)
-public class AudioDeviceModule extends ReactContextBaseJavaModule {
-    public static final String NAME = "AudioDeviceModule";
-    private static final String REACT_NATIVE_MODULE_NAME = "AudioDeviceModule";
-    private static final String TAG = REACT_NATIVE_MODULE_NAME;
-    private static final String EVENT_UPDATE_AUDIO_DEVICE = "updateAudioDevice";
+public class AudioDeviceModule extends NativeAudioDeviceModuleSpec implements PermissionAware {
+    private static final String TAG = "AudioDeviceModule";
 
     private final ReactApplicationContext reactContext;
     private AudioDeviceManager audioDeviceManager = null;
     private AudioFocusManager audioFocusManager = null;
     private String prevGroupType = "";
 
-
-    @NonNull
-    @Override
-    public String getName() {
-        return NAME;
-    }
     public AudioDeviceModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+    }
+
+    @Override
+    public void onPermissionsGranted() {
+        initializeAfterPermissions();
     }
 
     public void initializeAfterPermissions() {
@@ -70,7 +67,9 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void requestAudioFocus() {
         GxyLogger.d(TAG, "requestAudioFocus()");
         try {
@@ -83,7 +82,9 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void abandonAudioFocus() {
         GxyLogger.d(TAG, "abandonAudioFocus()");
         try {
@@ -95,17 +96,22 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void initAudioDevices() {
         GxyLogger.d(TAG, "initAudioDevices() on thread: " + Thread.currentThread().getName());
         processAudioDevices(null, true);
     }
 
+    @Override
     @ReactMethod
-    public void handleDevicesChange(Integer deviceId) {
+    @DoNotStrip
+    public void handleDevicesChange(@Nullable Double deviceId) {
+        Integer intDeviceId = deviceId == null ? null : deviceId.intValue();
         GxyLogger.d(TAG,
-                "handleDevicesChange() deviceId: " + deviceId + " on thread: " + Thread.currentThread().getName());
-        processAudioDevices(deviceId, false);
+                "handleDevicesChange() deviceId: " + intDeviceId + " on thread: " + Thread.currentThread().getName());
+        processAudioDevices(intDeviceId, false);
     }
 
     private void processAudioDevices(Integer deviceId, boolean isInitialize) {
@@ -176,7 +182,7 @@ public class AudioDeviceModule extends ReactContextBaseJavaModule {
             GxyLogger.d(TAG, "prevGroupType updated: " + prevGroupType);
 
             try {
-                SendEventToClient.sendEvent(EVENT_UPDATE_AUDIO_DEVICE, data);
+                emitUpdateAudioDevice(data);
             } catch (Exception e) {
                 GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
             }

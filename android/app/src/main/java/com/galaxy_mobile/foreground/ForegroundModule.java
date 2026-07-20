@@ -6,22 +6,21 @@ import android.os.Looper;
 import com.galaxy_mobile.logger.GxyLogger;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
+import com.facebook.fbreact.specs.NativeForegroundModuleSpec;
+import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.bridge.ReactApplicationContext;
+import com.galaxy_mobile.permissions.PermissionAware;
 
 @ReactModule(name = ForegroundModule.NAME)
-public class ForegroundModule extends ReactContextBaseJavaModule {
+public class ForegroundModule extends NativeForegroundModuleSpec implements PermissionAware {
 
-    public static final String NAME = "ForegroundModule";
     private static final String TAG = "ForegroundModule";
 
     private ForegroundService foregroundService;
@@ -31,9 +30,14 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
 
     public ForegroundModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        GxyLogger.d(TAG, "constructor called"); 
+        GxyLogger.d(TAG, "constructor called");
 
         this.reactContext = reactContext;
+    }
+
+    @Override
+    public void onPermissionsGranted() {
+        initializeAfterPermissions();
     }
 
     public void initializeAfterPermissions() {
@@ -44,12 +48,6 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         initLifecycleObserver();
         GxyLogger.d(TAG, "initializeAfterPermissions() completed");
 
-    }
-
-    @NonNull
-    @Override
-    public String getName() {
-        return NAME;
     }
 
     private void initLifecycleObserver() {
@@ -90,13 +88,17 @@ public class ForegroundModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn called");
         foregroundService.setMicOn();
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
         foregroundService.setMicOff();

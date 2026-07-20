@@ -1,8 +1,8 @@
 package com.galaxy_mobile;
 
-import androidx.annotation.NonNull;
+import com.facebook.fbreact.specs.NativeSendLogsModuleSpec;
+import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
@@ -15,26 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ReactModule(name = SendLogsModule.NAME)
-public class SendLogsModule extends ReactContextBaseJavaModule {
-    public static final String NAME = "SendLogsModule";
+public class SendLogsModule extends NativeSendLogsModuleSpec {
     private static final String TAG = "SendLogsModule";
     private static final int MAX_LINES = 1000;
 
     // Package name for filtering logs
     private static final String PACKAGE_NAME = "com.galaxy_mobile";
 
-    @NonNull
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
     public SendLogsModule(ReactApplicationContext reactContext) {
         super(reactContext);
         GxyLogger.d(TAG, "constructor called");
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void sendLogs(String email, Promise promise) {
         GxyLogger.d(TAG, "Getting application logs for email: " + email);
 

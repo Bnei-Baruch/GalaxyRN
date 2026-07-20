@@ -14,11 +14,8 @@ import java.util.List;
 import com.galaxy_mobile.audioManager.AudioDeviceModule;
 import com.galaxy_mobile.callManager.CallListenerModule;
 import com.galaxy_mobile.foreground.ForegroundModule;
-import com.galaxy_mobile.permissions.PermissionsModule;
-import com.galaxy_mobile.WakeLockModule;
+import com.galaxy_mobile.KeepAwakeModule;
 import com.galaxy_mobile.SendLogsModule;
-import com.galaxy_mobile.SendEventToClient;
-import com.galaxy_mobile.logger.GxyLogger;
 
 
 /**
@@ -38,13 +35,11 @@ public class GxyPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
         GxyLogger.i(TAG, "Creating Galaxy native modules");
 
-        SendEventToClient.init(reactContext);
         // Add modules
         try {
             GxyLogger.i(TAG, "Adding standard modules");
             modules.add(new ForegroundModule(reactContext));
-            modules.add(new PermissionsModule(reactContext));
-            modules.add(new WakeLockModule(reactContext));
+            modules.add(new KeepAwakeModule(reactContext));
             modules.add(new AudioDeviceModule(reactContext));
             modules.add(new CallListenerModule(reactContext));
             modules.add(new SendLogsModule(reactContext));

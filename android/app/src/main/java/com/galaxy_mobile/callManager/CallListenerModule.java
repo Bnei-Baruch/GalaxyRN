@@ -2,22 +2,18 @@ package com.galaxy_mobile.callManager;
 
 import android.os.Build;
 import com.galaxy_mobile.logger.GxyLogger;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
-import com.facebook.react.bridge.LifecycleEventListener;
-import com.facebook.react.bridge.Promise;
+import com.facebook.fbreact.specs.NativeCallListenerModuleSpec;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.UiThreadUtil;
+import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
-import com.facebook.react.bridge.ReactMethod;
 import com.galaxy_mobile.foreground.ForegroundService;
+import com.galaxy_mobile.permissions.PermissionAware;
 import android.telephony.TelephonyManager;
 
 @ReactModule(name = CallListenerModule.NAME)
-public class CallListenerModule extends ReactContextBaseJavaModule {
-    public static final String NAME = "CallListenerModule";
+public class CallListenerModule extends NativeCallListenerModuleSpec implements PermissionAware {
     private static final String TAG = NAME;
 
     private final ReactApplicationContext context;
@@ -35,18 +31,19 @@ public class CallListenerModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @NonNull
     @Override
-    public String getName() {
-        return NAME;
+    public void onPermissionsGranted() {
+        initializeAfterPermissions();
     }
-    
 
     public void initializeAfterPermissions() {
         CallStateCallback callback = (state) -> {
             try {
-                GxyLogger.d(TAG, "Call state changed: " + state);
-                CallEventManager.dispatchCallStateEvent(state);
+                String stateString = CallEventManager.getStateString(state);
+                GxyLogger.d(TAG, "Call state changed: " + stateString);
+                WritableMap data = Arguments.createMap();
+                data.putString("state", stateString);
+                emitOnCallStateChanged(data);
                 if(TelephonyManager.CALL_STATE_IDLE == state) {
                     ForegroundService.bringAppToForeground(context);
                 }

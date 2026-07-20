@@ -176,14 +176,14 @@ public class AudioDeviceManager {
     private void notifyDeviceStateChangedInternal() {
         GxyLogger.d(TAG, "notifyDeviceStateChangedInternal()");
 
-        if (callback != null && reactContext != null && reactContext.hasActiveCatalystInstance()) {
+        if (callback != null && reactContext != null && reactContext.hasActiveReactInstance()) {
             callback.onUpdateAudioDeviceState();
             GxyLogger.d(TAG, "Callback executed successfully");
         } else {
             GxyLogger.w(TAG, "Cannot notify device state change. Conditions: callback=" +
                     callback + ", reactContext=" + reactContext +
-                    ", hasActiveCatalystInstance="
-                    + (reactContext != null ? reactContext.hasActiveCatalystInstance() : "null"));
+                    ", hasActiveReactInstance="
+                    + (reactContext != null ? reactContext.hasActiveReactInstance() : "null"));
         }
     }
 

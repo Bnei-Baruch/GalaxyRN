@@ -4,34 +4,28 @@ import android.app.Activity;
 import android.view.WindowManager;
 import com.galaxy_mobile.logger.GxyLogger;
 
-import androidx.annotation.NonNull;
-
+import com.facebook.fbreact.specs.NativeKeepAwakeModuleSpec;
+import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.bridge.LifecycleEventListener;
 
-@ReactModule(name = WakeLockModule.NAME)
-public class WakeLockModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
-    public static final String NAME = "WakeLockModule";
-    private static final String TAG = "WakeLockModule";
+@ReactModule(name = KeepAwakeModule.NAME)
+public class KeepAwakeModule extends NativeKeepAwakeModuleSpec implements LifecycleEventListener {
+    private static final String TAG = "KeepAwakeModule";
     private final ReactApplicationContext reactContext;
     private boolean isScreenLockActive = false;
 
-    public WakeLockModule(ReactApplicationContext reactContext) {
+    public KeepAwakeModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
         this.reactContext.addLifecycleEventListener(this);
     }
 
-    @NonNull
     @Override
-    public String getName() {
-        return NAME;
-    }
-
     @ReactMethod
+    @DoNotStrip
     public void keepScreenOn() {
         try {
             Activity activity = getCurrentActivity();
@@ -53,7 +47,9 @@ public class WakeLockModule extends ReactContextBaseJavaModule implements Lifecy
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void releaseScreenOn() {
         try {
             Activity activity = getCurrentActivity();

@@ -12,10 +12,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.WritableMap;
-import com.galaxy_mobile.SendEventToClient;
+import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.galaxy_mobile.audioManager.AudioDeviceModule;
+import com.galaxy_mobile.callManager.CallListenerModule;
+import com.galaxy_mobile.foreground.ForegroundModule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +29,16 @@ public class PermissionHelper {
     private static final int PERMISSIONS_REQUEST_CODE = 101;
     private static final int SETTINGS_REQUEST_CODE = 102;
     public static final String TAG = "PermissionHelper";
+
+    // Native modules whose initialization is deferred until all permissions are granted.
+    private static final Class<?>[] PERMISSION_AWARE_MODULES = {
+            AudioDeviceModule.class,
+            ForegroundModule.class,
+            CallListenerModule.class
+    };
+
     private final Activity activity;
     private ReactApplicationContext reactContext;
-    private ModuleInitializer moduleInitializer;
 
     private final String[] requiredPermissions = {
             Manifest.permission.CAMERA,
@@ -48,7 +56,6 @@ public class PermissionHelper {
     public void initModules(ReactApplicationContext reactContext) {
         GxyLogger.d(TAG, "Initializing modules with reactContext");
         this.reactContext = reactContext;
-        this.moduleInitializer = new ModuleInitializer(reactContext);
         checkPermissions();
     }
 
@@ -114,18 +121,23 @@ public class PermissionHelper {
     }
 
     private void notifyClientAllPermissionsGranted() {
-        try {
-            if (moduleInitializer != null) {
-                moduleInitializer.initializeModules();
+        if (reactContext == null) {
+            GxyLogger.w(TAG, "ReactApplicationContext is null, cannot initialize permission-aware modules");
+            return;
+        }
+
+        for (Class<?> moduleClass : PERMISSION_AWARE_MODULES) {
+            try {
+                Object module = reactContext.getNativeModule(moduleClass.asSubclass(NativeModule.class));
+                if (module instanceof PermissionAware) {
+                    ((PermissionAware) module).onPermissionsGranted();
+                    GxyLogger.d(TAG, moduleClass.getSimpleName() + ".onPermissionsGranted() called successfully");
+                } else {
+                    GxyLogger.w(TAG, moduleClass.getSimpleName() + " not found in React Native module registry");
+                }
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error initializing " + moduleClass.getSimpleName() + " after permissions: " + e.getMessage(), e);
             }
-
-            WritableMap params = Arguments.createMap();
-            params.putBoolean("allGranted", true);
-            SendEventToClient.sendEvent("permissionsStatus", params);
-            GxyLogger.d(TAG, "Sent 'permissionsStatus' event to client with allGranted=true");
-
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error sending permissions granted event to client: " + e.getMessage(), e);
         }
     }
 
