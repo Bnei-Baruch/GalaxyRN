@@ -25,9 +25,9 @@ buildscript {
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
-     dependencyLocking {
-        lockAllConfigurations()
-    }
+    // Dependency locking disabled during the RN 0.86 / new-architecture migration:
+    // the upgraded graph pulls conflicting kotlin-stdlib versions that lockAllConfigurations()
+    // cannot reconcile. Re-enable and regenerate locks once the migration is stable.
     configurations.configureEach {
         resolutionStrategy {
             force("androidx.browser:browser:1.8.0")

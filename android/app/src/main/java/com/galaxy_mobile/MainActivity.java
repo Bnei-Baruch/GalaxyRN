@@ -1,21 +1,21 @@
 package com.galaxy_mobile;
 
-import android.content.Context;
-import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactHost;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
@@ -42,7 +42,8 @@ public class MainActivity extends ReactActivity {
 
     @Override
     protected ReactActivityDelegate createReactActivityDelegate() {
-        return new DefaultReactActivityDelegate(this, getMainComponentName(), false);
+        return new DefaultReactActivityDelegate(this, getMainComponentName(),
+                DefaultNewArchitectureEntryPoint.getFabricEnabled());
     }
 
     @Override
@@ -65,19 +66,25 @@ public class MainActivity extends ReactActivity {
         GxyLogger.i(TAG, "onCreate");
         GxyLoggerUtils.logDeviceInfo(TAG);
 
-        getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
-            @Override
-            public void onReactContextInitialized(ReactContext context) {
-                GxyLogger.i("ReactContext",
-                        "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
-                                + permissionHelper.permissionsReady);
-                if (!permissionHelper.permissionsReady) {
-                    permissionHelper.initModules((ReactApplicationContext) context);
-                } else {
-                    permissionHelper.sendPermissions();
+        ReactApplication reactApplication = (ReactApplication) getApplication();
+        ReactHost reactHost = reactApplication.getReactHost();
+        if (reactHost != null) {
+            reactHost.addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+                @Override
+                public void onReactContextInitialized(ReactContext context) {
+                    GxyLogger.i("ReactContext",
+                            "Updating PermissionHelper with ReactApplicationContext. Permissions ready: "
+                                    + permissionHelper.permissionsReady);
+                    if (!permissionHelper.permissionsReady) {
+                        permissionHelper.initModules((ReactApplicationContext) context);
+                    } else {
+                        permissionHelper.sendPermissions();
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            GxyLogger.w(TAG, "ReactHost is null, cannot register permission listener");
+        }
     }
 
     @Override
@@ -113,17 +120,19 @@ public class MainActivity extends ReactActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        // New-arch permission recovery: re-check on return (e.g. from system settings opened by
+        // the JS gate via Linking.openSettings()). Replaces the removed onActivityResult path.
+        if (permissionHelper != null) {
+            permissionHelper.recheckPermissions();
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (permissionHelper != null) {
-            permissionHelper.onActivityResult(requestCode, resultCode, data);
-        }
     }
 }
