@@ -25,6 +25,12 @@ const PermissionsGate = () => {
   const permissionStatuses = useAndroidPermissionsStore(
     state => state.permissionStatuses
   );
+  const blockedPermissions = useAndroidPermissionsStore(
+    state => state.blockedPermissions
+  );
+  const requestPermission = useAndroidPermissionsStore(
+    state => state.requestPermission
+  );
 
   return (
     <View
@@ -33,23 +39,34 @@ const PermissionsGate = () => {
       <Text style={styles.title}>{t('androidPermissions.title')}</Text>
       <Text style={styles.text}>{t('androidPermissions.message')}</Text>
       <View style={styles.list}>
-        {Object.entries(permissionStatuses).map(([permission, granted]) => (
-          <View key={permission} style={styles.row}>
-            <Text style={styles.rowText}>
-              {t(PERMISSION_LABEL_KEYS[permission] || permission)}
-            </Text>
-            <Text
-              style={[
-                styles.status,
-                granted ? styles.statusGranted : styles.statusPending,
-              ]}
-            >
-              {granted
-                ? t('androidPermissions.granted')
-                : t('androidPermissions.pending')}
-            </Text>
-          </View>
-        ))}
+        {Object.entries(permissionStatuses).map(([permission, granted]) => {
+          const blocked = blockedPermissions[permission];
+          return (
+            <View key={permission} style={styles.row}>
+              <Text style={styles.rowText}>
+                {t(PERMISSION_LABEL_KEYS[permission] || permission)}
+              </Text>
+              {granted ? (
+                <Text style={[styles.status, styles.statusGranted]}>
+                  {t('androidPermissions.granted')}
+                </Text>
+              ) : blocked ? (
+                <Text style={[styles.status, styles.statusPending]}>
+                  {t('androidPermissions.pending')}
+                </Text>
+              ) : (
+                <TouchableOpacity
+                  style={styles.grantBtn}
+                  onPress={() => requestPermission(permission)}
+                >
+                  <Text style={styles.grantText}>
+                    {t('androidPermissions.grant')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })}
       </View>
       <TouchableOpacity
         style={styles.settingsBtn}
@@ -133,6 +150,17 @@ const styles = StyleSheet.create({
   },
   statusPending: {
     color: '#e67e22',
+  },
+  grantBtn: {
+    backgroundColor: '#4b7bec',
+    borderRadius: 5,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+  },
+  grantText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   settingsBtn: {
     backgroundColor: '#4b7bec',

@@ -1,6 +1,5 @@
 package com.galaxy_mobile;
 
-import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 
@@ -71,6 +70,15 @@ public class MainActivity extends ReactActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        
+        if (permissionHelper != null) {
+            permissionHelper.recheckPermissions();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         GxyLogger.d(TAG, "onDestroy");
         super.onDestroy();
@@ -90,22 +98,5 @@ public class MainActivity extends ReactActivity {
             @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         permissionHelper.handlePermissionResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (permissionHelper != null) {
-            permissionHelper.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        try {
-            super.onWindowFocusChanged(hasFocus);
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error in onWindowFocusChanged", e);
-        }
     }
 }

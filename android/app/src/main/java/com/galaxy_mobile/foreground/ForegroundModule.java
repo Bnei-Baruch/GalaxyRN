@@ -1,10 +1,8 @@
 package com.galaxy_mobile.foreground;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 import com.galaxy_mobile.logger.GxyLogger;
-import android.view.WindowManager;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
@@ -13,7 +11,6 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import com.facebook.fbreact.specs.NativeForegroundModuleSpec;
 import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 import com.galaxy_mobile.permissions.PermissionAware;
@@ -23,7 +20,6 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
 
     private static final String TAG = "ForegroundModule";
 
-    private ForegroundService foregroundService;
     private final ReactApplicationContext reactContext;
     private LifecycleEventObserver lifecycleObserver;
     private Handler mainHandler;
@@ -43,8 +39,6 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
     public void initializeAfterPermissions() {
         GxyLogger.d(TAG, "initializeAfterPermissions() called");
 
-        this.foregroundService = new ForegroundService(this.reactContext);
-        this.foregroundService.init();
         initLifecycleObserver();
         GxyLogger.d(TAG, "initializeAfterPermissions() completed");
 
@@ -72,7 +66,7 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
 
     private void handleAppBackgrounded() {
         try {
-            foregroundService.start();
+            ForegroundService.start(reactContext);
             GxyLogger.d(TAG, "Started foreground service");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error on handleAppBackgrounded", e);
@@ -81,7 +75,7 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
 
     private void handleAppForegrounded() {
         try {
-            foregroundService.stop();
+            ForegroundService.stop(reactContext);
             GxyLogger.d(TAG, "Stopped foreground service");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error on handleAppForegrounded", e);
@@ -93,7 +87,7 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
     @DoNotStrip
     public void setMicOn() {
         GxyLogger.d(TAG, "setMicOn called");
-        foregroundService.setMicOn();
+        ForegroundService.setMicOn();
     }
 
     @Override
@@ -101,16 +95,20 @@ public class ForegroundModule extends NativeForegroundModuleSpec implements Perm
     @DoNotStrip
     public void setMicOff() {
         GxyLogger.d(TAG, "setMicOff");
-        foregroundService.setMicOff();
+        ForegroundService.setMicOff();
     }
 
     public void cleanup() {
         GxyLogger.d(TAG, "cleanup() called");
         try {
-            if (foregroundService != null) {
-                foregroundService.cleanup();
+            if (lifecycleObserver != null) {
+                ProcessLifecycleOwner.get().getLifecycle().removeObserver(lifecycleObserver);
+                lifecycleObserver = null;
             }
-            mainHandler.removeCallbacksAndMessages(null);
+            if (mainHandler != null) {
+                mainHandler.removeCallbacksAndMessages(null);
+            }
+            ForegroundService.stop(reactContext);
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error on cleanup", e);
         }

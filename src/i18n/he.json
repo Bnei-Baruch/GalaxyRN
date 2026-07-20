@@ -116,6 +116,7 @@
     "phoneState": "טלפון",
     "granted": "אושר",
     "pending": "לא אושר",
+    "grant": "אפשר",
     "openSettings": "פתח הגדרות"
   },
   "connection": {

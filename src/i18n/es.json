@@ -115,6 +115,7 @@
     "phoneState": "Teléfono",
     "granted": "Concedido",
     "pending": "No concedido",
+    "grant": "Permitir",
     "openSettings": "Ir a configuración"
   },
   "connection": {

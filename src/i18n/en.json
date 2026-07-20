@@ -33,6 +33,7 @@
     "phoneState": "Phone",
     "granted": "Granted",
     "pending": "Not granted",
+    "grant": "Grant",
     "openSettings": "Go to Settings"
   },
   "user": {

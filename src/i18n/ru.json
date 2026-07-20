@@ -117,6 +117,7 @@
     "phoneState": "Телефон",
     "granted": "Разрешено",
     "pending": "Не разрешено",
+    "grant": "Разрешить",
     "openSettings": "Открыть настройки"
   },
   "connection": {

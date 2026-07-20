@@ -14,8 +14,8 @@ import com.galaxy_mobile.logger.GxyLogger;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import com.galaxy_mobile.R;
-import com.facebook.react.bridge.ReactApplicationContext;
 import com.galaxy_mobile.MainApplication;
 
 public class ForegroundService extends Service {
@@ -25,16 +25,35 @@ public class ForegroundService extends Service {
     public static final String APP_TO_FOREGROUND_ACTION = "APP_TO_FOREGROUND";
 
     private static boolean isMicOn = false;
-    private  ReactApplicationContext reactContext;
-    
 
-    public ForegroundService() {
-        super();
+    /**
+     * Starts the foreground service (call when the app goes to background).
+     * The service is controlled via Intents — never instantiate it with {@code new}.
+     */
+    public static void start(@NonNull Context context) {
+        GxyLogger.i(TAG, "start() requested");
+        Intent intent = new Intent(context, ForegroundService.class);
+        ContextCompat.startForegroundService(context, intent);
     }
 
-    public ForegroundService(ReactApplicationContext reactContext) {
-        GxyLogger.d(TAG, "constructor called");
-        this.reactContext = reactContext;
+    /**
+     * Stops the foreground service and removes its notification (call when the app returns to
+     * foreground). No-op if the service is not running.
+     */
+    public static void stop(@NonNull Context context) {
+        GxyLogger.i(TAG, "stop() requested");
+        Intent intent = new Intent(context, ForegroundService.class);
+        context.stopService(intent);
+    }
+
+    public static void setMicOn() {
+        GxyLogger.i(TAG, "setMicOn called");
+        ForegroundService.isMicOn = true;
+    }
+
+    public static void setMicOff() {
+        GxyLogger.i(TAG, "setMicOff called");
+        ForegroundService.isMicOn = false;
     }
 
     @Nullable
@@ -49,18 +68,16 @@ public class ForegroundService extends Service {
         GxyLogger.i(TAG, "ForegroundService: onCreate");
     }
 
-    public void init() {
-        GxyLogger.i(TAG, "init() called");
-        Intent intent = new Intent(this.reactContext, ForegroundService.class);
-        this.reactContext.startService(intent);
-        GxyLogger.i(TAG, "init completed");
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        GxyLogger.i(TAG, "onStartCommand. isMicOn=" + Boolean.toString(ForegroundService.isMicOn));
+        showNotification();
+        return START_NOT_STICKY;
     }
 
-    public void start() {
-        GxyLogger.i(TAG, "start() called");
-
-        createNotificationChannel(this.reactContext);
-        Notification notification = buildNotification(this.reactContext);
+    private void showNotification() {
+        createNotificationChannel(this);
+        Notification notification = buildNotification(this);
 
         GxyLogger.d(TAG, "starting service");
 
@@ -81,10 +98,8 @@ public class ForegroundService extends Service {
 
                 GxyLogger.i(TAG, typesLog.toString());
                 startForeground(NOTIFICATION_ID, notification, serviceType);
-                GxyLogger.i(TAG, "service started");
             } else {
                 startForeground(NOTIFICATION_ID, notification);
-                GxyLogger.i(TAG, "service started (legacy)");
             }
 
             GxyLogger.i(TAG, "service started");
@@ -95,27 +110,6 @@ public class ForegroundService extends Service {
         } catch (RuntimeException e) {
             GxyLogger.e(TAG, "Runtime exception on start", e);
         }
-    }
-
-    public void stop() {
-        stopForeground(STOP_FOREGROUND_LEGACY);
-        GxyLogger.i(TAG, "service stopped");
-    }
-
-    public void setMicOn() {
-        GxyLogger.i(TAG, "setMicOn called");
-        ForegroundService.isMicOn = true;
-    }
-
-    public void setMicOff() {
-        GxyLogger.i(TAG, "setMicOff called");
-        ForegroundService.isMicOn = false;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        GxyLogger.i(TAG, "onStartCommand. isMicOn=" + Boolean.toString(ForegroundService.isMicOn));
-        return START_NOT_STICKY;
     }
 
     @Override
@@ -130,20 +124,21 @@ public class ForegroundService extends Service {
                 MainApplication.performCleanup();
             }
             GxyLogger.i(TAG, "service stopped by onTaskRemoved");
-            cleanup();
+            stopSelf();
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error on onTaskRemoved", e);
         }
     }
 
-    public void cleanup() {
-        GxyLogger.d(TAG, "cleanup() called");
+    @Override
+    public void onDestroy() {
+        GxyLogger.i(TAG, "onDestroy");
         try {
-            stopSelf();
-            GxyLogger.d(TAG, "cleanup completed");
+            stopForeground(STOP_FOREGROUND_REMOVE);
         } catch (Exception e) {
-            GxyLogger.e(TAG, "Error on cleanup(): " + e.getMessage(), e);
+            GxyLogger.e(TAG, "Error removing notification on destroy", e);
         }
+        super.onDestroy();
     }
 
     private void createNotificationChannel(@NonNull Context context) {
