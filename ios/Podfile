@@ -8,8 +8,11 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
-# Disable New Architecture (use old architecture)
-ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+# Enable New Architecture
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+# Build React-Core from source instead of using the precompiled xcframework —
+# the prebuilt binary was not resolving local (non-pod) TurboModule classes via getTurboModule:
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil

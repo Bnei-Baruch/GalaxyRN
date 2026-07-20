@@ -110,6 +110,19 @@
     "contactMessage": "Пожалуйста, свяжитесь с help@kli.one",
     "sendButton": "Отправить"
   },
+  "androidPermissions": {
+    "title": "Требуются разрешения",
+    "message": "Приложению нужны следующие разрешения для корректной работы.",
+    "camera": "Камера",
+    "microphone": "Микрофон",
+    "bluetooth": "Bluetooth",
+    "notifications": "Уведомления",
+    "phoneState": "Телефон",
+    "granted": "Разрешено",
+    "pending": "Не разрешено",
+    "grant": "Разрешить",
+    "openSettings": "Открыть настройки"
+  },
   "connection": {
     "unstable": "Соединение нестабильно",
     "noConnection": "Нет интернет-соединения",

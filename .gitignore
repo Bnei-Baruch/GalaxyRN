@@ -50,6 +50,8 @@ DerivedData
 # Android/IntelliJ
 **/release/
 **/build/
+**/.kotlin/**
+
 .gradle
 local.properties
 keystore*.properties
@@ -91,3 +93,5 @@ metro-cache/
 
 # React Native Generated Files
 /ios/Index
+.cursorrules
+.cursorignore

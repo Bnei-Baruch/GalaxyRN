@@ -1,4 +1,4 @@
-#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
-@interface CallManager : NSObject <RCTBridgeModule>
-@end 
+@interface CallManager : RCTEventEmitter
+@end
