@@ -1,0 +1,82 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+      - upgrade_rn
+
+jobs:
+  android-debug-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.11.0'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Create empty .env
+        run: touch .env
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android NDK
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.0.12674087" "build-tools;35.0.0" "platforms;android-35" >/dev/null
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+  ios-debug-build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.11.0'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Create empty .env
+        run: touch .env
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install pods
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Build for simulator
+        working-directory: ios
+        run: |
+          xcodebuild -workspace GalaxyRN.xcworkspace \
+            -scheme GalaxyRN \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            build

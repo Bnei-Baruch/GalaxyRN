@@ -166,4 +166,12 @@ public class ForegroundService extends Service {
             GxyLogger.e(TAG, "Error unregistering screen receiver", e);
         }
     }
+
+    public static void bringAppToForeground(Context context) {
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            context.startActivity(launchIntent);
+        }
+    }
 }

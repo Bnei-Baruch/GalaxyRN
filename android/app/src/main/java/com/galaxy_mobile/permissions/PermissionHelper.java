@@ -12,7 +12,6 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.galaxy_mobile.audioManager.AudioDeviceModule;
 import com.galaxy_mobile.callManager.CallListenerModule;
-import com.galaxy_mobile.foreground.ForegroundModule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ public class PermissionHelper {
     // Native modules whose initialization is deferred until all permissions are granted.
     private static final Class<?>[] PERMISSION_AWARE_MODULES = {
             AudioDeviceModule.class,
-            ForegroundModule.class,
             CallListenerModule.class
     };
 
