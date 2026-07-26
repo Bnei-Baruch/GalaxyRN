@@ -7,7 +7,9 @@ env:
   E2E_PASSWORD: ""
 ---
 # Requires E2E_USERNAME / E2E_PASSWORD (loaded from .env by scripts/device-verify.sh).
-- tapOn: "LOGIN"
+# Match by testID (language-independent) — see src/auth/LoginScreen.js testID="loginBtn".
+- tapOn:
+    id: "loginBtn"
 # ---------------------------------------------------------------------------
 # Keycloak login page opens in a Chrome Custom Tab (accounts.kab.info).
 # The selectors below are BEST-GUESS and MUST be tuned by the device-verifier

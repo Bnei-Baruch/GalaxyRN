@@ -55,7 +55,12 @@ const LoginScreen = () => {
       <View style={styles.mainContent}>
         <Text style={styles.appTitle}>{t('loginPage.appTitle')}</Text>
         <Text style={styles.slogan}>{t('loginPage.slogan')}</Text>
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+        <TouchableOpacity
+          testID="loginBtn"
+          accessibilityLabel="loginBtn"
+          style={styles.loginBtn}
+          onPress={handleLogin}
+        >
           <Text style={styles.loginTxt}>{t('login')}</Text>
         </TouchableOpacity>
       </View>

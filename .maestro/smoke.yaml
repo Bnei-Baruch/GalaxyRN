@@ -21,7 +21,7 @@ tags:
     timeout: 90000
 - assertVisible:
     text: "Arvut|Арвут|ארווט"
-# Login button, also locale-tolerant (LOGIN / ВОЙТИ / כניסה / ...).
+# Login button by testID (language-independent) — src/auth/LoginScreen.js testID="loginBtn".
 - assertVisible:
-    text: "LOGIN|ВОЙТИ|Login|Войти|כניסה"
+    id: "loginBtn"
 - takeScreenshot: verify-results/smoke-login
