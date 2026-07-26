@@ -40,7 +40,9 @@ driving; you do setup, repair, visual judgment, and reporting.
    (`adb exec-out screencap -p > verify-results/dbg.png`) and/or `adb shell uiautomator dump`, then
    **Edit the `.maestro/*.yaml`** with correct selectors and re-run. Iterate until green.
    Complete the TODO steps in `regression.yaml` (room join, audio mode, background/foreground,
-   PiP, send logs) mapped to `docs/new-arch-qa-checklist.md`, tuning selectors on the device.
+   PiP, send logs) tuning selectors on the device. **`docs/device-test-checklist.md` is the master
+   list of what to verify** — cover its 🤖 (Maestro) and 👁 (visual/logcat) items; ✋ items are
+   manual and out of your scope.
 
 4. **Visual/exploratory checks** the coded asserts can't cover: does video actually render in the
    room, does the PiP window look right, is the foreground notification present. Judge from

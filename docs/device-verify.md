@@ -24,6 +24,10 @@ Or ask the **`device-verifier`** subagent to run it — it will drive the flows,
 Keycloak login selectors against the real page, do visual checks, and write
 `verify-results/report.md`.
 
+## What to test
+The master scenario list is **`docs/device-test-checklist.md`** — every case, tagged
+🤖 automated (Maestro) / 👁 subagent visual-logcat / ✋ manual-hardware.
+
 ## What each flow proves
 - `smoke.yaml` — JS bundle loads, native init (WebRTC/audio/TurboModules) doesn't crash, the
   permission gate auto-clears, LoginScreen reached. The always-on, credential-less gate.
