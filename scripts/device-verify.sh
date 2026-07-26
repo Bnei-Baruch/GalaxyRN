@@ -106,9 +106,9 @@ cmd_net() {
     data-off)  adb -s "$d" shell svc data disable; info "mobile data OFF" ;;
     offline)   adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable; info "OFFLINE (wifi+data off)" ;;
     online)    adb -s "$d" shell svc wifi enable;  adb -s "$d" shell svc data enable;  info "ONLINE (wifi+data on)" ;;
-    # Prolonged outage: go offline for N seconds (default 120 = ~2 min), then restore.
+    # Prolonged outage: go offline for N seconds (default 30), then restore.
     offline-for)
-      local secs="${1:-120}"
+      local secs="${1:-30}"
       info "OFFLINE for ${secs}s (prolonged outage)..."
       adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable
       sleep "$secs"

@@ -60,7 +60,7 @@ Toggle connectivity with `scripts/device-verify.sh net {wifi-off|data-off|offlin
 - [ ] 👁 Wi-Fi→mobile handoff (`net wifi-off` with data on) → call survives
 - [ ] 👁✋ Wi-Fi→Wi-Fi handoff — join a call on network A, `net wifi-switch b`, verify the call
       survives the roam, then `net wifi-switch a`. Needs two APs in range + `.env` `E2E_WIFI_A/B_*`.
-- [ ] 👁 Prolonged outage — in a call, `net offline-for 180` (~3 min), then app reconnects on its
+- [ ] 👁 Prolonged outage — in a call, `net offline-for 30` (~30s), then app reconnects on its
       own (media resumes, no crash, `NetConnectionModal` clears)
 - [ ] 👁 Unstable network — `net flap 5 5 6` during a call → app stays usable and recovers each
       time (exercises reconnection logic)
