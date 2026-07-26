@@ -7,6 +7,8 @@
 #   scripts/device-verify.sh metro          # adb reverse + check Metro is up
 #   scripts/device-verify.sh smoke          # run .maestro/smoke.yaml (no creds)
 #   scripts/device-verify.sh regression     # run .maestro/regression.yaml (needs .env creds)
+#   scripts/device-verify.sh net offline    # toggle connectivity: wifi-off/on, data-off/on,
+#                                           #   offline (both off), online (both on), status
 #   scripts/device-verify.sh all            # doctor -> install -> metro -> smoke
 #
 # Credentials for regression are read from .env (E2E_USERNAME / E2E_PASSWORD), which is
@@ -94,6 +96,21 @@ cmd_regression() {
   info "Screenshots in $RESULTS"
 }
 
+cmd_net() {
+  local d; d="$(require_device)"
+  case "${1:-}" in
+    wifi-on)   adb -s "$d" shell svc wifi enable;  info "wifi ON" ;;
+    wifi-off)  adb -s "$d" shell svc wifi disable; info "wifi OFF" ;;
+    data-on)   adb -s "$d" shell svc data enable;  info "mobile data ON" ;;
+    data-off)  adb -s "$d" shell svc data disable; info "mobile data OFF" ;;
+    offline)   adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable; info "OFFLINE (wifi+data off)" ;;
+    online)    adb -s "$d" shell svc wifi enable;  adb -s "$d" shell svc data enable;  info "ONLINE (wifi+data on)" ;;
+    status)    info "wifi_on=$(adb -s "$d" shell settings get global wifi_on | tr -d '\r') mobile_data=$(adb -s "$d" shell settings get global mobile_data | tr -d '\r')" ;;
+    *) echo "usage: $0 net {wifi-on|wifi-off|data-on|data-off|offline|online|status}"; exit 2 ;;
+  esac
+  # Note: on some MIUI builds svc wifi/data needs "USB debugging (Security settings)" enabled.
+}
+
 cmd_all() { cmd_doctor; cmd_install; cmd_metro; cmd_smoke; }
 
 case "${1:-}" in
@@ -102,6 +119,7 @@ case "${1:-}" in
   metro)       cmd_metro ;;
   smoke)       cmd_smoke ;;
   regression)  cmd_regression ;;
+  net)         shift; cmd_net "${1:-}" ;;
   all)         cmd_all ;;
-  *) echo "usage: $0 {doctor|install [apk]|metro|smoke|regression|all}"; exit 2 ;;
+  *) echo "usage: $0 {doctor|install [apk]|metro|smoke|regression|net <sub>|all}"; exit 2 ;;
 esac

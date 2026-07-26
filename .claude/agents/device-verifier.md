@@ -46,7 +46,9 @@ driving; you do setup, repair, visual judgment, and reporting.
 
 4. **Visual/exploratory checks** the coded asserts can't cover: does video actually render in the
    room, does the PiP window look right, is the foreground notification present. Judge from
-   screenshots; note anomalies.
+   screenshots; note anomalies. For the offline group (checklist §10), interleave connectivity
+   toggles: `bash scripts/device-verify.sh net offline` / `net online` (or `wifi-off`/`data-off`)
+   around a screenshot, and confirm `NetConnectionModal` appears/clears.
 
 5. **Report** → write `verify-results/report.md`: per-step PASS/FAIL, screenshot references, and any
    logcat error lines. End with a summary and a list of runtime issues found.

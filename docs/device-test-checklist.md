@@ -52,8 +52,12 @@ notes live in `new-arch-qa-checklist.md`; this file is the task-agnostic app che
 - [ ] 👁 Settings → "send logs" → export/share completes without error
 
 ## 10. Offline / network
-- [ ] 🤖 No network pre-login → LoginScreen still renders (airplane mode)
-- [ ] 👁 Network loss after init → `NetConnectionModal` (no-connection overlay) appears
+Toggle connectivity with `scripts/device-verify.sh net {wifi-off|data-off|offline|online|...}`
+(uses `adb shell svc wifi/data`; granular Wi-Fi vs mobile data).
+- [ ] 🤖 No network pre-login (`net offline`) → LoginScreen still renders; then `net online`
+- [ ] 👁 Network loss after init/in-room (`net offline`) → `NetConnectionModal` overlay appears;
+      restore (`net online`) → reconnects
+- [ ] 👁 Wi-Fi→mobile handoff (`net wifi-off` with data on) → call survives
 
 ## 11. Crash reporting  (✋ release build, once per release)
 - [ ] ✋ Deliberate native crash → appears in Sentry with symbolicated stack (Proguard/dSYM)
