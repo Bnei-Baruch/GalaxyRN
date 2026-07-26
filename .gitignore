@@ -95,3 +95,5 @@ metro-cache/
 /ios/Index
 .cursorrules
 .cursorignore
+# On-device verification artifacts
+verify-results/

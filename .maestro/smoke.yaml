@@ -1,0 +1,24 @@
+appId: com.galaxy_mobile
+name: smoke — app launches to LoginScreen
+tags:
+  - smoke
+---
+# Credential-less smoke test: proves the JS bundle loads, native init
+# (WebRTC / audio / TurboModules) does not crash, and the Android permission
+# gate auto-clears. Runs with ZERO Claude tokens.
+- launchApp:
+    clearState: true
+    stopApp: true
+    permissions:
+      all: allow
+# The JS gate (src/services/AndroidPermissions.js) polls every ~1s and clears
+# itself once permissions are granted, so no tap is needed here.
+# "Arvut" is the app brand (language-independent) — the most stable assertion.
+- extendedWaitUntil:
+    visible: "Arvut"
+    timeout: 90000
+- assertVisible: "Arvut"
+# The login button text ("LOGIN") is localized; keep as a secondary check the
+# device-verifier subagent can pin to the device locale if needed.
+# - assertVisible: "LOGIN"
+- takeScreenshot: verify-results/smoke-login

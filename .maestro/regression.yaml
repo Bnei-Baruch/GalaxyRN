@@ -1,0 +1,42 @@
+appId: com.galaxy_mobile
+name: regression — full flow (needs E2E creds)
+tags:
+  - regression
+env:
+  E2E_USERNAME: ""
+  E2E_PASSWORD: ""
+---
+# Full on-device regression mapped to docs/new-arch-qa-checklist.md.
+# Steps marked TODO need selector tuning on a real device — the device-verifier
+# subagent completes them by reading screenshots + UI hierarchy.
+- runFlow: smoke.yaml
+- runFlow:
+    file: login.yaml
+    env:
+      E2E_USERNAME: ${E2E_USERNAME}
+      E2E_PASSWORD: ${E2E_PASSWORD}
+- assertVisible: "Settings"
+- takeScreenshot: verify-results/reg-settings
+
+# --- Join a room (RoomSelect + JoinRoomBtn) — TODO: tune selectors on device ---
+# - tapOn: "Select Ten"
+# - tapOn: "<room name>"
+- assertVisible: "Join Room"
+- tapOn: "Join Room"
+- takeScreenshot: verify-results/reg-room
+# Visual check (subagent): video tiles render via RTCView.
+
+# --- Backgrounding: foreground service keeps the call alive ---
+- pressKey: Home
+- takeScreenshot: verify-results/reg-background
+# Visual/logcat check (subagent): persistent notification + ForegroundService start.
+- launchApp
+- takeScreenshot: verify-results/reg-foreground
+
+# --- Audio mode toggle --- TODO: tune
+# - tapOn: "Audio Mode"
+
+# --- Picture-in-Picture (onUserLeaveHint while in room) --- TODO: verify PiP window
+# - pressKey: Home
+
+# --- Send logs --- TODO: navigate to settings and trigger export
