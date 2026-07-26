@@ -7,8 +7,9 @@
 #   scripts/device-verify.sh metro          # adb reverse + check Metro is up
 #   scripts/device-verify.sh smoke          # run .maestro/smoke.yaml (no creds)
 #   scripts/device-verify.sh regression     # run .maestro/regression.yaml (needs .env creds)
-#   scripts/device-verify.sh net offline    # toggle connectivity: wifi-off/on, data-off/on,
-#                                           #   offline (both off), online (both on), status
+#   scripts/device-verify.sh net offline    # connectivity: wifi-off/on, data-off/on, offline,
+#                                           #   online, offline-for [sec], flap [on off cycles],
+#                                           #   wifi-connect <ssid> [sec] [pass], wifi-switch a|b
 #   scripts/device-verify.sh all            # doctor -> install -> metro -> smoke
 #
 # Credentials for regression are read from .env (E2E_USERNAME / E2E_PASSWORD), which is
@@ -105,6 +106,27 @@ cmd_net() {
     data-off)  adb -s "$d" shell svc data disable; info "mobile data OFF" ;;
     offline)   adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable; info "OFFLINE (wifi+data off)" ;;
     online)    adb -s "$d" shell svc wifi enable;  adb -s "$d" shell svc data enable;  info "ONLINE (wifi+data on)" ;;
+    # Prolonged outage: go offline for N seconds (default 120 = ~2 min), then restore.
+    offline-for)
+      local secs="${1:-120}"
+      info "OFFLINE for ${secs}s (prolonged outage)..."
+      adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable
+      sleep "$secs"
+      adb -s "$d" shell svc wifi enable;  adb -s "$d" shell svc data enable
+      info "ONLINE restored after ${secs}s — check the app reconnected" ;;
+    # Unstable network: flap connectivity (off/on) to exercise reconnection logic.
+    #   net flap [on_sec=5] [off_sec=5] [cycles=6]
+    flap)
+      local on="${1:-5}" off="${2:-5}" cycles="${3:-6}" i=1
+      info "flapping connectivity: ${cycles}x (off ${off}s / on ${on}s)"
+      while [ "$i" -le "$cycles" ]; do
+        adb -s "$d" shell svc data disable; adb -s "$d" shell svc wifi disable
+        sleep "$off"
+        adb -s "$d" shell svc data enable;  adb -s "$d" shell svc wifi enable
+        sleep "$on"
+        info "  cycle $i/$cycles"; i=$((i+1))
+      done
+      info "flap done" ;;
     status)    info "wifi_on=$(adb -s "$d" shell settings get global wifi_on | tr -d '\r') mobile_data=$(adb -s "$d" shell settings get global mobile_data | tr -d '\r')"
                adb -s "$d" shell cmd wifi status 2>/dev/null | sed -n '1,2p' || true ;;
     # Force-connect to a specific SSID (Android 11+ `cmd wifi`).
@@ -126,7 +148,7 @@ cmd_net() {
       [ -n "$ssid" ] || { err "E2E_WIFI_${which}_SSID not set in .env (see .env.example)"; exit 2; }
       info "switching to Wi-Fi '$which' -> $ssid"
       adb -s "$d" shell cmd wifi connect-network "$ssid" wpa2 "$pass" ;;
-    *) echo "usage: $0 net {wifi-on|wifi-off|data-on|data-off|offline|online|status|wifi-connect <ssid> [sec] [pass]|wifi-switch {a|b}}"; exit 2 ;;
+    *) echo "usage: $0 net {wifi-on|wifi-off|data-on|data-off|offline|online|offline-for [sec]|flap [on] [off] [cycles]|status|wifi-connect <ssid> [sec] [pass]|wifi-switch {a|b}}"; exit 2 ;;
   esac
   # Note: on some MIUI builds `svc wifi/data` and `cmd wifi connect-network` need
   # "USB debugging (Security settings)" enabled, and both APs must be in range.
