@@ -24,7 +24,7 @@ const RoomSelect = () => {
     <View style={[styles.container, baseStyles.viewBackground]}>
       <TextDisplayWithButton label={t('settings.selectRoom')}>
         <View style={styles.triggerContainer}>
-          <Pressable style={styles.textContainer} onPress={toggleOpen}>
+          <Pressable testID="roomSelectTrigger" accessibilityLabel="roomSelectTrigger" style={styles.textContainer} onPress={toggleOpen}>
             <Text style={styles.text}>
               {room ? room.description : t('settings.selectRoom')}
             </Text>

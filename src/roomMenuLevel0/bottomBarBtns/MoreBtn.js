@@ -14,7 +14,7 @@ export const MoreBtn = () => {
   };
 
   return (
-    <Pressable onPress={handlePress} style={bottomBar.moreSelBtn}>
+    <Pressable testID="moreBtn" accessibilityLabel="moreBtn" onPress={handlePress} style={bottomBar.moreSelBtn}>
       <BottomBarIconWithText
         iconName={moreModal ? 'close' : 'more-vert'}
         text="close"

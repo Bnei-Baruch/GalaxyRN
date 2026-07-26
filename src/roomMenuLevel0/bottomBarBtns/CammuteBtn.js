@@ -19,7 +19,7 @@ export const CammuteBtn = () => {
     extraStyle = ['toggle_off', 'toggle_off_icon'];
   }
   return (
-    <Pressable onPress={handlePress} style={bottomBar.btn}>
+    <Pressable testID="cammuteBtn" accessibilityLabel="cammuteBtn" onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName={iconName}
         text={text}

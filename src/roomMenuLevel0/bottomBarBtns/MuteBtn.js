@@ -21,7 +21,7 @@ export const MuteBtn = () => {
   }
 
   return (
-    <Pressable onPress={handlePress} style={bottomBar.btn}>
+    <Pressable testID="muteBtn" accessibilityLabel="muteBtn" onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName={iconName}
         text={text}

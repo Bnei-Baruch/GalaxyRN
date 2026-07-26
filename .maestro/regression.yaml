@@ -7,9 +7,7 @@ env:
   E2E_PASSWORD: ""
 ---
 # Full on-device regression mapped to docs/new-arch-qa-checklist.md.
-# Steps marked TODO need selector tuning on a real device — the device-verifier
-# subagent completes them by reading screenshots + UI hierarchy.
-- runFlow: smoke.yaml
+# All interactive elements matched by testID (see src/**/*Btn.js) — locale-proof.
 - runFlow:
     file: login.yaml
     env:
@@ -19,25 +17,45 @@ env:
     id: "joinRoomBtn"
 - takeScreenshot: verify-results/reg-settings
 
-# --- Join a room (RoomSelect + JoinRoomBtn) — TODO: tune room-select selectors on device ---
-# - tapOn: "Select Ten"
-# - tapOn: "<room name>"
+# --- Join the test room "test mobile" ---
+- tapOn:
+    id: "roomSelectTrigger"
+- inputText: "test mobile"
+- tapOn: "test mobile"
 - tapOn:
     id: "joinRoomBtn"
+- assertVisible:
+    id: "leaveBtn"
 - takeScreenshot: verify-results/reg-room
-# Visual check (subagent): video tiles render via RTCView.
+# Visual (subagent): video tiles render via RTCView.
+
+# --- In-room controls ---
+- tapOn:
+    id: "muteBtn"
+- tapOn:
+    id: "cammuteBtn"
+- tapOn:
+    id: "audioModeBtn"
+- takeScreenshot: verify-results/reg-controls
 
 # --- Backgrounding: foreground service keeps the call alive ---
 - pressKey: Home
 - takeScreenshot: verify-results/reg-background
-# Visual/logcat check (subagent): persistent notification + ForegroundService start.
+# Visual/logcat (subagent): persistent notification + ForegroundService start.
 - launchApp
+- assertVisible:
+    id: "leaveBtn"
 - takeScreenshot: verify-results/reg-foreground
 
-# --- Audio mode toggle --- TODO: tune
-# - tapOn: "Audio Mode"
+# --- Send logs (More menu) ---
+- tapOn:
+    id: "moreBtn"
+- tapOn:
+    id: "sendLogsBtn"
+- takeScreenshot: verify-results/reg-sendlogs
 
-# --- Picture-in-Picture (onUserLeaveHint while in room) --- TODO: verify PiP window
-# - pressKey: Home
-
-# --- Send logs --- TODO: navigate to settings and trigger export
+# --- Leave the room ---
+- tapOn:
+    id: "leaveBtn"
+- assertVisible:
+    id: "joinRoomBtn"

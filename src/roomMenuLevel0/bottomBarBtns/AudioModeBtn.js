@@ -19,7 +19,7 @@ export const AudioModeBtn = () => {
     extraStyle = ['toggle_on', 'toggle_on_icon'];
   }
   return (
-    <Pressable onPress={handlePress} style={bottomBar.btn}>
+    <Pressable testID="audioModeBtn" accessibilityLabel="audioModeBtn" onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName={iconName}
         text={text}

@@ -11,7 +11,7 @@ export const LeaveBtn = () => {
   const handlePress = () => exitRoom();
 
   return (
-    <Pressable onPress={handlePress} style={bottomBar.btn}>
+    <Pressable testID="leaveBtn" accessibilityLabel="leaveBtn" onPress={handlePress} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName="logout"
         text={t('bottomBar.leave')}

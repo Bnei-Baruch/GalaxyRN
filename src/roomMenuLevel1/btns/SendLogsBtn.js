@@ -15,7 +15,7 @@ const SendLogsBtn = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity testID="sendLogsBtn" accessibilityLabel="sendLogsBtn" onPress={handlePress}>
       <View style={styles.container}>
         <Icon name="send" size={30} color="white" />
         <Text style={[baseStyles.text, styles.text]}>
