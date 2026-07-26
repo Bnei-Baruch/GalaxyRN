@@ -21,7 +21,7 @@ env:
 - tapOn:
     id: "roomSelectTrigger"
 - inputText: "test mobile"
-- tapOn: "test mobile"
+- tapOn: "Test Mobile"
 - tapOn:
     id: "joinRoomBtn"
 - assertVisible:
