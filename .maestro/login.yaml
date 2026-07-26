@@ -7,25 +7,46 @@ env:
   E2E_PASSWORD: ""
 ---
 # Requires E2E_USERNAME / E2E_PASSWORD (loaded from .env by scripts/device-verify.sh).
+# Launch the app so the flow is self-contained (the app may be backgrounded).
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+# Wait for the LoginScreen to render (debug bundle can take ~30s on first load).
 # Match by testID (language-independent) — see src/auth/LoginScreen.js testID="loginBtn".
+- extendedWaitUntil:
+    visible:
+      id: "loginBtn"
+    timeout: 120000
 - tapOn:
     id: "loginBtn"
 # ---------------------------------------------------------------------------
-# Keycloak login page opens in a Chrome Custom Tab (accounts.kab.info).
-# Match form fields by their HTML id (Keycloak standard: username / password /
-# kc-login) — language-independent, unlike the visible labels.
+# Keycloak login opens in a Chrome Custom Tab (accounts.kab.info). Chrome exposes
+# the page's HTML ids as resource-ids, so match by id (language-independent).
+# The landing page shows social login + "continue with email and password"
+# (id: show-traditional-login) — tap it to reveal the username/password form.
 # ---------------------------------------------------------------------------
 - extendedWaitUntil:
     visible:
-      id: "username"
+      id: "show-traditional-login"
     timeout: 45000
+- tapOn:
+    id: "show-traditional-login"
+- extendedWaitUntil:
+    visible:
+      id: "username"
+    timeout: 30000
 - tapOn:
     id: "username"
 - inputText: ${E2E_USERNAME}
+# Chrome's built-in password manager pops a "Use saved password?" bottom sheet that covers
+# the password field. Back dismisses it (without closing the Custom Tab) — system autofill off
+# is not enough, this is Chrome's own manager.
+- pressKey: Back
 - tapOn:
     id: "password"
 - inputText: ${E2E_PASSWORD}
-- hideKeyboard
+- pressKey: Back
 - tapOn:
     id: "kc-login"
 # Back in the app after the OAuth redirect (com.galaxy://callback).
