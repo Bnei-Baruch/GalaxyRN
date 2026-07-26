@@ -154,15 +154,28 @@ cmd_net() {
   # "USB debugging (Security settings)" enabled, and both APs must be in range.
 }
 
-cmd_all() { cmd_doctor; cmd_install; cmd_metro; cmd_smoke; }
+# One-time device prep for Maestro on MIUI/HyperOS:
+#  - verifier_verify_adb_installs=0 lets Maestro install its instrumentation driver APK
+#    (fixes INSTALL_FAILED_USER_RESTRICTED; newer HyperOS has no "MIUI optimization" toggle).
+#  - autofill_service=null stops Chrome's saved-password popup clobbering typed login creds.
+cmd_prep() {
+  local d; d="$(require_device)"
+  adb -s "$d" shell settings put global verifier_verify_adb_installs 0
+  adb -s "$d" shell settings put secure autofill_service null
+  info "prep done: adb-install verification OFF + system autofill OFF"
+  info "(restore later: settings put global verifier_verify_adb_installs 1; and reset autofill in Settings)"
+}
+
+cmd_all() { cmd_doctor; cmd_prep; cmd_install; cmd_metro; cmd_smoke; }
 
 case "${1:-}" in
   doctor)      cmd_doctor ;;
   install)     shift; cmd_install "${1:-}" ;;
   metro)       cmd_metro ;;
+  prep)        cmd_prep ;;
   smoke)       cmd_smoke ;;
   regression)  cmd_regression ;;
   net)         shift; cmd_net "$@" ;;
   all)         cmd_all ;;
-  *) echo "usage: $0 {doctor|install [apk]|metro|smoke|regression|net <sub>|all}"; exit 2 ;;
+  *) echo "usage: $0 {doctor|prep|install [apk]|metro|smoke|regression|net <sub>|all}"; exit 2 ;;
 esac
