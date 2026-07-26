@@ -22,6 +22,8 @@ const JoinRoomBtn = () => {
 
   return (
     <TouchableOpacity
+      testID="joinRoomBtn"
+      accessibilityLabel="joinRoomBtn"
       onPress={handleJoin}
       disabled={!room}
       style={[styles.button, !room && styles.buttonDisabled]}

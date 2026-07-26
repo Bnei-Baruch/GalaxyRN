@@ -15,14 +15,15 @@ env:
     env:
       E2E_USERNAME: ${E2E_USERNAME}
       E2E_PASSWORD: ${E2E_PASSWORD}
-- assertVisible: "Settings"
+- assertVisible:
+    id: "joinRoomBtn"
 - takeScreenshot: verify-results/reg-settings
 
-# --- Join a room (RoomSelect + JoinRoomBtn) — TODO: tune selectors on device ---
+# --- Join a room (RoomSelect + JoinRoomBtn) — TODO: tune room-select selectors on device ---
 # - tapOn: "Select Ten"
 # - tapOn: "<room name>"
-- assertVisible: "Join Room"
-- tapOn: "Join Room"
+- tapOn:
+    id: "joinRoomBtn"
 - takeScreenshot: verify-results/reg-room
 # Visual check (subagent): video tiles render via RTCView.
 
