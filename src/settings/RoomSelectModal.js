@@ -86,6 +86,8 @@ const RoomSelectModal = () => {
       >
         <View style={styles.inputContainer}>
           <TextInput
+            testID="roomSearchInput"
+            accessibilityLabel="roomSearchInput"
             style={[styles.searchInput, baseStyles.text]}
             placeholder={t('settings.search')}
             value={searchText}

@@ -16,19 +16,25 @@ env:
 - launchApp:
     permissions:
       all: allow
-- assertVisible:
-    id: "joinRoomBtn"   # if this fails, log in manually on the device first
+# Debug bundle takes ~30s to load + restore the session — wait, don't assert immediately.
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"   # if this times out, log in manually on the device first
+    timeout: 120000
 - takeScreenshot: verify-results/reg-settings
 
 # --- Join the test room "test mobile" ---
+# The modal's search field auto-focuses on open; typing the exact room name auto-selects it
+# (RoomSelectModal.handleSearch), which enables the modal's Join button — no list-item tap.
 - tapOn:
     id: "roomSelectTrigger"
-- inputText: "test mobile"
-- tapOn: "Test Mobile"
+- inputText: "Test Mobile"
 - tapOn:
     id: "joinRoomBtn"
-- assertVisible:
-    id: "leaveBtn"
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 60000
 - takeScreenshot: verify-results/reg-room
 # Visual (subagent): video tiles render via RTCView.
 
