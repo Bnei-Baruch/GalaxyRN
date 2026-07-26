@@ -58,6 +58,8 @@ Toggle connectivity with `scripts/device-verify.sh net {wifi-off|data-off|offlin
 - [ ] 👁 Network loss after init/in-room (`net offline`) → `NetConnectionModal` overlay appears;
       restore (`net online`) → reconnects
 - [ ] 👁 Wi-Fi→mobile handoff (`net wifi-off` with data on) → call survives
+- [ ] 👁✋ Wi-Fi→Wi-Fi handoff — join a call on network A, `net wifi-switch b`, verify the call
+      survives the roam, then `net wifi-switch a`. Needs two APs in range + `.env` `E2E_WIFI_A/B_*`.
 
 ## 11. Crash reporting  (✋ release build, once per release)
 - [ ] ✋ Deliberate native crash → appears in Sentry with symbolicated stack (Proguard/dSYM)

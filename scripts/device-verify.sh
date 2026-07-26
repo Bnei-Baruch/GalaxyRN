@@ -22,12 +22,11 @@ FLOWS="$ROOT/.maestro"
 APP_ID="com.galaxy_mobile"
 
 mkdir -p "$RESULTS"
-# Load ONLY the E2E_* keys from .env. The app's .env is a react-native-dotenv file
-# (values may contain spaces/URLs) and is NOT safe to `source` in the shell.
+# Load ONLY the E2E_* keys from .env (creds + wifi test networks). The app's .env is a
+# react-native-dotenv file (values may contain spaces/URLs) and is NOT safe to `source`.
+# `export "KEY=VALUE"` treats the whole line as one NAME=VALUE arg — no code execution.
 if [ -f "$ROOT/.env" ]; then
-  E2E_USERNAME="$(grep -E '^E2E_USERNAME=' "$ROOT/.env" | tail -1 | cut -d= -f2- || true)"
-  E2E_PASSWORD="$(grep -E '^E2E_PASSWORD=' "$ROOT/.env" | tail -1 | cut -d= -f2- || true)"
-  export E2E_USERNAME E2E_PASSWORD
+  while IFS= read -r _line; do export "$_line"; done < <(grep -E '^E2E_[A-Z0-9_]+=' "$ROOT/.env")
 fi
 
 info() { printf '\033[36m[verify]\033[0m %s\n' "$*"; }
@@ -98,17 +97,39 @@ cmd_regression() {
 
 cmd_net() {
   local d; d="$(require_device)"
-  case "${1:-}" in
+  local sub="${1:-}"; shift || true
+  case "$sub" in
     wifi-on)   adb -s "$d" shell svc wifi enable;  info "wifi ON" ;;
     wifi-off)  adb -s "$d" shell svc wifi disable; info "wifi OFF" ;;
     data-on)   adb -s "$d" shell svc data enable;  info "mobile data ON" ;;
     data-off)  adb -s "$d" shell svc data disable; info "mobile data OFF" ;;
     offline)   adb -s "$d" shell svc wifi disable; adb -s "$d" shell svc data disable; info "OFFLINE (wifi+data off)" ;;
     online)    adb -s "$d" shell svc wifi enable;  adb -s "$d" shell svc data enable;  info "ONLINE (wifi+data on)" ;;
-    status)    info "wifi_on=$(adb -s "$d" shell settings get global wifi_on | tr -d '\r') mobile_data=$(adb -s "$d" shell settings get global mobile_data | tr -d '\r')" ;;
-    *) echo "usage: $0 net {wifi-on|wifi-off|data-on|data-off|offline|online|status}"; exit 2 ;;
+    status)    info "wifi_on=$(adb -s "$d" shell settings get global wifi_on | tr -d '\r') mobile_data=$(adb -s "$d" shell settings get global mobile_data | tr -d '\r')"
+               adb -s "$d" shell cmd wifi status 2>/dev/null | sed -n '1,2p' || true ;;
+    # Force-connect to a specific SSID (Android 11+ `cmd wifi`).
+    wifi-connect)
+      local ssid="${1:-}" sec="${2:-wpa2}" pass="${3:-}"
+      [ -n "$ssid" ] || { err "usage: $0 net wifi-connect <SSID> [wpa2|open] [password]"; exit 2; }
+      info "connecting Wi-Fi -> $ssid"
+      adb -s "$d" shell cmd wifi connect-network "$ssid" "$sec" "$pass" ;;
+    # Switch between two test networks defined in .env:
+    #   E2E_WIFI_A_SSID / E2E_WIFI_A_PASS  and  E2E_WIFI_B_SSID / E2E_WIFI_B_PASS
+    # Used for the Wi-Fi -> Wi-Fi handoff test (call must survive the roam).
+    wifi-switch)
+      local which="${1:-}" ssid pass
+      case "$which" in
+        a) ssid="${E2E_WIFI_A_SSID:-}"; pass="${E2E_WIFI_A_PASS:-}" ;;
+        b) ssid="${E2E_WIFI_B_SSID:-}"; pass="${E2E_WIFI_B_PASS:-}" ;;
+        *) err "usage: $0 net wifi-switch {a|b}"; exit 2 ;;
+      esac
+      [ -n "$ssid" ] || { err "E2E_WIFI_${which}_SSID not set in .env (see .env.example)"; exit 2; }
+      info "switching to Wi-Fi '$which' -> $ssid"
+      adb -s "$d" shell cmd wifi connect-network "$ssid" wpa2 "$pass" ;;
+    *) echo "usage: $0 net {wifi-on|wifi-off|data-on|data-off|offline|online|status|wifi-connect <ssid> [sec] [pass]|wifi-switch {a|b}}"; exit 2 ;;
   esac
-  # Note: on some MIUI builds svc wifi/data needs "USB debugging (Security settings)" enabled.
+  # Note: on some MIUI builds `svc wifi/data` and `cmd wifi connect-network` need
+  # "USB debugging (Security settings)" enabled, and both APs must be in range.
 }
 
 cmd_all() { cmd_doctor; cmd_install; cmd_metro; cmd_smoke; }
@@ -119,7 +140,7 @@ case "${1:-}" in
   metro)       cmd_metro ;;
   smoke)       cmd_smoke ;;
   regression)  cmd_regression ;;
-  net)         shift; cmd_net "${1:-}" ;;
+  net)         shift; cmd_net "$@" ;;
   all)         cmd_all ;;
   *) echo "usage: $0 {doctor|install [apk]|metro|smoke|regression|net <sub>|all}"; exit 2 ;;
 esac
