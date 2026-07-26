@@ -7,6 +7,11 @@ author/repair flows and make visual judgments.
 ## Prerequisites
 1. **Device**: enable Developer options → USB debugging (Xiaomi: also "Install via USB"),
    connect in "File transfer" mode, accept the RSA prompt. Verify: `adb devices` is non-empty.
+   - **Xiaomi/MIUI + Maestro:** Maestro installs its own driver APK; MIUI blocks it with
+     `INSTALL_FAILED_USER_RESTRICTED` unless **"Install via USB"** and **"USB debugging (Security
+     settings)"** are enabled (the latter needs a Mi account + SIM). If Maestro is blocked, the
+     `device-verifier` subagent falls back to the manual-adb path (screencap + uiautomator + logcat),
+     which needs only plain USB debugging.
 2. **Metro** (debug APK loads JS from it): `yarn start` in a separate terminal.
 3. **APK**: `android/app/build/outputs/apk/debug/app-debug.apk` (build: `cd android && ./gradlew assembleDebug`).
 4. **Maestro**: `curl -Ls "https://get.maestro.mobile.dev" | bash` (needs Java).

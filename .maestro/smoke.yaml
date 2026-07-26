@@ -13,12 +13,15 @@ tags:
       all: allow
 # The JS gate (src/services/AndroidPermissions.js) polls every ~1s and clears
 # itself once permissions are granted, so no tap is needed here.
-# "Arvut" is the app brand (language-independent) — the most stable assertion.
+# Maestro matches `text:` as a regex — cover the app brand across locales
+# (Arvut / Арвут / ...), which is the most stable assertion for the LoginScreen.
 - extendedWaitUntil:
-    visible: "Arvut"
+    visible:
+      text: "Arvut|Арвут|ארווט"
     timeout: 90000
-- assertVisible: "Arvut"
-# The login button text ("LOGIN") is localized; keep as a secondary check the
-# device-verifier subagent can pin to the device locale if needed.
-# - assertVisible: "LOGIN"
+- assertVisible:
+    text: "Arvut|Арвут|ארווט"
+# Login button, also locale-tolerant (LOGIN / ВОЙТИ / כניסה / ...).
+- assertVisible:
+    text: "LOGIN|ВОЙТИ|Login|Войти|כניסה"
 - takeScreenshot: verify-results/smoke-login
