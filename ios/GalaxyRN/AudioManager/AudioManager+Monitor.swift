@@ -1,19 +1,19 @@
 import Foundation
 import AVFoundation
 
-extension AudioManagerImpl {
+extension AudioManager {
     // MARK: - Audio Monitoring
-
+  
     func setupMonitoring() {
         NLOG("[audioDevices swift] setupMonitoring")
-
+        
         // Remove any existing observers first to avoid duplicates
         NotificationCenter.default.removeObserver(
             self,
             name: AVAudioSession.routeChangeNotification,
             object: nil
         )
-
+        
         // Add the observer
         NotificationCenter.default.addObserver(
             self,
@@ -22,7 +22,7 @@ extension AudioManagerImpl {
             object: nil
         )
     }
-
+  
     @objc
     private func handleRouteChange(notification: Notification) {
         NLOG("[audioDevices swift] handleRouteChange")
@@ -32,7 +32,7 @@ extension AudioManagerImpl {
             NLOG("[audioDevices swift] Failed to get route change details")
             return
         }
-
+    
         // Log the reason for the route change
         switch reason {
         case .newDeviceAvailable:
@@ -90,16 +90,16 @@ extension AudioManagerImpl {
         @unknown default:
             NLOG("[audioDevices swift] Route change: Unhandled reason code \(reasonValue)")
         }
-
+    
         // Log current route details
         let session = AVAudioSession.sharedInstance()
         let currentRoute = session.currentRoute
-
+    
         NLOG("[audioDevices swift] Current inputs: \(currentRoute.inputs.map { "\($0.portName) (\($0.uid))" }.joined(separator: ", "))")
         NLOG("[audioDevices swift] Current outputs: \(currentRoute.outputs.map { "\($0.portName) (\($0.uid))" }.joined(separator: ", "))")
-
+    
         sendCurrentAudioGroup()
         NLOG("[audioDevices swift] sendCurrentAudioGroup done")
-
+        
     }
-}
+} 

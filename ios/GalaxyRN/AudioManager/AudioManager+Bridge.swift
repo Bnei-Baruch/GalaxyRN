@@ -1,5 +1,15 @@
 import Foundation
+import React
 
-// constantsToExport moved to AudioManager.mm (the Objective-C++ TurboModule wrapper),
-// since RCTBridgeModule/RCTEventEmitter overrides now live on the ObjC wrapper class,
-// not on the Swift business-logic implementation.
+extension AudioManager {
+    @objc
+    override func constantsToExport() -> [AnyHashable : Any]! {
+        return [
+            "supportedFeatures": ["audioDeviceMonitoring", "audioDeviceSelection"],
+            "eventTypes": [
+                "audioDeviceChanged": AudioManagerConstants.audioDeviceChanged,
+                "audioRouteChanged": AudioManagerConstants.audioRouteChanged
+            ]
+        ]
+    }
+} 
