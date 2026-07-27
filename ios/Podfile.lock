@@ -1863,6 +1863,8 @@ PODS:
     - React-utils (= 0.86.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.86.0)
+  - RNInAppBrowser (3.7.1):
+    - React-Core
   - RNSecureStorage (3.0.1):
     - React
   - RNSentry (7.7.0):
@@ -1996,6 +1998,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNSecureStorage (from `../node_modules/rn-secure-storage`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
@@ -2174,6 +2177,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNSecureStorage:
     :path: "../node_modules/rn-secure-storage"
   RNSentry:
@@ -2266,15 +2271,16 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: cd921fba8073c1318a0a3901bd9567bc22b28966
   React-webperformancenativemodule: 7da8fd8bb2f99600f1192eb834cf8cb197564994
   ReactAppDependencyProvider: adf5403892170fbe996fce485a703f25df08db66
-  ReactCodegen: 3e4cfb3309041ca8524cc0e09b3ce6923782c25b
+  ReactCodegen: 484dd0995ad037b93787cd3cc9347a9d73ed5050
   ReactCommon: 4a92a419d44cd92d17d7c29109e12dce2670e18a
   ReactNativeDependencies: fa0a54b3f5319ae0e3b9aff32bfee7a424b88e66
+  RNInAppBrowser: b53e6f6072c931115bc22ac9dc9510ac2cbea62d
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
   RNSentry: 15ee3d17dcb3dfb88c719d0f2d676518d9c4be3f
   RNVectorIcons: cb1f35b22fd51bca0f4d44556ee2ac3c95d0b472
   Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
   Yoga: 2d945818608a5804c8a2df6530e23c0d88849797
 
-PODFILE CHECKSUM: cacea72ca3f2fec105f9185b4d1819fbd6f78776
+PODFILE CHECKSUM: f5dca32152aeeda18bcce8c8fb4d9833a3fc1306
 
 COCOAPODS: 1.16.2

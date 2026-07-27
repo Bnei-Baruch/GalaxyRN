@@ -1,4 +1,4 @@
-appId: com.galaxy_mobile
+appId: ${APP_ID}
 name: regression — full flow (needs E2E creds)
 tags:
   - regression
@@ -8,19 +8,14 @@ env:
 ---
 # Full on-device regression mapped to docs/new-arch-qa-checklist.md.
 # All interactive elements matched by testID (see src/**/*Btn.js) — locale-proof.
+# Needs -e APP_ID / E2E_USERNAME / E2E_PASSWORD (device-verify.sh loads them from .env).
 #
-# SKIPS LOGIN for now: log in manually ONCE on the device (the Keycloak session persists in
-# RNSecureStorage across relaunch). This flow relaunches WITHOUT clearState so the session is
-# restored, then verifies the in-room path. (login.yaml automates login once the Chrome
-# saved-password sheet handling is finalized.)
-- launchApp:
-    permissions:
-      all: allow
-# Debug bundle takes ~30s to load + restore the session — wait, don't assert immediately.
-- extendedWaitUntil:
-    visible:
-      id: "joinRoomBtn"   # if this times out, log in manually on the device first
-    timeout: 120000
+# Self-contained: logs in inline via login.yaml (cross-platform), so it does NOT depend on a
+# persisted Keychain session. This matters on the iOS Simulator, where RNSecureStorage cannot
+# write the token (adhoc-signed sim build has no application-identifier entitlement, errSec
+# -34018) and the session would otherwise be lost on relaunch. On a signed device build the
+# Keychain works, so inline login is simply idempotent there.
+- runFlow: login.yaml   # ends on the Settings screen with joinRoomBtn visible
 - takeScreenshot: verify-results/reg-settings
 
 # --- Join the test room "test mobile" ---

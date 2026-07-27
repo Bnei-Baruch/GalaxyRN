@@ -19,7 +19,6 @@ import com.galaxy_mobile.audioManager.AudioDeviceModule;
 import com.galaxy_mobile.callManager.CallListenerModule;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
 import com.galaxy_mobile.SendLogsModule;
-import com.galaxy_mobile.SendEventToClient;
 
 /**
  * React Native package that registers Galaxy native modules
@@ -38,7 +37,6 @@ public class GxyPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
         GxyLogger.i(TAG, "Creating Galaxy native modules");
 
-        SendEventToClient.init(reactContext);
         // Add modules
         try {
             GxyLogger.i(TAG, "Adding standard modules");

@@ -7,7 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
-import com.galaxy_mobile.SendEventToClient;
 import com.galaxy_mobile.logger.GxyLogger;
 
 public class UIApdateReceiver extends BroadcastReceiver {
@@ -19,7 +18,6 @@ public class UIApdateReceiver extends BroadcastReceiver {
   public static final String ACTION_UNMUTE = "com.galaxy_mobile.ACTION_UNMUTE";
   public static final String ACTION_CAM_MUTE = "com.galaxy_mobile.ACTION_CAM_MUTE";
   public static final String ACTION_CAM_UNMUTE = "com.galaxy_mobile.ACTION_CAM_UNMUTE";
-  public static final String PLAYER_EVENT = "native_player_event";
 
   @Override
   public void onReceive(Context context, Intent intent) {
@@ -28,25 +26,25 @@ public class UIApdateReceiver extends BroadcastReceiver {
     WritableMap params = Arguments.createMap();
     if (ACTION_JOIN_ROOM.equals(action)) {
       params.putString("action", "join_room");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (ACTION_LEAVE_ROOM.equals(action)) {
       params.putString("action", "leave_room");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (ACTION_MUTE.equals(action)) {
       params.putString("action", "mute");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (ACTION_UNMUTE.equals(action)) {
       params.putString("action", "unmute");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (ACTION_CAM_MUTE.equals(action)) {
       params.putString("action", "cam_mute");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (ACTION_CAM_UNMUTE.equals(action)) {
       params.putString("action", "cam_unmute");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
       params.putString("action", "screen_off");
-      SendEventToClient.sendEvent(PLAYER_EVENT, params);
+      GxyUIStateModule.dispatchNativePlayerEvent(params);
     }
   }
 }

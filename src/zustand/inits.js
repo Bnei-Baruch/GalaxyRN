@@ -241,7 +241,7 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     if (Platform.OS === 'android') {
       systemEventSubscription = DeviceEventEmitter.addListener(
-        'system_event',
+        'systemEvent',
         async event => {
           logger.debug(NAMESPACE, 'system_event event: ', event);
           if (event.action === 'terminate') {
@@ -266,7 +266,7 @@ export const useInitsStore = create((set, get) => ({
       logger.debug(NAMESPACE, 'system_event listener set up successfully');
 
       playerActionSubscription = DeviceEventEmitter.addListener(
-        'native_player_event',
+        'nativePlayerEvent',
         async data => {
           logger.debug(NAMESPACE, 'native_player_event event: ', data);
           if (data.action === 'join_room') {

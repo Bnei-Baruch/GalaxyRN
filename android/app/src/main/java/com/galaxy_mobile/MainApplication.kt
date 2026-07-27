@@ -17,8 +17,8 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
+import com.galaxy_mobile.uiState.GxyUIStateModule
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
@@ -83,7 +83,7 @@ class MainApplication : Application(), ReactApplication {
                             if (reactContext.hasActiveCatalystInstance()) {
                                 val params: WritableMap = Arguments.createMap()
                                 params.putString("action", "terminate")
-                                SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, params)
+                                GxyUIStateModule.dispatchSystemEvent(params)
                                 GxyLogger.d(TAG, "Sent termination signal to JS - Activity status: irrelevant")
                                 Thread.sleep(1000)
                             }

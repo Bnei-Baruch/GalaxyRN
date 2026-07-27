@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.galaxy_mobile.MainApplication;
-import com.galaxy_mobile.SendEventToClient;
+import com.galaxy_mobile.uiState.GxyUIStateModule;
 import com.galaxy_mobile.logger.GxyLogger;
 
 import android.content.BroadcastReceiver;
@@ -38,7 +38,7 @@ public class ForegroundService extends Service {
             if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 WritableMap params = Arguments.createMap();
                 params.putString("action", "screen_off");
-                SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, params);
+                GxyUIStateModule.dispatchSystemEvent(params);
             }
         }
     };

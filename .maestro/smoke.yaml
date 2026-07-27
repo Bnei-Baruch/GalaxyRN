@@ -1,4 +1,4 @@
-appId: com.galaxy_mobile
+appId: ${APP_ID}
 name: smoke — app launches to LoginScreen
 tags:
   - smoke

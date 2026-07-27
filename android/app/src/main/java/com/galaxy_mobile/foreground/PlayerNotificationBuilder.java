@@ -11,7 +11,6 @@ import androidx.core.app.NotificationCompat;
 import androidx.media.app.NotificationCompat.MediaStyle;
 
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.galaxy_mobile.SendEventToClient;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.uiState.UIApdateReceiver;
 import com.galaxy_mobile.MainActivity;

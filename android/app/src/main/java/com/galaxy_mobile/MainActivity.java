@@ -20,7 +20,6 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
 import com.galaxy_mobile.permissions.PermissionHelper;
-import com.galaxy_mobile.SendEventToClient;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
 
@@ -103,7 +102,7 @@ public class MainActivity extends ReactActivity {
         WritableMap data = Arguments.createMap();
         data.putString("action", "is_pip_mode");
         data.putBoolean("active", isInPictureInPictureMode);
-        SendEventToClient.sendEvent(SendEventToClient.SYSTEM_EVENT, data);
+        GxyUIStateModule.dispatchSystemEvent(data);
     }
 
     @Override

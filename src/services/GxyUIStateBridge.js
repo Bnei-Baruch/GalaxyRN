@@ -1,12 +1,12 @@
-import { NativeModules } from 'react-native';
 import { useRoomStore } from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useMyStreamStore } from '../zustand/myStream';
+import NativeGxyUIStateModule from '../specs/NativeGxyUIStateModule';
 import logger from './logger';
 
 const NAMESPACE = 'GxyUIStateBridge';
 
-const NativeGxyUIState = NativeModules.GxyUIStateModule;
+const NativeGxyUIState = NativeGxyUIStateModule;
 const collectData = () => {
   const isMicOn = !useMyStreamStore.getState().mute;
   const isInRoom = useInRoomStore.getState().isInRoom;

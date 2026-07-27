@@ -1,4 +1,4 @@
-appId: com.galaxy_mobile
+appId: ${APP_ID}
 name: login — Keycloak OAuth
 tags:
   - login
@@ -6,51 +6,96 @@ env:
   E2E_USERNAME: ""
   E2E_PASSWORD: ""
 ---
-# Requires E2E_USERNAME / E2E_PASSWORD (loaded from .env by scripts/device-verify.sh).
-# Launch the app so the flow is self-contained (the app may be backgrounded).
+# Requires E2E_USERNAME / E2E_PASSWORD (loaded from .env by scripts/device-verify.sh) and
+# -e APP_ID=<bundle> (Android: com.galaxy_mobile, iOS: com.galaxy.mobile).
+#
+# The Keycloak page is reached differently per platform, so the web-form steps branch on
+# `when: platform:`:
+#   - Android → Chrome Custom Tab, which exposes the page's HTML ids as resource-ids → match by id.
+#   - iOS     → ASWebAuthenticationSession (SFSafariViewController). Its web content is NOT exposed
+#               by HTML id to XCTest, only by visible TEXT → match by text (assumes English Keycloak UI).
 - launchApp:
     clearState: true
     permissions:
       all: allow
-# Wait for the LoginScreen to render (debug bundle can take ~30s on first load).
-# Match by testID (language-independent) — see src/auth/LoginScreen.js testID="loginBtn".
+# Wait for the LoginScreen (debug bundle can take ~30s on first load). testID is locale-proof.
 - extendedWaitUntil:
     visible:
       id: "loginBtn"
     timeout: 120000
 - tapOn:
     id: "loginBtn"
+
 # ---------------------------------------------------------------------------
-# Keycloak login opens in a Chrome Custom Tab (accounts.kab.info). Chrome exposes
-# the page's HTML ids as resource-ids, so match by id (language-independent).
+# iOS: ASWebAuthenticationSession. First a native consent alert
+# ("<App>" Wants to Use "kab.info" to Sign In) → Continue. Then the Keycloak page,
+# whose fields are reachable only by visible text.
+# ---------------------------------------------------------------------------
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # Native consent alert (only on the first login; harmless no-op otherwise).
+      - tapOn:
+          text: "Continue"
+          optional: true
+      # Fill the Keycloak form ONLY if it appears. If the Keycloak SSO cookie already exists
+      # (it lives in Safari and survives the app's clearState), the auth session redirects back
+      # to the app without showing the form — this whole block is then skipped. `when: visible`
+      # waits briefly for the form, so both paths (form / SSO auto-login) work.
+      - runFlow:
+          when:
+            visible:
+              text: "Continue with email and password"
+          commands:
+            - tapOn:
+                text: "Continue with email and password"
+            - tapOn:
+                text: "Email"
+            - inputText: ${E2E_USERNAME}
+            - tapOn:
+                text: "Password"
+            - inputText: ${E2E_PASSWORD}
+            # Dismiss the iOS keyboard so the Sign In button is tappable.
+            - tapOn:
+                text: "Done"
+                optional: true
+            - tapOn:
+                text: "Sign In"
+
+# ---------------------------------------------------------------------------
+# Android: Chrome Custom Tab. HTML ids are exposed as resource-ids (locale-proof).
 # The landing page shows social login + "continue with email and password"
 # (id: show-traditional-login) — tap it to reveal the username/password form.
 # ---------------------------------------------------------------------------
-- extendedWaitUntil:
-    visible:
-      id: "show-traditional-login"
-    timeout: 45000
-- tapOn:
-    id: "show-traditional-login"
-- extendedWaitUntil:
-    visible:
-      id: "username"
-    timeout: 30000
-- tapOn:
-    id: "username"
-- inputText: ${E2E_USERNAME}
-# Chrome's built-in password manager pops a "Use saved password?" bottom sheet that covers
-# the password field. Back dismisses it (without closing the Custom Tab) — system autofill off
-# is not enough, this is Chrome's own manager.
-- pressKey: Back
-- tapOn:
-    id: "password"
-- inputText: ${E2E_PASSWORD}
-- pressKey: Back
-- tapOn:
-    id: "kc-login"
-# Back in the app after the OAuth redirect (com.galaxy://callback).
-# Settings screen "Join Room" button — matched by testID (src/settings/JoinRoomBtn.js).
+- runFlow:
+    when:
+      platform: android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "show-traditional-login"
+          timeout: 45000
+      - tapOn:
+          id: "show-traditional-login"
+      - extendedWaitUntil:
+          visible:
+            id: "username"
+          timeout: 30000
+      - tapOn:
+          id: "username"
+      - inputText: ${E2E_USERNAME}
+      # Chrome's password manager pops a "Use saved password?" sheet over the field; Back
+      # dismisses it (system autofill off is not enough — this is Chrome's own manager).
+      - pressKey: Back
+      - tapOn:
+          id: "password"
+      - inputText: ${E2E_PASSWORD}
+      - pressKey: Back
+      - tapOn:
+          id: "kc-login"
+
+# Back in the app after the OAuth redirect. Settings screen "Join Room" (testID).
 - extendedWaitUntil:
     visible:
       id: "joinRoomBtn"

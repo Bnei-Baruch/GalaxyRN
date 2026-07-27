@@ -21,8 +21,11 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.WritableMap;
 
 import com.galaxy_mobile.MainApplication;
+import com.facebook.fbreact.specs.NativeGxyUIStateModuleSpec;
+import com.facebook.proguard.annotations.DoNotStrip;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.module.annotations.ReactModule;
@@ -31,10 +34,14 @@ import com.galaxy_mobile.uiState.GxyPipBuilder;
 import com.galaxy_mobile.foreground.ForegroundService;
 
 @ReactModule(name = GxyUIStateModule.NAME)
-public class GxyUIStateModule extends ReactContextBaseJavaModule {
+public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
 
     public static final String NAME = "GxyUIStateModule";
     private static final String TAG = "GxyUIStateModule";
+
+    // Static self-ref so Service/BroadcastReceiver/Application contexts (which have no module
+    // instance) can route events to JS through this TurboModule's codegen emit* methods.
+    private static GxyUIStateModule instance;
 
     private Handler mainHandler;
     private LifecycleEventObserver lifecycleObserver;
@@ -46,13 +53,8 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
 
     public GxyUIStateModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        instance = this;
         GxyLogger.d(TAG, "GxyUIStateModule constructor called");
-    }
-
-    @NonNull
-    @Override
-    public String getName() {
-        return NAME;
     }
 
     private void initLifecycleObserver() {
@@ -81,6 +83,11 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
     @Override
     public void invalidate() {
         super.invalidate();
+
+        // Drop the static ref so we don't route events into a dead ReactContext.
+        if (instance == this) {
+            instance = null;
+        }
 
         // Remove lifecycle observer
         if (lifecycleObserver != null) {
@@ -123,7 +130,9 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         });
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void startForeground(Promise promise) {
         GxyLogger.d(TAG, "startForeground");
         initLifecycleObserver();
@@ -132,7 +141,9 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void stopForeground(Promise promise) {
         GxyLogger.d(TAG, "stopForeground");
 
@@ -156,7 +167,9 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void updateUIState(boolean isMicOn, boolean isInRoom, String room, boolean isCammute) {
         GxyLogger.d(TAG, "updateUIState: isMicOn: " + isMicOn + " isInRoom: " + isInRoom + " room: " + room
                 + " isCammute: " + isCammute);
@@ -189,7 +202,9 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @Override
     @ReactMethod
+    @DoNotStrip
     public void activatePip(Promise promise) {
         GxyLogger.d(TAG, "activatePip");
         GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
@@ -202,5 +217,21 @@ public class GxyUIStateModule extends ReactContextBaseJavaModule {
         Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
         intent.setAction(ForegroundService.START_SERVICE_ACTION);
         getCurrentActivity().startForegroundService(intent);
+    }
+
+    // --- Event dispatch from instance-less contexts (Service / BroadcastReceiver / Application) ---
+    // Named dispatch* to avoid clashing with the codegen instance methods emitSystemEvent /
+    // emitNativePlayerEvent. Best-effort: if the module isn't alive (JS not ready), the event is
+    // dropped — same behaviour as the old SendEventToClient !hasActiveCatalystInstance() guard.
+    public static void dispatchSystemEvent(WritableMap data) {
+        if (instance != null) {
+            instance.emitSystemEvent(data);
+        }
+    }
+
+    public static void dispatchNativePlayerEvent(WritableMap data) {
+        if (instance != null) {
+            instance.emitNativePlayerEvent(data);
+        }
     }
 }
