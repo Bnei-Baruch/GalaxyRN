@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+name: join-room-fast — enter a room, skipping install & login
+tags:
+  - subflow
+  - fast
+# No `env:` block — ${E2E_ROOM} comes from the exported shell env / `-e` (see login.yaml note).
+---
+# Fast in-room entry that SKIPS install (app already on the device) and SKIPS login (session
+# already persisted — launch without clearState). Use for quick in-room iteration once you've
+# logged in at least once. Same room-select body as join-room.yaml, minus the Keycloak login.
+- runFlow: logged-in.yaml
+- runFlow: select-room.yaml

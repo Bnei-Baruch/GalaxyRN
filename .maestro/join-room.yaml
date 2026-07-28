@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+name: join-room — login + enter a room (subflow)
+tags:
+  - subflow
+# No `env:` block — E2E_USERNAME/E2E_PASSWORD/E2E_ROOM come from the exported shell env / `-e`
+# (see login.yaml note). ${E2E_ROOM} = exact room description that exists for the test account.
+---
+# Reusable subflow: logs in (cross-platform), then joins ${E2E_ROOM}. Ends IN the room
+# (leaveBtn visible). Consumed by chat/audio-device/rejoin. For the logged-in fast path (no
+# login), use join-room-fast.yaml.
+- runFlow: login.yaml # ends on the Settings screen with joinRoomBtn visible
+- runFlow: select-room.yaml

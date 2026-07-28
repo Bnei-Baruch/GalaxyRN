@@ -7,6 +7,9 @@
 #   scripts/device-verify.sh metro          # adb reverse + check Metro is up
 #   scripts/device-verify.sh smoke          # run .maestro/smoke.yaml (no creds)
 #   scripts/device-verify.sh regression     # run .maestro/regression.yaml (needs .env creds)
+#   scripts/device-verify.sh chat|rejoin|audio-device   # in-room flows (need creds + E2E_ROOM)
+#   scripts/device-verify.sh fast           # in-room, SKIP install & login (needs only E2E_ROOM)
+#   scripts/device-verify.sh flow <file>    # run any .maestro/<file> (creds/room from .env)
 #   scripts/device-verify.sh net offline    # connectivity: wifi-off/on, data-off/on, offline,
 #                                           #   online, offline-for [sec], flap [on off cycles],
 #                                           #   wifi-connect <ssid> [sec] [pass], wifi-switch a|b
@@ -81,8 +84,17 @@ run_flow() {
   local flow="$1"
   command -v maestro >/dev/null 2>&1 || { err "Maestro not installed (see doctor)"; exit 1; }
   require_device >/dev/null
-  info "Running maestro flow: $flow"
-  ( cd "$ROOT" && maestro test "$FLOWS/$flow" )
+  info "Running maestro flow: $flow (APP_ID=$APP_ID)"
+  # Maestro 2.7.0 interpolates ${VAR} ONLY from `-e` flags or the flow's `env:` block — it does
+  # NOT read the process/OS environment. So every var a flow needs must be passed with `-e`
+  # (an unresolved ${VAR} gets typed literally as "undefined"). Pass APP_ID plus any E2E_* that
+  # is set in .env.
+  local eargs=(-e "APP_ID=$APP_ID")
+  local v
+  for v in E2E_USERNAME E2E_PASSWORD E2E_ROOM; do
+    [ -n "${!v:-}" ] && eargs+=(-e "$v=${!v}")
+  done
+  ( cd "$ROOT" && maestro test "${eargs[@]}" "$FLOWS/$flow" )
 }
 
 cmd_smoke() { run_flow "smoke.yaml"; info "Screenshots in $RESULTS"; }
@@ -93,6 +105,41 @@ cmd_regression() {
     exit 1
   fi
   run_flow "regression.yaml"
+  info "Screenshots in $RESULTS"
+}
+
+# In-room flows (chat / rejoin / audio-device) need creds AND a joinable room name.
+cmd_inroom() {
+  local flow="$1"
+  if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ]; then
+    err "E2E_USERNAME / E2E_PASSWORD not set. Add them to .env (see .env.example)."
+    exit 1
+  fi
+  if [ -z "${E2E_ROOM:-}" ]; then
+    err "E2E_ROOM not set. Add the exact room name (must exist for the test account) to .env."
+    exit 1
+  fi
+  run_flow "$flow"
+  info "Screenshots in $RESULTS"
+}
+
+# Fast in-room: SKIPS install (app already on device) and SKIPS login (session already
+# persisted — launches without clearState). Only needs E2E_ROOM. Run `login`/`regression`/`rejoin`
+# once first so the session is saved.
+cmd_fast() {
+  if [ -z "${E2E_ROOM:-}" ]; then
+    err "E2E_ROOM not set. Add the room name to .env (see .env.example)."
+    exit 1
+  fi
+  run_flow "join-room-fast.yaml"
+  info "Screenshots in $RESULTS"
+}
+
+# Generic: run any flow by filename (creds/room come from .env if the flow needs them).
+cmd_flow() {
+  local flow="${1:-}"
+  [ -n "$flow" ] || { err "usage: $0 flow <file.yaml>"; exit 2; }
+  run_flow "$flow"
   info "Screenshots in $RESULTS"
 }
 
@@ -175,7 +222,12 @@ case "${1:-}" in
   prep)        cmd_prep ;;
   smoke)       cmd_smoke ;;
   regression)  cmd_regression ;;
+  chat)        cmd_inroom "chat.yaml" ;;
+  rejoin)      cmd_inroom "rejoin.yaml" ;;
+  audio-device) cmd_inroom "audio-device.yaml" ;;
+  fast|join-fast) cmd_fast ;;
+  flow)        shift; cmd_flow "${1:-}" ;;
   net)         shift; cmd_net "$@" ;;
   all)         cmd_all ;;
-  *) echo "usage: $0 {doctor|prep|install [apk]|metro|smoke|regression|net <sub>|all}"; exit 2 ;;
+  *) echo "usage: $0 {doctor|prep|install [apk]|metro|smoke|regression|chat|rejoin|audio-device|fast|flow <file>|net <sub>|all}"; exit 2 ;;
 esac

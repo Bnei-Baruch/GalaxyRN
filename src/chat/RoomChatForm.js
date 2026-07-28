@@ -42,6 +42,7 @@ export const RoomChatForm = () => {
       ]}
     >
       <TextInput
+        testID="chatInput"
         style={styles.input}
         placeholder={t('chat.newMsg')}
         placeholderTextColor="rgba(255, 255, 255, 0.7)"
@@ -51,6 +52,7 @@ export const RoomChatForm = () => {
         returnKeyType="send"
       />
       <TouchableOpacity
+        testID="chatSendBtn"
         style={[styles.button, !value.trim() && styles.buttonDisabled]}
         onPress={forceSubmit}
         disabled={!value.trim()}

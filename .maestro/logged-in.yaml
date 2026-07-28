@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+name: logged-in — launch an already-authenticated app (subflow)
+tags:
+  - subflow
+---
+# Fast path: assumes the app is ALREADY INSTALLED and a session is ALREADY PERSISTED (you ran
+# a login flow at least once, and secure storage kept the token — works on a real device /
+# Android; NOT on the iOS Simulator, where the Keychain can't persist). Launch WITHOUT clearState
+# so the session is restored, and land straight on the Settings screen — no Keycloak login.
+#
+# If joinRoomBtn never appears, the session wasn't persisted → run login.yaml (or regression) once
+# first, then use the fast flows.
+- launchApp:
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 60000

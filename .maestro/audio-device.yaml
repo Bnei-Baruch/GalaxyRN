@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+name: audio-device — switch physical output device (Android)
+tags:
+  - audio-device
+  - in-room
+# No `env:` block — values come from the exported shell env / `-e` (see login.yaml note).
+---
+# Physical audio-device selector (speaker / earpiece / bluetooth). Android only —
+# on iOS AudioDevicesBtn is a single toggle (SwitchDeviceBtn), no list.
+# Requires a joinable room (see join-room.yaml note).
+- runFlow: join-room.yaml
+- runFlow:
+    when:
+      platform: android
+    commands:
+      # Opener is the arrow-drop-down in the TopBar audio-device button (testID added).
+      - tapOn:
+          id: "audioDeviceTrigger"
+      # Device list items carry testID `audioDevice-<type>` and visible names.
+      # "Built-in speaker" is present on every device/emulator; select it.
+      - tapOn:
+          text: "Built-in speaker"
+          optional: true
+      - takeScreenshot: verify-results/audio-device-list

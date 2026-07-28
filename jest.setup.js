@@ -8,6 +8,7 @@ jest.mock('react-native-background-timer', () => ({
 
 // Mock для rn-secure-storage
 jest.mock('rn-secure-storage', () => ({
+  exist: jest.fn(),
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),

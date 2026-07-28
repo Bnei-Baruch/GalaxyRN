@@ -2,9 +2,11 @@ appId: ${APP_ID}
 name: login — Keycloak OAuth
 tags:
   - login
-env:
-  E2E_USERNAME: ""
-  E2E_PASSWORD: ""
+# NOTE: no `env:` block on purpose. E2E_USERNAME/E2E_PASSWORD MUST be passed via `-e`
+# (scripts/device-verify.sh builds the -e flags from .env). Maestro 2.7.0 interpolates
+# ${VAR} only from `-e` or an `env:` block — NOT from the OS environment — and an unresolved
+# ${VAR} is typed literally as "undefined". An empty `env:` default here would also SHADOW the
+# -e value (and override values passed down via `runFlow`), so we intentionally omit it.
 ---
 # Requires E2E_USERNAME / E2E_PASSWORD (loaded from .env by scripts/device-verify.sh) and
 # -e APP_ID=<bundle> (Android: com.galaxy_mobile, iOS: com.galaxy.mobile).
@@ -56,12 +58,17 @@ env:
             - tapOn:
                 text: "Password"
             - inputText: ${E2E_PASSWORD}
-            # Dismiss the iOS keyboard so the Sign In button is tappable.
+            # Submit via Enter, NOT by tapping the button: inside ASWebAuthenticationSession the
+            # Keycloak "Sign In" button is NOT exposed in the accessibility tree (only labels like
+            # the title/Email/Password/Register are), so it can't be matched by text or by
+            # id=kc-login on iOS. The password field is focused, and the Keycloak form submits on
+            # Enter.
+            - pressKey: Enter
+            # After submit, Safari/iOS may show a native "Save Password?" alert that blocks the
+            # OAuth redirect from completing. Dismiss it ("Not Now"); harmless no-op elsewhere.
             - tapOn:
-                text: "Done"
+                text: "Not Now"
                 optional: true
-            - tapOn:
-                text: "Sign In"
 
 # ---------------------------------------------------------------------------
 # Android: Chrome Custom Tab. HTML ids are exposed as resource-ids (locale-proof).
@@ -84,14 +91,20 @@ env:
           timeout: 30000
       - tapOn:
           id: "username"
-      - inputText: ${E2E_USERNAME}
-      # Chrome's password manager pops a "Use saved password?" sheet over the field; Back
-      # dismisses it (system autofill off is not enough — this is Chrome's own manager).
+      # On focus, the Google Password Manager "Use saved password?" bottom sheet slides up and
+      # covers the field + keyboard, so inputText lands nowhere and username stays EMPTY ->
+      # "Invalid username or password". Dismiss it with Back BEFORE typing: nothing is typed yet
+      # so Back can't clear input, and the field keeps focus + the keyboard returns.
       - pressKey: Back
+      - inputText: ${E2E_USERNAME}
+      # Dismiss the keyboard so the password field (hidden behind it) becomes tappable. Use
+      # hideKeyboard, NOT KEYCODE_Back: once text is typed, Back would discard a Gboard composing
+      # region (non-Latin layout) and re-empty the field.
+      - hideKeyboard
       - tapOn:
           id: "password"
       - inputText: ${E2E_PASSWORD}
-      - pressKey: Back
+      - hideKeyboard
       - tapOn:
           id: "kc-login"
 

@@ -1,0 +1,77 @@
+appId: ${APP_ID}
+name: select-room — pick ${E2E_ROOM} and enter it (subflow)
+tags:
+  - subflow
+# No `env:` block — ${E2E_ROOM} comes from the exported shell env / `-e` (see login.yaml note).
+---
+# Precondition: on the Settings screen, logged in, with joinRoomBtn visible. Ends IN the room
+# (leaveBtn visible). Shared by join-room.yaml (with login) and join-room-fast.yaml (no login).
+#
+# NOTE: joining depends on ${E2E_ROOM} actually existing in the test account's room list.
+#
+# Dismiss any dev LogBox overlay first — it covers/overlaps the room trigger:
+#  - Android: a collapsed yellow warning bar ("Open debugger to view warnings") sits at the bottom
+#    over the "Select Ten" trigger, so the tap hits the bar and the modal never opens. Tapping the
+#    bar expands LogBox; then "Dismiss" clears it.
+#  - iOS Simulator: RNSecureStorage KEY_NOT_STORED -> stacked red+yellow overlays (loop-dismiss).
+# All are dev-only and never appear on a real device with a working Keychain.
+- tapOn:
+    text: "Open debugger to view warnings"
+    optional: true
+- tapOn:
+    text: "Dismiss"
+    optional: true
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - repeat:
+          while:
+            visible:
+              text: "Dismiss"
+          commands:
+            - tapOn:
+                text: "Dismiss"
+- tapOn:
+    id: "roomSelectTrigger"
+# Let the modal open+animate before asserting its search field (avoids racing the open animation
+# on a real device).
+- waitForAnimationToEnd:
+    timeout: 4000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - repeat:
+          while:
+            visible:
+              text: "Dismiss"
+          commands:
+            - tapOn:
+                text: "Dismiss"
+# The modal search field auto-focuses; typing the exact room name auto-selects it
+# (RoomSelectModal.handleSearch), enabling joinRoomBtn — no list-item tap needed.
+- extendedWaitUntil:
+    visible:
+      id: "roomSearchInput"
+    timeout: 15000
+- tapOn:
+    id: "roomSearchInput"
+- inputText: ${E2E_ROOM}
+- tapOn:
+    id: "joinRoomBtn"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - repeat:
+          while:
+            visible:
+              text: "Dismiss"
+          commands:
+            - tapOn:
+                text: "Dismiss"
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 60000

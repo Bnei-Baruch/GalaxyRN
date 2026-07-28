@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+name: rejoin — leave a room and re-enter it
+tags:
+  - rejoin
+  - in-room
+# No `env:` block — values come from the exported shell env / `-e` (see login.yaml note).
+---
+# Leave → SettingsNotJoined → rejoin the same (still-selected) room.
+# Requires a joinable room (see join-room.yaml note).
+- runFlow: join-room.yaml
+# --- Leave (no confirmation dialog) ---
+- tapOn:
+    id: "leaveBtn"
+# BeforeRoom now renders SettingsNotJoined → roomSelectTrigger + joinRoomBtn.
+- extendedWaitUntil:
+    visible:
+      id: "roomSelectTrigger"
+    timeout: 30000
+- assertVisible:
+    id: "joinRoomBtn"
+- takeScreenshot: verify-results/rejoin-left
+# Give the previous session's WebRTC publisher/janus time to tear down. Re-joining too fast
+# races the teardown and the room fails to come up with a "PublisherPlugin: Failed to run
+# sdpAction" toast (no leaveBtn).
+- waitForAnimationToEnd:
+    timeout: 6000
+# --- Rejoin: the room stays selected in store, so joinRoomBtn is enabled and re-enters directly ---
+- tapOn:
+    id: "joinRoomBtn"
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 60000
+- takeScreenshot: verify-results/rejoin-back
