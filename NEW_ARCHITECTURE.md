@@ -62,13 +62,32 @@ compile correctly on Android, not just against codegen output in isolation.
 
 ## Custom native modules — converted to TurboModules
 
-All 6 custom Android modules (`SendLogsModule`, `WakeLockModule`, `ForegroundModule`, `PermissionsModule`,
-`AudioDeviceModule`, `CallListenerModule`) and their iOS counterparts (`SendLogsModule`, `KeepAwakeModule`,
-`AudioManager`, `CallManager`) now extend a generated `Native*Spec` class (Android, package
-`com.facebook.fbreact.specs`) or conform to a generated `Native*Spec` protocol via a `.mm` shim (iOS). `GxyPackage`
-itself is intentionally left as a plain `ReactPackage` (not converted to `TurboReactPackage`) — bridgeless mode
-already routes module creation through the TurboModule manager regardless of which `ReactPackage` type registers
-them, so this wasn't required; it's a possible follow-up cleanup, not a correctness gap.
+The 4 custom Android modules that actually exist (`SendLogsModule`, `AudioDeviceModule`, `CallListenerModule`,
+`GxyUIStateModule`) extend a generated `Native*Spec` class (package `com.facebook.fbreact.specs`) and are real
+codegen TurboModules — verified directly: each `class Xxx extends NativeXxxModuleSpec` in
+`android/app/src/main/java/com/galaxy_mobile/`. `GxyPackage` itself is intentionally left as a plain `ReactPackage`
+(not converted to `TurboReactPackage`) — bridgeless mode already routes module creation through the TurboModule
+manager regardless of which `ReactPackage` type registers them, so this wasn't required; it's a possible follow-up
+cleanup, not a correctness gap.
+
+An earlier version of this doc additionally listed `WakeLockModule`, `ForegroundModule`, and `PermissionsModule` as
+converted Android modules ("all 6 custom modules"). **None of these three exist** — verified: no such Java class,
+no such file, no string match anywhere in `android/app/src/main/java`. What's actually there instead: "foreground"
+behavior lives partly in `GxyUIStateModule` (`startForeground`/`stopForeground`, a real TurboModule method) and
+partly in `ForegroundService.java` (a plain Android `Service`, not a native module at all); "permissions" lives in
+`PermissionHelper.java`/the `PermissionAware` interface, also not a native module. `src/specs/NativeForegroundModule.ts`,
+`src/specs/NativeKeepAwakeModule.ts`, and `src/services/KeepAwakeBridge.js` were a dead spec/bridge chain with no
+native implementation on either platform and no callers anywhere in `src/` — removed (2026-07-29).
+
+**iOS custom modules (`SendLogsModule`, `AudioManager`, `CallManager`, `GxyUIStateModule`) were NOT converted** —
+despite an earlier version of this doc claiming otherwise. Verified directly (2026-07-29): every iOS module file
+is still plain Objective-C (`lastKnownFileType = sourcecode.c.objc` in `project.pbxproj`, not `.mm`), none import
+the generated `<ReactCodegen/GalaxyRNSpec/GalaxyRNSpec.h>` header, none conform to their generated `NativeXSpec`
+protocol, and none implement `getTurboModule:`. They're still registered the classic way
+(`RCT_EXTERN_MODULE`/`RCT_EXTERN_METHOD` in `.m`) and only reachable from JS because bridgeless mode's built-in
+legacy-module interop lets `TurboModuleRegistry.get()` resolve plain `RCTBridgeModule`s automatically — not because
+of any explicit codegen conformance. The generated `src/specs/Native*.ts` spec files exist and are used for JS
+typing/method calls, but nothing on the iOS native side actually implements them.
 
 Android/iOS module names and method contracts differ per platform (e.g. `AudioDeviceModule` vs `AudioManager` have
 almost no method names in common) — each platform has its own `src/specs/Native*.ts` spec file; there is no shared
@@ -76,13 +95,22 @@ cross-platform spec for these two, only for `SendLogsModule` (identical contract
 
 Event emission: Android modules call the generated `emit<EventName>(...)` method (declared without an `on` prefix
 in the TS spec, e.g. `updateAudioDevice` not `onUpdateAudioDevice`, specifically so the wire event name matches
-what existing JS listeners already expected — no JS-side event-name changes were needed). The old global
-`SendEventToClient` broadcaster is deleted. iOS `AudioManager`/`CallManager` still extend `RCTEventEmitter` and use
-its classic `sendEvent(withName:body:)` for events, deliberately *not* switched to the generated `NativeXSpecBase`
-emit mechanism — a Swift class cannot subclass both `RCTEventEmitter` and the generated (Obj-C++, C++-member-bearing)
-`NativeXSpecBase` at once, and classic `RCTEventEmitter` event delivery keeps working fine under the new
-architecture, so this was left alone. Only the callable methods were wired into TurboModule dispatch via a small
-`.mm` category implementing `getTurboModule:`.
+what existing JS listeners already expected — no JS-side event-name changes were needed). JS subscribes by calling
+the spec's `EventEmitter<T>` property directly as a function (`NativeModule.updateAudioDevice(handler)`) — this is
+a JSI-native mechanism (`TurboModule::create()` → `eventEmitterMap_`), unrelated to `RCTDeviceEventEmitter`/
+`DeviceEventEmitter`/`NativeEventEmitter(module).addListener(...)`, which do NOT reach it. The old global
+`SendEventToClient` broadcaster is deleted.
+
+iOS `AudioManager`/`CallManager` still extend `RCTEventEmitter` and use its classic `sendEvent(withName:body:)` for
+events, and JS reaches them via `new NativeEventEmitter(NativeModule).addListener(eventName, handler)` — the
+legacy bridge path. This is deliberate, not an oversight: the generated `NativeXSpecBase` that real emit methods
+require has a protected C++ member (`facebook::react::EventEmitterCallback`), forcing Obj-C++ compilation; a class
+can only have one superclass, so nothing can extend both `RCTEventEmitter` and `NativeXSpecBase` at once. Since
+(per above) iOS modules were never actually converted to real TurboModule conformance in the first place, this
+would additionally require writing that conformance from scratch (a `.mm` class subclassing `NativeXSpecBase`,
+conforming to `NativeXSpec`, delegating to the existing Swift logic) — not just adding events on top of existing
+wiring. Classic `RCTEventEmitter` event delivery keeps working fine under the new architecture, so this was left
+alone as-is.
 
 `CallListenerModule`/`CallManager` have zero callable methods (event-only) — during this conversion, dead code
 (`CallManager.keepScreenAwake`, confirmed zero JS callers) was removed rather than ported.

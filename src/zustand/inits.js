@@ -1,4 +1,4 @@
-import { DeviceEventEmitter, Dimensions, Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
@@ -36,14 +36,6 @@ export const AppInitStates = {
   DISCONNECTED: -1,
   NOT_JOINED: 0,
 };
-
-let eventEmitter;
-try {
-  eventEmitter = CallsBridge.getEventEmitter();
-  logger.debug(NAMESPACE, 'eventEmitter created successfully:', eventEmitter);
-} catch (error) {
-  logger.error(NAMESPACE, 'Error setting up event emitter:', error);
-}
 
 let subscription = null;
 let playerActionSubscription = null;
@@ -240,33 +232,29 @@ export const useInitsStore = create((set, get) => ({
     BackgroundTimer.start();
     let _isPlay = false;
     if (Platform.OS === 'android') {
-      systemEventSubscription = DeviceEventEmitter.addListener(
-        'systemEvent',
-        async event => {
-          logger.debug(NAMESPACE, 'system_event event: ', event);
-          if (event.action === 'terminate') {
-            logger.debug(NAMESPACE, 'terminate');
-            await useInRoomStore.getState().exitRoom();
-            await useInitsStore.getState().abortMqtt();
-            await useInitsStore.getState().terminateApp();
-            systemEventSubscription.remove();
-            systemEventSubscription = null;
-          } else if (event.action === 'is_pip_mode') {
-            logger.debug(NAMESPACE, 'is_pip_mode');
-            useSettingsStore.getState().toggleIsPIPMode(event.active);
-          } else if (event.action === 'screen_off') {
-            logger.debug(NAMESPACE, 'screen_off');
-            useInRoomStore.getState().enterAudioMode();
-            useMyStreamStore.getState().toggleCammute(true, false);
-          } else {
-            logger.debug(NAMESPACE, 'unhandled system_event:', event.action);
-          }
+      systemEventSubscription = GxyUIStateBridge.onSystemEvent(async event => {
+        logger.debug(NAMESPACE, 'system_event event: ', event);
+        if (event.action === 'terminate') {
+          logger.debug(NAMESPACE, 'terminate');
+          await useInRoomStore.getState().exitRoom();
+          await useInitsStore.getState().abortMqtt();
+          await useInitsStore.getState().terminateApp();
+          systemEventSubscription.remove();
+          systemEventSubscription = null;
+        } else if (event.action === 'is_pip_mode') {
+          logger.debug(NAMESPACE, 'is_pip_mode');
+          useSettingsStore.getState().toggleIsPIPMode(event.active);
+        } else if (event.action === 'screen_off') {
+          logger.debug(NAMESPACE, 'screen_off');
+          useInRoomStore.getState().enterAudioMode();
+          useMyStreamStore.getState().toggleCammute(true, false);
+        } else {
+          logger.debug(NAMESPACE, 'unhandled system_event:', event.action);
         }
-      );
+      });
       logger.debug(NAMESPACE, 'system_event listener set up successfully');
 
-      playerActionSubscription = DeviceEventEmitter.addListener(
-        'nativePlayerEvent',
+      playerActionSubscription = GxyUIStateBridge.onNativePlayerEvent(
         async data => {
           logger.debug(NAMESPACE, 'native_player_event event: ', data);
           if (data.action === 'join_room') {
@@ -286,33 +274,29 @@ export const useInitsStore = create((set, get) => ({
       );
       logger.debug(NAMESPACE, 'native_player_event listener set up successfully');
     }
-    logger.debug(NAMESPACE, 'initApp eventEmitter', eventEmitter);
 
     try {
-      subscription = eventEmitter.addListener(
-        'onCallStateChanged',
-        async data => {
-          logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
-          addFinishSpan(ROOM_SESSION, 'onCallStateChanged', {
-            ...data,
-            NAMESPACE,
-          });
+      subscription = CallsBridge.onCallStateChanged(async data => {
+        logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
+        addFinishSpan(ROOM_SESSION, 'onCallStateChanged', {
+          ...data,
+          NAMESPACE,
+        });
 
-          if (data.state === 'ON_START_CALL') {
-            logger.debug(NAMESPACE, 'Processing ON_START_CALL');
-            _isPlay = useShidurStore.getState().isPlay;
-            logger.debug(NAMESPACE, 'ON_START_CALL exitRoom');
-            useInRoomStore.getState().exitRoom();
-            logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
-          } else if (data.state === 'ON_END_CALL') {
-            logger.debug(NAMESPACE, 'Processing ON_END_CALL');
-            useInRoomStore.getState().safeJoinRoom(_isPlay);
-            logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
-          } else {
-            logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
-          }
+        if (data.state === 'ON_START_CALL') {
+          logger.debug(NAMESPACE, 'Processing ON_START_CALL');
+          _isPlay = useShidurStore.getState().isPlay;
+          logger.debug(NAMESPACE, 'ON_START_CALL exitRoom');
+          useInRoomStore.getState().exitRoom();
+          logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
+        } else if (data.state === 'ON_END_CALL') {
+          logger.debug(NAMESPACE, 'Processing ON_END_CALL');
+          useInRoomStore.getState().safeJoinRoom(_isPlay);
+          logger.debug(NAMESPACE, 'ON_END_CALL processing completed');
+        } else {
+          logger.debug(NAMESPACE, 'Unhandled call state:', data.state);
         }
-      );
+      });
     } catch (error) {
       logger.error(NAMESPACE, 'Error initializing app', error);
       throw error;

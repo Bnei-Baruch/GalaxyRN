@@ -52,6 +52,30 @@ const GxyUIStateBridge = {
       return false;
     }
   },
+
+  /**
+   * Subscribe to the native systemEvent event (codegen EventEmitter field)
+   * @returns {?{remove: Function}} subscription, or null if unavailable
+   */
+  onSystemEvent: handler => {
+    if (NativeGxyUIState?.systemEvent) {
+      return NativeGxyUIState.systemEvent(handler);
+    }
+    logger.warn(NAMESPACE, 'systemEvent is not available');
+    return null;
+  },
+
+  /**
+   * Subscribe to the native nativePlayerEvent event (codegen EventEmitter field)
+   * @returns {?{remove: Function}} subscription, or null if unavailable
+   */
+  onNativePlayerEvent: handler => {
+    if (NativeGxyUIState?.nativePlayerEvent) {
+      return NativeGxyUIState.nativePlayerEvent(handler);
+    }
+    logger.warn(NAMESPACE, 'nativePlayerEvent is not available');
+    return null;
+  },
   raw: NativeGxyUIState,
 };
 

@@ -7,7 +7,7 @@ import { initEnv } from './src/services/env';
 // interactive elements (e.g. the room "Select Ten" trigger), which both blocks manual use and
 // breaks Maestro E2E. Warnings/errors still print to the Metro console. No effect in release.
 if (__DEV__) {
-  LogBox.ignoreAllLogs(true);
+  //LogBox.ignoreAllLogs(true);
 }
 
 I18nManager.forceRTL(false);

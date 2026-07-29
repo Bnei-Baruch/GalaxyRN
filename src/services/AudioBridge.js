@@ -1,8 +1,4 @@
-import {
-  DeviceEventEmitter,
-  NativeEventEmitter,
-  Platform,
-} from 'react-native';
+import { NativeEventEmitter, Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import logger from './logger';
 import NativeAudioManager from '../specs/NativeAudioManager';
@@ -22,28 +18,25 @@ if (Platform.OS === 'ios') {
 
 const AudioBridge = {
   /**
-   * Get the appropriate event emitter for the current platform
-   * @returns {Object} DeviceEventEmitter for Android, NativeEventEmitter for iOS
+   * Subscribe to the native updateAudioDevice event.
+   * iOS (AudioManager) is a legacy RCTEventEmitter interop module, so it's
+   * reached via NativeEventEmitter/addListener. Android (AudioDeviceModule)
+   * is a real codegen TurboModule, so its EventEmitter field is called
+   * directly.
+   * @returns {?{remove: Function}} subscription, or null if unavailable
    */
-  getEventEmitter: () => {
-    try {
-      if (Platform.OS === 'ios') {
-        if (NativeAudio) {
-          logger.debug(NAMESPACE, 'Creating NativeEventEmitter for iOS');
-          return new NativeEventEmitter(NativeAudio);
-        } else {
-          logger.warn(NAMESPACE, 'iOS native module not available');
-          return DeviceEventEmitter;
-        }
-      } else {
-        // Android: Use DeviceEventEmitter as events are sent via SendEventToClient
-        logger.debug(NAMESPACE, 'Using DeviceEventEmitter for Android');
-        return DeviceEventEmitter;
-      }
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error creating event emitter', error);
-      return DeviceEventEmitter;
+  onUpdateAudioDevice: handler => {
+    if (!NativeAudio) {
+      logger.warn(NAMESPACE, 'updateAudioDevice is not available');
+      return null;
     }
+    if (Platform.OS === 'ios') {
+      return new NativeEventEmitter(NativeAudio).addListener(
+        'updateAudioDevice',
+        handler
+      );
+    }
+    return NativeAudio.updateAudioDevice(handler);
   },
 
   initAudioDevices: () => {
