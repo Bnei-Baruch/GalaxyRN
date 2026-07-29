@@ -54,11 +54,6 @@ Flows (`.maestro/`): `smoke` → `login` (subflow) → `regression`; in-room `jo
 come from `.env` (see `.env.example`). iOS: Maestro can drive the **simulator** only (no idb for a
 physical device); pass `-e APP_ID=com.galaxy.mobile`.
 
-### Known blocker — in-room flows need real room data
-`chat` / `rejoin` / `audio-device` and `regression`'s room-join require `E2E_ROOM` to be a room the
-test account can actually join. The `testingto` account currently lists **"No rooms found"**, so
-these stay RED for lack of test data — not an app bug. Provide a valid room/account to make them green.
-
 ## Agents (`.claude/agents/`)
 
 - **`test-runner`** — runs & repairs the Jest suite (config, mocks, tests). Cheap, no device.

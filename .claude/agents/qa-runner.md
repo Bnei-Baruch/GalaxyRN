@@ -36,12 +36,6 @@ Use the wrapper `scripts/device-verify.sh` (loads `.env`, passes `-e APP_ID`, wr
 4. Maestro/selector failures, screenshots, logcat interpretation, flow repair → hand off to the
    `device-verifier` agent. Don't hand-edit `.maestro/*.yaml` here.
 
-### Known data blocker (report it, don't retry forever)
-The in-room flows (`chat`/`rejoin`/`audio-device`) and `regression`'s room-join depend on
-`E2E_ROOM` existing for the test account. The `testingto` account currently shows
-"No rooms found" — so these go RED for lack of test data, NOT an app bug. If the room modal shows
-"No rooms found", stop and report that a valid room/account is needed.
-
 ## Report → `verify-results/qa-report.md`
 - **Layer 1 (Jest):** command, suites/tests counts, PASS/FAIL, link failures to `test-runner`.
 - **Layer 2 (Maestro):** per-flow PASS/FAIL/SKIP, screenshot refs, link failures to `device-verifier`.
