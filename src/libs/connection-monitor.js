@@ -3,7 +3,7 @@ import BackgroundTimer from 'react-native-background-timer';
 import logger from '../services/logger';
 import { rejectTimeoutPromise, sleep } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
-import { useInitsStore } from '../zustand/inits';
+import { AppInitStates, useInitsStore } from '../zustand/inits';
 import { useSettingsStore } from '../zustand/settings';
 import mqtt from './mqtt';
 import { CONNECTION } from './sentry/constants';
@@ -218,6 +218,10 @@ const onNoNetwork = async () => {
 
   try {
     useInitsStore.getState().terminateApp();
+    // terminateApp() always lands on NOT_JOINED; mark this specific teardown as
+    // DISCONNECTED so setNetIsOn's reconnect check re-triggers initApp() once
+    // network actually comes back (see zustand/inits.js setNetIsOn).
+    useInitsStore.getState().setAppInitState(AppInitStates.DISCONNECTED);
   } catch (e) {
     logger.debug(NAMESPACE, 'Error in terminateApp', e);
   }
