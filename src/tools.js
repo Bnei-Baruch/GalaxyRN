@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from './services/BackgroundTimer';
 import RNSecureStorage, { ACCESSIBLE } from 'rn-secure-storage';
 import logger from './services/logger';
 
@@ -335,9 +335,15 @@ export const reduceVideoComplexity = sdp => {
 };
 
 export const rejectTimeoutPromise = (promise, time = 10000) => {
+  let timerId;
   const timer = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error(`Timeout after ${time}ms`)), time);
+    timerId = BackgroundTimer.setTimeout(
+      () => reject(new Error(`Timeout after ${time}ms`)),
+      time
+    );
   });
 
-  return Promise.race([promise, timer]);
+  return Promise.race([promise, timer]).finally(() => {
+    BackgroundTimer.clearTimeout(timerId);
+  });
 };

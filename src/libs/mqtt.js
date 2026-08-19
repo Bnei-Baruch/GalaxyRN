@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import { getEnvValue } from '../services/env';
 import logger from '../services/logger';
 
@@ -69,6 +69,9 @@ class MqttMsg {
       username: user.email,
       password: kc.getToken(),
       transformWsUrl: transformUrl,
+      log: (...args) => {
+        logger.debug("MQTT LIB", args[0]);
+      },
       properties: {
         sessionExpiryInterval: mqttTimeout,
         maximumPacketSize: 256000,
@@ -79,7 +82,9 @@ class MqttMsg {
         set: (func, time) => {
           return BackgroundTimer.setInterval(func, time);
         },
-        clear: timerId => BackgroundTimer.clearInterval(timerId),
+        clear: timerId => {
+          return BackgroundTimer.clearInterval(timerId);
+        },
       },
     };
 
@@ -171,6 +176,13 @@ class MqttMsg {
     this.mq.on('error', error => {
       addFinishSpan(CONNECTION, 'mqtt.error', { ...error, NAMESPACE });
       logger.error(NAMESPACE, 'mqtt on error', error);
+
+      if (error?.message === 'Keepalive timeout') {
+        logger.warn(NAMESPACE, 'Keepalive timeout - resetting connection');
+        useInitsStore.getState().resetMqtt();
+        return;
+      }
+
       rejectTimeoutPromise(onMqttConnectionLost(), 5000).catch(error => {
         logger.error(NAMESPACE, 'mqtt close error', error);
       });
@@ -354,7 +366,7 @@ class MqttMsg {
     }
     try {
       logger.debug(NAMESPACE, 'endAsync', this.mq);
-      await this.mq.endAsync();
+      await rejectTimeoutPromise(this.mq.endAsync(), 3000);
       finishSpan(endSpan, 'ok', NAMESPACE);
     } catch (e) {
       logger.error(NAMESPACE, 'endAsync error', e);

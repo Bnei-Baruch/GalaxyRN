@@ -1,4 +1,4 @@
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import logger from '../services/logger';
 import { randomString, rejectTimeoutPromise } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -199,7 +199,7 @@ export class JanusMqtt {
 
     this._cleanupTransactions();
 
-    this._cleanupMqtt();
+    await this._cleanupMqtt();
     logger.debug(NAMESPACE, 'destroy done');
     finishSpan(destroySpan, 'ok', NAMESPACE);
     finishTransaction(this.sentrySession, 'ok', NAMESPACE);

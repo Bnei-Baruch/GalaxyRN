@@ -1,7 +1,7 @@
 import { AUTH_CONFIG_ISSUER } from '@env';
 import { decode } from 'base-64';
 import { authorize, logout, refresh } from 'react-native-app-auth';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import RNSecureStorage from 'rn-secure-storage';
 import { STORAGE_KEYS } from '../constants';
 import { getUserRole, userRolesEnum } from '../enums';

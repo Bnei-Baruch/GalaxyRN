@@ -1,5 +1,5 @@
 import { NativeEventEmitter, Platform } from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from './BackgroundTimer';
 import logger from './logger';
 import NativeAudioManager from '../specs/NativeAudioManager';
 import NativeAudioDeviceModule from '../specs/NativeAudioDeviceModule';

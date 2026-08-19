@@ -1,5 +1,5 @@
 import NetInfo from '@react-native-community/netinfo';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import logger from '../services/logger';
 import { rejectTimeoutPromise, sleep } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';

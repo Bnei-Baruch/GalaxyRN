@@ -1,5 +1,5 @@
 import { Dimensions } from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import { create } from 'zustand';
 import logger from '../services/logger';
 import { sleep } from '../tools';

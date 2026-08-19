@@ -1,5 +1,5 @@
 import { Dimensions, Platform } from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import { create } from 'zustand';
 import kc from '../auth/keycloak';
 import { STORAGE_KEYS } from '../constants';
@@ -112,6 +112,7 @@ export const useInitsStore = create((set, get) => ({
     GxyUIStateBridge.stopForeground();
     useMyStreamStore.getState().myAbort();
     get().abortMqtt();
+    useShidurStore.getState().clearPrefetchedSrvServer();
     get().setAppInitState(AppInitStates.NOT_JOINED);
     logger.debug(NAMESPACE, 'terminateApp setAppInitState');
   },
