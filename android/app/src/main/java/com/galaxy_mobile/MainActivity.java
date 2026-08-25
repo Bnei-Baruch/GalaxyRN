@@ -90,6 +90,13 @@ public class MainActivity extends ReactActivity {
     public void onUserLeaveHint() {
         GxyLogger.d(TAG, "onUserLeaveHint");
         if (GxyUIStateModule.isInRoom) {
+            // onPictureInPictureModeChanged only fires once the shrink animation has
+            // finished, so JS would keep the full room UI (bars included) mounted for
+            // the whole transition. Switch JS to the PIP-only layout up front instead.
+            WritableMap data = Arguments.createMap();
+            data.putString("action", "is_pip_mode");
+            data.putBoolean("active", true);
+            GxyUIStateModule.dispatchSystemEvent(data);
             enterPictureInPictureMode();
         }
         super.onUserLeaveHint();

@@ -48,7 +48,7 @@ public class GxyPipBuilder {
 
     private PictureInPictureParams buildParams() {
         PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
-        builder.setAspectRatio(new Rational(1, 1));
+        builder.setAspectRatio(new Rational(16, 9));
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         Rect rect = new Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
         builder.setSourceRectHint(rect);
