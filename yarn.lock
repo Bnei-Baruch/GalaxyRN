@@ -8268,7 +8268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt@patch:mqtt@npm%3A5.15.2#./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch::locator=GalaxyRN%40workspace%3A.":
+"mqtt@patch:mqtt@npm%3A5.15.2#./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch::version=5.15.2&hash=e1ca10&locator=GalaxyRN%40workspace%3A.":
   version: 5.15.2
   resolution: "mqtt@patch:mqtt@npm%3A5.15.2#./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch::version=5.15.2&hash=e1ca10&locator=GalaxyRN%40workspace%3A."
   dependencies:
@@ -8293,6 +8293,34 @@ __metadata:
     mqtt_pub: build/bin/pub.js
     mqtt_sub: build/bin/sub.js
   checksum: d5f6f50a8e6516d4bf443031538d9a3e301fb50ece018d94fd74239910281376b96ea26ec9c06b2701ae9f825c992c30b165d7d01d128f68023d64dea2aa1cac
+  languageName: node
+  linkType: hard
+
+"mqtt@patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch::locator=GalaxyRN%40workspace%3A.":
+  version: 5.15.2
+  resolution: "mqtt@patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch::version=5.15.2&hash=b210fb&locator=GalaxyRN%40workspace%3A."
+  dependencies:
+    "@types/readable-stream": ^4.0.21
+    "@types/ws": ^8.18.1
+    commist: ^3.2.0
+    concat-stream: ^2.0.0
+    debug: ^4.4.1
+    help-me: ^5.0.0
+    lru-cache: ^10.4.3
+    minimist: ^1.2.8
+    mqtt-packet: ^9.0.2
+    number-allocator: ^1.0.14
+    readable-stream: ^4.7.0
+    rfdc: ^1.4.1
+    socks: ^2.8.6
+    split2: ^4.2.0
+    worker-timers: ^8.0.23
+    ws: ^8.18.3
+  bin:
+    mqtt: build/bin/mqtt.js
+    mqtt_pub: build/bin/pub.js
+    mqtt_sub: build/bin/sub.js
+  checksum: 1211bffa65a1edeefc93e1859abf3b16ee624d704b2eed21cc5436b58df4b87438c1c5baf24b9f6fe11496befb7d3a7fd375a2ceb50f1917bff3e27db6d05585
   languageName: node
   linkType: hard
 

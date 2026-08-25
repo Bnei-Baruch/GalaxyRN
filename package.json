@@ -88,6 +88,6 @@
   },
   "packageManager": "yarn@3.6.4",
   "resolutions": {
-    "mqtt@5.15.2": "patch:mqtt@npm%3A5.15.2#./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch"
+    "mqtt@5.15.2": "patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch"
   }
 }

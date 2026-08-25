@@ -93,6 +93,7 @@ class MqttMsg {
     logger.debug(NAMESPACE, 'Connecting to MQTT:', mqttUrl);
     try {
       this.mq = await mqtt.connectAsync(`wss://${mqttUrl}`, options);
+
       logger.debug(NAMESPACE, 'MQTT connected', this.mq.connected);
       finishSpan(connectSpan, 'ok', NAMESPACE);
     } catch (error) {

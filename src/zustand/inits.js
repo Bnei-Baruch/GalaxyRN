@@ -9,7 +9,7 @@ import { addFinishSpan } from '../libs/sentry/sentryHelper';
 import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
-import { getBooleanFromStorage } from '../tools';
+import { getBooleanFromStorage, rejectTimeoutPromise } from '../tools';
 import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
 import { useFeedsStore } from './feeds';
@@ -196,11 +196,14 @@ export const useInitsStore = create((set, get) => ({
 
     if (mqtt.mq) {
       try {
-        await Promise.all([
-          mqtt.exit('galaxy/users/notification'),
-          mqtt.exit('galaxy/users/broadcast'),
-          mqtt.exit('mobile/releases'),
-        ]);
+        await rejectTimeoutPromise(
+          Promise.all([
+            mqtt.exit('galaxy/users/notification'),
+            mqtt.exit('galaxy/users/broadcast'),
+            mqtt.exit('mobile/releases'),
+          ]),
+          3000
+        );
       } catch (err) {
         logger.error(NAMESPACE, 'Error exiting MQTT topics:', err);
       }
