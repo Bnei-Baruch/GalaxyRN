@@ -25,14 +25,14 @@
 		3761934A2D9D5C5700F52320 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376193322D9D5C5600F52320 /* LaunchScreen.storyboard */; };
 		3761934C2D9D5C5700F52320 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */; };
 		378110142578A122CC8095F0 /* libPods-GalaxyRN.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB16EB79BB611AA698FEB5C7 /* libPods-GalaxyRN.a */; };
-		FF88202B622183FDF76BC490 /* BackgroundTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */; };
-		BE8498941EB1E83C979D42BD /* BackgroundTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */; };
 		37AC36EE2ED48316004C2C74 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37AC36EE2ED48316004C2C72 /* AppDelegate.mm */; };
 		37DA85C52F60522B00293354 /* GxyUIStateModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37DA85C32F60522B00293354 /* GxyUIStateModule.swift */; };
 		37DA85C62F60522B00293354 /* GxyUIStateModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 37DA85C22F60522B00293354 /* GxyUIStateModule.m */; };
 		709C1553E62A4E48803C8705 /* CallManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D88EC1798B0C47439D036886 /* CallManager.m */; };
 		7A57AC4E7FE4455BA569BC12 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE3EABD71384268824E6267 /* AudioManager.m */; };
+		BE8498941EB1E83C979D42BD /* BackgroundTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */; };
 		E5469BD4E21D49813203D166 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B002FD9808B04C9EA67C48A /* main.mm */; };
+		FF88202B622183FDF76BC490 /* BackgroundTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,13 +64,13 @@
 		37DA85C22F60522B00293354 /* GxyUIStateModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GxyUIStateModule.m; sourceTree = "<group>"; };
 		37DA85C32F60522B00293354 /* GxyUIStateModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyUIStateModule.swift; sourceTree = "<group>"; };
 		4CE3EABD71384268824E6267 /* AudioManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioManager.m; sourceTree = "<group>"; };
-		E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BackgroundTimer.m; sourceTree = "<group>"; };
-		81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTimer.swift; sourceTree = "<group>"; };
 		54B45DBB990E40929E820FB9 /* Pods-GalaxyRN.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.debug.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.debug.xcconfig"; sourceTree = "<group>"; };
 		5B002FD9808B04C9EA67C48A /* main.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTimer.swift; sourceTree = "<group>"; };
 		B67DDF6F18D27258230247B3 /* Pods-GalaxyRN.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GalaxyRN.release.xcconfig"; path = "Target Support Files/Pods-GalaxyRN/Pods-GalaxyRN.release.xcconfig"; sourceTree = "<group>"; };
 		CB16EB79BB611AA698FEB5C7 /* libPods-GalaxyRN.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GalaxyRN.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D88EC1798B0C47439D036886 /* CallManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallManager.m; sourceTree = "<group>"; };
+		E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BackgroundTimer.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -86,6 +86,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2967BD70203250D50A208EAC /* BackgroundTimer */ = {
+			isa = PBXGroup;
+			children = (
+				81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */,
+				E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */,
+			);
+			path = BackgroundTimer;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -103,15 +112,6 @@
 				374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */,
 			);
 			path = Logger;
-			sourceTree = "<group>";
-		};
-		2967BD70203250D50A208EAC /* BackgroundTimer */ = {
-			isa = PBXGroup;
-			children = (
-				81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */,
-				E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */,
-			);
-			path = BackgroundTimer;
 			sourceTree = "<group>";
 		};
 		3761931F2D9D5C5600F52320 /* AudioManager */ = {
@@ -395,7 +395,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 112;
+				CURRENT_PROJECT_VERSION = 113;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -405,7 +405,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.2;
+				MARKETING_VERSION = 2.8.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -431,7 +431,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 112;
+				CURRENT_PROJECT_VERSION = 113;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -440,7 +440,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.2;
+				MARKETING_VERSION = 2.8.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

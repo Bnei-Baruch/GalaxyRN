@@ -19,6 +19,9 @@ const { config: { isProduction } } = require('../../package.json');
 
 const NAMESPACE = 'Keycloak';
 
+// Refresh the access token this many ms before it actually expires
+const REFRESH_BUFFER_MS = 10000;
+
 // Configuration
 const AUTH_CONFIG = {
   issuer: AUTH_CONFIG_ISSUER,
@@ -169,45 +172,39 @@ class Keycloak {
    * Calculates time until next token refresh
    */
   calculateTimeUntilRefresh = () => {
-    logger.debug(NAMESPACE, 'Calculating time until refresh', new Date(this.session?.payload?.exp * 1000).toISOString());
     if (!this.session?.payload?.exp) return -1;
 
     const expiryTime = this.session.payload.exp * 1000;
     const currentTime = new Date().getTime();
-    logger.debug(NAMESPACE, 'time until refresh', (expiryTime - currentTime) / 2);
-    return (expiryTime - currentTime) / 2;
+    const timeToRefresh = expiryTime - currentTime - REFRESH_BUFFER_MS;
+    logger.debug(NAMESPACE, 'time until refresh', timeToRefresh);
+    return timeToRefresh;
   };
 
-  /**
-   * Refreshes the access token when needed
-   */
   refreshToken = async () => {
-    logger.debug(NAMESPACE, 'Refreshing token', AUTH_CONFIG_ISSUER);
-    // Check if session payload is valid
     if (!this.session?.payload?.exp) {
       logger.warn(NAMESPACE, 'Invalid session payload');
       throw new Error('Invalid session payload');
     }
 
-    try {
-      const timeToRefresh = this.calculateTimeUntilRefresh();
-      logger.debug(NAMESPACE, 'Time until refresh:', timeToRefresh, 'ms');
-      logger.debug(NAMESPACE, 'Time until refresh', timeToRefresh / 1000, 'seconds');
-      this.clearTimeout();
-      //Refresh token before it expires by 10 seconds
-      if (timeToRefresh > 10000) {
-        logger.debug(
-          NAMESPACE,
-          'Scheduling refresh in',
-          Math.max(timeToRefresh, 1000),
-          'ms'
-        );
-        this.timeout = BackgroundTimer.setTimeout(() => {
-          this.refreshToken();
-        }, Math.max(timeToRefresh, 1000));
-        return;
-      }
+    const timeToRefresh = this.calculateTimeUntilRefresh();
+    this.clearTimeout();
 
+    if (timeToRefresh > 0) {
+      logger.debug(NAMESPACE, 'Scheduling refresh in', timeToRefresh, 'ms');
+      this.timeout = BackgroundTimer.setTimeout(() => {
+        this.doRefresh();
+      }, timeToRefresh);
+      return;
+    }
+
+    await this.doRefresh();
+  };
+
+
+  doRefresh = async () => {
+    logger.debug(NAMESPACE, 'Refreshing token', AUTH_CONFIG_ISSUER);
+    try {
       logger.debug(NAMESPACE, 'Refreshing token now...');
       const refreshData = await refresh(AUTH_CONFIG, {
         refreshToken: this.session.refreshToken,
@@ -222,29 +219,10 @@ class Keycloak {
       }
 
       this.saveUser(session.payload);
-      // Schedule next refresh instead of recursively calling refreshToken
-      this.scheduleNextRefresh();
+      this.refreshToken();
     } catch (err) {
       logger.error(NAMESPACE, 'Refresh Token failed', err);
       this.logout();
-    }
-  };
-
-  /**
-   * Schedules the next token refresh
-   */
-  scheduleNextRefresh = () => {
-    if (!this.session) return;
-
-    const timeToRefresh = this.calculateTimeUntilRefresh();
-
-    if (timeToRefresh > 0) {
-      this.clearTimeout();
-      this.timeout = BackgroundTimer.setTimeout(() => {
-        this.refreshToken();
-      }, Math.max(timeToRefresh, 1000));
-    } else {
-      this.refreshToken();
     }
   };
 

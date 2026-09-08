@@ -563,4 +563,15 @@ export const useFeedsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'deactivateFeedsVideos params', params);
     return subscriber.unsub(params);
   },
+  reconnectMqtt: async () => {
+    logger.debug(NAMESPACE, 'reconnectMqtt');
+    if (janus) {
+      logger.info(NAMESPACE, 'reconnectMqtt janus');
+      try {
+        janus.reconnectMqtt();
+      } catch (error) {
+        logger.error(NAMESPACE, 'Error reconnecting mqtt', error);
+      }
+    }
+  },
 }));

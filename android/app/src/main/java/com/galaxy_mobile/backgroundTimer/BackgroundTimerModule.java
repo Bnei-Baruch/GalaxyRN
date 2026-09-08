@@ -13,6 +13,9 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 import com.galaxy_mobile.logger.GxyLogger;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @ReactModule(name = BackgroundTimerModule.NAME)
 public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec implements LifecycleEventListener {
     public static final String NAME = "BackgroundTimerModule";
@@ -20,6 +23,11 @@ public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec imple
 
     private final ReactApplicationContext reactContext;
     private final PowerManager.WakeLock wakeLock;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    // Tracks the Runnable behind each still-pending native postDelayed() call so clearTimeout()
+    // can actually cancel it - without this, a timer the JS side considers cleared still fires
+    // natively later and calls emitTimeout() into a JS runtime that no longer expects it.
+    private final Map<Double, Runnable> pendingTimeouts = new ConcurrentHashMap<>();
 
     public BackgroundTimerModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -70,8 +78,9 @@ public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec imple
     public void setTimeout(double id, double timeoutMs) {
         GxyLogger.d(TAG, "setTimeout(): arming id=" + id + " timeoutMs=" + timeoutMs
                 + " wakeLock.isHeld()=" + wakeLock.isHeld());
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.postDelayed(() -> {
+
+        Runnable runnable = () -> {
+            pendingTimeouts.remove(id);
             boolean active = reactContext.hasActiveCatalystInstance();
             GxyLogger.d(TAG, "setTimeout(): fired id=" + id + " hasActiveCatalystInstance=" + active
                     + " wakeLock.isHeld()=" + wakeLock.isHeld());
@@ -84,7 +93,22 @@ public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec imple
             } else {
                 GxyLogger.w(TAG, "setTimeout(): dropped id=" + id + " - no active catalyst instance");
             }
-        }, (long) timeoutMs);
+        };
+        pendingTimeouts.put(id, runnable);
+        mainHandler.postDelayed(runnable, (long) timeoutMs);
+    }
+
+    @Override
+    @ReactMethod
+    @DoNotStrip
+    public void clearTimeout(double id) {
+        Runnable runnable = pendingTimeouts.remove(id);
+        if (runnable != null) {
+            mainHandler.removeCallbacks(runnable);
+            GxyLogger.d(TAG, "clearTimeout(): cancelled pending native timer id=" + id);
+        } else {
+            GxyLogger.d(TAG, "clearTimeout(): no pending native timer for id=" + id);
+        }
     }
 
     @Override
@@ -99,7 +123,8 @@ public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec imple
 
     @Override
     public void onHostDestroy() {
-        GxyLogger.d(TAG, "onHostDestroy(): wakeLock.isHeld()=" + wakeLock.isHeld());
+        GxyLogger.d(TAG, "onHostDestroy(): wakeLock.isHeld()=" + wakeLock.isHeld()
+                + " pendingTimeouts=" + pendingTimeouts.size());
         try {
             if (wakeLock.isHeld()) {
                 wakeLock.release();
@@ -108,5 +133,10 @@ public class BackgroundTimerModule extends NativeBackgroundTimerModuleSpec imple
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error releasing wake lock on host destroy: " + e.getMessage(), e);
         }
+
+        for (Runnable runnable : pendingTimeouts.values()) {
+            mainHandler.removeCallbacks(runnable);
+        }
+        pendingTimeouts.clear();
     }
 }

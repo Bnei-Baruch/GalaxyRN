@@ -1,7 +1,6 @@
 import { Dimensions, Platform } from 'react-native';
 import BackgroundTimer from '../services/BackgroundTimer';
 import { create } from 'zustand';
-import kc from '../auth/keycloak';
 import { STORAGE_KEYS } from '../constants';
 import mqtt from '../libs/mqtt';
 import { ROOM_SESSION } from '../libs/sentry/constants';
@@ -12,7 +11,6 @@ import logger from '../services/logger';
 import { getBooleanFromStorage, rejectTimeoutPromise } from '../tools';
 import { useAudioDevicesStore } from './audioDevices';
 import { useChatStore } from './chat';
-import { useFeedsStore } from './feeds';
 import { useRoomStore } from './fetchRooms';
 import { modalModes } from './helper';
 import { useInRoomStore } from './inRoom';
@@ -21,16 +19,10 @@ import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
 import { useSubtitleStore } from './subtitle';
 import { useUiActions } from './uiActions';
-import { useUserStore } from './user';
 
 
 const NAMESPACE = 'Inits';
 
-const CLIENT_RECONNECT_TYPES = [
-  'client-reconnect',
-  'client-reload',
-  'client-disconnect',
-];
 export const AppInitStates = {
   READY: 1,
   DISCONNECTED: -1,
@@ -119,8 +111,6 @@ export const useInitsStore = create((set, get) => ({
 
   initMQTT: async () => {
     logger.debug(NAMESPACE, 'initMQTT');
-    const { user } = useUserStore.getState();
-    const { restartRoom } = useInRoomStore.getState();
 
     try {
       await mqtt.init();
@@ -138,44 +128,6 @@ export const useInitsStore = create((set, get) => ({
       get().abortMqtt();
       throw error;
     }
-
-    const { toggleCammute, toggleMute } = useMyStreamStore.getState();
-    const { streamGalaxy } = useShidurStore.getState();
-    const { toggleQuestion } = useSettingsStore.getState();
-    const { updateDisplayById } = useFeedsStore.getState();
-
-    mqtt.watch(data => {
-      const { type, id, bitrate } = data;
-      logger.debug(NAMESPACE, 'got message: ', data);
-
-      if (user.id === id && CLIENT_RECONNECT_TYPES.includes(type)) {
-        restartRoom();
-      } else if (type === 'client-kicked' && user.id === id) {
-        try {
-          get().exitRoom();
-        } catch (e) {
-          logger.debug(NAMESPACE, 'Error in exitRoom', e);
-        }
-        kc.logout();
-      } else if (type === 'client-question' && user.id === id) {
-        toggleQuestion();
-      } else if (type === 'client-mute' && user.id === id) {
-        toggleMute();
-      } else if (type === 'video-mute' && user.id === id) {
-        toggleCammute();
-      } else if (type === 'audio-out') {
-        logger.debug(NAMESPACE, 'audio-out: ', data);
-        streamGalaxy(data.status);
-        if (data.status) {
-          // Remove question mark when sndman unmute our room
-          toggleQuestion(false);
-        }
-      } else if (type === 'client-reload-all') {
-        restartRoom();
-      } else if (type === 'client-state') {
-        updateDisplayById(data.user);
-      }
-    });
   },
 
   subscribeMqtt: async () => {
@@ -218,17 +170,6 @@ export const useInitsStore = create((set, get) => ({
 
     set(() => ({ mqttIsOn: false }));
     logger.debug(NAMESPACE, 'abortMqtt done');
-  },
-  resetMqtt: async () => {
-    logger.debug(NAMESPACE, 'resetMqtt');
-    try {
-      await get().abortMqtt();
-      await get().initMQTT();
-      logger.debug(NAMESPACE, 'resetMqtt done');
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error resetting MQTT:', error);
-      await get().terminateApp();
-    }
   },
 
   initServices: async () => {

@@ -1357,8 +1357,6 @@ PODS:
   - react-native-app-auth (8.1.0):
     - AppAuth (>= 1.7.6)
     - React-Core
-  - react-native-background-timer (2.4.1):
-    - React-Core
   - react-native-crisp-chat-sdk (0.23.1):
     - Crisp (= 2.12.0)
     - hermes-engine
@@ -1406,7 +1404,7 @@ PODS:
     - React-Core
   - react-native-render-html (6.3.4):
     - React-Core
-  - react-native-safe-area-context (5.8.0):
+  - react-native-safe-area-context (5.8.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1417,8 +1415,8 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-safe-area-context/common (= 5.8.0)
-    - react-native-safe-area-context/fabric (= 5.8.0)
+    - react-native-safe-area-context/common (= 5.8.1)
+    - react-native-safe-area-context/fabric (= 5.8.1)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1429,7 +1427,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/common (5.8.0):
+  - react-native-safe-area-context/common (5.8.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1450,7 +1448,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/fabric (5.8.0):
+  - react-native-safe-area-context/fabric (5.8.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1472,10 +1470,10 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-webrtc (124.0.7):
+  - react-native-webrtc (124.0.8):
     - JitsiWebRTC (~> 124.0.0)
     - React-Core
-  - react-native-webview (13.16.0):
+  - react-native-webview (13.17.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1867,7 +1865,7 @@ PODS:
     - React-Core
   - RNSecureStorage (3.0.1):
     - React
-  - RNSentry (7.7.0):
+  - RNSentry (7.13.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1888,7 +1886,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
-    - Sentry/HybridSDK (= 8.57.3)
+    - Sentry/HybridSDK (= 8.58.0)
     - Yoga
   - RNVectorIcons (10.3.0):
     - hermes-engine
@@ -1911,7 +1909,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - Sentry/HybridSDK (8.57.3)
+  - Sentry/HybridSDK (8.58.0)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -1955,7 +1953,6 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-app-auth (from `../node_modules/react-native-app-auth`)
-  - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - react-native-crisp-chat-sdk (from `../node_modules/react-native-crisp-chat-sdk`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-orientation-locker (from `../node_modules/react-native-orientation-locker`)
@@ -2091,8 +2088,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
   react-native-app-auth:
     :path: "../node_modules/react-native-app-auth"
-  react-native-background-timer:
-    :path: "../node_modules/react-native-background-timer"
   react-native-crisp-chat-sdk:
     :path: "../node_modules/react-native-crisp-chat-sdk"
   react-native-netinfo:
@@ -2231,14 +2226,13 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 9683bb60ad65f840fdc9cf4478fe11c879c5788a
   React-mutationobservernativemodule: 37b504dfb37673026a03cacb65bc2cbdfb3118d0
   react-native-app-auth: 9b0a0e3ca279c3426a451e2607c8483808b8ed4a
-  react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
   react-native-crisp-chat-sdk: 2fe47c12d9ff1e3482524b1459036a2eef77644e
   react-native-netinfo: 7c755cdb0494243968ced410ef601b88a275061a
   react-native-orientation-locker: 5819fd23ca89cbac0d736fb4314745f62716d517
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
-  react-native-safe-area-context: d48210e5c0370252b0f369e6e1a128c0a149d5bb
-  react-native-webrtc: b5062b745a26c99835efdf0d6c027c9b2ee7ddbc
-  react-native-webview: 8e3b05ca9a0fe0e87301aeb9a46948fa3886ed8d
+  react-native-safe-area-context: 9e42f5b2d8977fbce5e6d9cf0d19c88cfb928baf
+  react-native-webrtc: a3173652a7de48afa9f2d6151cb6eef130c04930
+  react-native-webview: 6b48d2873dabd27b9675fdda6c792450d1a5fa02
   React-NativeModulesApple: 3524147f29d33490a8173f67a68b713d97792083
   React-networking: cc5d9594fd9db412bcef0fcbede1c6d9e8d36e7f
   React-oscompat: e3c95718adca6d0e7ca9e5b01a04d057f4aa8f72
@@ -2271,14 +2265,14 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: cd921fba8073c1318a0a3901bd9567bc22b28966
   React-webperformancenativemodule: 7da8fd8bb2f99600f1192eb834cf8cb197564994
   ReactAppDependencyProvider: adf5403892170fbe996fce485a703f25df08db66
-  ReactCodegen: 44236a8a91f7ae814d62d22600d156fca9ed254a
+  ReactCodegen: b86d372cb76206df514629cd7739a3a79ae4a2c7
   ReactCommon: 4a92a419d44cd92d17d7c29109e12dce2670e18a
   ReactNativeDependencies: fa0a54b3f5319ae0e3b9aff32bfee7a424b88e66
   RNInAppBrowser: b53e6f6072c931115bc22ac9dc9510ac2cbea62d
   RNSecureStorage: d7de7dd7321ae113a6f7dad1747a4992a20b4955
-  RNSentry: 15ee3d17dcb3dfb88c719d0f2d676518d9c4be3f
+  RNSentry: 802f4f02beb16384e09d827d8134aea117b3e26f
   RNVectorIcons: cb1f35b22fd51bca0f4d44556ee2ac3c95d0b472
-  Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
+  Sentry: d587a8fe91ca13503ecd69a1905f3e8a0fcf61be
   Yoga: 2d945818608a5804c8a2df6530e23c0d88849797
 
 PODFILE CHECKSUM: f5dca32152aeeda18bcce8c8fb4d9833a3fc1306

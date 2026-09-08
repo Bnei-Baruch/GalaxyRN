@@ -4,6 +4,7 @@ import type {EventEmitter} from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface Spec extends TurboModule {
   setTimeout(id: number, timeoutMs: number): void;
+  clearTimeout(id: number): void;
   readonly timeout: EventEmitter<number>;
 }
 

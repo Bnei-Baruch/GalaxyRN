@@ -334,7 +334,7 @@ export const reduceVideoComplexity = sdp => {
   return modifiedLines.join('\n');
 };
 
-export const rejectTimeoutPromise = (promise, time = 10000) => {
+export const rejectTimeoutPromise = async (promise, time = 10000) => {
   let timerId;
   const timer = new Promise((_, reject) => {
     timerId = BackgroundTimer.setTimeout(

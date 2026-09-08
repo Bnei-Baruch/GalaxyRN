@@ -750,4 +750,11 @@ export const useShidurStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);
   },
+  reconnectMqtt: () => {
+    logger.debug(NAMESPACE, 'reconnectMqtt', !!janus);
+    if (janus) {
+      janus.reconnectMqtt();
+      logger.info(NAMESPACE, 'reconnectMqtt janus');
+    }
+  },
 }));

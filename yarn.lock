@@ -8296,7 +8296,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mqtt@patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch::locator=GalaxyRN%40workspace%3A.":
+"mqtt@patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch::version=5.15.2&hash=b210fb&locator=GalaxyRN%40workspace%3A.":
   version: 5.15.2
   resolution: "mqtt@patch:mqtt@patch%3Amqtt@npm%253A5.15.2%23./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%3A%3Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-98942b041a.patch::version=5.15.2&hash=b210fb&locator=GalaxyRN%40workspace%3A."
   dependencies:
@@ -8321,6 +8321,62 @@ __metadata:
     mqtt_pub: build/bin/pub.js
     mqtt_sub: build/bin/sub.js
   checksum: 1211bffa65a1edeefc93e1859abf3b16ee624d704b2eed21cc5436b58df4b87438c1c5baf24b9f6fe11496befb7d3a7fd375a2ceb50f1917bff3e27db6d05585
+  languageName: node
+  linkType: hard
+
+"mqtt@patch:mqtt@patch%3Amqtt@patch%253Amqtt@npm%25253A5.15.2%2523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%253A%253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-98942b041a.patch%3A%3Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-6ac70a4a94.patch::version=5.15.2&hash=b1ed9c&locator=GalaxyRN%40workspace%3A.":
+  version: 5.15.2
+  resolution: "mqtt@patch:mqtt@patch%3Amqtt@patch%253Amqtt@npm%25253A5.15.2%2523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%253A%253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-98942b041a.patch%3A%3Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-6ac70a4a94.patch::version=5.15.2&hash=b1ed9c&locator=GalaxyRN%40workspace%3A."
+  dependencies:
+    "@types/readable-stream": ^4.0.21
+    "@types/ws": ^8.18.1
+    commist: ^3.2.0
+    concat-stream: ^2.0.0
+    debug: ^4.4.1
+    help-me: ^5.0.0
+    lru-cache: ^10.4.3
+    minimist: ^1.2.8
+    mqtt-packet: ^9.0.2
+    number-allocator: ^1.0.14
+    readable-stream: ^4.7.0
+    rfdc: ^1.4.1
+    socks: ^2.8.6
+    split2: ^4.2.0
+    worker-timers: ^8.0.23
+    ws: ^8.18.3
+  bin:
+    mqtt: build/bin/mqtt.js
+    mqtt_pub: build/bin/pub.js
+    mqtt_sub: build/bin/sub.js
+  checksum: 7898bbeb17831d932ff24f057200c752a5f32e1992c9bbd9051c5950b1802f61d1d105569e2a3582476b941dfdf0ad17600bcedafaca077ab201d74999272270
+  languageName: node
+  linkType: hard
+
+"mqtt@patch:mqtt@patch%3Amqtt@patch%253Amqtt@patch%25253Amqtt@npm%2525253A5.15.2%252523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%25253A%25253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%25252540workspace%2525253A.%2523./.yarn/patches/mqtt-patch-98942b041a.patch%253A%253Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-6ac70a4a94.patch%3A%3Aversion=5.15.2&hash=b1ed9c&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-0ffa6eed68.patch::locator=GalaxyRN%40workspace%3A.":
+  version: 5.15.2
+  resolution: "mqtt@patch:mqtt@patch%3Amqtt@patch%253Amqtt@patch%25253Amqtt@npm%2525253A5.15.2%252523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%25253A%25253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%25252540workspace%2525253A.%2523./.yarn/patches/mqtt-patch-98942b041a.patch%253A%253Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-6ac70a4a94.patch%3A%3Aversion=5.15.2&hash=b1ed9c&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-0ffa6eed68.patch::version=5.15.2&hash=240cad&locator=GalaxyRN%40workspace%3A."
+  dependencies:
+    "@types/readable-stream": ^4.0.21
+    "@types/ws": ^8.18.1
+    commist: ^3.2.0
+    concat-stream: ^2.0.0
+    debug: ^4.4.1
+    help-me: ^5.0.0
+    lru-cache: ^10.4.3
+    minimist: ^1.2.8
+    mqtt-packet: ^9.0.2
+    number-allocator: ^1.0.14
+    readable-stream: ^4.7.0
+    rfdc: ^1.4.1
+    socks: ^2.8.6
+    split2: ^4.2.0
+    worker-timers: ^8.0.23
+    ws: ^8.18.3
+  bin:
+    mqtt: build/bin/mqtt.js
+    mqtt_pub: build/bin/pub.js
+    mqtt_sub: build/bin/sub.js
+  checksum: 604cb9cd2d21bbb97229c17d77cea39ca2a12451b42ee2fcacbba22248026ad2d0f7cc542bfc25c68fc8c60b68de729e593c3147b5ed53d8e6f820390f87bd8c
   languageName: node
   linkType: hard
 

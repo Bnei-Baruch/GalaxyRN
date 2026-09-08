@@ -46,11 +46,22 @@ class BackgroundTimerFacade {
       logger.debug(NAMESPACE, '_onTimeout: clearing one-shot timeout', 'id:', id);
       this.clearTimeout(id);
       logger.debug(NAMESPACE, '_onTimeout: invoking callback', 'id:', id);
-      entry.callback();
+      try {
+        entry.callback();
+      } catch (e) {
+        logger.error(NAMESPACE, '_onTimeout: callback threw', 'id:', id, e);
+      }
       return;
     }
     logger.debug(NAMESPACE, '_onTimeout: invoking callback', 'id:', id);
-    entry.callback();
+    try {
+      entry.callback();
+    } catch (e) {
+      // A throwing callback must not prevent re-arming below - otherwise this
+      // interval silently stops forever (e.g. mqtt's KeepaliveManager, whose
+      // recurring tick would then never fire again for the life of the app).
+      logger.error(NAMESPACE, '_onTimeout: interval callback threw', 'id:', id, e);
+    }
     // Re-arm only if the callback didn't clear this interval on itself
     // synchronously (e.g. mqtt's KeepaliveManager clearing on timeout) —
     // otherwise the native timer would fire again with no entry to match.
@@ -64,7 +75,6 @@ class BackgroundTimerFacade {
     this.uniqueId += 1;
     const id = this.uniqueId;
     this.callbacks[id] = { callback, interval: false, timeoutMs };
-    logger.debug(NAMESPACE, 'setTimeout', 'id:', id, 'callback:', callback);
     logger.debug(NAMESPACE, 'setTimeout', 'id:', id, 'callback:', callback, 'timeoutMs:', timeoutMs, 'nativeAvailable:', !!NativeTimer);
     NativeTimer?.setTimeout(id, timeoutMs);
     return id;
@@ -73,6 +83,11 @@ class BackgroundTimerFacade {
   clearTimeout = id => {
     logger.debug(NAMESPACE, 'clearTimeout', 'id:', id, 'existed:', !!this.callbacks[id]);
     delete this.callbacks[id];
+    if (id == null) {
+      logger.debug(NAMESPACE, 'clearTimeout: id is null/undefined, skipping native call');
+      return;
+    }
+    NativeTimer?.clearTimeout(id);
   };
 
   setInterval = (callback, timeoutMs) => {

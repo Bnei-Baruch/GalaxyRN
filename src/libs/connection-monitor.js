@@ -20,7 +20,6 @@ export const NET_INFO_STATE_DISCONNECTED = 'DISCONNECTED';
 
 const NAMESPACE = 'ConnectionMonitor';
 const MAX_CONNECTION_TIMEOUT = 20;
-const MAX_MQTT_RECONNECT_FREQUENCY = 3 * 1000;
 
 let netInfoUnsubscribe,
   iceRestartListeners,
@@ -28,7 +27,6 @@ let netInfoUnsubscribe,
   currentState,
   disconnectedSeconds,
   wip;
-let lastReconnect = 0;
 const waitConnectionListeners = [];
 
 export const initConnectionMonitor = () => {
@@ -37,7 +35,6 @@ export const initConnectionMonitor = () => {
   netInfoUnsubscribe = null;
   timeout = null;
   disconnectedSeconds = 0;
-  lastReconnect = 0;
 
   startTransaction(CONNECTION, 'Connection Monitor', 'connection.monitor');
 
@@ -133,24 +130,6 @@ const isSameNetwork = newState => {
   return hasCommonIp;
 };
 
-/**
- * This function is called when the MQTT connection is lost.
- * for case when network connection was not changed, but MQTT connection was closed.
- * Wait 1 second for possible network change listener may be triggered.
- */
-export const onMqttConnectionLost = async () => {
-  logger.debug(NAMESPACE, 'onMqttClosed: wip is', wip);
-  lastReconnect = 0;
-  await sleep(1000);
-  if (wip) {
-    logger.debug(NAMESPACE, 'onMqttConnectionLost: wip is true, skipping');
-    return;
-  }
-  wip = true;
-  await waitConnectionRestart();
-  wip = false;
-};
-
 const waitConnectionRestart = async () => {
   const restartSpan = addSpan(
     CONNECTION,
@@ -174,7 +153,7 @@ const waitConnectionRestart = async () => {
   }
 };
 
-const waitAndRestart = async () => {
+export const waitAndRestart = async () => {
   const span = addSpan(CONNECTION, 'connectionMonitor.waitAndRestart');
   logger.debug(NAMESPACE, 'waitAndRestart');
   useSettingsStore.getState().setNetWIP(true);
@@ -267,7 +246,7 @@ const monitorMqtt = async () => {
 
   if (!mqtt.mq) {
     logger.debug(NAMESPACE, 'MQTT not initialized, setting timeout');
-    sleep(1000);
+    await sleep(1000);
     return await monitorMqtt();
   }
 
@@ -302,7 +281,6 @@ const monitorMqtt = async () => {
 };
 
 const mqttReconnect = async () => {
-  const now = Date.now();
   if (mqtt.mq.connected) {
     logger.debug(NAMESPACE, 'mqtt already connected, skipping reconnect');
     return true;
@@ -313,30 +291,14 @@ const mqttReconnect = async () => {
     return;
   }
 
-  if (now - lastReconnect < MAX_MQTT_RECONNECT_FREQUENCY) {
-    logger.debug(
-      NAMESPACE,
-      'mqtt reconnect too soon, skipping',
-      now,
-      lastReconnect
-    );
-    return;
-  }
-
-  lastReconnect = now;
   logger.debug(NAMESPACE, 'mqtt reconnect triggered');
 
   try {
-    mqtt.mq.reconnect();
+    await mqtt.reconnect();
   } catch (e) {
     logger.error(NAMESPACE, 'mqtt reconnect error', e);
     throw e;
   }
-};
-
-export const resetLastReconnect = () => {
-  logger.debug(NAMESPACE, 'resetLastReconnect');
-  lastReconnect = 0;
 };
 
 const callListeners = async () => {

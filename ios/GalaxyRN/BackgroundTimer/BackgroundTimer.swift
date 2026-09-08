@@ -4,6 +4,10 @@ import React
 @objc(BackgroundTimer)
 class BackgroundTimer: RCTEventEmitter {
     private var hasListeners: Bool = false
+    // Tracks the work item + background task behind each still-pending timer so clearTimeout()
+    // can actually cancel it - without this, a timer the JS side considers cleared still fires
+    // later and sends a "timeout" event into a JS runtime that no longer expects it.
+    private var pendingTimeouts: [NSNumber: (workItem: DispatchWorkItem, task: UIBackgroundTaskIdentifier)] = [:]
 
     @objc
     override static func moduleName() -> String! {
@@ -37,11 +41,23 @@ class BackgroundTimer: RCTEventEmitter {
             UIApplication.shared.endBackgroundTask(task)
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutMs.doubleValue / 1000) { [weak self] in
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.pendingTimeouts.removeValue(forKey: timeoutId)
             if self?.hasListeners == true {
                 self?.sendEvent(withName: "timeout", body: timeoutId)
             }
             UIApplication.shared.endBackgroundTask(task)
         }
+        pendingTimeouts[timeoutId] = (workItem, task)
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeoutMs.doubleValue / 1000, execute: workItem)
+    }
+
+    @objc
+    func clearTimeout(_ timeoutId: NSNumber) {
+        guard let (workItem, task) = pendingTimeouts.removeValue(forKey: timeoutId) else {
+            return
+        }
+        workItem.cancel()
+        UIApplication.shared.endBackgroundTask(task)
     }
 }
