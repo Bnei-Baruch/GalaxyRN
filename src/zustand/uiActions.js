@@ -75,9 +75,15 @@ export const useUiActions = create((set, get) => ({
         width = width - 56;
 
         if (num <= 4) {
-          newWidth = parseInt(((height / 2) * 16) / 9, 10);
+          newWidth = Math.min(
+            parseInt(((height / 2) * 16) / 9, 10),
+            parseInt(width / 2, 10)
+          );
         } else if (num <= 9) {
-          newWidth = parseInt(((height / 3) * 16) / 9, 10);
+          newWidth = Math.min(
+            parseInt(((height / 3) * 16) / 9, 10),
+            parseInt(width / 3, 10)
+          );
         } else {
           newWidth = parseInt(width / 4, 10);
         }
