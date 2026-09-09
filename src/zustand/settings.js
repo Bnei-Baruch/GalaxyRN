@@ -96,6 +96,7 @@ export const useSettingsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'toggleIsPIPMode', isPIPMode);
     if (!isPIPMode && useInRoomStore.getState().isInBackground) {
       useMyStreamStore.getState().toggleCammute(true, false)
+      useShidurStore.getState().enterAudioMode();
     }
     set({ isPIPMode });
   },

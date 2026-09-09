@@ -225,8 +225,8 @@ export const useInRoomStore = create((set, get) => ({
   enterBackground: async () => {
     set({ isInBackground: true });
 
-    const { isPiPMode } = useSettingsStore.getState();
-    if (!isPiPMode) {
+    const { isPIPMode } = useSettingsStore.getState();
+    if (!isPIPMode) {
       useShidurStore.getState().enterAudioMode();
       useMyStreamStore.getState().toggleCammute(true, false)
     }
@@ -242,7 +242,7 @@ export const useInRoomStore = create((set, get) => ({
     addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
-  enterAudioMode: async (isPIPMode = false) => {
+  enterAudioMode: async () => {
     logger.debug(NAMESPACE, 'enterAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.enter');
     try {
