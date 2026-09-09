@@ -282,7 +282,6 @@ class MqttMsg {
       }
       if (data?.reasonCode === 135) {
         logger.warn(NAMESPACE, 'Not authorized', data);
-        this.reconnect();
       }
     });
 

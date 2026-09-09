@@ -15,7 +15,7 @@ const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
-    toggleShowBars(true);
+    toggleShowBars(true, true);
   };
   const handleScroll = e => {
     const scrollY = e.nativeEvent.contentOffset.y;

@@ -18,7 +18,7 @@ const RoomPortrait = ({ shidur, kliOlami, members }) => {
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
-    toggleShowBars(true);
+    toggleShowBars(true, true);
   };
 
   const handleScroll = e => {

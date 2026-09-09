@@ -1,15 +1,17 @@
 import React, { useEffect } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Orientation from 'react-native-orientation-locker';
 import logger from '../../services/logger';
 import { useSettingsStore } from '../../zustand/settings';
 import { useUiActions } from '../../zustand/uiActions';
 
 const NAMESPACE = 'KliOlamiFullscreen';
+const KLI_OLAMI_ASPECT_RATIO = 16 / 9;
 
 const KliOlamiFullscreen = ({ kliOlami }) => {
   const { toggleIsKliOlamiFullscreen } = useSettingsStore();
   const { toggleShowBars } = useUiActions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   useEffect(() => {
     Orientation.lockToLandscape();
@@ -26,8 +28,15 @@ const KliOlamiFullscreen = ({ kliOlami }) => {
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
-    toggleShowBars(true);
+    toggleShowBars(true, true);
   };
+
+  let kliOlamiWidth = windowWidth;
+  let kliOlamiHeight = windowWidth / KLI_OLAMI_ASPECT_RATIO;
+  if (kliOlamiHeight > windowHeight) {
+    kliOlamiHeight = windowHeight;
+    kliOlamiWidth = windowHeight * KLI_OLAMI_ASPECT_RATIO;
+  }
 
   return (
     <Modal
@@ -39,7 +48,9 @@ const KliOlamiFullscreen = ({ kliOlami }) => {
     >
       <View style={styles.container}>
         <Pressable onPress={handleAnyPress}>
-          <View style={styles.shidur}>{kliOlami}</View>
+          <View style={{ width: kliOlamiWidth, height: kliOlamiHeight }}>
+            {kliOlami}
+          </View>
         </Pressable>
       </View>
     </Modal>
@@ -52,10 +63,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'black',
-  },
-  shidur: {
-    flex: 1,
-    height: '100%',
-    aspectRatio: 16 / 9,
   },
 });
