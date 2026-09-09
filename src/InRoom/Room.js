@@ -26,24 +26,29 @@ const Room = () => {
 
   if (isPIPMode) {
     logger.debug('Room', 'render ShidurPip');
-    return <ShidurPip />;
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        baseStyles.viewBackground,
-        { paddingTop: insets.top },
-      ]}
-    >
-      <RoomLayout />
-      <TopBar />
-      <BottomBarLevel0 />
-      <MenuLevel1 />
-      <ConnectionNotStable />
+    <>
       <ForegroundListener />
-    </View>
+      {isPIPMode ? (
+        <ShidurPip />
+      ) : (
+        <View
+          style={[
+            styles.container,
+            baseStyles.viewBackground,
+            { paddingTop: insets.top },
+          ]}
+        >
+          <RoomLayout />
+          <TopBar />
+          <BottomBarLevel0 />
+          <MenuLevel1 />
+          <ConnectionNotStable />
+        </View>
+      )}
+    </>
   );
 };
 

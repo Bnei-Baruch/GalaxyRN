@@ -1,5 +1,6 @@
 package com.galaxy_mobile;
 
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -28,7 +29,12 @@ import org.webrtc.audio.JavaAudioDeviceModule;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
+    private static final String CRISP_CHAT_ACTIVITY_CLASS_NAME = "im.crisp.client.external.ChatActivity";
     private PermissionHelper permissionHelper;
+    // onUserLeaveHint fires not only when the user presses Home, but also when this
+    // Activity starts another one (e.g. Crisp's support-chat ChatActivity) that comes
+    // to the foreground. Suppress the resulting false PIP entry in that case.
+    private boolean suppressNextPip = false;
 
     /**
      * Returns the name of the main component registered from JavaScript.
@@ -87,8 +93,23 @@ public class MainActivity extends ReactActivity {
     }
 
     @Override
+    public void startActivity(Intent intent) {
+        if (intent.getComponent() != null
+                && CRISP_CHAT_ACTIVITY_CLASS_NAME.equals(intent.getComponent().getClassName())) {
+            suppressNextPip = true;
+        }
+        super.startActivity(intent);
+    }
+
+    @Override
     public void onUserLeaveHint() {
         GxyLogger.d(TAG, "onUserLeaveHint");
+        if (suppressNextPip) {
+            GxyLogger.d(TAG, "onUserLeaveHint: suppressing PIP entry (triggered by our own activity launch)");
+            suppressNextPip = false;
+            super.onUserLeaveHint();
+            return;
+        }
         if (GxyUIStateModule.isInRoom) {
             // onPictureInPictureModeChanged only fires once the shrink animation has
             // finished, so JS would keep the full room UI (bars included) mounted for

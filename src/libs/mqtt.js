@@ -82,9 +82,11 @@ class MqttMsg {
       username: user.email,
       password: kc.getToken(),
       transformWsUrl: transformUrl,
+      /*
       log: (...args) => {
         logger.debug("MQTT LIB", args[0]);
       },
+      */
       properties: {
         sessionExpiryInterval: mqttTimeout,
         maximumPacketSize: 256000,

@@ -224,7 +224,13 @@ export const useInRoomStore = create((set, get) => ({
 
   enterBackground: async () => {
     set({ isInBackground: true });
-    get().enterAudioMode(true);
+
+    const { isPiPMode } = useSettingsStore.getState();
+    if (!isPiPMode) {
+      useShidurStore.getState().enterAudioMode();
+      useMyStreamStore.getState().toggleCammute(true, false)
+    }
+    get().enterAudioMode();
     addFinishSpan(ROOM_SESSION, 'background', { NAMESPACE });
   },
 
@@ -243,11 +249,7 @@ export const useInRoomStore = create((set, get) => ({
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
-      const { enterAudioMode, cleanKliOlami } = useShidurStore.getState();
-      if (!isPIPMode) {
-        enterAudioMode();
-      }
-      cleanKliOlami(false);
+      useShidurStore.getState().cleanKliOlami(false);
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
