@@ -122,6 +122,14 @@ export const useUiActions = create((set, get) => ({
     set({ showBars });
   },
 
+  cancelHideBarsTimeout: () => {
+    if (showBarTimeout) {
+      logger.debug(NAMESPACE, 'cancelHideBarsTimeout');
+      BackgroundTimer.clearTimeout(showBarTimeout);
+      showBarTimeout = null;
+    }
+  },
+
   moreModal: false,
   toggleMoreModal: (moreModal = !get().moreModal) => set({ moreModal }),
 }));

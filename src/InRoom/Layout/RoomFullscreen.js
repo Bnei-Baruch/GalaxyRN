@@ -28,7 +28,7 @@ const RoomFullscreen = ({ shidur }) => {
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
-    toggleShowBars(true, true);
+    toggleShowBars(true);
   };
 
   let shidurWidth = windowWidth;

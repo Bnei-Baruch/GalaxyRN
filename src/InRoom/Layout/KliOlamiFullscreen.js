@@ -28,7 +28,7 @@ const KliOlamiFullscreen = ({ kliOlami }) => {
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
-    toggleShowBars(true, true);
+    toggleShowBars(true);
   };
 
   let kliOlamiWidth = windowWidth;
