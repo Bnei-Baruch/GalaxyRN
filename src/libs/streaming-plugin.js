@@ -257,12 +257,18 @@ export class StreamingPlugin {
     try {
       const sessionDescription = new RTCSessionDescription(jsep);
       await this.pc.setRemoteDescription(sessionDescription);
+      if (this.isDestroyed || !this.pc) return;
+
       const answer = await this.pc.createAnswer();
+      if (this.isDestroyed || !this.pc) return;
+
       answer.sdp = answer.sdp.replace(
         /a=fmtp:111 minptime=10;useinbandfec=1\r\n/g,
         'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1\r\n'
       );
       await this.pc.setLocalDescription(answer);
+      if (this.isDestroyed || !this.pc) return;
+
       await this.start(answer);
     } catch (error) {
       logger.error(NAMESPACE, 'SDP exchange error:', error);

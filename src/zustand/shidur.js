@@ -386,7 +386,7 @@ export const useShidurStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'videoStream got track url: ', url);
         set({ url });
       };
-      initStream(video, videoJanus);
+      await initStream(video, videoJanus);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initVideoHandle:', error);
     }
@@ -412,7 +412,7 @@ export const useShidurStore = create((set, get) => ({
           audioStream = stream;
           resolve();
         };
-        initStream(audio.value, audioJanus);
+        promises.push(initStream(audio.value, audioJanus));
       });
       promises.push(audioPromise);
     }
@@ -437,7 +437,7 @@ export const useShidurStore = create((set, get) => ({
           trlAudioStream = stream;
           resolve();
         };
-        initStream(id, trlAudioJanus);
+        promises.push(initStream(id, trlAudioJanus));
         promises.push(trlPromise);
       });
     }

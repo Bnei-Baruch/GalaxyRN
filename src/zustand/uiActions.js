@@ -70,7 +70,19 @@ export const useUiActions = create((set, get) => ({
       logger.debug('UiActions', 'updateWidth', num);
 
       if (isShidur) {
-        newWidth = parseInt(((height / 4) * 16) / 9, 10);
+        const maxTileWidth = parseInt((width * 0.4) / 2, 10);
+
+        if (num <= 4) {
+          newWidth = Math.min(
+            parseInt(((height / 3) * 16) / 9, 10),
+            maxTileWidth
+          );
+        } else {
+          newWidth = Math.min(
+            parseInt(((height / 4) * 16) / 9, 10),
+            maxTileWidth
+          );
+        }
       } else {
         width = width - 56;
 
