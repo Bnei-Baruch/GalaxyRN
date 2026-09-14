@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import mqtt from '../libs/mqtt';
 import AudioBridge from '../services/AudioBridge';
@@ -226,7 +227,7 @@ export const useInRoomStore = create((set, get) => ({
     set({ isInBackground: true });
 
     const { isPIPMode } = useSettingsStore.getState();
-    if (!isPIPMode) {
+    if (!isPIPMode && Platform.OS !== 'ios') {
       useShidurStore.getState().enterAudioMode();
       useMyStreamStore.getState().toggleCammute(true, false)
     }
