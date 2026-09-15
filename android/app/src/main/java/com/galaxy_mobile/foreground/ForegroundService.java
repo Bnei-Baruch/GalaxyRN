@@ -23,6 +23,7 @@ public class ForegroundService extends Service {
     public static volatile boolean isRunning = false;
     private PlayerNotificationBuilder notificationBuilder;
     private WifiManager.WifiLock wifiLock;
+    private boolean screenReceiverRegistered = false;
 
     public static final String START_SERVICE_ACTION = "START_SERVICE";
     public static final String STOP_SERVICE_ACTION = "STOP_SERVICE";
@@ -60,6 +61,7 @@ public class ForegroundService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(screenReceiver, filter);
+        screenReceiverRegistered = true;
         isRunning = true;
         GxyLogger.i(TAG, "onCreate completed");
     }
@@ -196,10 +198,14 @@ public class ForegroundService extends Service {
             GxyLogger.e(TAG, "Error during cleanup", e);
         }
 
-        try {
-            unregisterReceiver(screenReceiver);
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error unregistering screen receiver", e);
+        if (screenReceiverRegistered) {
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error unregistering screen receiver", e);
+            } finally {
+                screenReceiverRegistered = false;
+            }
         }
     }
 
