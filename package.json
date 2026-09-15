@@ -86,7 +86,7 @@
     "type": "modules",
     "jsSrcsDir": "src/specs"
   },
-  "packageManager": "yarn@3.6.4",
+  "packageManager": "yarn@4.18.0",
   "resolutions": {
     "mqtt@5.15.2": "patch:mqtt@patch%3Amqtt@patch%253Amqtt@patch%25253Amqtt@npm%2525253A5.15.2%252523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%25253A%25253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%25252540workspace%2525253A.%2523./.yarn/patches/mqtt-patch-98942b041a.patch%253A%253Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-6ac70a4a94.patch%3A%3Aversion=5.15.2&hash=b1ed9c&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-0ffa6eed68.patch"
   }
