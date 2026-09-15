@@ -181,10 +181,14 @@ public class AudioDeviceModule extends NativeAudioDeviceModuleSpec implements Pe
             prevGroupType = selectedGroup.getType();
             GxyLogger.d(TAG, "prevGroupType updated: " + prevGroupType);
 
-            try {
-                emitUpdateAudioDevice(data);
-            } catch (Exception e) {
-                GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
+            if (mEventEmitterCallback != null) {
+                try {
+                    emitUpdateAudioDevice(data);
+                } catch (Exception e) {
+                    GxyLogger.e(TAG, "Error sending event to client: " + e.getMessage(), e);
+                }
+            } else {
+                GxyLogger.d(TAG, "No JS listener registered for updateAudioDevice yet, skipping emit");
             }
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error processing audio devices: " + e.getMessage(), e);
