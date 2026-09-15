@@ -100,8 +100,8 @@ android {
         applicationId "com.galaxy_mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 125
-        versionName "2.8.8"
+        versionCode 126
+        versionName "2.8.9"
         renderscriptTargetApi rootProject.ext.targetSdkVersion
         vectorDrawables.useSupportLibrary = true
     }
