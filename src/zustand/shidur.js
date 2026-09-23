@@ -662,7 +662,7 @@ export const useShidurStore = create((set, get) => ({
     }
 
     try {
-      get().cleanKliOlami();
+      get().cleanKliOlami(false);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during enterAudioMode:', error);
     }

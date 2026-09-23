@@ -250,7 +250,7 @@ export const useInRoomStore = create((set, get) => ({
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
-      useShidurStore.getState().cleanKliOlami(false);
+      useShidurStore.getState().enterAudioMode();
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
