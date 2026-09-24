@@ -228,10 +228,12 @@ export const useInRoomStore = create((set, get) => ({
 
     const { isPIPMode } = useSettingsStore.getState();
     if (!isPIPMode && Platform.OS !== 'ios') {
-      useShidurStore.getState().enterAudioMode();
       useMyStreamStore.getState().toggleCammute(true, false)
+      get().enterAudioMode();
+    } else if (get().isInRoom) {
+      // PIP keeps shidur video playing — only switch feeds to audio
+      useFeedsStore.getState().feedAudioModeOn();
     }
-    get().enterAudioMode();
     addFinishSpan(ROOM_SESSION, 'background', { NAMESPACE });
   },
 
