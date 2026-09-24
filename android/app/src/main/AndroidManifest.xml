@@ -66,6 +66,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Same URL scheme as iOS (CFBundleURLSchemes): com.galaxy.mobile:// -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.galaxy.mobile" />
+            </intent-filter>
         </activity>
 
         <!-- Foreground service for maintaining app functionality while in background -->
