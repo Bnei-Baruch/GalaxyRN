@@ -7,13 +7,24 @@ import {
   setUserNickname,
   show,
 } from 'react-native-crisp-chat-sdk';
+import { Platform } from 'react-native';
 import { create } from 'zustand';
+import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { useUserStore } from './user';
 
 const NAMESPACE = 'Crisp';
 
 let isInitialized = false;
+
+// Opening Crisp's ChatActivity triggers onUserLeaveHint on Android, which would
+// otherwise put the room into PIP behind the chat.
+const showChat = () => {
+  if (Platform.OS === 'android') {
+    GxyUIStateBridge.suppressNextPip();
+  }
+  show();
+};
 
 export const useCrispStore = create((set, get) => ({
   start: () => {
@@ -24,7 +35,7 @@ export const useCrispStore = create((set, get) => ({
           NAMESPACE,
           'Crisp is already initialized, showing chat window'
         );
-        show();
+        showChat();
       } catch (showError) {
         logger.error(NAMESPACE, 'Crisp show failed', showError);
       }
@@ -65,7 +76,7 @@ export const useCrispStore = create((set, get) => ({
 
       try {
         logger.info(NAMESPACE, 'Attempting to show Crisp chat');
-        show();
+        showChat();
         isInitialized = true;
         logger.info(NAMESPACE, 'Crisp chat initialized successfully');
       } catch (showError) {

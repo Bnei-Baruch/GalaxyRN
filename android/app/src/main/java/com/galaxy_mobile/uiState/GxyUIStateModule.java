@@ -23,6 +23,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.WritableMap;
 
+import com.galaxy_mobile.MainActivity;
 import com.galaxy_mobile.MainApplication;
 import com.facebook.fbreact.specs.NativeGxyUIStateModuleSpec;
 import com.facebook.proguard.annotations.DoNotStrip;
@@ -210,6 +211,14 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
         GxyPipBuilder pipBuilder = new GxyPipBuilder(getReactApplicationContext());
         pipBuilder.build();
         promise.resolve(true);
+    }
+
+    @Override
+    @ReactMethod
+    @DoNotStrip
+    public void suppressNextPip() {
+        GxyLogger.d(TAG, "suppressNextPip");
+        MainActivity.suppressNextPip();
     }
 
     private void startService() {

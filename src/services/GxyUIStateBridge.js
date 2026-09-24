@@ -53,6 +53,14 @@ const GxyUIStateBridge = {
     }
   },
 
+  suppressNextPip: () => {
+    if (NativeGxyUIState && NativeGxyUIState.suppressNextPip) {
+      NativeGxyUIState.suppressNextPip();
+    } else {
+      logger.warn(NAMESPACE, 'suppressNextPip is not available');
+    }
+  },
+
   /**
    * Subscribe to the native systemEvent event (codegen EventEmitter field)
    * @returns {?{remove: Function}} subscription, or null if unavailable
