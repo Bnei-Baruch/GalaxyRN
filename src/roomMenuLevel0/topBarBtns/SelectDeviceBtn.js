@@ -34,6 +34,7 @@ export const SelectDeviceBtn = () => {
     if (!item) return null;
     return (
       <TouchableOpacity
+        testID={`audioDevice-${item.type}`}
         disabled={item.active}
         key={item.id}
         style={[styles.item, { opacity: item.active ? 0.5 : 1 }]}
@@ -53,7 +54,9 @@ export const SelectDeviceBtn = () => {
         onOpen={toggleOpen}
         items={devices}
         renderItem={renderItem}
-        trigger={<Icon name="arrow-drop-down" size={30} color="white" />}
+        trigger={
+          <Icon testID="audioDeviceTrigger" name="arrow-drop-down" size={30} color="white" />
+        }
       />
     </View>
   );

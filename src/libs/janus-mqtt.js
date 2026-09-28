@@ -1,4 +1,4 @@
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import logger from '../services/logger';
 import { randomString, rejectTimeoutPromise } from '../tools';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -199,7 +199,7 @@ export class JanusMqtt {
 
     this._cleanupTransactions();
 
-    this._cleanupMqtt();
+    await this._cleanupMqtt();
     logger.debug(NAMESPACE, 'destroy done');
     finishSpan(destroySpan, 'ok', NAMESPACE);
     finishTransaction(this.sentrySession, 'ok', NAMESPACE);
@@ -714,4 +714,33 @@ export class JanusMqtt {
       useInRoomStore.getState().restartRoom();
     }
   };
+  reconnectMqtt = async () => {
+    logger.debug(NAMESPACE, 'reconnectMqtt', this.isConnected);
+    if (!this.isConnected) {
+      logger.error(NAMESPACE, 'reconnectMqtt skipped, not connected');
+      return;
+    }
+
+    try {
+      await this._cleanupMqtt();
+      await Promise.all([
+        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 0 }),
+        mqtt.sub(this.rxTopic, { qos: 0 }),
+        mqtt.sub(this.stTopic, { qos: 1 }),
+      ]);
+    } catch (e) {
+      logger.error(NAMESPACE, 'Error resubscribing to MQTT topics:', e);
+    }
+
+    try {
+      mqtt.mq.removeListener(this.srv, this.onMessage);
+      mqtt.mq.on(this.srv, this.onMessage);
+      if (this.sessionId) {
+        mqtt.mq.removeListener(this.sessionId, this.onMessage);
+        mqtt.mq.on(this.sessionId, this.onMessage);
+      }
+    } catch (e) {
+      logger.error(NAMESPACE, 'Error re-adding MQTT listeners:', e);
+    }
+  }
 }

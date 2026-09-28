@@ -32,6 +32,7 @@ let pollTimer = null;
 
 const stopPolling = () => {
   if (pollTimer) {
+    logger.debug(NAMESPACE, 'stopPolling - clearing pollTimer',);
     clearInterval(pollTimer);
     pollTimer = null;
   }

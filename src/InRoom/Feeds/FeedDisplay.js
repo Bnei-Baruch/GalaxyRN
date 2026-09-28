@@ -7,7 +7,9 @@ const FeedDisplay = ({ display, talking }) => (
     {!talking && (
       <Icon name={'mic-off'} color={'red'} size={14} style={styles.icon} />
     )}
-    <Text style={styles.text}>{display}</Text>
+    <Text style={styles.text} numberOfLines={1} ellipsizeMode="tail">
+      {display}
+    </Text>
   </View>
 );
 export default FeedDisplay;
@@ -17,9 +19,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     top: 0,
+    maxWidth: '100%',
     backgroundColor: 'rgba(34, 34, 34, .7)',
     flexDirection: 'row',
-    flexWrap: 'wrap',
     padding: 4,
     zIndex: 1,
     justifyContent: 'center',
@@ -33,6 +35,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: 'white',
+    flexShrink: 1,
   },
   icon: {
     marginRight: 4,

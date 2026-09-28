@@ -35,7 +35,11 @@ const BeforeRoom = () => {
 
   logger.debug(NAMESPACE, 'appInitState', appInitState, wip);
 
-  if (appInitState === AppInitStates.NOT_JOINED || wip) {
+  if (
+    appInitState === AppInitStates.NOT_JOINED ||
+    appInitState === AppInitStates.DISCONNECTED ||
+    wip
+  ) {
     logger.debug(NAMESPACE, '!appInitState');
     return <WIP isReady={false} />;
   }

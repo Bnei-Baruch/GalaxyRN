@@ -29,31 +29,31 @@ class Logger {
     );
   }
 
-  async trace(...args) {
+  trace(...args) {
     if (!isDebug || !this.hasTag(args[0])) return;
 
     console.trace(...this.prepareConsoleMsg(args));
   }
 
-  async debug(...args) {
+  debug(...args) {
     if (!isDebug || !this.hasTag(args[0])) return;
 
     console.debug(...this.prepareConsoleMsg(args));
   }
 
-  async info(...args) {
+  info(...args) {
     if (!isDebug || !this.hasTag(args[0])) return;
 
     console.info(...this.prepareConsoleMsg(args));
   }
 
-  async warn(...args) {
+  warn(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.warn(...this.prepareConsoleMsg(args));
   }
 
-  async error(...args) {
+  error(...args) {
     if (!this.hasTag(args[0])) return;
 
     console.error(args);

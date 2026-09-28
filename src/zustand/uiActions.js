@@ -1,5 +1,5 @@
 import { Dimensions } from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import { create } from 'zustand';
 import logger from '../services/logger';
 import { sleep } from '../tools';
@@ -70,14 +70,32 @@ export const useUiActions = create((set, get) => ({
       logger.debug('UiActions', 'updateWidth', num);
 
       if (isShidur) {
-        newWidth = parseInt(((height / 4) * 16) / 9, 10);
+        const maxTileWidth = parseInt((width * 0.4) / 2, 10);
+
+        if (num <= 4) {
+          newWidth = Math.min(
+            parseInt(((height / 3) * 16) / 9, 10),
+            maxTileWidth
+          );
+        } else {
+          newWidth = Math.min(
+            parseInt(((height / 4) * 16) / 9, 10),
+            maxTileWidth
+          );
+        }
       } else {
         width = width - 56;
 
         if (num <= 4) {
-          newWidth = parseInt(((height / 2) * 16) / 9, 10);
+          newWidth = Math.min(
+            parseInt(((height / 2) * 16) / 9, 10),
+            parseInt(width / 2, 10)
+          );
         } else if (num <= 9) {
-          newWidth = parseInt(((height / 3) * 16) / 9, 10);
+          newWidth = Math.min(
+            parseInt(((height / 3) * 16) / 9, 10),
+            parseInt(width / 3, 10)
+          );
         } else {
           newWidth = parseInt(width / 4, 10);
         }
@@ -102,6 +120,14 @@ export const useUiActions = create((set, get) => ({
       );
     }
     set({ showBars });
+  },
+
+  cancelHideBarsTimeout: () => {
+    if (showBarTimeout) {
+      logger.debug(NAMESPACE, 'cancelHideBarsTimeout');
+      BackgroundTimer.clearTimeout(showBarTimeout);
+      showBarTimeout = null;
+    }
   },
 
   moreModal: false,

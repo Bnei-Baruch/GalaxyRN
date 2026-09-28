@@ -15,6 +15,9 @@ export interface Spec extends TurboModule {
     isCammute: boolean
   ): void;
   activatePip(): Promise<boolean>;
+  // Android-only: skip the PIP entry on the next onUserLeaveHint, which fires
+  // when we open another Activity (e.g. Crisp chat) rather than on Home press.
+  suppressNextPip(): void;
   // Android-only events (routed through the module's static self-ref from
   // Service/BroadcastReceiver/Application contexts — see GxyUIStateModule.java).
   // Codegen: systemEvent -> emitSystemEvent, nativePlayerEvent -> emitNativePlayerEvent.

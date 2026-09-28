@@ -1,4 +1,4 @@
-import BackgroundTimer from 'react-native-background-timer';
+import BackgroundTimer from '../services/BackgroundTimer';
 import { create } from 'zustand';
 import { STORAGE_KEYS } from '../constants';
 import {
@@ -46,6 +46,31 @@ let trlAudioJanus = null;
 let trlAudioStream = null;
 
 let attempts = 0;
+
+let prefetchedSrvPromise = null;
+let prefetchedSrvTimestamp = null;
+const PREFETCHED_SRV_MAX_AGE = 24 * 60 * 60 * 1000; // 1 day
+
+const prefetchStrServer = () => {
+  const _userState = useUserStore.getState().buildUserState();
+  logger.debug(NAMESPACE, 'prefetchStrServer', _userState);
+  prefetchedSrvTimestamp = Date.now();
+  prefetchedSrvPromise = api.fetchStrServer(_userState).then(res => {
+    logger.debug(NAMESPACE, 'prefetchStrServer result', res);
+    return res?.server;
+  });
+  prefetchedSrvPromise.catch(error => {
+    logger.error(NAMESPACE, 'Error during prefetchStrServer:', error);
+  });
+};
+
+// Called on app abandon (terminateApp) so a stale server assignment from a
+// room picked in a previous session never survives into the next one.
+const clearPrefetchedSrvServer = () => {
+  logger.debug(NAMESPACE, 'clearPrefetchedSrvServer');
+  prefetchedSrvPromise = null;
+  prefetchedSrvTimestamp = null;
+};
 
 const initStream = async (media, _janusStream) => {
   if (!janus) return [];
@@ -132,6 +157,9 @@ export const useShidurStore = create((set, get) => ({
   isAudioSelectOpen: false,
   withRestart: false,
 
+  prefetchStrServer,
+  clearPrefetchedSrvServer,
+
   setIsAudioSelectOpen: (isAudioSelectOpen = !get().isAudioSelectOpen) => {
     set({ isAudioSelectOpen });
   },
@@ -203,12 +231,24 @@ export const useShidurStore = create((set, get) => ({
 
     let srv = null;
     try {
-      const _userState = useUserStore.getState().buildUserState();
-      logger.debug(NAMESPACE, 'init janus fetchStrServer', _userState);
-      srv = await api.fetchStrServer(_userState).then(res => {
-        logger.debug(NAMESPACE, 'init janus fetchStrServer result', res);
-        return res?.server;
-      });
+      const isStale =
+        prefetchedSrvPromise &&
+        Date.now() - prefetchedSrvTimestamp > PREFETCHED_SRV_MAX_AGE;
+      if (!prefetchedSrvPromise || isStale) {
+        logger.debug(
+          NAMESPACE,
+          isStale
+            ? 'init janus prefetch stale, refreshing fetchStrServer'
+            : 'init janus no prefetch, fetching fetchStrServer'
+        );
+        prefetchStrServer();
+      } else {
+        logger.debug(NAMESPACE, 'init janus using prefetched fetchStrServer');
+      }
+      const _prefetched = prefetchedSrvPromise;
+      prefetchedSrvPromise = null;
+      prefetchedSrvTimestamp = null;
+      srv = await _prefetched;
     } catch (error) {
       logger.error(NAMESPACE, 'Error during fetchStrServer:', error);
       throw error;
@@ -305,7 +345,7 @@ export const useShidurStore = create((set, get) => ({
     set({ shidurWIP: true });
 
     try {
-      await rejectTimeoutPromise(get().initJanus(), 3000);
+      await rejectTimeoutPromise(get().initJanus(), 10000);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initShidur:', error);
       setSpanAttributes(span, { error });
@@ -346,7 +386,7 @@ export const useShidurStore = create((set, get) => ({
         logger.debug(NAMESPACE, 'videoStream got track url: ', url);
         set({ url });
       };
-      initStream(video, videoJanus);
+      await initStream(video, videoJanus);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during initVideoHandle:', error);
     }
@@ -372,7 +412,7 @@ export const useShidurStore = create((set, get) => ({
           audioStream = stream;
           resolve();
         };
-        initStream(audio.value, audioJanus);
+        promises.push(initStream(audio.value, audioJanus));
       });
       promises.push(audioPromise);
     }
@@ -397,7 +437,7 @@ export const useShidurStore = create((set, get) => ({
           trlAudioStream = stream;
           resolve();
         };
-        initStream(id, trlAudioJanus);
+        promises.push(initStream(id, trlAudioJanus));
         promises.push(trlPromise);
       });
     }
@@ -622,7 +662,7 @@ export const useShidurStore = create((set, get) => ({
     }
 
     try {
-      get().cleanKliOlami();
+      get().cleanKliOlami(false);
     } catch (error) {
       logger.error(NAMESPACE, 'Error during enterAudioMode:', error);
     }
@@ -709,5 +749,12 @@ export const useShidurStore = create((set, get) => ({
     const key = await getAudioKey();
     logger.debug(NAMESPACE, 'toggleIsOriginal key', key);
     get().setAudio(key);
+  },
+  reconnectMqtt: () => {
+    logger.debug(NAMESPACE, 'reconnectMqtt', !!janus);
+    if (janus) {
+      janus.reconnectMqtt();
+      logger.info(NAMESPACE, 'reconnectMqtt janus');
+    }
   },
 }));

@@ -13,7 +13,7 @@ export const ChatBtn = () => {
   const handlePress = () => setChatMode(modalModes.chat);
   return (
     <>
-      <Pressable onPress={handlePress} style={bottomBar.btn}>
+      <Pressable testID="chatBtn" onPress={handlePress} style={bottomBar.btn}>
         <BottomBarIconWithText
           iconName="chat"
           text={t('bottomBar.chat')}

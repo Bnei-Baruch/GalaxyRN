@@ -36,6 +36,14 @@ React Native (0.82.1, React 19) video-conferencing app (WebRTC). Android runs on
 - `shared/` — cross-feature utilities
 - `i18n/`, `assets/` — translations and static assets
 
+## App flow
+
+Startup sequence: **permissions screen** (until all required permissions granted) → **login screen** (until authenticated via Keycloak or a saved session is restored) → `initApp()` (`src/zustand/inits.js`) → **BeforeRoom screen** (`src/InRoom/BeforeRoom.js`) → **InRoom screen**.
+
+`initApp()` (called from `BeforeRoom`'s mount effect) starts the Android foreground service (`GxyUIStateBridge.startForeground()`) *before* `initServices()`/`initMQTT()` — i.e. the foreground service (and the process-kill protection it gives) is tied to the **login/app session**, not to being in a room or call. It's stopped by `terminateApp()`, called on `BeforeRoom` unmount or by the network-failure path below. Joining/leaving a room only calls `updateUIState()`, which refreshes the already-running foreground notification but never stops it.
+
+**Network-failure teardown**: `src/libs/connection-monitor.js` polls every ~1s (`monitorNetInfo`/`monitorMqtt`); if disconnected longer than `MAX_CONNECTION_TIMEOUT` (20s), `onNoNetwork()` calls `exitRoom()` then `terminateApp()` — a full session teardown (stops the foreground service too), not just a local monitor reset.
+
 ## Gotchas
 
 - `ios.zip` at repo root is a stray archive, not source — ignore it

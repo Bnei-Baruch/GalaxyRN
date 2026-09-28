@@ -1,8 +1,4 @@
-import {
-  DeviceEventEmitter,
-  NativeEventEmitter,
-  Platform,
-} from 'react-native';
+import { NativeEventEmitter, Platform } from 'react-native';
 import logger from './logger';
 import NativeCallManager from '../specs/NativeCallManager';
 import NativeCallListenerModule from '../specs/NativeCallListenerModule';
@@ -41,28 +37,25 @@ const CallsBridge = {
   raw: NativeCall,
 
   /**
-   * Get the appropriate event emitter for the current platform
-   * @returns {Object} DeviceEventEmitter for Android, NativeEventEmitter for iOS
+   * Subscribe to the native onCallStateChanged event.
+   * iOS (CallManager) is a legacy RCTEventEmitter interop module, so it's
+   * reached via NativeEventEmitter/addListener. Android (CallListenerModule)
+   * is a real codegen TurboModule, so its EventEmitter field is called
+   * directly.
+   * @returns {?{remove: Function}} subscription, or null if unavailable
    */
-  getEventEmitter: () => {
-    try {
-      if (Platform.OS === 'ios') {
-        if (NativeCall) {
-          logger.debug(NAMESPACE, 'Creating NativeEventEmitter for iOS');
-          return new NativeEventEmitter(NativeCall);
-        } else {
-          logger.warn(NAMESPACE, 'iOS native module not available');
-          return DeviceEventEmitter;
-        }
-      } else {
-        // Android: Use DeviceEventEmitter as events are sent via SendEventToClient
-        logger.debug(NAMESPACE, 'Using DeviceEventEmitter for Android');
-        return DeviceEventEmitter;
-      }
-    } catch (error) {
-      logger.error(NAMESPACE, 'Error creating event emitter', error);
-      return DeviceEventEmitter;
+  onCallStateChanged: handler => {
+    if (!NativeCall) {
+      logger.warn(NAMESPACE, 'onCallStateChanged is not available');
+      return null;
     }
+    if (Platform.OS === 'ios') {
+      return new NativeEventEmitter(NativeCall).addListener(
+        'onCallStateChanged',
+        handler
+      );
+    }
+    return NativeCall.onCallStateChanged(handler);
   },
 };
 

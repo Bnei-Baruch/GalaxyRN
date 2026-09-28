@@ -74,7 +74,7 @@ export const useSubtitleStore = create((set, get) => ({
           mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_SUBTITLE.topic}`),
           mqtt.exit(`${SUBTITLES_TOPIC}${subLang}/${MSGS_QUESTION.topic}`),
         ]),
-        2000
+        5000
       );
     } catch (e) {
       logger.error(NAMESPACE, `Error exiting topics:`, e);

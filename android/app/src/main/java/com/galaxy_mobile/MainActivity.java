@@ -3,6 +3,7 @@ package com.galaxy_mobile;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 
@@ -28,7 +29,19 @@ import org.webrtc.audio.JavaAudioDeviceModule;
 
 public class MainActivity extends ReactActivity {
     private static final String TAG = "MainActivity";
+    // A suppression request older than this is stale (the launch it was meant for never
+    // triggered onUserLeaveHint) and must not swallow a later real Home press.
+    private static final long SUPPRESS_PIP_WINDOW_MS = 3000;
     private PermissionHelper permissionHelper;
+    // onUserLeaveHint fires not only when the user presses Home, but also when the app
+    // starts another Activity (e.g. Crisp's support-chat ChatActivity) that comes to the
+    // foreground. Crisp launches it via the Application context, so it can't be caught by
+    // overriding startActivity here — JS requests suppression right before opening it.
+    private static volatile long suppressPipRequestedAt = 0;
+
+    public static void suppressNextPip() {
+        suppressPipRequestedAt = SystemClock.elapsedRealtime();
+    }
 
     /**
      * Returns the name of the main component registered from JavaScript.
@@ -89,7 +102,22 @@ public class MainActivity extends ReactActivity {
     @Override
     public void onUserLeaveHint() {
         GxyLogger.d(TAG, "onUserLeaveHint");
+        long requestedAt = suppressPipRequestedAt;
+        suppressPipRequestedAt = 0;
+        if (requestedAt != 0
+                && SystemClock.elapsedRealtime() - requestedAt < SUPPRESS_PIP_WINDOW_MS) {
+            GxyLogger.d(TAG, "onUserLeaveHint: suppressing PIP entry (triggered by our own activity launch)");
+            super.onUserLeaveHint();
+            return;
+        }
         if (GxyUIStateModule.isInRoom) {
+            // onPictureInPictureModeChanged only fires once the shrink animation has
+            // finished, so JS would keep the full room UI (bars included) mounted for
+            // the whole transition. Switch JS to the PIP-only layout up front instead.
+            WritableMap data = Arguments.createMap();
+            data.putString("action", "is_pip_mode");
+            data.putBoolean("active", true);
+            GxyUIStateModule.dispatchSystemEvent(data);
             enterPictureInPictureMode();
         }
         super.onUserLeaveHint();

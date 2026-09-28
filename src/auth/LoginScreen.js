@@ -41,7 +41,12 @@ const LoginScreen = () => {
       style={[
         styles.container,
         baseStyles.viewBackground,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+          paddingLeft: insets.left + 20,
+          paddingRight: insets.right + 20,
+        },
       ]}
     >
       <View style={styles.header}>

@@ -244,13 +244,16 @@ export class SubscriberPlugin {
     const sessionDescription = new RTCSessionDescription(jsep);
     try {
       await this.pc.setRemoteDescription(sessionDescription);
+      if (this.isDestroyed || !this.pc) return;
     } catch (error) {
       logger.error(NAMESPACE, 'Failed to set remote description', error);
       return;
     }
     try {
       const answer = await this.pc.createAnswer();
+      if (this.isDestroyed || !this.pc) return;
       const localDescription = await this.pc.setLocalDescription(answer);
+      if (this.isDestroyed || !this.pc) return;
       logger.debug(NAMESPACE, 'set answer', localDescription);
       await this.start(answer);
     } catch (error) {

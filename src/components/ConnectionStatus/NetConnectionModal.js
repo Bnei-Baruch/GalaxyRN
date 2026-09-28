@@ -24,7 +24,11 @@ const NetConnectionModal = () => {
     };
   }, []);
 
-  if (netIsOn || appInitState === AppInitStates.NOT_JOINED) {
+  if (
+    netIsOn ||
+    appInitState === AppInitStates.NOT_JOINED ||
+    appInitState === AppInitStates.DISCONNECTED
+  ) {
     logger.debug(NAMESPACE, 'render null', netIsOn, appInitState);
     return null;
   }

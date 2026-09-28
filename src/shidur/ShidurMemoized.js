@@ -7,12 +7,12 @@ import { styles } from './styles';
 const NAMESPACE = 'ShidurMemoized';
 
 const ShidurMemoized = memo(
-  ({ streamURL }) => {
+  ({ streamURL, style }) => {
     logger.debug(NAMESPACE, `ShidurMemoized render`, streamURL);
     return (
       <RTCView
         streamURL={streamURL}
-        style={styles.viewer}
+        style={style || styles.viewer}
         objectFit="contain"
         iosPIP={{
           enabled: true,
@@ -26,7 +26,10 @@ const ShidurMemoized = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.streamURL === nextProps.streamURL;
+    return (
+      prevProps.streamURL === nextProps.streamURL &&
+      prevProps.style === nextProps.style
+    );
   }
 );
 

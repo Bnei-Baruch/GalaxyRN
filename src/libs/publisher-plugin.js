@@ -173,9 +173,11 @@ export class PublisherPlugin {
     try {
       const offer = await this.pc.createOffer();
       logger.debug(NAMESPACE, 'Offer created', offer);
+      if (this.isDestroyed || !this.pc) return;
 
       await this.pc.setLocalDescription(offer);
       logger.debug(NAMESPACE, 'Local description set', offer);
+      if (this.isDestroyed || !this.pc) return;
 
       const sdp = offer.sdp.replace(
         /profile-level-id=[a-f0-9]{6}/g,
@@ -184,6 +186,7 @@ export class PublisherPlugin {
       const jsep = { type: offer.type, sdp };
       const body = { request: 'configure', video: true, audio: true };
       const result = await this.transaction('message', { body, jsep }, 'event');
+      if (this.isDestroyed || !this.pc) return;
       const { json, data } = result || {};
       if (json?.jsep) {
         await this.pc.setRemoteDescription(json.jsep);
@@ -275,8 +278,10 @@ export class PublisherPlugin {
     try {
       offer = await this.pc.createOffer({ iceRestart: restart });
       logger.debug(NAMESPACE, 'created offer', offer);
+      if (this.isDestroyed || !this.pc) return;
       await this.pc.setLocalDescription(offer);
       logger.debug(NAMESPACE, 'setLocalDescription: ', offer);
+      if (this.isDestroyed || !this.pc) return;
     } catch (error) {
       logger.error(NAMESPACE, 'setLocalDescription: ', error);
       return;
@@ -298,6 +303,7 @@ export class PublisherPlugin {
     }
 
     const param = await this.transaction('message', message, 'event');
+    if (this.isDestroyed || !this.pc) return;
 
     logger.debug(NAMESPACE, 'Configure respond');
     const { json } = param || {};

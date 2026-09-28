@@ -1,0 +1,31 @@
+appId: ${APP_ID}
+name: chat — send an in-room message
+tags:
+  - chat
+  - in-room
+# No `env:` block — values come from the exported shell env / `-e` (see login.yaml note).
+---
+# In-room chat round-trip. Requires a joinable room (see join-room.yaml note).
+- runFlow: join-room.yaml
+# Chat lives in the level-1 "More" menu.
+- tapOn:
+    id: "moreBtn"
+- tapOn:
+    id: "chatBtn"
+# Chat modal opened (title "Communication" / tabs). testIDs added on the form.
+- extendedWaitUntil:
+    visible:
+      id: "chatInput"
+    timeout: 15000
+- tapOn:
+    id: "chatInput"
+- inputText: "hello from maestro"
+# The Send button sits below the keyboard (hard to tap). The input has returnKeyType "send" +
+# onSubmitEditing=forceSubmit, so Enter submits the message directly.
+- pressKey: Enter
+# The sent message renders in the list (Message.js prints the text verbatim).
+- extendedWaitUntil:
+    visible:
+      text: "hello from maestro"
+    timeout: 15000
+- takeScreenshot: verify-results/chat-sent

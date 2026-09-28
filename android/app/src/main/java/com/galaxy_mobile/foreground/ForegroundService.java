@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
@@ -21,6 +22,8 @@ public class ForegroundService extends Service {
     private static final String TAG = "ForegroundService";
     public static volatile boolean isRunning = false;
     private PlayerNotificationBuilder notificationBuilder;
+    private WifiManager.WifiLock wifiLock;
+    private boolean screenReceiverRegistered = false;
 
     public static final String START_SERVICE_ACTION = "START_SERVICE";
     public static final String STOP_SERVICE_ACTION = "STOP_SERVICE";
@@ -58,20 +61,25 @@ public class ForegroundService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(screenReceiver, filter);
+        screenReceiverRegistered = true;
         isRunning = true;
         GxyLogger.i(TAG, "onCreate completed");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            GxyLogger.w(TAG, "onStartCommand: null intent (system restart), returning START_STICKY");
+            return START_STICKY;
+        }
         String action = intent.getAction();
         GxyLogger.i(TAG, "onStartCommand: " + action);
 
-        if (action.equals(STOP_SERVICE_ACTION)) {
+        if (STOP_SERVICE_ACTION.equals(action)) {
             stop();
             return START_NOT_STICKY;
         }
-        if (action.equals(START_SERVICE_ACTION)) {
+        if (START_SERVICE_ACTION.equals(action)) {
             start();
             return START_STICKY;
         }
@@ -106,9 +114,37 @@ public class ForegroundService extends Service {
                 GxyLogger.i(TAG, "Successfully started as foreground service (legacy)");
             }
 
+            acquireWifiLock();
             GxyLogger.i(TAG, "Foreground service ready");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error starting foreground", e);
+        }
+    }
+
+    private void acquireWifiLock() {
+        try {
+            WifiManager wifiManager = (WifiManager) getApplicationContext()
+                    .getSystemService(Context.WIFI_SERVICE);
+            if (wifiLock == null) {
+                wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "GalaxyRN:WifiLock");
+            }
+            if (!wifiLock.isHeld()) {
+                wifiLock.acquire();
+                GxyLogger.i(TAG, "WifiLock acquired");
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error acquiring WifiLock", e);
+        }
+    }
+
+    private void releaseWifiLock() {
+        try {
+            if (wifiLock != null && wifiLock.isHeld()) {
+                wifiLock.release();
+                GxyLogger.i(TAG, "WifiLock released");
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error releasing WifiLock", e);
         }
     }
 
@@ -149,6 +185,8 @@ public class ForegroundService extends Service {
     }
 
     private void cleanup() {
+        releaseWifiLock();
+
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 stopForeground(STOP_FOREGROUND_REMOVE);
@@ -160,10 +198,14 @@ public class ForegroundService extends Service {
             GxyLogger.e(TAG, "Error during cleanup", e);
         }
 
-        try {
-            unregisterReceiver(screenReceiver);
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error unregistering screen receiver", e);
+        if (screenReceiverRegistered) {
+            try {
+                unregisterReceiver(screenReceiver);
+            } catch (Exception e) {
+                GxyLogger.e(TAG, "Error unregistering screen receiver", e);
+            } finally {
+                screenReceiverRegistered = false;
+            }
         }
     }
 

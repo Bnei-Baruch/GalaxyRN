@@ -2,6 +2,7 @@ import * as React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { baseStyles } from '../constants';
+import { useUiActions } from '../zustand/uiActions';
 import { AudioModeBtn } from './bottomBarBtns/AudioModeBtn';
 import { CammuteBtn } from './bottomBarBtns/CammuteBtn';
 import { MoreBtn } from './bottomBarBtns/MoreBtn';
@@ -10,9 +11,11 @@ import { QuestionBtn } from './bottomBarBtns/QuestionBtn';
 
 export const BottomBar = () => {
   const insets = useSafeAreaInsets();
+  const { cancelHideBarsTimeout } = useUiActions();
 
   return (
     <View
+      onTouchStart={cancelHideBarsTimeout}
       style={[
         styles.container,
         baseStyles.panelBackground,

@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import mqtt from '../libs/mqtt';
 import AudioBridge from '../services/AudioBridge';
@@ -224,7 +225,15 @@ export const useInRoomStore = create((set, get) => ({
 
   enterBackground: async () => {
     set({ isInBackground: true });
-    get().enterAudioMode(true);
+
+    const { isPIPMode } = useSettingsStore.getState();
+    if (!isPIPMode && Platform.OS !== 'ios') {
+      useMyStreamStore.getState().toggleCammute(true, false)
+      get().enterAudioMode();
+    } else if (get().isInRoom) {
+      // PIP keeps shidur video playing — only switch feeds to audio
+      useFeedsStore.getState().feedAudioModeOn();
+    }
     addFinishSpan(ROOM_SESSION, 'background', { NAMESPACE });
   },
 
@@ -236,18 +245,14 @@ export const useInRoomStore = create((set, get) => ({
     addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
-  enterAudioMode: async (isPIPMode = false) => {
+  enterAudioMode: async () => {
     logger.debug(NAMESPACE, 'enterAudioMode');
     const span = addSpan(ROOM_SESSION, 'audioMode.enter');
     try {
       finishSpan(span, 'ok');
       if (!get().isInRoom) return;
 
-      const { enterAudioMode, cleanKliOlami } = useShidurStore.getState();
-      if (!isPIPMode) {
-        enterAudioMode();
-      }
-      cleanKliOlami(false);
+      useShidurStore.getState().enterAudioMode();
       useFeedsStore.getState().feedAudioModeOn();
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);

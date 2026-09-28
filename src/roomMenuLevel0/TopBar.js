@@ -10,14 +10,15 @@ import { LeaveBtn } from './topBarBtns/LeaveBtn';
 
 export const TopBar = () => {
   const { room } = useRoomStore();
-  const { showBars } = useUiActions();
+  const { showBars, cancelHideBarsTimeout } = useUiActions();
   const insets = useSafeAreaInsets();
-  
+
   if (!showBars) return null;
-  
+
   return (
     <View style={styles.container}>
     <View
+      onTouchStart={cancelHideBarsTimeout}
       style={[
         styles.buttonsContainer,
         baseStyles.panelBackground,

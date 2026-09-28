@@ -4,10 +4,18 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../helper';
+
+const PRESS_DISABLE_MS = 3000;
+
 export const AudioModeBtn = () => {
   const { audioMode, toggleAudioMode } = useSettingsStore();
   const { t } = useTranslation();
-  const handlePress = () => toggleAudioMode();
+  const [disabled, setDisabled] = React.useState(false);
+  const handlePress = () => {
+    toggleAudioMode();
+    setDisabled(true);
+    setTimeout(() => setDisabled(false), PRESS_DISABLE_MS);
+  };
   let iconName, text, extraStyle;
   if (!audioMode) {
     iconName = 'hearing';
@@ -19,7 +27,13 @@ export const AudioModeBtn = () => {
     extraStyle = ['toggle_on', 'toggle_on_icon'];
   }
   return (
-    <Pressable testID="audioModeBtn" accessibilityLabel="audioModeBtn" onPress={handlePress} style={bottomBar.btn}>
+    <Pressable
+      testID="audioModeBtn"
+      accessibilityLabel="audioModeBtn"
+      onPress={handlePress}
+      disabled={disabled}
+      style={bottomBar.btn}
+    >
       <BottomBarIconWithText
         iconName={iconName}
         text={text}

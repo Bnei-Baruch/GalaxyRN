@@ -2,9 +2,7 @@ appId: ${APP_ID}
 name: regression — full flow (needs E2E creds)
 tags:
   - regression
-env:
-  E2E_USERNAME: ""
-  E2E_PASSWORD: ""
+# No `env:` block — creds come from the exported shell env / `-e` (see login.yaml note).
 ---
 # Full on-device regression mapped to docs/new-arch-qa-checklist.md.
 # All interactive elements matched by testID (see src/**/*Btn.js) — locale-proof.
@@ -23,7 +21,9 @@ env:
 # (RoomSelectModal.handleSearch), which enables the modal's Join button — no list-item tap.
 - tapOn:
     id: "roomSelectTrigger"
-- inputText: "Test Mobile"
+- tapOn:
+    id: "roomSearchInput"
+- inputText: ${E2E_ROOM}
 - tapOn:
     id: "joinRoomBtn"
 - extendedWaitUntil:

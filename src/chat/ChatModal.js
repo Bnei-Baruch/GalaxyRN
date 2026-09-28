@@ -44,7 +44,9 @@ export const ChatModal = () => {
         <View
           style={{
             paddingTop: insets.top + 8,
-            paddingBottom: 8,
+            paddingBottom: insets.bottom + 8,
+            paddingLeft: insets.left + 8,
+            paddingRight: insets.right + 8,
             flex: 1,
           }}
         >

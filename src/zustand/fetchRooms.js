@@ -5,6 +5,7 @@ import api from '../services/Api';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import logger from '../services/logger';
 import { getFromStorage, setToStorage } from '../tools';
+import { useShidurStore } from './shidur';
 
 const NAMESPACE = 'FetchRooms';
 
@@ -27,6 +28,7 @@ export const useRoomStore = create((set, get) => ({
 
     set({ room });
     GxyUIStateBridge.updateUIState();
+    useShidurStore.getState().prefetchStrServer();
   },
 
   isLoading: false,

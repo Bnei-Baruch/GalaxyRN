@@ -59,9 +59,12 @@ export const useSettingsStore = create((set, get) => ({
   toggleAudioMode: async (audioMode = !get().audioMode) => {
     logger.debug(NAMESPACE, 'toggleAudioMode', audioMode);
     try {
-      audioMode
-        ? useInRoomStore.getState().enterAudioMode()
-        : useInRoomStore.getState().exitAudioMode();
+      if (audioMode) {
+        useMyStreamStore.getState().toggleCammute(true, false);
+        useInRoomStore.getState().enterAudioMode();
+      } else {
+        useInRoomStore.getState().exitAudioMode();
+      }
     } catch (error) {
       logger.error(NAMESPACE, 'Error during toggleAudioMode:', error);
     }
@@ -96,6 +99,7 @@ export const useSettingsStore = create((set, get) => ({
     logger.debug(NAMESPACE, 'toggleIsPIPMode', isPIPMode);
     if (!isPIPMode && useInRoomStore.getState().isInBackground) {
       useMyStreamStore.getState().toggleCammute(true, false)
+      useShidurStore.getState().enterAudioMode();
     }
     set({ isPIPMode });
   },

@@ -7,7 +7,6 @@ import logger from '../services/logger';
 
 const NAMESPACE = 'AudioDevices';
 
-const eventEmitter = AudioBridge.getEventEmitter();
 let subscription = null;
 
 const deviceInfoToOption = d => {
@@ -58,26 +57,23 @@ export const useAudioDevicesStore = create((set, get) => ({
         'Setting up event listener for updateAudioDevice'
       );
 
-      subscription = eventEmitter.addListener(
-        'updateAudioDevice',
-        async data => {
-          logger.debug(NAMESPACE, 'updateAudioDevice event received', data);
-          const span = addSpan(APP_SESSION, 'updateAudioDevice', data);
+      subscription = AudioBridge.onUpdateAudioDevice(async data => {
+        logger.debug(NAMESPACE, 'updateAudioDevice event received', data);
+        const span = addSpan(APP_SESSION, 'updateAudioDevice', data);
 
-          const devices = Object.values(data)
-            .map(deviceInfoToOption)
-            .sort((a, b) => a.priority - b.priority);
-          const selected = deviceInfoToOption(
-            Object.values(data).find(d => d.active)
-          );
+        const devices = Object.values(data)
+          .map(deviceInfoToOption)
+          .sort((a, b) => a.priority - b.priority);
+        const selected = deviceInfoToOption(
+          Object.values(data).find(d => d.active)
+        );
 
-          logger.debug(NAMESPACE, 'Processed devices:', devices);
-          logger.debug(NAMESPACE, 'Selected device:', selected);
+        logger.debug(NAMESPACE, 'Processed devices:', devices);
+        logger.debug(NAMESPACE, 'Selected device:', selected);
 
-          set({ devices, selected, wip: false });
-          finishSpan(span, 'ok');
-        }
-      );
+        set({ devices, selected, wip: false });
+        finishSpan(span, 'ok');
+      });
 
       logger.debug(NAMESPACE, 'Event listener set up successfully');
       AudioBridge.initAudioDevices();

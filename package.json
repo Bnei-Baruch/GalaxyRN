@@ -1,6 +1,6 @@
 {
   "name": "GalaxyRN",
-  "version": "2.8.0",
+  "version": "2.8.13",
   "private": true,
   "scripts": {
     "start": "react-native start",
@@ -9,7 +9,7 @@
     "ios": "react-native run-ios",
     "test": "jest",
     "lint": "eslint .",
-    "clean": "react-native clean",
+    "clean": "bash scripts/clean.sh",
     "bundle:android": "mkdir -p android/app/src/main/assets && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/build/intermediates/res/merged/release/ --sourcemap-output android/app/src/main/assets/index.android.bundle.map",
     "bundle:ios": "mkdir -p ios/main/assets && react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios/main/assets/ --sourcemap-output ios/main.jsbundle.map",
     "release:android": "cd android && ./gradlew clean && cd .. && yarn bundle:android && cd android && ./gradlew bundleRelease",
@@ -32,7 +32,6 @@
     "react": "19.2.3",
     "react-native": "0.86.0",
     "react-native-app-auth": "8.1.0",
-    "react-native-background-timer": "^2.4.1",
     "react-native-crisp-chat-sdk": "^0.23.1",
     "react-native-inappbrowser-reborn": "^3.6.3",
     "react-native-orientation-locker": "^1.7.0",
@@ -63,7 +62,6 @@
     "@sentry/cli": "^2.58.2",
     "@types/markdown-it": "^14.1.2",
     "@types/react": "^19.2.0",
-    "@types/react-native-background-timer": "^2.0.2",
     "@types/react-test-renderer": "^19.1.0",
     "babel-jest": "^30.2.0",
     "dotenv-cli": "^11.0.0",
@@ -88,8 +86,8 @@
     "type": "modules",
     "jsSrcsDir": "src/specs"
   },
-  "packageManager": "yarn@3.6.4",
+  "packageManager": "yarn@4.18.0",
   "resolutions": {
-    "react-native-background-timer@^2.4.1": "patch:react-native-background-timer@npm%3A2.4.1#./.yarn/patches/react-native-background-timer-npm-2.4.1-bef63bbd2f.patch"
+    "mqtt@5.15.2": "patch:mqtt@patch%3Amqtt@patch%253Amqtt@patch%25253Amqtt@npm%2525253A5.15.2%252523./.yarn/patches/mqtt-npm-5.15.2-fa2e7423b4.patch%25253A%25253Aversion=5.15.2&hash=e1ca10&locator=GalaxyRN%25252540workspace%2525253A.%2523./.yarn/patches/mqtt-patch-98942b041a.patch%253A%253Aversion=5.15.2&hash=b210fb&locator=GalaxyRN%252540workspace%25253A.%23./.yarn/patches/mqtt-patch-6ac70a4a94.patch%3A%3Aversion=5.15.2&hash=b1ed9c&locator=GalaxyRN%2540workspace%253A.#./.yarn/patches/mqtt-patch-0ffa6eed68.patch"
   }
 }
