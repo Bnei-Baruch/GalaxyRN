@@ -7,8 +7,10 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import com.galaxy_mobile.logger.GxyLogger;
+import com.galaxy_mobile.logger.SentryUtils;
 import android.view.WindowManager;
 
 import com.facebook.react.ReactInstanceManager;
@@ -108,13 +110,16 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
     private void enableKeepScreenOn() {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            GxyLogger.d(TAG, "Cannot keep screen on: no current activity");
+            // Screen will dim on the system timeout - report so it shows up in Sentry
+            GxyLogger.w(TAG, "Cannot keep screen on: no current activity, isInRoom: " + isInRoom);
             return;
         }
 
         activity.runOnUiThread(() -> {
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added)");
+            String state = describeScreenState(activity);
+            GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added) " + state);
+            SentryUtils.addBreadcrumb("screen", "keepScreenOn added " + state);
         });
     }
 
@@ -122,13 +127,39 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
         Activity activity = getCurrentActivity();
         if (activity == null) {
             GxyLogger.d(TAG, "Cannot modify screen flags: no current activity");
+            SentryUtils.addBreadcrumb("screen", "keepScreenOn clear skipped: no activity");
             return;
         }
 
         activity.runOnUiThread(() -> {
             activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            GxyLogger.d(TAG, "Screen timeout enabled (FLAG_KEEP_SCREEN_ON removed)");
+            String state = describeScreenState(activity);
+            GxyLogger.d(TAG, "Screen timeout enabled (FLAG_KEEP_SCREEN_ON removed) " + state);
+            SentryUtils.addBreadcrumb("screen", "keepScreenOn removed " + state);
         });
+    }
+
+    public static boolean hasKeepScreenOn(Activity activity) {
+        return (activity.getWindow().getAttributes().flags
+                & WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0;
+    }
+
+    // Snapshot for diagnosing "screen dims while in room" reports.
+    public static String describeScreenState(Activity activity) {
+        int screenOffTimeout = -1;
+        try {
+            screenOffTimeout = Settings.System.getInt(activity.getContentResolver(),
+                    Settings.System.SCREEN_OFF_TIMEOUT);
+        } catch (Exception ignored) {
+        }
+        return "{activity: " + activity.getClass().getSimpleName() + "@"
+                + Integer.toHexString(System.identityHashCode(activity))
+                + ", finishing: " + activity.isFinishing()
+                + ", destroyed: " + activity.isDestroyed()
+                + ", keepScreenOn: " + hasKeepScreenOn(activity)
+                + ", isForeground: " + isForeground
+                + ", isInRoom: " + isInRoom
+                + ", screenOffTimeoutMs: " + screenOffTimeout + "}";
     }
 
     @Override

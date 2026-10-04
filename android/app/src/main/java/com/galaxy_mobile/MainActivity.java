@@ -20,6 +20,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
+import com.galaxy_mobile.logger.SentryUtils;
 import com.galaxy_mobile.permissions.PermissionHelper;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
@@ -154,6 +155,21 @@ public class MainActivity extends ReactActivity {
         if (permissionHelper != null) {
             permissionHelper.recheckPermissions();
         }
+
+        String screenState = GxyUIStateModule.describeScreenState(this);
+        GxyLogger.d(TAG, "onResume " + screenState);
+        SentryUtils.addBreadcrumb("screen", "onResume " + screenState);
+        if (GxyUIStateModule.isInRoom && !GxyUIStateModule.hasKeepScreenOn(this)) {
+            GxyLogger.w(TAG, "onResume: in room without FLAG_KEEP_SCREEN_ON " + screenState);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        String screenState = GxyUIStateModule.describeScreenState(this);
+        GxyLogger.d(TAG, "onStop " + screenState);
+        SentryUtils.addBreadcrumb("screen", "onStop " + screenState);
     }
 
     @Override

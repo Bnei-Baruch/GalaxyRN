@@ -61,6 +61,7 @@ public class AudioFocusManager {
     public void abandonAudioFocus() {   
         if (audioManager == null || audioFocusRequest == null) {
             GxyLogger.d(TAG, "Cannot abandon: AudioManager or AudioFocusRequest is null");
+            return;
         }
 
         try {
