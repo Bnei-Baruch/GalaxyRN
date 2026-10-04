@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useInRoomStore } from '../zustand/inRoom';
+import { useSettingsStore } from '../zustand/settings';
 
 import logger from '../services/logger';
 
@@ -19,6 +20,7 @@ const ForegroundListener = () => {
         enterBackground();
       } else if (nextAppState === 'active') {
         enterForeground();
+        useSettingsStore.getState().toggleIsPIPMode(false);
       }
     };
 

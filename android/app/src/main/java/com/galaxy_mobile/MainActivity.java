@@ -1,5 +1,6 @@
 package com.galaxy_mobile;
 
+import android.app.PictureInPictureParams;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -115,11 +116,20 @@ public class MainActivity extends ReactActivity {
             // onPictureInPictureModeChanged only fires once the shrink animation has
             // finished, so JS would keep the full room UI (bars included) mounted for
             // the whole transition. Switch JS to the PIP-only layout up front instead.
-            WritableMap data = Arguments.createMap();
-            data.putString("action", "is_pip_mode");
-            data.putBoolean("active", true);
-            GxyUIStateModule.dispatchSystemEvent(data);
-            enterPictureInPictureMode();
+            dispatchPipMode(true);
+            boolean entered = false;
+            try {
+                entered = enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
+            } catch (IllegalStateException e) {
+                GxyLogger.e(TAG, "enterPictureInPictureMode failed", e);
+            }
+            SentryUtils.addBreadcrumb("pip", "enterPictureInPictureMode: " + entered);
+            if (!entered) {
+                // PIP refused (e.g. disabled for the app in system settings): no
+                // onPictureInPictureModeChanged will follow, so undo the early switch.
+                GxyLogger.w(TAG, "onUserLeaveHint: PIP entry refused, reverting JS PIP mode");
+                dispatchPipMode(false);
+            }
         }
         super.onUserLeaveHint();
     }
@@ -127,10 +137,15 @@ public class MainActivity extends ReactActivity {
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
         GxyLogger.d(TAG, "onPictureInPictureModeChanged: " + isInPictureInPictureMode);
+        SentryUtils.addBreadcrumb("pip", "onPictureInPictureModeChanged: " + isInPictureInPictureMode);
         super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+        dispatchPipMode(isInPictureInPictureMode);
+    }
+
+    private static void dispatchPipMode(boolean active) {
         WritableMap data = Arguments.createMap();
         data.putString("action", "is_pip_mode");
-        data.putBoolean("active", isInPictureInPictureMode);
+        data.putBoolean("active", active);
         GxyUIStateModule.dispatchSystemEvent(data);
     }
 
