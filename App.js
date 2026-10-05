@@ -19,6 +19,7 @@ import {
 } from './src/libs/sentry/sentryHelper';
 import AndroidPermissions from './src/services/AndroidPermissions';
 import logger from './src/services/logger';
+import { useVerboseLoggingStore } from './src/zustand/verboseLogging';
 
 const {
   version: appVersion,
@@ -57,6 +58,9 @@ if (!SENTRY_DSN) {
 }
 
 if (!Intl.PluralRules) register();
+
+// Re-enable full logging if it was turned on and hasn't expired yet
+useVerboseLoggingStore.getState().restore();
 
 const App = () => {
   logger.debug(NAMESPACE, 'render');

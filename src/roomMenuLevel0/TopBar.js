@@ -7,6 +7,7 @@ import { useRoomStore } from '../zustand/fetchRooms';
 import { useUiActions } from '../zustand/uiActions';
 import { AudioDevicesBtn } from './topBarBtns/AudioDevicesBtn';
 import { LeaveBtn } from './topBarBtns/LeaveBtn';
+import { VerboseLoggingBtn } from './topBarBtns/VerboseLoggingBtn';
 
 export const TopBar = () => {
   const { room } = useRoomStore();
@@ -33,6 +34,7 @@ export const TopBar = () => {
       <Text style={[baseStyles.text, styles.text]} numberOfLines={2}>
         {room?.description}
       </Text>
+      <VerboseLoggingBtn />
       <LeaveBtn />
     </View>
     </View>

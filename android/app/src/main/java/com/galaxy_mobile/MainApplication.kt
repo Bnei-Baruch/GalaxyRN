@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import com.galaxy_mobile.logger.GxyLogger
+import com.galaxy_mobile.logger.LogFileWriter
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -46,6 +47,7 @@ class MainApplication : Application(), ReactApplication {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        LogFileWriter.init(this)
 
         SoLoader.init(this, OpenSourceMergedSoMapping)
         
