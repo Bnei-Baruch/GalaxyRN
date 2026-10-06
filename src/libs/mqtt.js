@@ -45,6 +45,9 @@ class MqttMsg {
     this.reconnecting = false;
     this.reconnectAttempts = 0;
     this.clientId = null;
+    // Set when the broker rejected our credentials at CONNECT (code 134), so
+    // the next reconnect forces a token refresh even if `exp` looks fine.
+    this.forceTokenRefresh = false;
   }
 
   init = async () => {
@@ -80,7 +83,7 @@ class MqttMsg {
       reconnectPeriod: 0,
       clean: false,
       username: user.email,
-      password: kc.getToken(),
+      password: await kc.getValidToken(),
       transformWsUrl: transformUrl,
       /*
       log: (...args) => {
@@ -296,6 +299,9 @@ class MqttMsg {
       addFinishSpan(CONNECTION, 'mqtt.error', { ...error, NAMESPACE });
       logger.error(NAMESPACE, 'mqtt on error', error);
 
+      if (error?.code === 134) {
+        this.forceTokenRefresh = true;
+      }
       if (error?.message === 'Keepalive timeout') {
         logger.warn(NAMESPACE, 'Keepalive timeout - resetting connection');
       }
@@ -424,6 +430,15 @@ class MqttMsg {
     this.reconnecting = true;
     const reconnectSpan = addSpan(CONNECTION, 'mqtt.reconnect', { NAMESPACE });
     try {
+      const force = this.forceTokenRefresh;
+      this.forceTokenRefresh = false;
+      await kc.getValidToken(force);
+      if (!this.mq) {
+        logger.debug(NAMESPACE, 'reconnect: mqtt ended while refreshing token');
+        finishSpan(reconnectSpan, 'cancelled', NAMESPACE);
+        return;
+      }
+
       logger.debug(NAMESPACE, 'reconnect: triggering mqtt reconnect');
       this.mq.reconnect();
       logger.debug(NAMESPACE, 'reconnect: reconnect triggered', this.mq?.connected);
