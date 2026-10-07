@@ -52,5 +52,6 @@ export const STORAGE_KEYS = {
   IS_AUDIO_MODE: 'is_audio_mode',
   IS_ORIGINAL: 'is_original',
   USER_SESSION: 'user_session',
+  VERBOSE_LOGGING: 'verbose_logging',
 };
 

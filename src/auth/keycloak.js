@@ -1,5 +1,6 @@
 import { AUTH_CONFIG_ISSUER } from '@env';
 import { decode } from 'base-64';
+import { AppState } from 'react-native';
 import { authorize, logout, refresh } from 'react-native-app-auth';
 import BackgroundTimer from '../services/BackgroundTimer';
 import RNSecureStorage from 'rn-secure-storage';
@@ -19,8 +20,21 @@ const { config: { isProduction } } = require('../../package.json');
 
 const NAMESPACE = 'Keycloak';
 
-// Refresh the access token this many ms before it actually expires
-const REFRESH_BUFFER_MS = 10000;
+// Refresh the access token this many ms before it actually expires. Leaves
+// room for retries on a flaky network before the old token is rejected.
+const REFRESH_BUFFER_MS = 60000;
+
+// Retry delays for refresh failures that aren't a rejection of the refresh
+// token itself (no network, server unreachable) - the last one repeats.
+const REFRESH_RETRY_DELAYS_MS = [5000, 10000, 30000, 60000];
+
+// Error codes (same on iOS and Android) meaning the refresh token/client is
+// no longer accepted - only these end the session.
+const FATAL_REFRESH_ERRORS = [
+  'invalid_grant',
+  'invalid_client',
+  'unauthorized_client',
+];
 
 // Configuration
 const AUTH_CONFIG = {
@@ -69,6 +83,17 @@ class Keycloak {
   constructor() {
     this.session = null;
     this.timeout = 0;
+    this.refreshPromise = null;
+    this.retryAttempt = 0;
+
+    // The scheduled refresh timer can fire late or not at all while the app is
+    // backgrounded (CPU sleep / Doze / iOS suspension) - catch up on resume.
+    AppState.addEventListener('change', state => {
+      if (state === 'active' && this.session && this.isTokenExpiring()) {
+        logger.info(NAMESPACE, 'App resumed with expiring token, refreshing');
+        this.doRefresh();
+      }
+    });
   }
 
   /**
@@ -100,6 +125,7 @@ class Keycloak {
   logout = async () => {
     logger.debug(NAMESPACE, 'logout');
     this.clearTimeout();
+    this.retryAttempt = 0;
 
     addBreadcrumb('auth', 'User logging out');
     // Clear the user from Sentry tracking
@@ -201,29 +227,87 @@ class Keycloak {
     await this.doRefresh();
   };
 
+  isTokenExpiring = () => this.calculateTimeUntilRefresh() <= 0;
 
-  doRefresh = async () => {
+  /**
+   * Returns an access token that isn't about to expire, refreshing first if
+   * needed (or always, with `force`). Returns null if there is no session.
+   */
+  getValidToken = async (force = false) => {
+    if (!this.session) return null;
+
+    if (force || this.isTokenExpiring()) {
+      logger.info(NAMESPACE, 'getValidToken: refreshing', { force });
+      await this.doRefresh();
+    }
+    return this.getToken();
+  };
+
+  /**
+   * Refreshes the token; concurrent callers share the in-flight refresh
+   */
+  doRefresh = () => {
+    if (!this.refreshPromise) {
+      this.refreshPromise = this.runRefresh().finally(() => {
+        this.refreshPromise = null;
+      });
+    }
+    return this.refreshPromise;
+  };
+
+  runRefresh = async () => {
     logger.debug(NAMESPACE, 'Refreshing token', AUTH_CONFIG_ISSUER);
+    if (!this.session?.refreshToken) {
+      logger.warn(NAMESPACE, 'No session to refresh');
+      return;
+    }
+
+    let refreshData;
     try {
       logger.debug(NAMESPACE, 'Refreshing token now...');
-      const refreshData = await refresh(AUTH_CONFIG, {
+      refreshData = await refresh(AUTH_CONFIG, {
         refreshToken: this.session.refreshToken,
       });
-      logger.debug(NAMESPACE, 'Token refresh successful', refreshData);
-
-      const session = this.setSession(refreshData);
-      if (!session) {
-        const msg = 'Failed to set session after refresh';
-        logger.debug(NAMESPACE, msg);
-        throw new Error(msg);
-      }
-
-      this.saveUser(session.payload);
-      this.refreshToken();
     } catch (err) {
-      logger.error(NAMESPACE, 'Refresh Token failed', err);
-      this.logout();
+      if (FATAL_REFRESH_ERRORS.includes(err?.code)) {
+        logger.error(NAMESPACE, 'Refresh token rejected, logging out', err);
+        this.logout();
+        return;
+      }
+      this.scheduleRetry(err);
+      return;
     }
+
+    logger.debug(NAMESPACE, 'Token refresh successful', refreshData);
+    const session = this.setSession(refreshData);
+    if (!session) {
+      logger.error(NAMESPACE, 'Failed to set session after refresh');
+      this.logout();
+      return;
+    }
+
+    this.retryAttempt = 0;
+    this.saveUser(session.payload);
+    this.refreshToken();
+  };
+
+  scheduleRetry = err => {
+    const delay =
+      REFRESH_RETRY_DELAYS_MS[
+        Math.min(this.retryAttempt, REFRESH_RETRY_DELAYS_MS.length - 1)
+      ];
+    this.retryAttempt += 1;
+    logger.warn(NAMESPACE, 'Refresh Token failed, retrying', {
+      attempt: this.retryAttempt,
+      delay,
+      code: err?.code,
+      message: err?.message,
+    });
+
+    this.clearTimeout();
+    this.timeout = BackgroundTimer.setTimeout(() => {
+      this.doRefresh();
+    }, delay);
   };
 
   startFromStorage = async () => {

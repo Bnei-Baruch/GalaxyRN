@@ -89,11 +89,6 @@ export const useSettingsStore = create((set, get) => ({
 
   netWIP: false,
   setNetWIP: netWIP => set({ netWIP }),
-  debugMode: false,
-  toggleDebugMode: () => {
-    set(state => ({ debugMode: !state.debugMode }));
-    setIsDebug(state.debugMode);
-  },
   isPIPMode: false,
   toggleIsPIPMode: (isPIPMode = !get().isPIPMode) => {
     logger.debug(NAMESPACE, 'toggleIsPIPMode', isPIPMode);

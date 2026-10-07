@@ -18,6 +18,7 @@ public class CallListenerModule extends NativeCallListenerModuleSpec implements 
 
     private final ReactApplicationContext context;
     private ICallListener callListener;
+    private int lastCallState = TelephonyManager.CALL_STATE_IDLE;
 
     public CallListenerModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -39,12 +40,31 @@ public class CallListenerModule extends NativeCallListenerModuleSpec implements 
     public void initializeAfterPermissions() {
         CallStateCallback callback = (state) -> {
             try {
-                String stateString = CallEventManager.getStateString(state);
-                GxyLogger.d(TAG, "Call state changed: " + stateString);
+                GxyLogger.d(TAG, "Call state changed: " + CallEventManager.getStateString(state));
+                boolean wasIdle = lastCallState == TelephonyManager.CALL_STATE_IDLE;
+                boolean isIdle = state == TelephonyManager.CALL_STATE_IDLE;
+                lastCallState = state;
+
+                // JS (inits.js) expects the same events as iOS CallManager:
+                // ON_START_CALL when a call rings/connects, ON_END_CALL when it ends.
+                // Only transitions are reported - the listener also delivers the
+                // current state (IDLE) right after registering, and RINGING ->
+                // OFFHOOK is the same call.
+                CallStateType event;
+                if (wasIdle && !isIdle) {
+                    event = CallStateType.ON_START_CALL;
+                } else if (!wasIdle && isIdle) {
+                    event = CallStateType.ON_END_CALL;
+                } else {
+                    return;
+                }
+
                 WritableMap data = Arguments.createMap();
-                data.putString("state", stateString);
+                data.putString("state", event.name());
                 emitOnCallStateChanged(data);
-                if(TelephonyManager.CALL_STATE_IDLE == state) {
+                GxyLogger.d(TAG, "Emitted " + event.name());
+
+                if (event == CallStateType.ON_END_CALL) {
                     ForegroundService.bringAppToForeground(context);
                 }
             } catch (Exception e) {

@@ -164,6 +164,7 @@ export const useInRoomStore = create((set, get) => ({
 
     exitWIP = false;
     set({ isInRoom: false });
+    useSettingsStore.setState({ isPIPMode: false });
     GxyUIStateBridge.updateUIState();
     CallsBridge.endCall();
   },

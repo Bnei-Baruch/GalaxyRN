@@ -126,5 +126,17 @@
     "unstable": "החיבור אינו יציב",
     "noConnection": "אין חיבור לאינטרנט",
     "mediaRecoverMessage": "המדיה הופסקה אחרי שגיאות חיבור חוזרות. אפשר לנסות שוב."
+  },
+  "logs": {
+    "verboseTitle": "לוגים מלאים",
+    "enableVerboseMessage": "להפעיל לוגים מלאים ל-3 שעות? זה צורך יותר סוללה ומעבד. יכבה אוטומטית.",
+    "disableVerboseMessage": "לכבות לוגים מלאים?",
+    "enable": "הפעל",
+    "disable": "כבה",
+    "verboseUntil": "לוגים מלאים עד {{time}}",
+    "sent": "הלוגים נשלחו",
+    "sendFailed": "שליחת הלוגים נכשלה",
+    "sendConfirm": "לשלוח לוגים למפתחים?",
+    "send": "שלח"
   }
 }

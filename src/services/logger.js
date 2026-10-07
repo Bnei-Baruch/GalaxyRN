@@ -1,10 +1,10 @@
 import { captureException } from '../libs/sentry/sentryHelper';
+import { isVerbose, writeLogLine } from './logFile';
 
-let isDebug = __DEV__;
-
-export const setIsDebug = debug => {
-  isDebug = debug;
-};
+// Console output only in dev builds. The log file always gets info and above;
+// trace/debug go to the file only while verbose logging is on
+// (see zustand/verboseLogging).
+const isConsole = __DEV__;
 
 class Logger {
   hasTag(tag) {
@@ -30,32 +30,39 @@ class Logger {
   }
 
   trace(...args) {
-    if (!isDebug || !this.hasTag(args[0])) return;
+    const verbose = isVerbose();
+    if ((!isConsole && !verbose) || !this.hasTag(args[0])) return;
 
-    console.trace(...this.prepareConsoleMsg(args));
+    if (verbose) writeLogLine('T', args);
+    if (isConsole) console.trace(...this.prepareConsoleMsg(args));
   }
 
   debug(...args) {
-    if (!isDebug || !this.hasTag(args[0])) return;
+    const verbose = isVerbose();
+    if ((!isConsole && !verbose) || !this.hasTag(args[0])) return;
 
-    console.debug(...this.prepareConsoleMsg(args));
+    if (verbose) writeLogLine('D', args);
+    if (isConsole) console.debug(...this.prepareConsoleMsg(args));
   }
 
   info(...args) {
-    if (!isDebug || !this.hasTag(args[0])) return;
+    if (!this.hasTag(args[0])) return;
 
-    console.info(...this.prepareConsoleMsg(args));
+    writeLogLine('I', args);
+    if (isConsole) console.info(...this.prepareConsoleMsg(args));
   }
 
   warn(...args) {
     if (!this.hasTag(args[0])) return;
 
+    writeLogLine('W', args);
     console.warn(...this.prepareConsoleMsg(args));
   }
 
   error(...args) {
     if (!this.hasTag(args[0])) return;
 
+    writeLogLine('E', args);
     console.error(args);
 
     captureException(args);

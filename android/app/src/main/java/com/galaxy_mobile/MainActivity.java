@@ -1,5 +1,6 @@
 package com.galaxy_mobile;
 
+import android.app.PictureInPictureParams;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 import com.galaxy_mobile.logger.GxyLogger;
 import com.galaxy_mobile.logger.GxyLoggerUtils;
+import com.galaxy_mobile.logger.SentryUtils;
 import com.galaxy_mobile.permissions.PermissionHelper;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
@@ -114,11 +116,20 @@ public class MainActivity extends ReactActivity {
             // onPictureInPictureModeChanged only fires once the shrink animation has
             // finished, so JS would keep the full room UI (bars included) mounted for
             // the whole transition. Switch JS to the PIP-only layout up front instead.
-            WritableMap data = Arguments.createMap();
-            data.putString("action", "is_pip_mode");
-            data.putBoolean("active", true);
-            GxyUIStateModule.dispatchSystemEvent(data);
-            enterPictureInPictureMode();
+            dispatchPipMode(true);
+            boolean entered = false;
+            try {
+                entered = enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
+            } catch (IllegalStateException e) {
+                GxyLogger.e(TAG, "enterPictureInPictureMode failed", e);
+            }
+            SentryUtils.addBreadcrumb("pip", "enterPictureInPictureMode: " + entered);
+            if (!entered) {
+                // PIP refused (e.g. disabled for the app in system settings): no
+                // onPictureInPictureModeChanged will follow, so undo the early switch.
+                GxyLogger.w(TAG, "onUserLeaveHint: PIP entry refused, reverting JS PIP mode");
+                dispatchPipMode(false);
+            }
         }
         super.onUserLeaveHint();
     }
@@ -126,10 +137,15 @@ public class MainActivity extends ReactActivity {
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
         GxyLogger.d(TAG, "onPictureInPictureModeChanged: " + isInPictureInPictureMode);
+        SentryUtils.addBreadcrumb("pip", "onPictureInPictureModeChanged: " + isInPictureInPictureMode);
         super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+        dispatchPipMode(isInPictureInPictureMode);
+    }
+
+    private static void dispatchPipMode(boolean active) {
         WritableMap data = Arguments.createMap();
         data.putString("action", "is_pip_mode");
-        data.putBoolean("active", isInPictureInPictureMode);
+        data.putBoolean("active", active);
         GxyUIStateModule.dispatchSystemEvent(data);
     }
 
@@ -154,6 +170,21 @@ public class MainActivity extends ReactActivity {
         if (permissionHelper != null) {
             permissionHelper.recheckPermissions();
         }
+
+        String screenState = GxyUIStateModule.describeScreenState(this);
+        GxyLogger.d(TAG, "onResume " + screenState);
+        SentryUtils.addBreadcrumb("screen", "onResume " + screenState);
+        if (GxyUIStateModule.isInRoom && !GxyUIStateModule.hasKeepScreenOn(this)) {
+            GxyLogger.w(TAG, "onResume: in room without FLAG_KEEP_SCREEN_ON " + screenState);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        String screenState = GxyUIStateModule.describeScreenState(this);
+        GxyLogger.d(TAG, "onStop " + screenState);
+        SentryUtils.addBreadcrumb("screen", "onStop " + screenState);
     }
 
     @Override
