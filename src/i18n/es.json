@@ -125,5 +125,17 @@
     "unstable": "Conexión inestable",
     "noConnection": "Sin conexión a internet",
     "mediaRecoverMessage": "La reproducción se detuvo tras errores de conexión repetidos. Puedes intentarlo de nuevo."
+  },
+  "logs": {
+    "verboseTitle": "Registro completo",
+    "enableVerboseMessage": "¿Activar el registro completo durante 3 horas? Consume más batería y CPU. Se desactivará automáticamente.",
+    "disableVerboseMessage": "¿Desactivar el registro completo?",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "verboseUntil": "Registro completo hasta {{time}}",
+    "sent": "Registros enviados",
+    "sendFailed": "No se pudieron enviar los registros",
+    "sendConfirm": "¿Enviar los registros a los desarrolladores?",
+    "send": "Enviar"
   }
 }

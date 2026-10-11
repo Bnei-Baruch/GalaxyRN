@@ -38,18 +38,28 @@ public class GxyPackage implements ReactPackage {
         List<NativeModule> modules = new ArrayList<>();
         GxyLogger.i(TAG, "Creating Galaxy native modules");
 
-        // Add modules
-        try {
-            GxyLogger.i(TAG, "Adding standard modules");
-            modules.add(new AudioDeviceModule(reactContext));
-            modules.add(new BackgroundTimerModule(reactContext));
-            modules.add(new CallListenerModule(reactContext));
-            modules.add(new SendLogsModule(reactContext));
-            modules.add(new GxyUIStateModule(reactContext));
-        } catch (Exception e) {
-            GxyLogger.e(TAG, "Error creating standard modules: " + e.getMessage(), e);
-        }
+        // Each module is created in isolation: one failing constructor must not
+        // drop the modules after it. This runs on a background thread without a
+        // Looper under the new architecture, often before native Sentry is ready.
+        addModule(modules, "AudioDeviceModule", () -> new AudioDeviceModule(reactContext));
+        addModule(modules, "BackgroundTimerModule", () -> new BackgroundTimerModule(reactContext));
+        addModule(modules, "CallListenerModule", () -> new CallListenerModule(reactContext));
+        addModule(modules, "SendLogsModule", () -> new SendLogsModule(reactContext));
+        addModule(modules, "GxyUIStateModule", () -> new GxyUIStateModule(reactContext));
 
         return modules;
+    }
+
+    private interface ModuleFactory {
+        NativeModule create();
+    }
+
+    private static void addModule(List<NativeModule> modules, String name, ModuleFactory factory) {
+        try {
+            modules.add(factory.create());
+        } catch (Throwable e) {
+            Log.e(TAG, "Error creating " + name, e);
+            GxyLogger.e(TAG, "Error creating " + name + ": " + e.getMessage(), e);
+        }
     }
 }

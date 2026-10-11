@@ -17,6 +17,7 @@ React Native (0.82.1, React 19) video-conferencing app (WebRTC). Android runs on
 - State: **zustand** only — no Redux, no Context-based global state
 - i18n: i18next / react-i18next
 - Errors/crashes: Sentry (`@sentry/react-native`)
+- Logging: `src/services/logger.js` → console only in `__DEV__`; always buffered into a persistent rotating log file (`src/services/logFile.ts` → native `LogFileWriter`, shared with native `GxyLogger`). `info`+ always go to the file; `debug`/`trace` only while "verbose logging" is on (`src/zustand/verboseLogging.ts`: 7 taps on the version in pre-room settings, auto-off after 3h / on app update / explicit logout). "Send logs" (account menu) uploads the file to Sentry as an attachment. Keep `debug` calls cheap — they run on hot paths and must early-return when verbose is off
 - Mostly JavaScript, not TypeScript — `App.js`/`index.js` are JS; TS types are partial/incidental. No root `tsconfig.json` (TS config, where used, comes from `@react-native/typescript-config`)
 - New code convention: write new files in TypeScript (`.ts`/`.tsx`), including `src/specs/` (required by Codegen — see `NEW_ARCHITECTURE.md`). Existing `.js` files are **not** being retroactively converted as part of ongoing work — that's a deliberately separate, not-yet-scheduled initiative. Don't rewrite an existing file to TS just because you're touching it.
 - Absolute imports: `src/*` is aliased to `*` (see `jsconfig.json`, `baseUrl: "."`) — import from `src` root, not relative paths across features

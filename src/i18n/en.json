@@ -126,5 +126,17 @@
     "unstable": "Connection not stable",
     "noConnection": "No internet connection",
     "mediaRecoverMessage": "Media stopped after repeated connection errors. You can try again."
+  },
+  "logs": {
+    "verboseTitle": "Full logging",
+    "enableVerboseMessage": "Enable full logging for 3 hours? It uses more battery and CPU. It turns off automatically.",
+    "disableVerboseMessage": "Turn off full logging?",
+    "enable": "Enable",
+    "disable": "Turn off",
+    "verboseUntil": "Full logging until {{time}}",
+    "sent": "Logs sent",
+    "sendFailed": "Failed to send logs",
+    "sendConfirm": "Send logs to the developers?",
+    "send": "Send"
   }
 }

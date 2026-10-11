@@ -1,14 +1,16 @@
 import { ACCOUNT_URL } from '@env';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Text from '../components/CustomText';
 import ListInModal from '../components/ListInModal';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import logger from '../services/logger';
+import { sendLogsWithFeedback } from '../services/sendLogsWithFeedback';
 import { useUserStore } from '../zustand/user';
+import { useVerboseLoggingStore } from '../zustand/verboseLogging';
 import RemoveUserModal from './RemoveUserModal';
 import kc from './keycloak';
 
@@ -63,10 +65,21 @@ const AccountSettings = () => {
       },
     },
     {
+      key: 'sendLogs',
+      value: 'sendLogs',
+      text: t('moreOpts.sendLogs'),
+      action: () => sendLogsWithFeedback(user?.email, t),
+    },
+    {
       key: 'logout',
       value: 'logout',
       text: t('user.logout'),
-      action: () => kc.logout(),
+      action: () => {
+        // Only on explicit logout — kc.logout() also runs on token refresh
+        // failures, which is exactly when full logs are wanted
+        useVerboseLoggingStore.getState().disable();
+        kc.logout();
+      },
     },
     {
       key: 'delete',

@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import com.galaxy_mobile.logger.GxyLogger
+import com.galaxy_mobile.logger.LogFileWriter
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -46,6 +47,7 @@ class MainApplication : Application(), ReactApplication {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        LogFileWriter.init(this)
 
         SoLoader.init(this, OpenSourceMergedSoMapping)
         
@@ -77,10 +79,10 @@ class MainApplication : Application(), ReactApplication {
 
             // 1. Notify JS side and destroy React Native context
             try {
-                instance?.reactNativeHost?.reactInstanceManager?.let { rim ->
+                instance?.reactHost?.let { host ->
                     try {
-                        rim.currentReactContext?.let { reactContext ->
-                            if (reactContext.hasActiveCatalystInstance()) {
+                        host.currentReactContext?.let { reactContext ->
+                            if (reactContext.hasActiveReactInstance()) {
                                 val params: WritableMap = Arguments.createMap()
                                 params.putString("action", "terminate")
                                 GxyUIStateModule.dispatchSystemEvent(params)
@@ -93,7 +95,7 @@ class MainApplication : Application(), ReactApplication {
                     }
 
                     GxyLogger.i(TAG, "Destroying React Native context")
-                    rim.destroy()
+                    host.destroy("App task removed", null)
                 }
             } catch (e: Exception) {
                 GxyLogger.e(TAG, "Error destroying React Native context", e)

@@ -1,6 +1,6 @@
 import { STUDY_MATERIALS_URL } from '@env';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -12,7 +12,15 @@ export const StudyMaterialsBtn = () => {
   const [open, setOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
+  const webViewRef = useRef(null);
+
   const toggleModal = () => setOpen(!open);
+
+  // widget.js appends `&t=Date.now()` to its bundle URL, so every open caches
+  // another copy of the bundle; drop the previous ones on each open
+  useEffect(() => {
+    if (open) webViewRef.current?.clearCache(true);
+  }, [open]);
 
   return (
     <>
@@ -37,6 +45,7 @@ export const StudyMaterialsBtn = () => {
           <ScreenTitle text={t('moreOpts.materials')} close={toggleModal} />
 
           <WebView
+            ref={webViewRef}
             style={styles.item}
             source={{ uri: `${STUDY_MATERIALS_URL}?language=${i18n.language}` }}
           />

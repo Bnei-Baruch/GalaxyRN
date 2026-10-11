@@ -13,7 +13,8 @@ import androidx.annotation.RequiresApi;
 
 
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-public class PhoneCallListenerTiramisu extends TelephonyCallback implements ICallListener {
+public class PhoneCallListenerTiramisu extends TelephonyCallback
+        implements TelephonyCallback.CallStateListener, ICallListener {
     private static final String TAG = "PhoneCallListenerTiramisu";
 
     private TelephonyManager telephonyManager;
@@ -40,6 +41,13 @@ public class PhoneCallListenerTiramisu extends TelephonyCallback implements ICal
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error initializing: " + e.getMessage(), e);
         }
+    }
+
+    // TelephonyCallback.CallStateListener - without implementing this interface
+    // registerTelephonyCallback() delivers no call state events at all.
+    @Override
+    public void onCallStateChanged(int state) {
+        onCallStateChanged(state, null);
     }
 
     @Override

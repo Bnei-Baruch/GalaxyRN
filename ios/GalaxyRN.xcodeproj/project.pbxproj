@@ -31,12 +31,17 @@
 		709C1553E62A4E48803C8705 /* CallManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D88EC1798B0C47439D036886 /* CallManager.m */; };
 		7A57AC4E7FE4455BA569BC12 /* AudioManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CE3EABD71384268824E6267 /* AudioManager.m */; };
 		BE8498941EB1E83C979D42BD /* BackgroundTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B8CD7F47890D70F574D26E /* BackgroundTimer.swift */; };
+		C013DF8399EB333FCACEBDA5 /* SendLogsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 08370E89322BDA191947B31C /* SendLogsModule.m */; };
+		D39F4692889EDB374A9451D1 /* SendLogsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BD5D6B13B5CDB5120441C7 /* SendLogsModule.swift */; };
 		E5469BD4E21D49813203D166 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B002FD9808B04C9EA67C48A /* main.mm */; };
 		FF88202B622183FDF76BC490 /* BackgroundTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = E5F9012B154ED27E44E7CFE4 /* BackgroundTimer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		08370E89322BDA191947B31C /* SendLogsModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = SendLogsModule.m; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* GalaxyRN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GalaxyRN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25BD5D6B13B5CDB5120441C7 /* SendLogsModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendLogsModule.swift; sourceTree = "<group>"; };
+		3135039332E12EA9B5807768 /* SendLogsModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = SendLogsModule.h; sourceTree = "<group>"; };
 		374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLogger.swift; sourceTree = "<group>"; };
 		374C50FA2DFAD10E00DAE8D9 /* GxyLoggerUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GxyLoggerUtils.swift; sourceTree = "<group>"; };
 		374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentryUtils.swift; sourceTree = "<group>"; };
@@ -104,6 +109,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		37025CE1E7A37A270CDADDC6 /* SendLogsModule */ = {
+			isa = PBXGroup;
+			children = (
+				3135039332E12EA9B5807768 /* SendLogsModule.h */,
+				08370E89322BDA191947B31C /* SendLogsModule.m */,
+				25BD5D6B13B5CDB5120441C7 /* SendLogsModule.swift */,
+			);
+			name = SendLogsModule;
+			path = SendLogsModule;
+			sourceTree = "<group>";
+		};
 		374C50FF2DFAD10E00DAE8D9 /* Logger */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +174,7 @@
 				376193322D9D5C5600F52320 /* LaunchScreen.storyboard */,
 				376193342D9D5C5600F52320 /* PrivacyInfo.xcprivacy */,
 				5B002FD9808B04C9EA67C48A /* main.mm */,
+				37025CE1E7A37A270CDADDC6 /* SendLogsModule */,
 			);
 			path = GalaxyRN;
 			sourceTree = "<group>";
@@ -381,6 +398,8 @@
 				374FCC1C2F44720D00CD2A46 /* CallManager+CallObserver.swift in Sources */,
 				374FCC1D2F44720D00CD2A46 /* CallManager+CallProvider.swift in Sources */,
 				E5469BD4E21D49813203D166 /* main.mm in Sources */,
+				C013DF8399EB333FCACEBDA5 /* SendLogsModule.m in Sources */,
+				D39F4692889EDB374A9451D1 /* SendLogsModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,7 +414,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 123;
+				CURRENT_PROJECT_VERSION = 127;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -405,7 +424,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.13;
+				MARKETING_VERSION = 2.8.17;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -431,7 +450,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 123;
+				CURRENT_PROJECT_VERSION = 127;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -440,7 +459,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.13;
+				MARKETING_VERSION = 2.8.17;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
