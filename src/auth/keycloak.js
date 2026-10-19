@@ -85,6 +85,7 @@ class Keycloak {
     this.timeout = 0;
     this.refreshPromise = null;
     this.retryAttempt = 0;
+    this.pendingPermissionRole = null;
 
     // The scheduled refresh timer can fire late or not at all while the app is
     // backgrounded (CPU sleep / Doze / iOS suspension) - catch up on resume.
@@ -126,6 +127,7 @@ class Keycloak {
     logger.debug(NAMESPACE, 'logout');
     this.clearTimeout();
     this.retryAttempt = 0;
+    this.pendingPermissionRole = null;
 
     addBreadcrumb('auth', 'User logging out');
     // Clear the user from Sentry tracking
@@ -289,6 +291,15 @@ class Keycloak {
     this.retryAttempt = 0;
     this.saveUser(session.payload);
     this.refreshToken();
+
+    if (this.pendingPermissionRole) {
+      const role = this.pendingPermissionRole;
+      this.pendingPermissionRole = null;
+      this.checkPermission(role, true).catch(err => {
+        logger.error(NAMESPACE, 'Pending permission check failed', err);
+        this.logout();
+      });
+    }
   };
 
   scheduleRetry = err => {
@@ -418,7 +429,7 @@ class Keycloak {
   /**
    * Checks if the user has required permissions
    */
-  checkPermission = async role => {
+  checkPermission = async (role, isRetry = false) => {
     logger.debug(NAMESPACE, 'Checking permission for role:', role);
     if (!role) {
       logger.debug(NAMESPACE, 'Permission check failed: No role provided');
@@ -439,11 +450,46 @@ class Keycloak {
     } catch (err) {
       logger.error(NAMESPACE, 'Error in permission check:', err?.message);
       if (err?.message === 'UNAUTHORIZED') {
+        // Usually a stale access token (refresh failed on a flaky network, or
+        // device clock skew), not a missing membership - refresh and ask again
+        // before showing the permissions screen.
+        if (!isRetry) {
+          const staleToken = this.getToken();
+          await this.getValidToken(true);
+          if (!this.session) return false;
+
+          if (this.getToken() !== staleToken) {
+            return this.checkPermission(role, true);
+          }
+
+          // Refresh failed and a retry is scheduled - re-check once it
+          // succeeds; until then vhinfo stays null (spinner).
+          logger.warn(NAMESPACE, 'vhinfo unauthorized with stale token');
+          this.pendingPermissionRole = role;
+          return false;
+        }
+
         useUserStore.getState().setVhinfo({ active: false });
         return false;
       }
 
       throw err;
+    }
+  };
+
+  /**
+   * Re-runs the permission check for the current session (retry button on
+   * the permissions screen)
+   */
+  recheckPermission = async () => {
+    const role = getUserRole(this.session?.payload?.realm_access?.roles);
+    useUserStore.getState().setVhinfo(null);
+
+    try {
+      await this.checkPermission(role);
+    } catch (err) {
+      logger.error(NAMESPACE, 'Permission recheck failed', err?.message);
+      useUserStore.getState().setVhinfo({ active: false, error: err });
     }
   };
 
