@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AccountSettings from '../auth/AccountSettings';
+import kc from '../auth/keycloak';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
 import { useUserStore } from '../zustand/user';
@@ -32,6 +33,12 @@ const UserPermissions = () => {
         <Text style={styles.text}>{t('permissions.contactMessage')}</Text>
         <TouchableOpacity style={styles.sendBtn} onPress={handleContactSupport}>
           <Text style={styles.sendText}>{t('permissions.sendButton')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.retryBtn}
+          onPress={() => kc.recheckPermission()}
+        >
+          <Text style={styles.sendText}>{t('permissions.retryButton')}</Text>
         </TouchableOpacity>
         {vhinfo.error && <Text>{vhinfo?.error?.message}</Text>}
       </View>
@@ -69,6 +76,14 @@ const styles = StyleSheet.create({
   sendBtn: {
     backgroundColor: '#4b7bec',
     borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  retryBtn: {
+    borderColor: '#4b7bec',
+    borderRadius: 5,
+    borderWidth: 1,
+    marginTop: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },

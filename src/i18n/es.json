@@ -106,7 +106,8 @@
   "permissions": {
     "title": "Permiso de usuario",
     "contactMessage": "Por favor contacta a help@kli.one",
-    "sendButton": "Enviar"
+    "sendButton": "Enviar",
+    "retryButton": "Intentar de nuevo"
   },
   "androidPermissions": {
     "title": "Se requieren permisos",

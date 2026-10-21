@@ -108,7 +108,8 @@
   "permissions": {
     "title": "Разрешение пользователя",
     "contactMessage": "Пожалуйста, свяжитесь с help@kli.one",
-    "sendButton": "Отправить"
+    "sendButton": "Отправить",
+    "retryButton": "Попробовать снова"
   },
   "androidPermissions": {
     "title": "Требуются разрешения",

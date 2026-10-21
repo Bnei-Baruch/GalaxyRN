@@ -2187,7 +2187,7 @@ SPEC CHECKSUMS:
   AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
   Crisp: 8bf04420a5aef83f1034022eb709be177c42c878
   FBLazyVector: 688bade2cc6ee3de2ba9a411c85c21fd908af3bc
-  hermes-engine: 4b33eeb762358f3ef00af058b3ba9d754cbb54a0
+  hermes-engine: 049ce8e9e0480bc4fa120249b4d5e9f61a324309
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   RCTDeprecation: 8f1dc8057e54ea6fd01df47d0d29487adc92c1a9
   RCTRequired: 9d02105f758490fab48d77fead2599a449321ab7

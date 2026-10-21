@@ -107,7 +107,8 @@
   "permissions": {
     "title": "הרשאת משתמש",
     "contactMessage": "אנא צור קשר עם help@kli.one",
-    "sendButton": "שלח"
+    "sendButton": "שלח",
+    "retryButton": "נסה שוב"
   },
   "androidPermissions": {
     "title": "נדרשות הרשאות",
