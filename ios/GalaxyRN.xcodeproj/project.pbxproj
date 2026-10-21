@@ -552,7 +552,7 @@
 				CODE_SIGN_ENTITLEMENTS = GalaxyRN/GalaxyRN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -562,7 +562,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.19;
+				MARKETING_VERSION = 2.8.20;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -589,7 +589,7 @@
 				CODE_SIGN_ENTITLEMENTS = GalaxyRN/GalaxyRN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -598,7 +598,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.19;
+				MARKETING_VERSION = 2.8.20;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -794,7 +794,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = GalaxyWidget/GalaxyWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GalaxyWidget/Info.plist;
@@ -804,7 +804,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.8.19;
+				MARKETING_VERSION = 2.8.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galaxy.mobile.GalaxyWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -821,7 +821,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = GalaxyWidget/GalaxyWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 129;
+				CURRENT_PROJECT_VERSION = 130;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GalaxyWidget/Info.plist;
@@ -831,7 +831,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.8.19;
+				MARKETING_VERSION = 2.8.20;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galaxy.mobile.GalaxyWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
