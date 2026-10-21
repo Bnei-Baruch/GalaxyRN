@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Arvut System</string>
+    <string name="widget_join">Join</string>
+    <string name="widget_no_room">Open the app to select a ten</string>
+    <string name="widget_description">Quick join to your ten</string>
+    <string name="widget_mic">Mic</string>
+    <string name="widget_camera">Camera</string>
+    <string name="widget_audio_mode">Audio mode</string>
+    <string name="widget_open">Open</string>
+    <string name="widget_in_room">%1$s · in room</string>
 </resources>

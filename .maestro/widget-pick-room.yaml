@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+name: widget-pick-room — select a ten by name WITHOUT joining (subflow)
+tags:
+  - subflow
+env:
+  # Overridden by `-e PICK_ROOM=...`; the wrapper only passes E2E_* vars
+  PICK_ROOM: ${E2E_ROOM}
+# Pass the room with -e PICK_ROOM=<exact name> (defaults to E2E_ROOM from .env via the env: block).
+# Precondition: Settings screen (joinRoomBtn visible). Ends on Settings with the room selected.
+---
+- tapOn:
+    text: "Open debugger to view warnings"
+    optional: true
+- tapOn:
+    text: "Dismiss"
+    optional: true
+- tapOn:
+    id: "roomSelectTrigger"
+- waitForAnimationToEnd:
+    timeout: 4000
+- extendedWaitUntil:
+    visible:
+      id: "roomSearchInput"
+    timeout: 15000
+- tapOn:
+    id: "roomSearchInput"
+# The search field is prefilled with the currently selected room — clear it first.
+- eraseText: 40
+- inputText: ${PICK_ROOM}
+- waitForAnimationToEnd:
+    timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 10000
+# Pick the (filtered) list entry — index 1 skips the search field, which holds the same text
+- tapOn:
+    text: ${PICK_ROOM}
+    index: 1
+- hideKeyboard
+# The picker modal stays open after selecting; close it with the top-right X (no testID)
+- tapOn:
+    point: "93%,4%"
+- extendedWaitUntil:
+    visible:
+      text: "Select Ten"
+    timeout: 5000

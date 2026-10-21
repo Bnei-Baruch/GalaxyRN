@@ -20,6 +20,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.galaxy_mobile.uiState.GxyUIStateModule
+import com.galaxy_mobile.widget.GxyWidgetProvider
 import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
@@ -76,6 +77,13 @@ class MainApplication : Application(), ReactApplication {
             isCleaningUp = true
 
             GxyLogger.i(TAG, "Starting cleanup")
+
+            // 0. JS won't get to tell the home-screen widget it left the room
+            try {
+                instance?.let { GxyWidgetProvider.onAppTerminated(it) }
+            } catch (e: Exception) {
+                GxyLogger.e(TAG, "Error resetting widget", e)
+            }
 
             // 1. Notify JS side and destroy React Native context
             try {
