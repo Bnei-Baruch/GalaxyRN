@@ -1,0 +1,11 @@
+<resources>
+    <string name="widget_join">Войти</string>
+    <string name="widget_no_room">Откройте приложение и выберите десятку</string>
+    <string name="widget_description">Быстрый вход в десятку</string>
+    <string name="widget_mic">Микрофон</string>
+    <string name="widget_camera">Камера</string>
+    <string name="widget_audio_mode">Аудио</string>
+    <string name="widget_open">Открыть</string>
+    <string name="widget_in_room">В комнате</string>
+    <string name="widget_not_in_room">Не в комнате</string>
+</resources>

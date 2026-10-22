@@ -19,6 +19,7 @@ import { useSettingsStore } from './settings';
 import { useShidurStore } from './shidur';
 import { useSubtitleStore } from './subtitle';
 import { useUiActions } from './uiActions';
+import { useWidgetStore } from './widget';
 
 
 const NAMESPACE = 'Inits';
@@ -292,6 +293,9 @@ export const useInitsStore = create((set, get) => ({
 
   settingsFromStorage: async () => {
     logger.debug(NAMESPACE, 'settingsFromStorage');
+    // Toggles made on the home-screen widget while the app wasn't running
+    await useWidgetStore.getState().applyPending(true);
+
     try {
       const cammute = await getBooleanFromStorage(STORAGE_KEYS.CAMMUTE, true);
       logger.debug(NAMESPACE, 'cammute from storage:', cammute);

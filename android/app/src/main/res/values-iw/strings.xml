@@ -1,0 +1,11 @@
+<resources>
+    <string name="widget_join">כנס</string>
+    <string name="widget_no_room">פתח את האפליקציה ובחר עשירייה</string>
+    <string name="widget_description">כניסה מהירה לעשירייה</string>
+    <string name="widget_mic">מיקרופון</string>
+    <string name="widget_camera">מצלמה</string>
+    <string name="widget_audio_mode">אודיו</string>
+    <string name="widget_open">פתח</string>
+    <string name="widget_in_room">בחדר</string>
+    <string name="widget_not_in_room">לא בחדר</string>
+</resources>

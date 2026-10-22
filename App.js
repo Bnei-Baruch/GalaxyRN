@@ -20,6 +20,7 @@ import {
 import AndroidPermissions from './src/services/AndroidPermissions';
 import logger from './src/services/logger';
 import { useVerboseLoggingStore } from './src/zustand/verboseLogging';
+import { useWidgetStore } from './src/zustand/widget';
 
 const {
   version: appVersion,
@@ -72,6 +73,9 @@ const App = () => {
       finishTransaction(APP_SESSION);
     };
   }, []);
+
+  // Home-screen widget: "Join" deep link, toggles, state sync
+  useEffect(() => useWidgetStore.getState().init(), []);
 
   return (
     <SafeAreaProvider>
