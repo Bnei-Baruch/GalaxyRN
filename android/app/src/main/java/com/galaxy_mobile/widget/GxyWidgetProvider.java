@@ -41,6 +41,9 @@ public class GxyWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_TOGGLE_CAM = "com.galaxy_mobile.widget.TOGGLE_CAM";
     private static final String ACTION_TOGGLE_AUDIO_MODE = "com.galaxy_mobile.widget.TOGGLE_AUDIO_MODE";
 
+    private static final int STATUS_IN_ROOM = 0xFF4CAF50;
+    private static final int STATUS_NOT_IN_ROOM = 0xFF8A8F96;
+
     private static final int REQUEST_OPEN = 0;
     private static final int REQUEST_JOIN = 1;
     private static final int REQUEST_MIC = 2;
@@ -171,15 +174,17 @@ public class GxyWidgetProvider extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_quick_join);
 
-        String roomText;
-        if (!hasRoom) {
-            roomText = context.getString(R.string.widget_no_room);
-        } else if (isInRoom) {
-            roomText = context.getString(R.string.widget_in_room, room);
-        } else {
-            roomText = room;
-        }
-        views.setTextViewText(R.id.widget_room, roomText);
+        views.setTextViewText(R.id.widget_room, hasRoom ? room : context.getString(R.string.widget_no_room));
+
+        // In room: dark green background + green status, visible at a glance
+        views.setInt(R.id.widget_root, "setBackgroundResource",
+                isInRoom ? R.drawable.widget_background_in_room : R.drawable.widget_background);
+        views.setViewVisibility(R.id.widget_status, hasRoom ? View.VISIBLE : View.GONE);
+        views.setImageViewResource(R.id.widget_status_dot,
+                isInRoom ? R.drawable.widget_dot_in_room : R.drawable.widget_dot_not_in_room);
+        views.setTextViewText(R.id.widget_status_text,
+                context.getString(isInRoom ? R.string.widget_in_room : R.string.widget_not_in_room));
+        views.setTextColor(R.id.widget_status_text, isInRoom ? STATUS_IN_ROOM : STATUS_NOT_IN_ROOM);
 
         views.setViewVisibility(R.id.widget_join, hasRoom && !isInRoom ? View.VISIBLE : View.GONE);
         views.setViewVisibility(R.id.widget_controls, hasRoom ? View.VISIBLE : View.GONE);

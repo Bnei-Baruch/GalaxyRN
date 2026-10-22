@@ -6,5 +6,6 @@
     <string name="widget_camera">מצלמה</string>
     <string name="widget_audio_mode">אודיו</string>
     <string name="widget_open">פתח</string>
-    <string name="widget_in_room">%1$s · בחדר</string>
+    <string name="widget_in_room">בחדר</string>
+    <string name="widget_not_in_room">לא בחדר</string>
 </resources>

@@ -55,6 +55,35 @@
                     android:text="@string/widget_no_room"
                     android:textColor="#B3FFFFFF"
                     android:textSize="13sp" />
+
+                <LinearLayout
+                    android:id="@+id/widget_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/widget_status_dot"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/widget_dot_not_in_room" />
+
+                    <TextView
+                        android:id="@+id/widget_status_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/widget_not_in_room"
+                        android:textColor="#8A8F96"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView

@@ -19,6 +19,9 @@ private let openURL = URL(string: "com.galaxy.mobile://open")!
 private let accent = Color(red: 0x03 / 255, green: 0xA9 / 255, blue: 0xF4 / 255)
 private let toggleOff = Color(red: 0x4D / 255, green: 0x51 / 255, blue: 0x56 / 255)
 private let widgetColor = Color(red: 0x20 / 255, green: 0x21 / 255, blue: 0x24 / 255)
+private let widgetInRoomColor = Color(red: 0x1B / 255, green: 0x2E / 255, blue: 0x21 / 255)
+private let inRoomColor = Color(red: 0x4C / 255, green: 0xAF / 255, blue: 0x50 / 255)
+private let notInRoomColor = Color(red: 0x8A / 255, green: 0x8F / 255, blue: 0x96 / 255)
 
 private enum Key {
     static let room = "last_room"
@@ -39,16 +42,17 @@ private struct Strings {
     let audioMode: String
     let open: String
     let inRoom: String
+    let notInRoom: String
 
     private static let table: [String: Strings] = [
         "en": Strings(join: "Join", noRoom: "Open the app to select a ten", description: "Quick join to your ten",
-                      mic: "Mic", camera: "Camera", audioMode: "Audio mode", open: "Open", inRoom: "in room"),
+                      mic: "Mic", camera: "Camera", audioMode: "Audio mode", open: "Open", inRoom: "In room", notInRoom: "Not in room"),
         "ru": Strings(join: "Войти", noRoom: "Откройте приложение и выберите десятку", description: "Быстрый вход в десятку",
-                      mic: "Микрофон", camera: "Камера", audioMode: "Аудио", open: "Открыть", inRoom: "в комнате"),
+                      mic: "Микрофон", camera: "Камера", audioMode: "Аудио", open: "Открыть", inRoom: "В комнате", notInRoom: "Не в комнате"),
         "he": Strings(join: "כנס", noRoom: "פתח את האפליקציה ובחר עשירייה", description: "כניסה מהירה לעשירייה",
-                      mic: "מיקרופון", camera: "מצלמה", audioMode: "אודיו", open: "פתח", inRoom: "בחדר"),
+                      mic: "מיקרופון", camera: "מצלמה", audioMode: "אודיו", open: "פתח", inRoom: "בחדר", notInRoom: "לא בחדר"),
         "es": Strings(join: "Unirse", noRoom: "Abre la app para elegir un diez", description: "Acceso rápido a tu diez",
-                      mic: "Micrófono", camera: "Cámara", audioMode: "Audio", open: "Abrir", inRoom: "en la sala"),
+                      mic: "Micrófono", camera: "Cámara", audioMode: "Audio", open: "Abrir", inRoom: "En la sala", notInRoom: "Fuera de la sala"),
     ]
 
     static var current: Strings {
@@ -176,7 +180,7 @@ struct GalaxyWidgetView: View {
         content
             // Small widgets only support a whole-widget URL; medium has a Join link
             .widgetURL(family == .systemSmall && entry.room != nil && !entry.isInRoom ? joinURL : nil)
-            .widgetBackground(widgetColor)
+            .widgetBackground(entry.isInRoom ? widgetInRoomColor : widgetColor)
     }
 
     @ViewBuilder
@@ -192,6 +196,9 @@ struct GalaxyWidgetView: View {
                             .lineLimit(1)
                     }
                     roomText
+                    if entry.room != nil {
+                        status
+                    }
                 }
                 Spacer(minLength: 0)
                 if family != .systemSmall, entry.room != nil, !entry.isInRoom {
@@ -274,16 +281,24 @@ struct GalaxyWidgetView: View {
     }
 
     private var roomText: some View {
-        let text: String
-        if let room = entry.room {
-            text = entry.isInRoom ? "\(room) · \(strings.inRoom)" : room
-        } else {
-            text = strings.noRoom
-        }
-        return Text(text)
+        Text(entry.room ?? strings.noRoom)
             .font(.subheadline)
             .foregroundColor(.white.opacity(0.7))
-            .lineLimit(2)
+            .lineLimit(entry.room != nil ? 1 : 2)
+    }
+
+    // In room: green dot + text (and a dark green background)
+    private var status: some View {
+        let color = entry.isInRoom ? inRoomColor : notInRoomColor
+        return HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+            Text(entry.isInRoom ? strings.inRoom : strings.notInRoom)
+                .font(.caption.bold())
+                .foregroundColor(color)
+                .lineLimit(1)
+        }
     }
 
     private func label(_ text: String, color: Color) -> some View {

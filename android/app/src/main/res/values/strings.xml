@@ -7,5 +7,6 @@
     <string name="widget_camera">Camera</string>
     <string name="widget_audio_mode">Audio mode</string>
     <string name="widget_open">Open</string>
-    <string name="widget_in_room">%1$s · in room</string>
+    <string name="widget_in_room">In room</string>
+    <string name="widget_not_in_room">Not in room</string>
 </resources>
