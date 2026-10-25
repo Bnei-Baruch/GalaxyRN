@@ -1,0 +1,11 @@
+<resources>
+    <string name="widget_join">Unirse</string>
+    <string name="widget_no_room">Abre la app para elegir un diez</string>
+    <string name="widget_description">Acceso rápido a tu diez</string>
+    <string name="widget_mic">Micrófono</string>
+    <string name="widget_camera">Cámara</string>
+    <string name="widget_audio_mode">Audio</string>
+    <string name="widget_open">Abrir</string>
+    <string name="widget_in_room">En la sala</string>
+    <string name="widget_not_in_room">Fuera de la sala</string>
+</resources>

@@ -20,6 +20,7 @@ import com.galaxy_mobile.backgroundTimer.BackgroundTimerModule;
 import com.galaxy_mobile.callManager.CallListenerModule;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
 import com.galaxy_mobile.SendLogsModule;
+import com.galaxy_mobile.widget.WidgetModule;
 
 /**
  * React Native package that registers Galaxy native modules
@@ -46,6 +47,7 @@ public class GxyPackage implements ReactPackage {
         addModule(modules, "CallListenerModule", () -> new CallListenerModule(reactContext));
         addModule(modules, "SendLogsModule", () -> new SendLogsModule(reactContext));
         addModule(modules, "GxyUIStateModule", () -> new GxyUIStateModule(reactContext));
+        addModule(modules, "WidgetModule", () -> new WidgetModule(reactContext));
 
         return modules;
     }
