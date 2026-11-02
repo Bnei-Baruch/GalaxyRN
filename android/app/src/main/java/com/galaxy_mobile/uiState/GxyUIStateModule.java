@@ -186,16 +186,10 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
             return;
         }
 
-        Activity activity = getCurrentActivity();
-        if (activity == null) {
-            GxyLogger.d(TAG, "activity is null, skipping stopForeground");
-            promise.resolve(true);
-            return;
-        }
-        Intent intent = new Intent(activity, ForegroundService.class);
-        intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
-        activity.startForegroundService(intent);
-        
+        // Use the application context: on activity finish (back press / close) JS calls this
+        // from BeforeRoom's unmount, when there is no current activity anymore.
+        Context context = getReactApplicationContext();
+        context.stopService(new Intent(context, ForegroundService.class));
         GxyLogger.d(TAG, "stopForeground completed");
         promise.resolve(true);
     }
@@ -293,9 +287,14 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
 
     private void startService() {
         GxyLogger.d(TAG, "startService");
-        Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
+        Context context = getReactApplicationContext();
+        Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(ForegroundService.START_SERVICE_ACTION);
-        getCurrentActivity().startForegroundService(intent);
+        try {
+            context.startForegroundService(intent);
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error starting foreground service", e);
+        }
     }
 
     // --- Event dispatch from instance-less contexts (Service / BroadcastReceiver / Application) ---
