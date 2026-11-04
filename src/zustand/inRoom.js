@@ -28,6 +28,11 @@ import { useUiActions } from './uiActions';
 
 const NAMESPACE = 'InRoom';
 
+// Must stay below connection-monitor's MAX_CONNECTION_TIMEOUT (20s), which
+// tears the session down on its own. High-latency links (e.g. AU cellular)
+// routinely need more than 5s to get MQTT connected.
+const WAIT_CONNECTION_TIMEOUT_MS = 15000;
+
 let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
@@ -61,7 +66,10 @@ export const useInRoomStore = create((set, get) => ({
 
     attempts++;
     try {
-      const connected = await rejectTimeoutPromise(waitConnection(), 5000);
+      const connected = await rejectTimeoutPromise(
+        waitConnection(),
+        WAIT_CONNECTION_TIMEOUT_MS
+      );
       if (!connected) {
         throw new Error('No connection');
       }

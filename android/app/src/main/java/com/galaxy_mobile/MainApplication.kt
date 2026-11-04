@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.media.AudioManager
 import android.util.Log
+import com.galaxy_mobile.audioManager.AudioModeKeeper
 import com.galaxy_mobile.logger.GxyLogger
 import com.galaxy_mobile.logger.LogFileWriter
 import com.facebook.react.PackageList
@@ -113,7 +114,7 @@ class MainApplication : Application(), ReactApplication {
             try {
                 (instance?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager)?.apply {
                     abandonAudioFocus(null)
-                    mode = AudioManager.MODE_NORMAL
+                    AudioModeKeeper.restore(instance, this)
                 }
             } catch (e: Exception) {
                 GxyLogger.e(TAG, "Error resetting audio", e)

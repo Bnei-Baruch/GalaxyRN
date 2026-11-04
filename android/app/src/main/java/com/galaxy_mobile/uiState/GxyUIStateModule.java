@@ -1,6 +1,7 @@
 package com.galaxy_mobile.uiState;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -250,6 +251,44 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
     public void suppressNextPip() {
         GxyLogger.d(TAG, "suppressNextPip");
         MainActivity.suppressNextPip();
+    }
+
+    // Fully close the app (Android back outside a room): drop our notifications,
+    // finish the activity and remove the task from recents, then run the same
+    // cleanup + process kill as a swipe-away from recents. JS has already run
+    // terminateApp() before calling this.
+    @Override
+    @ReactMethod
+    @DoNotStrip
+    public void exitApp() {
+        GxyLogger.i(TAG, "exitApp");
+        Context context = getReactApplicationContext();
+
+        try {
+            if (ForegroundService.isRunning) {
+                Intent intent = new Intent(context, ForegroundService.class);
+                intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
+                context.startService(intent);
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "exitApp: error stopping foreground service", e);
+        }
+
+        try {
+            NotificationManager nm =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) nm.cancelAll();
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "exitApp: error cancelling notifications", e);
+        }
+
+        Activity activity = getCurrentActivity();
+        if (activity != null) {
+            activity.runOnUiThread(activity::finishAndRemoveTask);
+        }
+
+        // performCleanup() sleeps and ends with killProcess — keep it off the UI/JS threads
+        new Thread(MainApplication::performCleanup, "gxy-exit-app").start();
     }
 
     private void startService() {

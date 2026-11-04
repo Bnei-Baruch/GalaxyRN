@@ -25,18 +25,6 @@ let exitWIP = false;
 let _subscriberJoined = false;
 let restartCount = 0;
 
-//TODO: Remove this function after string id will deployed
-const patchFeedId = (id) => {
-  logger.debug(NAMESPACE, 'patchFeedId id', id);
-  const isNumber = /^\d+$/.test(id);
-  if (isNumber) {
-    logger.debug(NAMESPACE, 'patchFeedId id is a number', id);
-    return parseInt(id);
-  }
-  logger.debug(NAMESPACE, 'patchFeedId id is not a number', id);
-  return id;
-};
-
 export const useFeedsStore = create((set, get) => ({
   feedById: {},
   feedIds: [],
@@ -165,7 +153,7 @@ export const useFeedsStore = create((set, get) => ({
           const feed = get().feedById[id];
           if (!feed) return;
 
-          params.push({ feed: patchFeedId(feed.id) });
+          params.push({ feed: feed.id });
           logger.info(
             NAMESPACE,
             `Feed ${feed.id} ${JSON.stringify(
@@ -514,7 +502,7 @@ export const useFeedsStore = create((set, get) => ({
       const f = feedById[id];
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
       if (f?.vMid && (f.url || f.camera) && !f.vWIP && !f.vOn) {
-        params.push({ feed: patchFeedId(id), mid: f.vMid });
+        params.push({ feed: id, mid: f.vMid });
       }
     }
 
@@ -538,7 +526,7 @@ export const useFeedsStore = create((set, get) => ({
       const f = feedById[id];
       logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
       if (f?.url && f.vOn && !f.vWIP) {
-        params.push({ feed: patchFeedId(id), mid: f.vMid });
+        params.push({ feed: id, mid: f.vMid });
       }
     }
 

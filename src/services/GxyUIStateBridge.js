@@ -62,6 +62,19 @@ const GxyUIStateBridge = {
   },
 
   /**
+   * Android: fully close the app (notifications, task, process).
+   * @returns {boolean} false if the native method is unavailable
+   */
+  exitApp: () => {
+    if (NativeGxyUIState?.exitApp) {
+      NativeGxyUIState.exitApp();
+      return true;
+    }
+    logger.warn(NAMESPACE, 'exitApp is not available');
+    return false;
+  },
+
+  /**
    * Subscribe to the native systemEvent event (codegen EventEmitter field)
    * @returns {?{remove: Function}} subscription, or null if unavailable
    */

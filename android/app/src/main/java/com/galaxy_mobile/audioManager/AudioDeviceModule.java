@@ -270,7 +270,7 @@ public class AudioDeviceModule extends NativeAudioDeviceModuleSpec implements Pe
             if (audioManager == null)
                 return;
 
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            AudioModeKeeper.enterCommunication(audioManager);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 audioManager.setCommunicationDevice(device);
