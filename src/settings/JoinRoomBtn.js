@@ -8,12 +8,17 @@ import {
 import Text from '../components/CustomText';
 import { useRoomStore } from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
+import { useSettingsStore } from '../zustand/settings';
 
 
-const JoinRoomBtn = () => {
+// `standalone`: rendered on its own (broadcast-only, no ten picker beside it).
+const JoinRoomBtn = ({ standalone = false }) => {
   const { room, setSelectRoomOpen } = useRoomStore();
   const { safeJoinRoom } = useInRoomStore();
+  const isTen = useSettingsStore(state => state.isTen);
   const { t } = useTranslation();
+  // Broadcast-only needs no ten to join.
+  const disabled = isTen && !room;
 
 
   const handleJoin = () => {
@@ -29,8 +34,12 @@ const JoinRoomBtn = () => {
       testID="joinRoomBtn"
       accessibilityLabel="joinRoomBtn"
       onPress={handleJoin}
-      disabled={!room}
-      style={[styles.button, !room && styles.buttonDisabled]}
+      disabled={disabled}
+      style={[
+        styles.button,
+        standalone && styles.buttonStandalone,
+        disabled && styles.buttonDisabled,
+      ]}
     >
       <Text style={styles.buttonText}>{t('settings.join')}</Text>
     </TouchableOpacity>
@@ -49,6 +58,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#9e9e9e',
     height: 40,
+  },
+  buttonStandalone: {
+    borderRadius: 5,
+    borderWidth: 1,
   },
   buttonDisabled: {
     backgroundColor: '#9e9e9e',

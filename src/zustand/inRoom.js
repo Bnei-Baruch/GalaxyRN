@@ -102,17 +102,13 @@ export const useInRoomStore = create((set, get) => ({
       isTen && useFeedsStore.getState().safeInitFeeds(),
     ]);
 
-    try {
-      await get().subscribeMqtt();
-    } catch (error) {
-      throw error;
-    }
+    await get().subscribeMqtt();
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
 
     const { room } = useRoomStore.getState();
-    CallsBridge.startCall(room?.room || 'unknown');
+    CallsBridge.startCall(isTen ? room?.room || 'unknown' : 'broadcast');
   },
 
   safeJoinRoom: async (isPlay = false) => {
@@ -126,6 +122,13 @@ export const useInRoomStore = create((set, get) => ({
 
   subscribeMqtt: async () => {
     logger.debug(NAMESPACE, 'subscribeMqtt');
+    // Broadcast-only doesn't join a ten: no room topics (chat, admin
+    // commands, room state). Also hit on MQTT reconnect (libs/mqtt.js), and a
+    // ten picked earlier may still be in the store.
+    if (!useSettingsStore.getState().isTen) {
+      logger.debug(NAMESPACE, 'subscribeMqtt: broadcast-only, skipping');
+      return;
+    }
     const { room } = useRoomStore.getState();
     const mqttSubscribeSpan = addSpan(ROOM_SESSION, 'mqtt.subscribe');
     try {
@@ -204,11 +207,16 @@ export const useInRoomStore = create((set, get) => ({
       useChatStore.getState().cleanMessages();
 
       const { room } = useRoomStore.getState();
-      logger.debug(NAMESPACE, 'exitRoom room', room);
-      await Promise.all([
-        mqtt.exit(`galaxy/room/${room.room}`),
-        mqtt.exit(`galaxy/room/${room.room}/chat`),
-      ]);
+      // isTen can't change while in a room, so it matches what joinRoom
+      // subscribed to (broadcast-only subscribes to no room topics).
+      const { isTen } = useSettingsStore.getState();
+      logger.debug(NAMESPACE, 'exitRoom room', room, 'isTen', isTen);
+      if (isTen && room) {
+        await Promise.all([
+          mqtt.exit(`galaxy/room/${room.room}`),
+          mqtt.exit(`galaxy/room/${room.room}/chat`),
+        ]);
+      }
       finishSpan(mqttCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);

@@ -1,6 +1,7 @@
 import { useRoomStore } from '../zustand/fetchRooms';
 import { useInRoomStore } from '../zustand/inRoom';
 import { useMyStreamStore } from '../zustand/myStream';
+import { useSettingsStore } from '../zustand/settings';
 import NativeGxyUIStateModule from '../specs/NativeGxyUIStateModule';
 import logger from './logger';
 
@@ -10,7 +11,12 @@ const NativeGxyUIState = NativeGxyUIStateModule;
 const collectData = () => {
   const isMicOn = !useMyStreamStore.getState().mute;
   const isInRoom = useInRoomStore.getState().isInRoom;
-  const room = useRoomStore.getState().room?.description || 'Not in room';
+  // Broadcast-only has no ten; a ten picked earlier may still be in the store.
+  const room = !useSettingsStore.getState().isTen
+    ? isInRoom
+      ? 'Broadcast'
+      : 'Not in room'
+    : useRoomStore.getState().room?.description || 'Not in room';
   const isCammute = useMyStreamStore.getState().cammute;
   logger.debug(NAMESPACE, 'collectData: isMicOn: ' + isMicOn + ' isInRoom: ' + isInRoom + ' room: ' + room + ' isCammute: ' + isCammute);
   return { isMicOn, isInRoom, room, isCammute };
