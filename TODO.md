@@ -23,7 +23,9 @@ Comment out the workaround once there is a way to detect Janus connection state:
 
 ## UI/UX
 
-- [ ] Clarify UI/UX: add presets for entering a room:
-  - Shidur only
-  - Feeds only
+- [x] Presets for entering a room — Broadcast / Ten tiles on the before-room
+  screen (`src/settings/EntryOptions.tsx`, `isShidur` / `isTen` in
+  `src/zustand/settings.js`, in memory only):
+  - Broadcast only (`isTen=false`) — no videoroom at all
+  - Ten only (`isShidur=false`)
   - …possibly more options to come

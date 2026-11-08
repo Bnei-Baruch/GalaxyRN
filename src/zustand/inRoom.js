@@ -95,9 +95,11 @@ export const useInRoomStore = create((set, get) => ({
 
     addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
 
+    const { isTen } = useSettingsStore.getState();
+    logger.debug(NAMESPACE, 'joinRoom isTen', isTen);
     await Promise.all([
       useShidurStore.getState().prepareShidur(isPlay),
-      useFeedsStore.getState().safeInitFeeds(),
+      isTen && useFeedsStore.getState().safeInitFeeds(),
     ]);
 
     try {

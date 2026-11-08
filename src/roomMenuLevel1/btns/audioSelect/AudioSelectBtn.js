@@ -5,11 +5,11 @@ import logger from '../../../services/logger';
 import BottomBarIconWithText from '../../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../../zustand/shidur';
 import { bottomBar } from '../../../roomMenuLevel0/helper';
-import AudioSelectModal from './AudioSelectModal';
 
 const NAMESPACE = 'AudioSelectBtn';
 
-const AudioSelectBtn = () => {
+// The modal is mounted once in Room, so this button can live in several bars
+const AudioSelectBtn = ({ showtext = true }) => {
   const { audio, setIsAudioSelectOpen } = useShidurStore();
 
   const { t } = useTranslation();
@@ -25,12 +25,10 @@ const AudioSelectBtn = () => {
           iconName="record-voice-over"
           text={t(audio.text) + ' - ' + t(audio.description)}
           extraStyle={['rest', 'rest_icon']}
-          showtext={true}
+          showtext={showtext}
           direction={['vertical', 'horizontal']}
         />
       </Pressable>
-
-      <AudioSelectModal />
     </View>
   );
 };

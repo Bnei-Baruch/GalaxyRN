@@ -1,0 +1,18 @@
+appId: ${APP_ID}
+name: broadcast-only-join — Ten OFF, then join ${E2E_ROOM}
+tags:
+  - feature
+---
+# Precondition: before-room Settings screen, Ten ON (default). Ends in the room.
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 60000
+- tapOn:
+    id: "entryTenBtn"
+- assertVisible:
+    text: ".*Broadcast only.*"
+- runFlow: select-room.yaml
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: verify-results/e2-room

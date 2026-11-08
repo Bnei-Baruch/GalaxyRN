@@ -32,8 +32,18 @@ tags:
           commands:
             - tapOn:
                 text: "Dismiss"
-- tapOn:
-    id: "roomSelectTrigger"
+# Right after a fresh (clearState) login the JS thread is busy with initApp() and the first
+# trigger tap can be swallowed (modal never opens). Retry until the modal's search field shows.
+- repeat:
+    times: 4
+    while:
+      notVisible:
+        id: "roomSearchInput"
+    commands:
+      - tapOn:
+          id: "roomSelectTrigger"
+      - waitForAnimationToEnd:
+          timeout: 3000
 # Let the modal open+animate before asserting its search field (avoids racing the open animation
 # on a real device).
 - waitForAnimationToEnd:

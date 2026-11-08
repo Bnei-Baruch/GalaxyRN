@@ -11,6 +11,7 @@
     "uiLanguage": "Idioma de la interface",
     "cammute": "Detener video",
     "audioMode": "Modo de audio",
+    "broadcastOnly": "Solo transmisión: no entrarás a la decena",
     "isMuted": "Silenciar el audio de la transmisión",
     "search": "Buscar...",
     "join": "Unirse a la sala",
@@ -41,6 +42,7 @@
   "bottomBar": {
     "vote": "Vote",
     "shidur": "Transmisión",
+    "ten": "Decena",
     "self": "Hide my video",
     "kliOlami": "Kli Olamy tens",
     "leave": "Salir de la sala",

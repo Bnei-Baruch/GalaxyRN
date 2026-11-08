@@ -12,6 +12,7 @@
     "uiLanguage": "Interface language",
     "cammute": "Stop video",
     "audioMode": "Audio Mode",
+    "broadcastOnly": "Broadcast only — you won't join the ten",
     "isMuted": "Mute Broadcast",
     "search": "Search...",
     "join": "Join Room",
@@ -61,6 +62,7 @@
   "bottomBar": {
     "vote": "Vote",
     "shidur": "Broadcast",
+    "ten": "Ten",
     "self": "My video",
     "kliOlami": "World Kli tens",
     "leave": "Leave room",

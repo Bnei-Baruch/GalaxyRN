@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Keyboard,
   StyleSheet,
   TouchableOpacity
 } from 'react-native';
@@ -16,6 +17,9 @@ const JoinRoomBtn = () => {
 
 
   const handleJoin = () => {
+    // Joining from the room search modal: close the keyboard before the
+    // modal goes away, otherwise it stays open over the room
+    Keyboard.dismiss();
     safeJoinRoom();
     setSelectRoomOpen(false);
   };

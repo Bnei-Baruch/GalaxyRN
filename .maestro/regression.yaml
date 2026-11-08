@@ -15,21 +15,22 @@ tags:
 # Keychain works, so inline login is simply idempotent there.
 - runFlow: login.yaml   # ends on the Settings screen with joinRoomBtn visible
 - takeScreenshot: verify-results/reg-settings
+# joinRoomBtn shows while initApp() (MQTT, fetchRooms) is still running; BeforeRoom re-renders
+# when it finishes (~4s) and a room-select modal opened before that gets swallowed. Settle first
+# (Maestro has no sleep: wait for an element that never exists, optional).
+- extendedWaitUntil:
+    visible:
+      id: "__settle_never_present__"
+    timeout: 8000
+    optional: true
 
 # --- Join the test room "test mobile" ---
 # The modal's search field auto-focuses on open; typing the exact room name auto-selects it
 # (RoomSelectModal.handleSearch), which enables the modal's Join button — no list-item tap.
-- tapOn:
-    id: "roomSelectTrigger"
-- tapOn:
-    id: "roomSearchInput"
-- inputText: ${E2E_ROOM}
-- tapOn:
-    id: "joinRoomBtn"
-- extendedWaitUntil:
-    visible:
-      id: "leaveBtn"
-    timeout: 60000
+# Shared subflow: waits for the modal's open animation + search field (the inline taps raced it).
+- runFlow: select-room.yaml   # ends in the room (leaveBtn visible)
+# The search field's keyboard can stay up after joining; dismiss it so it doesn't cover the bar.
+- hideKeyboard
 - takeScreenshot: verify-results/reg-room
 # Visual (subagent): video tiles render via RTCView.
 
@@ -46,20 +47,40 @@ tags:
 - pressKey: Home
 - takeScreenshot: verify-results/reg-background
 # Visual/logcat (subagent): persistent notification + ForegroundService start.
-- launchApp
-- assertVisible:
-    id: "leaveBtn"
+# stopApp: false — plain `launchApp` force-stops the process first (Maestro default), which
+# kills the backgrounded/PiP call instead of bringing it back to the foreground.
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 15000
 - takeScreenshot: verify-results/reg-foreground
 
-# --- Send logs (More menu) ---
-- tapOn:
-    id: "moreBtn"
-- tapOn:
-    id: "sendLogsBtn"
-- takeScreenshot: verify-results/reg-sendlogs
 
 # --- Leave the room ---
 - tapOn:
     id: "leaveBtn"
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 30000
+
+# --- Send logs (account menu = the "Screen name" dropdown on the before-room screen) ---
+# There is no sendLogsBtn testID (the old step targeted the in-room More menu, where Send Logs
+# no longer lives). The dropdown has no testID either: tap it by position (top field), then
+# pick the item by its English text. Assumes English UI.
+- tapOn:
+    point: "50%,13%"
+- tapOn:
+    text: "Send Logs"
+- extendedWaitUntil:
+    visible:
+      text: "Logs sent|Failed to send logs"
+    timeout: 30000
+- takeScreenshot: verify-results/reg-sendlogs
+- tapOn:
+    text: "OK"
+    optional: true
 - assertVisible:
     id: "joinRoomBtn"

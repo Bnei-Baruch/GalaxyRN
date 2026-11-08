@@ -42,10 +42,19 @@ export const useSettingsStore = create((set, get) => ({
     set({ isKliOlamiFullscreen });
   },
 
+  // Room entry presets (chosen before joining, kept in memory only).
+  // At least one of isShidur / isTen stays on.
   isShidur: true,
   toggleIsShidur: async () => {
     const isShidur = !get().isShidur;
     logger.debug(NAMESPACE, 'toggleIsShidur', isShidur);
+    if (!isShidur && !get().isTen) return;
+
+    if (!useInRoomStore.getState().isInRoom) {
+      set({ isShidur });
+      return;
+    }
+
     if (!isShidur) {
       await useShidurStore.getState().cleanShidur();
     } else {
@@ -53,6 +62,17 @@ export const useSettingsStore = create((set, get) => ({
     }
     set({ isShidur });
     useUiActions.getState().updateWidth(isShidur);
+  },
+
+  // false = "broadcast only": don't join the videoroom (no feeds, no
+  // publishing). Only changeable before joining.
+  isTen: true,
+  toggleIsTen: () => {
+    const isTen = !get().isTen;
+    logger.debug(NAMESPACE, 'toggleIsTen', isTen);
+    if (!isTen && !get().isShidur) return;
+    if (useInRoomStore.getState().isInRoom) return;
+    set({ isTen });
   },
 
   audioMode: false,

@@ -1,0 +1,71 @@
+appId: ${APP_ID}
+name: entry-options — before-room Broadcast/Ten presets
+tags:
+  - feature
+---
+# Assumes the app is on the before-room Settings screen (joinRoomBtn visible) with defaults
+# (Broadcast ON, Ten ON). Leaves state back at defaults.
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 60000
+- assertVisible:
+    id: "entryShidurBtn"
+    checked: true
+- assertVisible:
+    id: "entryTenBtn"
+    checked: true
+- takeScreenshot: verify-results/e1-default
+# Ten OFF -> broadcast only
+- tapOn:
+    id: "entryTenBtn"
+- assertVisible:
+    id: "entryTenBtn"
+    checked: false
+- assertVisible:
+    id: "entryShidurBtn"
+    enabled: false
+- assertVisible:
+    id: "entryCammuteBtn"
+    enabled: false
+- assertVisible:
+    text: ".*Broadcast only.*"
+- takeScreenshot: verify-results/e1-ten-off
+# Broadcast can't be turned off now
+- tapOn:
+    id: "entryShidurBtn"
+- assertVisible:
+    id: "entryShidurBtn"
+    checked: true
+# Ten back ON
+- tapOn:
+    id: "entryTenBtn"
+- assertVisible:
+    id: "entryTenBtn"
+    checked: true
+- assertVisible:
+    id: "entryCammuteBtn"
+    enabled: true
+- assertNotVisible:
+    text: ".*Broadcast only.*"
+- takeScreenshot: verify-results/e1-restored
+# Symmetric: Broadcast OFF -> Ten can't be turned off
+- tapOn:
+    id: "entryShidurBtn"
+- assertVisible:
+    id: "entryShidurBtn"
+    checked: false
+- assertVisible:
+    id: "entryTenBtn"
+    enabled: false
+- tapOn:
+    id: "entryTenBtn"
+- assertVisible:
+    id: "entryTenBtn"
+    checked: true
+- takeScreenshot: verify-results/e1-shidur-off
+- tapOn:
+    id: "entryShidurBtn"
+- assertVisible:
+    id: "entryShidurBtn"
+    checked: true

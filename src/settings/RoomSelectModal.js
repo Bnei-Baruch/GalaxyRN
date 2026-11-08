@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -55,6 +56,7 @@ const RoomSelectModal = () => {
 
   const closeModal = () => {
     logger.debug(NAMESPACE, 'closeModal');
+    Keyboard.dismiss();
     setSelectRoomOpen(false);
   };
 

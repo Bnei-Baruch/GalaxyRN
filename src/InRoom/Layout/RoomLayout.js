@@ -15,11 +15,12 @@ const NAMESPACE = 'RoomLayout';
 
 const RoomLayout = () => {
   const { isPortrait } = useInitsStore();
-  const { isShidur, isKliOlami, isFullscreen, isKliOlamiFullscreen } = useSettingsStore();
+  const { isShidur, isTen, isKliOlami, isFullscreen, isKliOlamiFullscreen } =
+    useSettingsStore();
 
   const shidur = isShidur && <Shidur />;
   const kliOlami = isKliOlami && <KliOlami />;
-  const members = <Feeds key="members" />;
+  const members = isTen && <Feeds key="members" />;
 
   logger.debug(NAMESPACE, 'render');
 

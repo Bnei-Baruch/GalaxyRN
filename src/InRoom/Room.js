@@ -6,6 +6,7 @@ import { baseStyles } from '../constants';
 import { BottomBarLevel0 } from '../roomMenuLevel0/BottomBarLevel0';
 import { TopBar } from '../roomMenuLevel0/TopBar';
 import MenuLevel1 from '../roomMenuLevel1/MenuLevel1';
+import AudioSelectModal from '../roomMenuLevel1/btns/audioSelect/AudioSelectModal';
 import logger from '../services/logger';
 import ShidurPip from '../shidur/ShidurPip';
 import { useInRoomStore } from '../zustand/inRoom';
@@ -45,6 +46,7 @@ const Room = () => {
           <TopBar />
           <BottomBarLevel0 />
           <MenuLevel1 />
+          <AudioSelectModal />
           <ConnectionNotStable />
         </View>
       )}

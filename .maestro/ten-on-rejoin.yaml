@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+name: ten-on-rejoin — leave room, Ten back ON, rejoin ${E2E_ROOM}
+tags:
+  - feature
+---
+# Precondition: in the room joined with Ten OFF (broadcast-only). Ends in the room with Ten ON.
+- tapOn:
+    id: "leaveBtn"
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 30000
+- takeScreenshot: verify-results/e3-after-leave
+- tapOn:
+    id: "entryTenBtn"
+- assertNotVisible:
+    text: ".*Broadcast only.*"
+- assertVisible:
+    id: "entryCammuteBtn"
+    enabled: true
+- takeScreenshot: verify-results/e3-ten-on
+- runFlow: select-room.yaml
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible:
+    id: "moreBtn"
+- assertNotVisible:
+    id: "shidurVideoBtn"
+- takeScreenshot: verify-results/e3-room
