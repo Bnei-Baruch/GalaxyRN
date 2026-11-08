@@ -30,7 +30,14 @@ tags:
 # Shared subflow: waits for the modal's open animation + search field (the inline taps raced it).
 - runFlow: select-room.yaml   # ends in the room (leaveBtn visible)
 # The search field's keyboard can stay up after joining; dismiss it so it doesn't cover the bar.
-- hideKeyboard
+# Only when the bar is actually hidden: on Android `hideKeyboard` with no keyboard up sends BACK,
+# which (no JS BackHandler) moves the in-room task to the background and every next step fails.
+- runFlow:
+    when:
+      notVisible:
+        id: "muteBtn"
+    commands:
+      - hideKeyboard
 - takeScreenshot: verify-results/reg-room
 # Visual (subagent): video tiles render via RTCView.
 

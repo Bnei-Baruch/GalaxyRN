@@ -20,7 +20,14 @@ tags:
     enabled: true
 - takeScreenshot: verify-results/e3-ten-on
 - runFlow: select-room.yaml
-- hideKeyboard
+# Only if the keyboard hides the bar: with no keyboard up, Android hideKeyboard sends BACK, which
+# moves the in-room task to the background (see regression.yaml).
+- runFlow:
+    when:
+      notVisible:
+        id: "moreBtn"
+    commands:
+      - hideKeyboard
 - waitForAnimationToEnd:
     timeout: 5000
 - assertVisible:
