@@ -39,7 +39,7 @@ const RoomSelectModal = () => {
   const filteredOptions = useMemo(() => rooms?.filter(o => {
     if (!_sText) return true;
     return o.description.toLowerCase().includes(_sText);
-  }), [_sText]);
+  }), [rooms, _sText]);
 
   const handleSearch = text => {
     setSearchText(text);
