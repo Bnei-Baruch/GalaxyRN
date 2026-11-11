@@ -1,14 +1,12 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import AccountSettings from '../auth/AccountSettings';
 import MyVideo from '../components/MyVideo';
 import PageHeader from '../components/PageHeader';
 import { baseStyles } from '../constants';
-import { useMyStreamStore } from '../zustand/myStream';
-import { useSettingsStore } from '../zustand/settings';
-import LabeledSwitch from './LabeledSwitch';
+import EntryOptions from './EntryOptions';
 import RoomSelect from './RoomSelect';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,11 +15,6 @@ import SelectUiLanguage from './SelectUiLanguage';
 
 export const SettingsNotJoinedLandscape = () => {
   const { t } = useTranslation();
-  const { cammute, toggleCammute } = useMyStreamStore();
-  const { audioMode, toggleAudioMode } = useSettingsStore();
-
-  const handleToggleAudioMode = () => toggleAudioMode();
-  const handleCammute = () => toggleCammute();
   const insets = useSafeAreaInsets();
 
   return (
@@ -43,22 +36,20 @@ export const SettingsNotJoinedLandscape = () => {
           <MyVideo
             styles={{ aspectRatio: 16 / 9, width: '100%', alignSelf: 'center' }}
           />
-          <VersionInfo />
+          <View>
+            <SelectUiLanguage />
+            <VersionInfo />
+          </View>
         </View>
         <View style={{ width: '50%' }}>
-          <AccountSettings />
-          <SelectUiLanguage />
-          <LabeledSwitch
-            label={t('settings.cammute')}
-            value={cammute}
-            onValueChange={handleCammute}
-          />
-          <LabeledSwitch
-            label={t('settings.audioMode')}
-            value={audioMode}
-            onValueChange={handleToggleAudioMode}
-          />
-          <View style={baseStyles.full} />
+          {/* Join stays pinned at the bottom; the rest scrolls on short screens */}
+          <ScrollView
+            style={baseStyles.full}
+            showsVerticalScrollIndicator={false}
+          >
+            <AccountSettings />
+            <EntryOptions />
+          </ScrollView>
           <RoomSelect />
         </View>
       </View>

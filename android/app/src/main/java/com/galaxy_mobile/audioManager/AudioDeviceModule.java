@@ -212,6 +212,9 @@ public class AudioDeviceModule extends NativeAudioDeviceModuleSpec implements Pe
         }
         return Arrays.stream(result)
                 .filter(device -> device.getType() != AudioDeviceInfo.TYPE_TELEPHONY)
+                // Drop types we have no group for (e.g. TYPE_REMOTE_SUBMIX, TYPE_DOCK on the
+                // pre-S getDevices() path) - otherwise they'd be reported to JS as "earpiece".
+                .filter(device -> AudioHelper.isSupportedType(device.getType()))
                 .toArray(AudioDeviceInfo[]::new);
     }
 
@@ -270,7 +273,7 @@ public class AudioDeviceModule extends NativeAudioDeviceModuleSpec implements Pe
             if (audioManager == null)
                 return;
 
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            AudioModeKeeper.enterCommunication(audioManager);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 audioManager.setCommunicationDevice(device);

@@ -18,6 +18,9 @@ export interface Spec extends TurboModule {
   // Android-only: skip the PIP entry on the next onUserLeaveHint, which fires
   // when we open another Activity (e.g. Crisp chat) rather than on Home press.
   suppressNextPip(): void;
+  // Android-only: fully close the app — cancel notifications, finish and remove
+  // the task, then clean up and kill the process (same as swipe-away).
+  exitApp(): void;
   // Android-only events (routed through the module's static self-ref from
   // Service/BroadcastReceiver/Application contexts — see GxyUIStateModule.java).
   // Codegen: systemEvent -> emitSystemEvent, nativePlayerEvent -> emitNativePlayerEvent.

@@ -1,6 +1,7 @@
 package com.galaxy_mobile.uiState;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -73,7 +74,12 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
                 } else if (event == Lifecycle.Event.ON_START) {
                     GxyLogger.d(TAG, "App entered foreground");
                     isForeground = true;
-                    enableKeepScreenOn();
+                    enableKeepScreenOn(false);
+                } else if (event == Lifecycle.Event.ON_RESUME) {
+                    // ON_START fires before ReactHost.onHostResume() sets the current activity,
+                    // so after an activity re-create (process kept alive by the foreground
+                    // service) the ON_START attempt finds no activity. Retry here.
+                    enableKeepScreenOn(true);
                 }
 
             };
@@ -107,15 +113,22 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
         disableKeepScreenOn();
     }
 
-    private void enableKeepScreenOn() {
+    private void enableKeepScreenOn(boolean reportMissingActivity) {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            // Screen will dim on the system timeout - report so it shows up in Sentry
-            GxyLogger.w(TAG, "Cannot keep screen on: no current activity, isInRoom: " + isInRoom);
+            if (reportMissingActivity) {
+                // Screen will dim on the system timeout - report so it shows up in Sentry
+                GxyLogger.w(TAG, "Cannot keep screen on: no current activity, isInRoom: " + isInRoom);
+            } else {
+                GxyLogger.d(TAG, "No current activity yet, will retry keep screen on at ON_RESUME");
+            }
             return;
         }
 
         activity.runOnUiThread(() -> {
+            if (hasKeepScreenOn(activity)) {
+                return;
+            }
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             String state = describeScreenState(activity);
             GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added) " + state);
@@ -185,16 +198,10 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
             return;
         }
 
-        Activity activity = getCurrentActivity();
-        if (activity == null) {
-            GxyLogger.d(TAG, "activity is null, skipping stopForeground");
-            promise.resolve(true);
-            return;
-        }
-        Intent intent = new Intent(activity, ForegroundService.class);
-        intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
-        activity.startForegroundService(intent);
-        
+        // Use the application context: on activity finish (back press / close) JS calls this
+        // from BeforeRoom's unmount, when there is no current activity anymore.
+        Context context = getReactApplicationContext();
+        context.stopService(new Intent(context, ForegroundService.class));
         GxyLogger.d(TAG, "stopForeground completed");
         promise.resolve(true);
     }
@@ -252,11 +259,54 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
         MainActivity.suppressNextPip();
     }
 
+    // Fully close the app (Android back outside a room): drop our notifications,
+    // finish the activity and remove the task from recents, then run the same
+    // cleanup + process kill as a swipe-away from recents. JS has already run
+    // terminateApp() before calling this.
+    @Override
+    @ReactMethod
+    @DoNotStrip
+    public void exitApp() {
+        GxyLogger.i(TAG, "exitApp");
+        Context context = getReactApplicationContext();
+
+        try {
+            if (ForegroundService.isRunning) {
+                Intent intent = new Intent(context, ForegroundService.class);
+                intent.setAction(ForegroundService.STOP_SERVICE_ACTION);
+                context.startService(intent);
+            }
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "exitApp: error stopping foreground service", e);
+        }
+
+        try {
+            NotificationManager nm =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) nm.cancelAll();
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "exitApp: error cancelling notifications", e);
+        }
+
+        Activity activity = getCurrentActivity();
+        if (activity != null) {
+            activity.runOnUiThread(activity::finishAndRemoveTask);
+        }
+
+        // performCleanup() sleeps and ends with killProcess — keep it off the UI/JS threads
+        new Thread(MainApplication::performCleanup, "gxy-exit-app").start();
+    }
+
     private void startService() {
         GxyLogger.d(TAG, "startService");
-        Intent intent = new Intent(getCurrentActivity(), ForegroundService.class);
+        Context context = getReactApplicationContext();
+        Intent intent = new Intent(context, ForegroundService.class);
         intent.setAction(ForegroundService.START_SERVICE_ACTION);
-        getCurrentActivity().startForegroundService(intent);
+        try {
+            context.startForegroundService(intent);
+        } catch (Exception e) {
+            GxyLogger.e(TAG, "Error starting foreground service", e);
+        }
     }
 
     // --- Event dispatch from instance-less contexts (Service / BroadcastReceiver / Application) ---

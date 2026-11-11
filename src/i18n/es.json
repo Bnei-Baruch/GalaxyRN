@@ -11,6 +11,18 @@
     "uiLanguage": "Idioma de la interface",
     "cammute": "Detener video",
     "audioMode": "Modo de audio",
+    "broadcastOnly": "Solo transmisión: no entrarás a la decena",
+    "entryMode": {
+      "title": "Cómo entrar",
+      "all": "Decena y transmisión",
+      "allDesc": "Ves a los amigos y la lección",
+      "ten": "Solo decena",
+      "tenDesc": "Sin la transmisión de la lección",
+      "broadcast": "Solo transmisión",
+      "broadcastDesc": "Sin entrar a la decena; cámara y micrófono apagados"
+    },
+    "joinTen": "Entrar a la decena",
+    "joinBroadcast": "Ver la transmisión",
     "isMuted": "Silenciar el audio de la transmisión",
     "search": "Buscar...",
     "join": "Unirse a la sala",
@@ -41,6 +53,7 @@
   "bottomBar": {
     "vote": "Vote",
     "shidur": "Transmisión",
+    "ten": "Decena",
     "self": "Hide my video",
     "kliOlami": "Kli Olamy tens",
     "leave": "Salir de la sala",

@@ -2,7 +2,7 @@ import { SENTRY_DSN } from '@env';
 import { register } from '@formatjs/intl-pluralrules';
 import * as Sentry from '@sentry/react-native';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import 'intl-pluralrules';
@@ -18,7 +18,10 @@ import {
   startTransaction,
 } from './src/libs/sentry/sentryHelper';
 import AndroidPermissions from './src/services/AndroidPermissions';
+import GxyUIStateBridge from './src/services/GxyUIStateBridge';
 import logger from './src/services/logger';
+import { useInRoomStore } from './src/zustand/inRoom';
+import { useInitsStore } from './src/zustand/inits';
 import { useVerboseLoggingStore } from './src/zustand/verboseLogging';
 import { useWidgetStore } from './src/zustand/widget';
 
@@ -72,6 +75,20 @@ const App = () => {
       logger.debug(NAMESPACE, 'finishTransaction');
       finishTransaction(APP_SESSION);
     };
+  }, []);
+
+  // Android back outside a room fully closes the app (notifications, task,
+  // process); in a room: default behavior.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (useInRoomStore.getState().isInRoom) return false;
+      logger.info(NAMESPACE, 'hardwareBackPress outside room: exiting app');
+      useInitsStore.getState().terminateApp();
+      if (!GxyUIStateBridge.exitApp()) BackHandler.exitApp();
+      return true;
+    });
+    return () => sub.remove();
   }, []);
 
   // Home-screen widget: "Join" deep link, toggles, state sync

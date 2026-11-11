@@ -4,7 +4,7 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useShidurStore } from '../../zustand/shidur';
 import { bottomBar } from '../../roomMenuLevel0/helper';
-export const TranslationBtn = () => {
+export const TranslationBtn = ({ showtext = true }) => {
   const toggleIsOriginal = useShidurStore(state => state.toggleIsOriginal);
   const audio = useShidurStore(state => state.audio);
   const { t } = useTranslation();
@@ -20,7 +20,7 @@ export const TranslationBtn = () => {
             ? ['toggle_off', 'toggle_off_icon']
             : ['toggle_on_alt2', 'toggle_on_icon_alt2']
         }
-        showtext={true}
+        showtext={showtext}
         direction={['vertical', 'horizontal']}
       />
     </Pressable>

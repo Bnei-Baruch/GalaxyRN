@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+name: broadcast-only-join — "Broadcast only" mode, join the broadcast (no ten picked)
+tags:
+  - feature
+---
+# Precondition: before-room Settings screen, default mode (Ten and broadcast). Ends in the room.
+# Broadcast-only doesn't join a ten: the ten picker disappears and Join is
+# enabled without a room.
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 60000
+- tapOn:
+    id: "entryModeBroadcast"
+- assertVisible:
+    text: ".*won't join the ten.*"
+- assertNotVisible:
+    id: "roomSelectTrigger"
+- assertVisible:
+    id: "joinRoomBtn"
+    enabled: true
+- takeScreenshot: verify-results/e2-before-join
+- tapOn:
+    id: "joinRoomBtn"
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
+# Top bar shows the broadcast, not a ten name.
+- assertVisible:
+    text: "Broadcast"
+- takeScreenshot: verify-results/e2-room

@@ -15,11 +15,13 @@ public class AudioFocusManager {
     private static final int CONTENT_TYPE = AudioAttributes.CONTENT_TYPE_SPEECH;
     private static final int USAGE_TYPE = AudioAttributes.USAGE_VOICE_COMMUNICATION;
 
+    private final Context context;
     private final AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
     private boolean hasAudioFocus = false;
 
     public AudioFocusManager(@NonNull ReactContext context) {
+        this.context = context.getApplicationContext();
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
             GxyLogger.e(TAG, "Failed to get AudioManager service");
@@ -33,7 +35,7 @@ public class AudioFocusManager {
         }
 
         try {
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            AudioModeKeeper.enterCommunication(audioManager);
 
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setContentType(CONTENT_TYPE)
@@ -66,7 +68,7 @@ public class AudioFocusManager {
 
         try {
             audioManager.abandonAudioFocusRequest(audioFocusRequest);
-            audioManager.setMode(AudioManager.MODE_NORMAL);
+            AudioModeKeeper.restore(context, audioManager);
             GxyLogger.d(TAG, "abandonAudioFocus() completed");
 
             hasAudioFocus = false;

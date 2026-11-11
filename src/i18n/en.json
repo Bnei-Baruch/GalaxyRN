@@ -12,6 +12,18 @@
     "uiLanguage": "Interface language",
     "cammute": "Stop video",
     "audioMode": "Audio Mode",
+    "broadcastOnly": "Broadcast only — you won't join the ten",
+    "entryMode": {
+      "title": "How to join",
+      "all": "Ten and broadcast",
+      "allDesc": "See your friends and the lesson",
+      "ten": "Ten only",
+      "tenDesc": "Without the lesson broadcast",
+      "broadcast": "Broadcast only",
+      "broadcastDesc": "Without joining a ten; camera and mic are off"
+    },
+    "joinTen": "Join ten",
+    "joinBroadcast": "Watch broadcast",
     "isMuted": "Mute Broadcast",
     "search": "Search...",
     "join": "Join Room",
@@ -61,6 +73,7 @@
   "bottomBar": {
     "vote": "Vote",
     "shidur": "Broadcast",
+    "ten": "Ten",
     "self": "My video",
     "kliOlami": "World Kli tens",
     "leave": "Leave room",

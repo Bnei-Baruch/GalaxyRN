@@ -15,7 +15,7 @@ import SelectUiLanguage from './SelectUiLanguage';
 export const SettingsJoined = ({ toggleVisible }) => {
   const { t } = useTranslation();
   const { cammute, toggleCammute } = useMyStreamStore();
-  const { audioMode, toggleAudioMode } = useSettingsStore();
+  const { audioMode, toggleAudioMode, isTen } = useSettingsStore();
   const { isPortrait } = useInitsStore();
 
   const handleToggleAudioMode = () => toggleAudioMode();
@@ -35,6 +35,7 @@ export const SettingsJoined = ({ toggleVisible }) => {
             label={t('settings.cammute')}
             value={cammute}
             onValueChange={handleCammute}
+            disabled={!isTen}
           />
           <LabeledSwitch
             label={t('settings.audioMode')}

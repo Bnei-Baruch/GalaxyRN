@@ -11,12 +11,17 @@ tags:
 #
 # Dismiss any dev LogBox overlay first — it covers/overlaps the room trigger:
 #  - Android: a collapsed yellow warning bar ("Open debugger to view warnings") sits at the bottom
-#    over the "Select Ten" trigger, so the tap hits the bar and the modal never opens. Tapping the
-#    bar expands LogBox; then "Dismiss" clears it.
+#    over the "Select Ten" trigger, so the tap hits the bar and the modal never opens. On RN 0.8x
+#    tapping the bar does NOT expand LogBox — it launches DevTools on the host — so close it with
+#    its X instead. It can (re)appear late (e.g. "Cannot connect to Metro"), so the retry loop
+#    below closes it again before each trigger tap.
 #  - iOS Simulator: RNSecureStorage KEY_NOT_STORED -> stacked red+yellow overlays (loop-dismiss).
 # All are dev-only and never appear on a real device with a working Keychain.
-- tapOn:
-    text: "Open debugger to view warnings"
+- tapOn:   # close the LogBox toast via its X (tapping the toast body opens DevTools on the host)
+    childOf:
+      text: "!, Open debugger to view .*"   # toast container a11y text; text ends with "."
+    rightOf:
+      text: "Open debugger to view .*"
     optional: true
 - tapOn:
     text: "Dismiss"
@@ -32,8 +37,24 @@ tags:
           commands:
             - tapOn:
                 text: "Dismiss"
-- tapOn:
-    id: "roomSelectTrigger"
+# Right after a fresh (clearState) login the JS thread is busy with initApp() and the first
+# trigger tap can be swallowed (modal never opens). Retry until the modal's search field shows.
+- repeat:
+    times: 4
+    while:
+      notVisible:
+        id: "roomSearchInput"
+    commands:
+      - tapOn:
+          childOf:
+            text: "!, Open debugger to view .*"
+          rightOf:
+            text: "Open debugger to view .*"
+          optional: true
+      - tapOn:
+          id: "roomSelectTrigger"
+      - waitForAnimationToEnd:
+          timeout: 3000
 # Let the modal open+animate before asserting its search field (avoids racing the open animation
 # on a real device).
 - waitForAnimationToEnd:

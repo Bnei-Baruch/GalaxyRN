@@ -1,0 +1,63 @@
+appId: ${APP_ID}
+name: entry-options — before-room "How to join" mode choice
+tags:
+  - feature
+---
+# Assumes the app is on the before-room Settings screen (joinRoomBtn visible) with the default
+# mode (Ten and broadcast). Leaves state back at the default.
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 60000
+- assertVisible:
+    id: "entryModeAll"
+    checked: true
+- assertVisible:
+    id: "entryCammuteBtn"
+- assertVisible:
+    id: "roomSelectTrigger"
+- takeScreenshot: verify-results/e1-default
+# Broadcast only: no camera tile, no ten picker, placeholder instead of self-view
+- tapOn:
+    id: "entryModeBroadcast"
+- assertVisible:
+    id: "entryModeBroadcast"
+    checked: true
+- assertVisible:
+    id: "entryModeAll"
+    checked: false
+- assertNotVisible:
+    id: "entryCammuteBtn"
+- assertNotVisible:
+    id: "roomSelectTrigger"
+- assertVisible:
+    text: ".*won't join the ten.*"
+- assertVisible:
+    text: "Watch broadcast"
+- takeScreenshot: verify-results/e1-broadcast-only
+# Ten only: camera tile and ten picker are back
+- tapOn:
+    id: "entryModeTen"
+- assertVisible:
+    id: "entryModeTen"
+    checked: true
+- assertVisible:
+    id: "entryModeBroadcast"
+    checked: false
+- assertVisible:
+    id: "entryCammuteBtn"
+- assertVisible:
+    id: "roomSelectTrigger"
+- assertNotVisible:
+    text: ".*won't join the ten.*"
+- takeScreenshot: verify-results/e1-ten-only
+# Back to the default
+- tapOn:
+    id: "entryModeAll"
+- assertVisible:
+    id: "entryModeAll"
+    checked: true
+- assertVisible:
+    id: "entryModeTen"
+    checked: false
+- takeScreenshot: verify-results/e1-restored

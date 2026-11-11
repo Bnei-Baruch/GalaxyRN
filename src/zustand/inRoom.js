@@ -28,6 +28,11 @@ import { useUiActions } from './uiActions';
 
 const NAMESPACE = 'InRoom';
 
+// Must stay below connection-monitor's MAX_CONNECTION_TIMEOUT (20s), which
+// tears the session down on its own. High-latency links (e.g. AU cellular)
+// routinely need more than 5s to get MQTT connected.
+const WAIT_CONNECTION_TIMEOUT_MS = 15000;
+
 let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
@@ -61,7 +66,10 @@ export const useInRoomStore = create((set, get) => ({
 
     attempts++;
     try {
-      const connected = await rejectTimeoutPromise(waitConnection(), 5000);
+      const connected = await rejectTimeoutPromise(
+        waitConnection(),
+        WAIT_CONNECTION_TIMEOUT_MS
+      );
       if (!connected) {
         throw new Error('No connection');
       }
@@ -87,22 +95,20 @@ export const useInRoomStore = create((set, get) => ({
 
     addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
 
+    const { isTen } = useSettingsStore.getState();
+    logger.debug(NAMESPACE, 'joinRoom isTen', isTen);
     await Promise.all([
       useShidurStore.getState().prepareShidur(isPlay),
-      useFeedsStore.getState().safeInitFeeds(),
+      isTen && useFeedsStore.getState().safeInitFeeds(),
     ]);
 
-    try {
-      await get().subscribeMqtt();
-    } catch (error) {
-      throw error;
-    }
+    await get().subscribeMqtt();
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
 
     const { room } = useRoomStore.getState();
-    CallsBridge.startCall(room?.room || 'unknown');
+    CallsBridge.startCall(isTen ? room?.room || 'unknown' : 'broadcast');
   },
 
   safeJoinRoom: async (isPlay = false) => {
@@ -116,6 +122,13 @@ export const useInRoomStore = create((set, get) => ({
 
   subscribeMqtt: async () => {
     logger.debug(NAMESPACE, 'subscribeMqtt');
+    // Broadcast-only doesn't join a ten: no room topics (chat, admin
+    // commands, room state). Also hit on MQTT reconnect (libs/mqtt.js), and a
+    // ten picked earlier may still be in the store.
+    if (!useSettingsStore.getState().isTen) {
+      logger.debug(NAMESPACE, 'subscribeMqtt: broadcast-only, skipping');
+      return;
+    }
     const { room } = useRoomStore.getState();
     const mqttSubscribeSpan = addSpan(ROOM_SESSION, 'mqtt.subscribe');
     try {
@@ -194,11 +207,16 @@ export const useInRoomStore = create((set, get) => ({
       useChatStore.getState().cleanMessages();
 
       const { room } = useRoomStore.getState();
-      logger.debug(NAMESPACE, 'exitRoom room', room);
-      await Promise.all([
-        mqtt.exit(`galaxy/room/${room.room}`),
-        mqtt.exit(`galaxy/room/${room.room}/chat`),
-      ]);
+      // isTen can't change while in a room, so it matches what joinRoom
+      // subscribed to (broadcast-only subscribes to no room topics).
+      const { isTen } = useSettingsStore.getState();
+      logger.debug(NAMESPACE, 'exitRoom room', room, 'isTen', isTen);
+      if (isTen && room) {
+        await Promise.all([
+          mqtt.exit(`galaxy/room/${room.room}`),
+          mqtt.exit(`galaxy/room/${room.room}/chat`),
+        ]);
+      }
       finishSpan(mqttCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);

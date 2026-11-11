@@ -1,6 +1,6 @@
 # GalaxyRN
 
-React Native (0.82.1, React 19) video-conferencing app (WebRTC). Android runs on the new architecture.
+React Native (0.86.0, React 19) video-conferencing app (WebRTC). Android runs on the new architecture.
 
 ## Commands
 
