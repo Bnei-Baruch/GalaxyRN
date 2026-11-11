@@ -17,6 +17,8 @@ import {
 } from './sentry/sentryHelper';
 
 const NAMESPACE = 'JanusMqtt';
+const KEEPALIVE_TIMEOUT_MS = 5 * 1000;
+const KEEPALIVE_FAILURES_TO_REPORT = 3;
 
 export class JanusMqtt {
   constructor(user, srv) {
@@ -33,6 +35,7 @@ export class JanusMqtt {
     this.connect = null;
     this.isJanusInitialized = false;
     this.keepAliveTimer = null;
+    this.keepAliveFailures = 0;
     this.sentrySession = `${CONNECTION}.${srv}`;
 
     // Стрелочные функции автоматически связывают this
@@ -334,11 +337,28 @@ export class JanusMqtt {
     try {
       await rejectTimeoutPromise(
         this.transaction('keepalive', null, 'ack'),
-        2 * 1000
+        KEEPALIVE_TIMEOUT_MS
       );
+      this.keepAliveFailures = 0;
       logger.debug(NAMESPACE, 'keepAlive done');
     } catch (err) {
-      logger.error(NAMESPACE, 'keepAlive error', err);
+      // A single missed keepalive is routine on mobile networks — only report
+      // to Sentry (logger.error) once several in a row have failed.
+      this.keepAliveFailures = (this.keepAliveFailures || 0) + 1;
+      if (this.keepAliveFailures === KEEPALIVE_FAILURES_TO_REPORT) {
+        logger.error(
+          NAMESPACE,
+          `keepAlive error x${this.keepAliveFailures}`,
+          err
+        );
+      } else {
+        logger.warn(
+          NAMESPACE,
+          'keepAlive error',
+          this.keepAliveFailures,
+          err?.message
+        );
+      }
     } finally {
       this.setKeepAliveTimer();
     }
@@ -612,7 +632,12 @@ export class JanusMqtt {
         errorCode: json.error?.code,
         error: json.error?.reason || JSON.stringify(json.error),
       });
-      logger.error(NAMESPACE, `Janus error response`, json);
+      // Stringify: Sentry joins the args into the message, a raw object would
+      // show up as "[object Object]".
+      const errorInfo = `code: ${json.error?.code}, reason: ${
+        json.error?.reason || JSON.stringify(json.error)
+      }`;
+      logger.error(NAMESPACE, `Janus error response`, errorInfo);
       const transaction = this.getTransaction(json, true);
       if (transaction && transaction.reject) {
         transaction.reject(json);
@@ -620,7 +645,7 @@ export class JanusMqtt {
         logger.error(
           NAMESPACE,
           'No transaction found for error response',
-          json
+          errorInfo
         );
       }
       return;
@@ -717,7 +742,7 @@ export class JanusMqtt {
   reconnectMqtt = async () => {
     logger.debug(NAMESPACE, 'reconnectMqtt', this.isConnected);
     if (!this.isConnected) {
-      logger.error(NAMESPACE, 'reconnectMqtt skipped, not connected');
+      logger.warn(NAMESPACE, 'reconnectMqtt skipped, not connected');
       return;
     }
 

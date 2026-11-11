@@ -52,6 +52,15 @@ public class AudioHelper {
                         BUILTIN_SPEAKER_GROUP,
                         BUILTIN_EARPIECE_GROUP));
 
+        public static boolean isSupportedType(int deviceType) {
+                for (AudioDeviceGroup group : ALL_DEVICE_GROUPS) {
+                        if (group.containsType(deviceType)) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
         public static AudioDeviceGroup getGroupByDeviceType(int deviceType) {
                 for (AudioDeviceGroup group : ALL_DEVICE_GROUPS) {
                         if (group.containsType(deviceType)) {

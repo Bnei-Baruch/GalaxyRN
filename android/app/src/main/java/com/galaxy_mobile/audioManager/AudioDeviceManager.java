@@ -84,8 +84,6 @@ public class AudioDeviceManager {
                 for (AudioDeviceInfo device : addedDevices) {
                     try {
                         GxyLogger.d(TAG, "onAudioDevicesAdded() device: " + device.getType());
-                        AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
-                        GxyLogger.d(TAG, "onAudioDevicesAdded() group: " + group.getType());
                         if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
                                 || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
                             changed = true;
@@ -105,8 +103,6 @@ public class AudioDeviceManager {
                 for (AudioDeviceInfo device : removedDevices) {
                     try {
                         GxyLogger.d(TAG, "onAudioDevicesRemoved() device: " + device.getType());
-                        AudioDeviceGroup group = AudioHelper.getGroupByDeviceType(device.getType());
-                        GxyLogger.d(TAG, "onAudioDevicesRemoved() group: " + group.getType());
                         if (AudioHelper.HEADPHONES_GROUP.containsType(device.getType())
                                 || AudioHelper.BLUETOOTH_GROUP.containsType(device.getType())) {
                             changed = true;

@@ -74,7 +74,12 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
                 } else if (event == Lifecycle.Event.ON_START) {
                     GxyLogger.d(TAG, "App entered foreground");
                     isForeground = true;
-                    enableKeepScreenOn();
+                    enableKeepScreenOn(false);
+                } else if (event == Lifecycle.Event.ON_RESUME) {
+                    // ON_START fires before ReactHost.onHostResume() sets the current activity,
+                    // so after an activity re-create (process kept alive by the foreground
+                    // service) the ON_START attempt finds no activity. Retry here.
+                    enableKeepScreenOn(true);
                 }
 
             };
@@ -108,15 +113,22 @@ public class GxyUIStateModule extends NativeGxyUIStateModuleSpec {
         disableKeepScreenOn();
     }
 
-    private void enableKeepScreenOn() {
+    private void enableKeepScreenOn(boolean reportMissingActivity) {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            // Screen will dim on the system timeout - report so it shows up in Sentry
-            GxyLogger.w(TAG, "Cannot keep screen on: no current activity, isInRoom: " + isInRoom);
+            if (reportMissingActivity) {
+                // Screen will dim on the system timeout - report so it shows up in Sentry
+                GxyLogger.w(TAG, "Cannot keep screen on: no current activity, isInRoom: " + isInRoom);
+            } else {
+                GxyLogger.d(TAG, "No current activity yet, will retry keep screen on at ON_RESUME");
+            }
             return;
         }
 
         activity.runOnUiThread(() -> {
+            if (hasKeepScreenOn(activity)) {
+                return;
+            }
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             String state = describeScreenState(activity);
             GxyLogger.d(TAG, "Screen will stay on (FLAG_KEEP_SCREEN_ON added) " + state);

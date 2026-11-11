@@ -92,6 +92,12 @@ export const useFeedsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     const { geoInfo } = useUserStore.getState();
     const { room } = useRoomStore.getState();
+    if (!room?.room) {
+      // Room was already left (e.g. exit while a restart was in flight) —
+      // nothing to connect to, and throwing would only spin restartFeeds.
+      logger.warn(NAMESPACE, 'initFeeds skipped, no room');
+      return;
+    }
 
     let gxyServer;
     try {

@@ -98,7 +98,16 @@ class MqttMsg {
       },
       timerVariant: {
         set: (func, time) => {
-          return BackgroundTimer.setInterval(func, time);
+          // mqtt's keepalive tick can throw (e.g. "connack timeout" while the
+          // client is mid-reconnect). The same failure already reaches the
+          // 'error' handler below, so don't report it a second time.
+          return BackgroundTimer.setInterval(() => {
+            try {
+              func();
+            } catch (e) {
+              logger.warn(NAMESPACE, 'keepalive tick threw', e?.message);
+            }
+          }, time);
         },
         clear: timerId => {
           return BackgroundTimer.clearInterval(timerId);
