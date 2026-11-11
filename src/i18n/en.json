@@ -87,6 +87,11 @@
     "audioSource": "Audio source",
     "roomSettings": "Room settings"
   },
+  "screenShare": {
+    "sharedScreenOf": "Screen of {{name}}",
+    "connecting": "Connecting to the shared screen...",
+    "showSharedScreen": "Show the screen shared by {{name}}"
+  },
   "shidur": {
     "streamForWorkshop": "STREAM FOR WORKSHOP",
     "streamForWorkshopDescription": "no focus group",

@@ -10,6 +10,11 @@ import logger from '../services/logger';
 import { deepClone, rejectTimeoutPromise } from '../tools';
 import { useRoomStore } from './fetchRooms';
 import { getStream, useMyStreamStore } from './myStream';
+import {
+  getScreenSubscription,
+  isScreenFeed,
+  useScreenShareStore,
+} from './screenShare';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
@@ -153,6 +158,12 @@ export const useFeedsStore = create((set, get) => ({
 
     videoroom.unsubFrom = async ids => {
       const params = [];
+      // A shared screen is not in feedById (see makeSubscription).
+      const screenShare = useScreenShareStore.getState();
+      const screenId = ids.find(id => screenShare.isScreenId(id));
+      if (screenId !== undefined) {
+        params.push({ feed: screenId });
+      }
       ids
         .filter(id => id !== get().janusInfo?.rfid)
         .forEach(id => {
@@ -175,6 +186,10 @@ export const useFeedsStore = create((set, get) => ({
         }
       } catch (error) {
         logger.error(NAMESPACE, 'Error unsubscribing from publishers', error);
+      }
+
+      if (screenId !== undefined) {
+        screenShare.clearScreenFeed();
       }
 
       set(
@@ -246,6 +261,8 @@ export const useFeedsStore = create((set, get) => ({
     }
 
     await get().makeSubscription(data.publishers.filter(p => p.id !== data.id));
+    // After a restart: the screen share may have ended meanwhile.
+    useScreenShareStore.getState().onFeedsJoined();
     useUserStore.getState().sendUserState();
     const stream = await getStream();
     if (!stream) {
@@ -275,6 +292,11 @@ export const useFeedsStore = create((set, get) => ({
         NAMESPACE,
         `>> Track from feed ${id}: ${JSON.stringify(track)} on: ${on}`
       );
+      const screenShare = useScreenShareStore.getState();
+      if (screenShare.isScreenId(id)) {
+        if (on) screenShare.onScreenTrack(track, stream);
+        return;
+      }
       if (on && track.kind === 'video') {
         let url;
         try {
@@ -298,8 +320,10 @@ export const useFeedsStore = create((set, get) => ({
       if (!streams) return;
 
       const _vOnByFeed = {};
+      const screenShare = useScreenShareStore.getState();
       for (const s of streams) {
         if (!s.feed_id) continue;
+        if (screenShare.isScreenId(s.feed_id)) continue;
 
         if (_vOnByFeed[s.feed_id]) continue;
 
@@ -361,7 +385,34 @@ export const useFeedsStore = create((set, get) => ({
     const subs = [];
     const unsubs = [];
 
+    // A shared screen is published as a separate participant. It is not a
+    // room member: it stays out of feedById and is shown in the broadcast
+    // panel (zustand/screenShare).
+    const screenShare = useScreenShareStore.getState();
+    const members = [];
     for (const pub of pubs) {
+      // An unpublished feed may come without display — match it by id.
+      if (!isScreenFeed(pub) && !screenShare.isScreenId(pub.id)) {
+        members.push(pub);
+        continue;
+      }
+      if (!pub.streams) {
+        unsubs.push({ feed: pub.id });
+        screenShare.clearScreenFeed();
+        continue;
+      }
+      const { subscribe, unsubscribeId } = screenShare.handleScreenFeed(pub);
+      if (unsubscribeId !== undefined) {
+        unsubs.push({ feed: unsubscribeId });
+      }
+      if (subscribe) {
+        subs.push(
+          ...getScreenSubscription(pub, screenShare.isVideoWanted())
+        );
+      }
+    }
+
+    for (const pub of members) {
       const { id, display } = pub;
 
       if (!pub.streams) {
@@ -443,7 +494,7 @@ export const useFeedsStore = create((set, get) => ({
     }
     restartWIP = true;
     try {
-      await get().cleanFeeds();
+      await get().cleanFeeds(true);
       await get().initFeeds();
       restartCount = 0;
     } catch (error) {
@@ -460,8 +511,9 @@ export const useFeedsStore = create((set, get) => ({
     await get().restartFeeds();
   },
 
-  cleanFeeds: async () => {
-    logger.debug(NAMESPACE, 'cleanFeeds');
+  // isRestart: the room is rejoined right after, so screen-share mode is kept.
+  cleanFeeds: async (isRestart = false) => {
+    logger.debug(NAMESPACE, 'cleanFeeds', isRestart);
     if (janus) {
       logger.info(NAMESPACE, 'cleanFeeds janus');
       try {
@@ -476,6 +528,23 @@ export const useFeedsStore = create((set, get) => ({
     subscriber = null;
     _subscriberJoined = false;
     set({ feedById: {}, feedIds: [] });
+    useScreenShareStore.getState().reset(isRestart);
+  },
+
+  // Audio mode / app in background: keep the screen's sound, drop its video.
+  setScreenVideo: async on => {
+    const screenShare = useScreenShareStore.getState();
+    screenShare.setVideoOff(!on);
+    const { screenFeed } = screenShare;
+    logger.debug(NAMESPACE, 'setScreenVideo', on, screenFeed?.id);
+    if (!screenFeed?.vMid || !subscriber || !_subscriberJoined) return;
+
+    const params = [{ feed: screenFeed.id, mid: screenFeed.vMid }];
+    if (on) {
+      await subscriber.sub(params);
+    } else {
+      await subscriber.unsub(params);
+    }
   },
 
   feedAudioModeOn: async () => {

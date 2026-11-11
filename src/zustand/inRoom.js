@@ -280,6 +280,7 @@ export const useInRoomStore = create((set, get) => ({
 
       useShidurStore.getState().enterAudioMode();
       useFeedsStore.getState().feedAudioModeOn();
+      useFeedsStore.getState().setScreenVideo(false);
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
       finishSpan(span, 'internal_error', NAMESPACE);
@@ -296,6 +297,7 @@ export const useInRoomStore = create((set, get) => ({
       if (!get().isInRoom) return;
 
       useShidurStore.getState().exitAudioMode();
+      useFeedsStore.getState().setScreenVideo(true);
       finishSpan(span, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'exitAudioMode error', error);

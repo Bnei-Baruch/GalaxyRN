@@ -67,6 +67,11 @@
     "audioSource": "Fuente de audio",
     "roomSettings": "Configuración de la sala"
   },
+  "screenShare": {
+    "sharedScreenOf": "Pantalla de {{name}}",
+    "connecting": "Conectando a la pantalla compartida...",
+    "showSharedScreen": "Mostrar la pantalla compartida por {{name}}"
+  },
   "shidur": {
     "onAir": "EN VIVO",
     "streamForWorkshop": "Retransmisión para taller",

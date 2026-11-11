@@ -69,6 +69,11 @@
     "audioSource": "Источник аудио",
     "roomSettings": "Настройки комнаты"
   },
+  "screenShare": {
+    "sharedScreenOf": "Экран: {{name}}",
+    "connecting": "Подключение к показу экрана...",
+    "showSharedScreen": "Показать экран, которым делится {{name}}"
+  },
   "shidur": {
     "onAir": "В ЭФИРЕ",
     "streamForWorkshop": "ПОТОК ДЛЯ СЕМИНАРА",

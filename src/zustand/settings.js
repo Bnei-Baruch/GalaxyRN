@@ -7,6 +7,7 @@ import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
+import { useScreenShareStore } from './screenShare';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -58,10 +59,15 @@ export const useSettingsStore = create((set, get) => ({
     if (!isShidur) {
       await useShidurStore.getState().cleanShidur();
     } else {
-      await useShidurStore.getState().prepareShidur();
+      // undefined = keep the current play state
+      await useShidurStore
+        .getState()
+        .prepareShidur(useScreenShareStore.getState().resumeIsPlay());
     }
     set({ isShidur });
-    useUiActions.getState().updateWidth(isShidur);
+    // While a screen is shared the panel switches between it and the broadcast.
+    useScreenShareStore.getState().onShidurToggled(isShidur);
+    useUiActions.getState().updateWidth();
   },
 
   // false = "broadcast only": don't join the videoroom (no feeds, no
@@ -124,6 +130,7 @@ export const useSettingsStore = create((set, get) => ({
     if (!isPIPMode && useInRoomStore.getState().isInBackground) {
       useMyStreamStore.getState().toggleCammute(true, false)
       useShidurStore.getState().enterAudioMode();
+      useFeedsStore.getState().setScreenVideo(false);
     }
     set({ isPIPMode });
   },
