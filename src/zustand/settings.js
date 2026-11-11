@@ -75,6 +75,15 @@ export const useSettingsStore = create((set, get) => ({
     set({ isTen });
   },
 
+  // Before-room entry mode: one choice instead of two toggles, so an
+  // "everything off" combination can't be expressed.
+  // 'all' = ten + broadcast, 'ten' = ten only, 'broadcast' = broadcast only.
+  setEntryMode: mode => {
+    logger.debug(NAMESPACE, 'setEntryMode', mode);
+    if (useInRoomStore.getState().isInRoom) return;
+    set({ isShidur: mode !== 'ten', isTen: mode !== 'broadcast' });
+  },
+
   audioMode: false,
   toggleAudioMode: async (audioMode = !get().audioMode) => {
     logger.debug(NAMESPACE, 'toggleAudioMode', audioMode);

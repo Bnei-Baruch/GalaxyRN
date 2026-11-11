@@ -41,7 +41,11 @@ const JoinRoomBtn = ({ standalone = false }) => {
         disabled && styles.buttonDisabled,
       ]}
     >
-      <Text style={styles.buttonText}>{t('settings.join')}</Text>
+      <Text
+        style={[styles.buttonText, standalone && styles.buttonTextStandalone]}
+      >
+        {t(isTen ? 'settings.joinTen' : 'settings.joinBroadcast')}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -60,8 +64,19 @@ const styles = StyleSheet.create({
     height: 40,
   },
   buttonStandalone: {
-    borderRadius: 5,
-    borderWidth: 1,
+    borderRadius: 24,
+    borderTopEndRadius: 24,
+    borderBottomEndRadius: 24,
+    borderWidth: 0,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    height: 48,
+    marginTop: 8,
+    marginBottom: 5,
+  },
+  buttonTextStandalone: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   buttonDisabled: {
     backgroundColor: '#9e9e9e',

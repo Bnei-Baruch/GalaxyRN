@@ -12,12 +12,11 @@ tags:
     timeout: 30000
 - takeScreenshot: verify-results/e3-after-leave
 - tapOn:
-    id: "entryTenBtn"
+    id: "entryModeAll"
 - assertNotVisible:
-    text: ".*Broadcast only.*"
+    text: ".*won't join the ten.*"
 - assertVisible:
     id: "entryCammuteBtn"
-    enabled: true
 - takeScreenshot: verify-results/e3-ten-on
 - runFlow: select-room.yaml
 # Only if the keyboard hides the bar: with no keyboard up, Android hideKeyboard sends BACK, which

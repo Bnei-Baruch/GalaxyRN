@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import AccountSettings from '../auth/AccountSettings';
 import MyVideo from '../components/MyVideo';
@@ -36,13 +36,20 @@ export const SettingsNotJoinedLandscape = () => {
           <MyVideo
             styles={{ aspectRatio: 16 / 9, width: '100%', alignSelf: 'center' }}
           />
-          <VersionInfo />
+          <View>
+            <SelectUiLanguage />
+            <VersionInfo />
+          </View>
         </View>
         <View style={{ width: '50%' }}>
-          <AccountSettings />
-          <SelectUiLanguage />
-          <EntryOptions />
-          <View style={baseStyles.full} />
+          {/* Join stays pinned at the bottom; the rest scrolls on short screens */}
+          <ScrollView
+            style={baseStyles.full}
+            showsVerticalScrollIndicator={false}
+          >
+            <AccountSettings />
+            <EntryOptions />
+          </ScrollView>
           <RoomSelect />
         </View>
       </View>
