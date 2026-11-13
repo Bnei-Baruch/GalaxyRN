@@ -61,7 +61,7 @@ export const initConnectionMonitor = () => {
 
     if (!isNetConnected(state)) {
       currentState = state;
-      logger.debug(NAMESPACE, 'Network disconnected');
+      logger.info(NAMESPACE, 'Network disconnected', state.type);
       await waitConnectionRestart();
 
       if (!isNetConnected()) {
@@ -75,6 +75,12 @@ export const initConnectionMonitor = () => {
 
     const isSame = isSameNetwork(state);
     logger.debug(NAMESPACE, 'isSameNetwork', isSame);
+    if (!isSame) {
+      logger.info(
+        NAMESPACE,
+        `Network changed: ${currentState.type} -> ${state.type}`
+      );
+    }
     currentState = state;
     if (!isSame) {
       await waitConnectionRestart();
@@ -187,10 +193,17 @@ export const waitAndRestart = async () => {
 };
 
 const onNoNetwork = async () => {
-  logger.debug(NAMESPACE, 'onNoNetwork');
+  logger.info(NAMESPACE, 'onNoNetwork', {
+    disconnectedSeconds,
+    netConnected: isNetConnected(),
+    mqttConnected: mqtt.mq?.connected,
+  });
 
   try {
-    await rejectTimeoutPromise(useInRoomStore.getState().exitRoom(), 5000);
+    await rejectTimeoutPromise(
+      useInRoomStore.getState().exitRoom('no-network'),
+      5000
+    );
   } catch (e) {
     logger.error(NAMESPACE, 'Error in exitRoom', e);
   }

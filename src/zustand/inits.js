@@ -179,10 +179,10 @@ export const useInitsStore = create((set, get) => ({
     let _isPlay = false;
     if (Platform.OS === 'android') {
       systemEventSubscription = GxyUIStateBridge.onSystemEvent(async event => {
-        logger.debug(NAMESPACE, 'system_event event: ', event);
+        logger.info(NAMESPACE, 'system_event event: ', event);
         if (event.action === 'terminate') {
           logger.debug(NAMESPACE, 'terminate');
-          await useInRoomStore.getState().exitRoom();
+          await useInRoomStore.getState().exitRoom('native-terminate');
           await useInitsStore.getState().abortMqtt();
           await useInitsStore.getState().terminateApp();
           systemEventSubscription.remove();
@@ -202,11 +202,11 @@ export const useInitsStore = create((set, get) => ({
 
       playerActionSubscription = GxyUIStateBridge.onNativePlayerEvent(
         async data => {
-          logger.debug(NAMESPACE, 'native_player_event event: ', data);
+          logger.info(NAMESPACE, 'native_player_event event: ', data);
           if (data.action === 'join_room') {
             await useInRoomStore.getState().safeJoinRoom(true);
           } else if (data.action === 'leave_room') {
-            await useInRoomStore.getState().exitRoom();
+            await useInRoomStore.getState().exitRoom('notification-leave');
           } else if (data.action === 'mute') {
             await useMyStreamStore.getState().toggleMute(true);
           } else if (data.action === 'unmute') {
@@ -223,7 +223,7 @@ export const useInitsStore = create((set, get) => ({
 
     try {
       subscription = CallsBridge.onCallStateChanged(async data => {
-        logger.debug(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
+        logger.info(NAMESPACE, 'onCallStateChanged EVENT RECEIVED:', data);
         addFinishSpan(ROOM_SESSION, 'onCallStateChanged', {
           ...data,
           NAMESPACE,
@@ -233,7 +233,7 @@ export const useInitsStore = create((set, get) => ({
           logger.debug(NAMESPACE, 'Processing ON_START_CALL');
           _isPlay = useShidurStore.getState().isPlay;
           logger.debug(NAMESPACE, 'ON_START_CALL exitRoom');
-          useInRoomStore.getState().exitRoom();
+          useInRoomStore.getState().exitRoom('phone-call');
           logger.debug(NAMESPACE, 'ON_START_CALL processing completed');
         } else if (data.state === 'ON_END_CALL') {
           logger.debug(NAMESPACE, 'Processing ON_END_CALL');

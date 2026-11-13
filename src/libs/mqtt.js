@@ -380,7 +380,7 @@ class MqttMsg {
       restartRoom();
     } else if (type === 'client-kicked' && user.id === id) {
       try {
-        exitRoom();
+        exitRoom('mqtt-client-kicked');
       } catch (e) {
         logger.debug(NAMESPACE, 'Error in exitRoom', e);
       }
@@ -423,7 +423,7 @@ class MqttMsg {
         this.reconnectAttempts
       );
       this.reconnectAttempts = 0;
-      useInRoomStore.getState().exitRoom();
+      useInRoomStore.getState().exitRoom('mqtt-max-reconnect');
       return;
     }
 
