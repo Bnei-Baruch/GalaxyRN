@@ -1,0 +1,201 @@
+appId: ${APP_ID}
+name: broadcast-buttons — translation / subtitles / audio & video select, menu + bottom bar
+tags:
+  - in-room
+  - regression
+# No `env:` block — E2E_USERNAME/E2E_PASSWORD/E2E_ROOM come from the exported shell env / `-e`
+# (see login.yaml note).
+---
+# Every broadcast-control button must react AND leave the screen touchable afterwards.
+#
+# Regression guard: the audio-select modal used to be mounted once in Room, as a sibling of the
+# More-menu Modal. Opened from the menu, iOS silently refused to present it (a Modal can't present
+# while another one is shown) — the button did nothing, and the never-shown modal swallowed every
+# later touch. So after each modal we assert it is gone and that the next tap still works.
+#
+# Part 1 runs in the default mode (Ten + broadcast): broadcast buttons live in the More menu.
+# Part 2 runs in "Broadcast only": the same buttons are also in the bottom bar (bar* testIDs).
+#
+# Side effect: the selected translation is persisted — the flow leaves it on Original.
+
+# ================= Part 1: More menu (default mode) =================
+- runFlow: ensure-logged-in.yaml   # Settings screen, with or without a saved session
+- runFlow: select-room.yaml   # ends in the room (leaveBtn visible)
+- runFlow:
+    when:
+      notVisible:
+        id: "moreBtn"
+    commands:
+      - hideKeyboard
+
+- tapOn:
+    id: "moreBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectBtn"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# --- Audio (translation) select, opened from the menu — the original bug ---
+- tapOn:
+    id: "audioSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectModal"
+    timeout: 5000
+- takeScreenshot: verify-results/bb-menu-audio-select
+- tapOn:
+    id: "audioOption-wo_ru"
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectModal"
+    timeout: 5000
+# Menu must still respond: reopen the select and close it with X.
+- tapOn:
+    id: "audioSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectModal"
+    timeout: 5000
+- tapOn:
+    id: "audioOption-wo_original"
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectModal"
+    timeout: 5000
+- tapOn:
+    id: "audioSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectModal"
+    timeout: 5000
+- tapOn:
+    id: "audioSelectCloseBtn"
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectModal"
+    timeout: 5000
+
+# --- Video select (ListInModal, also nested in the menu Modal) ---
+- tapOn:
+    id: "videoSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "videoSelectBtn-2"   # 360p
+    timeout: 5000
+- tapOn:
+    id: "videoSelectBtn-2"
+- extendedWaitUntil:
+    notVisible:
+      id: "videoSelectBtn-2"
+    timeout: 5000
+
+# --- Toggles: tap twice so the state is restored ---
+- tapOn:
+    id: "translationBtn"
+- tapOn:
+    id: "translationBtn"
+- tapOn:
+    id: "subtitleBtn"
+- tapOn:
+    id: "subtitleBtn"
+- tapOn:
+    id: "broadcastMuteBtn"
+- tapOn:
+    id: "broadcastMuteBtn"
+- takeScreenshot: verify-results/bb-menu-after-toggles
+
+# Close the menu (coordinates are unreliable: the panel's position differs per platform).
+- tapOn:
+    id: "moreBtn"   # the More button turns into X while the menu is open
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectBtn"
+    timeout: 5000
+# Screen is still touchable: the menu opens again and closes again.
+- runFlow: show-bars.yaml
+- tapOn:
+    id: "moreBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectBtn"
+    timeout: 5000
+- tapOn:
+    id: "moreBtn"   # the More button turns into X while the menu is open
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectBtn"
+    timeout: 5000
+
+- runFlow: leave-room.yaml
+
+# ================= Part 2: bottom bar (Broadcast only) =================
+- runFlow: broadcast-only-join.yaml   # ends in the room
+- extendedWaitUntil:
+    visible:
+      id: "barAudioSelectBtn"
+    timeout: 10000
+
+- runFlow: show-bars.yaml
+- tapOn:
+    id: "barAudioSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectModal"
+    timeout: 5000
+- takeScreenshot: verify-results/bb-bar-audio-select
+- tapOn:
+    id: "audioOption-wo_original"
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectModal"
+    timeout: 5000
+
+- runFlow: show-bars.yaml
+- tapOn:
+    id: "barTranslationBtn"
+- tapOn:
+    id: "barTranslationBtn"
+- tapOn:
+    id: "barSubtitleBtn"
+- tapOn:
+    id: "barSubtitleBtn"
+
+# Menu on top of a bar that also has an AudioSelectBtn: the menu's own instance must open.
+- runFlow: show-bars.yaml
+- tapOn:
+    id: "moreBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectBtn"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: "audioSelectBtn"
+- extendedWaitUntil:
+    visible:
+      id: "audioSelectModal"
+    timeout: 5000
+- tapOn:
+    id: "audioSelectCloseBtn"
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectModal"
+    timeout: 5000
+- tapOn:
+    id: "moreBtn"   # the More button turns into X while the menu is open
+- extendedWaitUntil:
+    notVisible:
+      id: "audioSelectBtn"
+    timeout: 5000
+- takeScreenshot: verify-results/bb-bar-done
+
+# Leave and restore the default entry mode.
+- runFlow: leave-room.yaml
+- tapOn:
+    id: "entryModeAll"
+# `checked` isn't exposed on iOS; the ten picker is back only in the default mode.
+- assertVisible:
+    id: "roomSelectTrigger"

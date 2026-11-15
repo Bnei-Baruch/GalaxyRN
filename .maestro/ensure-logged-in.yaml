@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+name: ensure-logged-in — launch and land on Settings, logging in only if needed (subflow)
+tags:
+  - subflow
+---
+# Works with or without a saved session: on iOS the Keychain session survives `clearState`, so
+# login.yaml (which expects loginBtn) fails on an already-logged-in simulator/device.
+# Ends on the before-room Settings screen (joinRoomBtn visible), settled.
+- launchApp:
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible:
+      id: "loginBtn|joinRoomBtn"
+    timeout: 120000
+- runFlow:
+    when:
+      visible:
+        id: "loginBtn"
+    file: login.yaml
+# joinRoomBtn shows before initApp() finishes; settle so a modal opened next isn't swallowed
+# (Maestro has no sleep: wait for an element that never exists, optional).
+- extendedWaitUntil:
+    visible:
+      id: "__settle_never_present__"
+    timeout: 8000
+    optional: true

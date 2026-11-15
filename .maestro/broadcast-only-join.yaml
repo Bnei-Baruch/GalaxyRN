@@ -20,8 +20,25 @@ tags:
     id: "joinRoomBtn"
     enabled: true
 - takeScreenshot: verify-results/e2-before-join
+# Switching mode re-lays out the screen (the ten picker goes, Join becomes a wide standalone
+# button). A tap fired while that settles can be lost — seen on Android right after the
+# entry-options flow: no joinRoom at all, a second tap joined at once. Settle, and retry once.
+- waitForAnimationToEnd:
+    timeout: 3000
 - tapOn:
     id: "joinRoomBtn"
+- extendedWaitUntil:
+    visible:
+      id: "leaveBtn"
+    timeout: 15000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: "joinRoomBtn"
+    commands:
+      - tapOn:
+          id: "joinRoomBtn"
 - extendedWaitUntil:
     visible:
       id: "leaveBtn"

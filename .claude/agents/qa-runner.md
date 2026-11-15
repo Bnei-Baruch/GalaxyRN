@@ -31,7 +31,7 @@ Use the wrapper `scripts/device-verify.sh` (loads `.env`, passes `-e APP_ID`, wr
    didn't crash. Free.
 3. Authenticated flows (need `.env`: `E2E_USERNAME`/`E2E_PASSWORD`, and `E2E_ROOM` for in-room):
    - `regression` (login → settings → room → controls → background → send logs → leave)
-   - in-room: `chat`, `rejoin`, `audio-device`  (`bash scripts/device-verify.sh <name>`)
+   - in-room: `chat`, `rejoin`, `audio-device`, `buttons`, `entry-modes` (or `full` = every flow + summary)  (`bash scripts/device-verify.sh <name>`)
    - any flow: `bash scripts/device-verify.sh flow <file.yaml>`
 4. Maestro/selector failures, screenshots, logcat interpretation, flow repair → hand off to the
    `device-verifier` agent. Don't hand-edit `.maestro/*.yaml` here.

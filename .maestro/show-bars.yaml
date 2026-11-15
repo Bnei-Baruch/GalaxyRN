@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+name: show-bars — reveal the auto-hidden in-room top/bottom bars (subflow)
+tags:
+  - subflow
+---
+# In the room the top/bottom bars auto-hide (e.g. right after the More menu closes), taking
+# moreBtn / leaveBtn / bar* buttons out of the hierarchy. A tap on the room area toggles them
+# back. No-op when they are already shown — tapping then would hide them.
+- runFlow:
+    when:
+      notVisible:
+        id: "moreBtn"
+    commands:
+      - tapOn:
+          point: "50%,50%"
+      - extendedWaitUntil:
+          visible:
+            id: "moreBtn"
+          timeout: 5000

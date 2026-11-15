@@ -44,9 +44,9 @@ export const BottomBar = () => {
       ) : (
         // Broadcast-only: no mic/camera, broadcast controls instead
         <>
-          <TranslationBtn showtext={false} />
-          <SubtitleBtn showtext={false} />
-          <AudioSelectBtn showtext={false} />
+          <TranslationBtn showtext={false} testID="barTranslationBtn" />
+          <SubtitleBtn showtext={false} testID="barSubtitleBtn" />
+          <AudioSelectBtn showtext={false} testID="barAudioSelectBtn" />
           <ShidurVideoBtn />
         </>
       )}
