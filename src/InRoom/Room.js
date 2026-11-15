@@ -21,7 +21,7 @@ const Room = () => {
 
   useEffect(() => {
     return () => {
-      exitRoom();
+      exitRoom('room-unmount');
     };
   }, []);
 

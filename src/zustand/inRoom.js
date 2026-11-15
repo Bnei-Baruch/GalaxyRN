@@ -43,7 +43,7 @@ export const useInRoomStore = create((set, get) => ({
   setIsInRoom: (isInRoom = true) => set({ isInRoom }),
 
   joinRoom: async (isPlay = false) => {
-    logger.debug(NAMESPACE, 'joinRoom', isPlay);
+    logger.info(NAMESPACE, 'joinRoom', isPlay);
 
     startTransaction(ROOM_SESSION, 'Join Room', 'navigation');
 
@@ -58,7 +58,7 @@ export const useInRoomStore = create((set, get) => ({
     if (attempts > 2) {
       logger.warn(NAMESPACE, 'too many attempts, aborting');
       finishTransaction(ROOM_SESSION, 'aborted');
-      get().exitRoom();
+      get().exitRoom('join-too-many-attempts');
       alert('Could not connect to the server, please try again later');
       attempts = 0;
       return;
@@ -90,7 +90,7 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'audio focus or keeping screen on', error);
       finishSpan(deviceSpan, 'internal_error', NAMESPACE);
       finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().exitRoom();
+      return get().exitRoom('join-audio-focus-error');
     }
 
     addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
@@ -144,8 +144,13 @@ export const useInRoomStore = create((set, get) => ({
     }
   },
 
-  exitRoom: async () => {
-    logger.debug(NAMESPACE, 'exitRoom exitWIP');
+  exitRoom: async (reason = 'unknown') => {
+    logger.info(NAMESPACE, 'exitRoom', {
+      reason,
+      isInRoom: get().isInRoom,
+      exitWIP,
+      isInBackground: get().isInBackground,
+    });
     if (exitWIP || !get().isInRoom) {
       logger.debug(NAMESPACE, 'already exiting room');
       return;
@@ -233,16 +238,17 @@ export const useInRoomStore = create((set, get) => ({
     restartWIP = true;
     const _isPlay = useShidurStore.getState().isPlay;
     try {
-      await get().exitRoom();
+      await get().exitRoom('restart');
       await get().joinRoom(_isPlay);
     } catch (error) {
-      await get().exitRoom();
+      await get().exitRoom('restart-error');
       logger.error(NAMESPACE, 'Error restarting room', error);
     }
     restartWIP = false;
   },
 
   enterBackground: async () => {
+    logger.info(NAMESPACE, 'enterBackground', { isInRoom: get().isInRoom });
     set({ isInBackground: true });
 
     const { isPIPMode } = useSettingsStore.getState();
@@ -257,6 +263,7 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   enterForeground: async () => {
+    logger.info(NAMESPACE, 'enterForeground', { isInRoom: get().isInRoom });
     set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
