@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Modal,
   ScrollView,
@@ -19,27 +19,25 @@ import AudioOption from './AudioOption';
 
 const NAMESPACE = 'AudioSelectModal';
 
-const AudioSelectModal = () => {
-  const { audio, setAudio, isAudioSelectOpen, setIsAudioSelectOpen } =
-    useShidurStore();
-
-  useEffect(() => {
-    return () => {
-      handleClose();
-    };
-  }, []);
+// Rendered by each AudioSelectBtn (not once in Room) so it is presented from
+// whatever is on top: inside MenuLevel1's Modal it stacks over the menu. On iOS
+// a sibling Modal can't present while another one is shown — it silently
+// fails and leaves an invisible window swallowing touches.
+const AudioSelectModal = ({ visible, onClose }) => {
+  const audio = useShidurStore(state => state.audio);
+  const setAudio = useShidurStore(state => state.setAudio);
 
   const handleSetAudio = key => {
     logger.debug(NAMESPACE, 'handleSetAudio', key);
     setAudio(key);
-    setIsAudioSelectOpen(false);
+    onClose();
   };
 
   const handleClose = () => {
     logger.debug(NAMESPACE, 'handleClose');
-    setIsAudioSelectOpen(false);
+    onClose();
   };
-  logger.debug(NAMESPACE, 'isAudioSelectOpen', isAudioSelectOpen);
+
   if (!audio) {
     return null;
   }
@@ -48,13 +46,21 @@ const AudioSelectModal = () => {
     <Modal
       animationType="fade"
       presentationStyle="overFullScreen"
-      visible={isAudioSelectOpen}
+      visible={visible}
       onRequestClose={handleClose}
       supportedOrientations={['portrait', 'landscape']}
     >
       <View style={styles.container}>
-        <View style={styles.modalContent} pointerEvents="auto">
-          <TouchableOpacity onPress={handleClose} style={styles.close}>
+        <View
+          testID="audioSelectModal"
+          style={styles.modalContent}
+          pointerEvents="auto"
+        >
+          <TouchableOpacity
+            testID="audioSelectCloseBtn"
+            onPress={handleClose}
+            style={styles.close}
+          >
             <Icon name="close" size={30} color="white" />
           </TouchableOpacity>
           <ScrollView

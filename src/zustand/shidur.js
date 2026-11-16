@@ -154,15 +154,10 @@ export const useShidurStore = create((set, get) => ({
   isMuted: false,
   shidurWIP: false,
   cleanWIP: false,
-  isAudioSelectOpen: false,
   withRestart: false,
 
   prefetchStrServer,
   clearPrefetchedSrvServer,
-
-  setIsAudioSelectOpen: (isAudioSelectOpen = !get().isAudioSelectOpen) => {
-    set({ isAudioSelectOpen });
-  },
 
   setIsMuted: (isMuted = !get().isMuted) => {
     if (!get().isPlay) {

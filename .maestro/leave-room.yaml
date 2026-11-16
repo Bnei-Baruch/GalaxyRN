@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: leave-room — leave the room and wait for the before-room screen (subflow)
+tags:
+  - subflow
+---
+# The bars auto-hide on a timer; a leaveBtn tap that lands while they animate out is lost.
+# Retry: reveal the bars, tap Leave, give it a few seconds, repeat if still in the room.
+- repeat:
+    while:
+      notVisible:
+        id: "joinRoomBtn"
+    times: 3
+    commands:
+      - runFlow: show-bars.yaml
+      - tapOn:
+          id: "leaveBtn"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "joinRoomBtn"
+          timeout: 10000
+          optional: true
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 30000

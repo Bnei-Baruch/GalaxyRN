@@ -47,6 +47,12 @@ See `sentry-report-2026-11-11.md` for numbers and details.
   also filtered out of the device list. `TYPE_DOCK` is ignored, not routed.
 - [x] `FeedsStore initFeeds: Cannot read property 'room' of null` — skip when
   the room was already left.
+- [ ] Mqtt `Not authorized` (135) — no forced token refresh (only 134 sets
+  `forceTokenRefresh`, `src/libs/mqtt.js` `on('disconnect')`), so reconnect may
+  resend the rejected token. Seen on iPhone 2026-11-15: after a 135 disconnect
+  + Janus keepAlive timeout nothing recovered. Related: Janus transactions
+  (`src/libs/janus-mqtt.js` `transaction()`) and `waitConnection()` have no
+  timeout, so a `switch` (translation change) hangs forever while MQTT is down.
 - [ ] Not looked at yet: ARVUT-MOBILE-260 (PIP entry refused), 227 (switch
   stream error 455), 23C / 23Q (API errors), `Server busy` (137, broker side).
 
@@ -56,9 +62,26 @@ See `sentry-report-2026-11-11.md` for numbers and details.
 
 ## UI/UX
 
+- [ ] First "Watch broadcast" tap lost after switching entry mode (Android,
+  2026-11-15): right after the `entry-options` flow toggles All → Broadcast,
+  the first `joinRoomBtn` tap never reaches `handleJoin` (no `joinRoom` in the
+  log), a second tap joins at once — even after `waitForAnimationToEnd`.
+  Suspect the re-layout on mode change (ten picker removed, Join becomes the
+  wide standalone button). E2E works around it with a retry in
+  `.maestro/broadcast-only-join.yaml` — remove the retry once fixed.
+
 - [x] Presets for entering a room — Broadcast / Ten tiles on the before-room
   screen (`src/settings/EntryOptions.tsx`, `isShidur` / `isTen` in
   `src/zustand/settings.js`, in memory only):
   - Broadcast only (`isTen=false`) — no videoroom at all
   - Ten only (`isShidur=false`)
   - …possibly more options to come
+
+## E2E
+
+- [ ] `.env`: `E2E_ROOM` is empty — set it (e.g. `test mobile`), otherwise
+  in-room flows and `device-verify.sh full` need `E2E_ROOM=... ` on the command
+  line.
+- [ ] iOS Simulator runs are flaky for environment reasons: CoreAudio
+  `AURemoteIO::Initialize` RPC timeout → SIGABRT on joining a room (WebRTC
+  audio), once a Hermes debugger SIGSEGV. Not app bugs; retry, or prefer Android.

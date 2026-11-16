@@ -9,6 +9,7 @@ const AudioOption = ({ streamKey, icon, text, onSelect }) => {
   const isSelected = audio.key === streamKey;
   return (
     <TouchableOpacity
+      testID={`audioOption-${streamKey}`}
       style={[styles.container, isSelected && styles.selected]}
       onPress={() => onSelect(streamKey)}
     >

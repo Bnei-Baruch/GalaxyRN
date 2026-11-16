@@ -46,11 +46,14 @@ bash scripts/device-verify.sh regression      # needs .env creds
 bash scripts/device-verify.sh chat            # in-room — needs creds + E2E_ROOM
 bash scripts/device-verify.sh rejoin          #   "
 bash scripts/device-verify.sh audio-device    #   " (Android only)
+bash scripts/device-verify.sh buttons         #   " broadcast buttons: menu + bottom bar
+bash scripts/device-verify.sh entry-modes     #   " entry options → broadcast-only → Ten back on
+bash scripts/device-verify.sh full            # ALL self-contained flows in a row + PASS/FAIL summary
 bash scripts/device-verify.sh flow <file>.yaml # any flow
 ```
 
 Flows (`.maestro/`): `smoke` → `login` (subflow) → `regression`; in-room `join-room` (subflow) →
-`chat` / `rejoin` / `audio-device`. All templated with `appId: ${APP_ID}`; creds and `E2E_ROOM`
+`chat` / `rejoin` / `audio-device` / `broadcast-buttons` / `entry-modes`. `regression` is ONE flow, not all of them — use `full` for everything. Shell env wins over `.env` (`E2E_ROOM="test mobile" bash scripts/device-verify.sh full`). All templated with `appId: ${APP_ID}`; creds and `E2E_ROOM`
 come from `.env` (see `.env.example`). iOS: Maestro can drive the **simulator** only (no idb for a
 physical device); pass `-e APP_ID=com.galaxy.mobile`.
 

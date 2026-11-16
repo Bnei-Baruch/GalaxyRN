@@ -7,13 +7,14 @@
 #   scripts/device-verify.sh metro          # adb reverse + check Metro is up
 #   scripts/device-verify.sh smoke          # run .maestro/smoke.yaml (no creds)
 #   scripts/device-verify.sh regression     # run .maestro/regression.yaml (needs .env creds)
-#   scripts/device-verify.sh chat|rejoin|audio-device   # in-room flows (need creds + E2E_ROOM)
+#   scripts/device-verify.sh chat|rejoin|audio-device|buttons|entry-modes   # in-room flows (need creds + E2E_ROOM)
+#   scripts/device-verify.sh full           # ALL self-contained flows in a row + PASS/FAIL summary
 #   scripts/device-verify.sh fast           # in-room, SKIP install & login (needs only E2E_ROOM)
 #   scripts/device-verify.sh flow <file>    # run any .maestro/<file> (creds/room from .env)
 #   scripts/device-verify.sh net offline    # connectivity: wifi-off/on, data-off/on, offline,
 #                                           #   online, offline-for [sec], flap [on off cycles],
 #                                           #   wifi-connect <ssid> [sec] [pass], wifi-switch a|b
-#   scripts/device-verify.sh all            # doctor -> install -> metro -> smoke
+#   scripts/device-verify.sh all            # doctor -> install -> metro -> smoke (NOT all flows — see `full`)
 #
 # Credentials for regression are read from .env (E2E_USERNAME / E2E_PASSWORD), which is
 # gitignored. See .env.example.
@@ -29,8 +30,13 @@ mkdir -p "$RESULTS"
 # Load ONLY the E2E_* keys from .env (creds + wifi test networks). The app's .env is a
 # react-native-dotenv file (values may contain spaces/URLs) and is NOT safe to `source`.
 # `export "KEY=VALUE"` treats the whole line as one NAME=VALUE arg — no code execution.
+# A value already set in the shell wins over .env (e.g. `E2E_ROOM="test mobile" $0 full`).
 if [ -f "$ROOT/.env" ]; then
-  while IFS= read -r _line; do export "$_line"; done < <(grep -E '^E2E_[A-Z0-9_]+=' "$ROOT/.env")
+  while IFS= read -r _line; do
+    _key="${_line%%=*}"
+    [ -n "${!_key:-}" ] && continue
+    export "$_line"
+  done < <(grep -E '^E2E_[A-Z0-9_]+=' "$ROOT/.env")
 fi
 
 info() { printf '\033[36m[verify]\033[0m %s\n' "$*"; }
@@ -215,6 +221,37 @@ cmd_prep() {
 
 cmd_all() { cmd_doctor; cmd_prep; cmd_install; cmd_metro; cmd_smoke; }
 
+# Every self-contained E2E flow, one after another. Keeps going after a failure and prints a
+# PASS/FAIL summary at the end; exits non-zero if any flow failed. Needs creds + E2E_ROOM.
+# (Subflows — login/join-room/select-room/show-bars/... — and precondition-only flows are
+# covered through these; entry-options/broadcast-only-join/ten-on-rejoin run via entry-modes.)
+FULL_FLOWS=(
+  smoke.yaml
+  regression.yaml
+  broadcast-buttons.yaml
+  chat.yaml
+  rejoin.yaml
+  entry-modes.yaml
+  audio-device.yaml
+)
+cmd_full() {
+  if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_ROOM:-}" ]; then
+    err "E2E_USERNAME / E2E_PASSWORD / E2E_ROOM must be set in .env (see .env.example)."
+    exit 1
+  fi
+  local flow passed=() failed=()
+  for flow in "${FULL_FLOWS[@]}"; do
+    info "===== $flow ====="
+    # `if` context: a failing flow must not abort the run under `set -e`.
+    if run_flow "$flow"; then passed+=("$flow"); else failed+=("$flow"); fi
+  done
+  info "===== summary: ${#passed[@]} passed, ${#failed[@]} failed ====="
+  for flow in ${passed[@]+"${passed[@]}"}; do info "  PASS  $flow"; done
+  for flow in ${failed[@]+"${failed[@]}"}; do err  "  FAIL  $flow"; done
+  info "Screenshots in $RESULTS"
+  [ "${#failed[@]}" -eq 0 ]
+}
+
 case "${1:-}" in
   doctor)      cmd_doctor ;;
   install)     shift; cmd_install "${1:-}" ;;
@@ -225,9 +262,12 @@ case "${1:-}" in
   chat)        cmd_inroom "chat.yaml" ;;
   rejoin)      cmd_inroom "rejoin.yaml" ;;
   audio-device) cmd_inroom "audio-device.yaml" ;;
+  buttons)     cmd_inroom "broadcast-buttons.yaml" ;;
+  entry-modes) cmd_inroom "entry-modes.yaml" ;;
+  full)        cmd_full ;;
   fast|join-fast) cmd_fast ;;
   flow)        shift; cmd_flow "${1:-}" ;;
   net)         shift; cmd_net "$@" ;;
   all)         cmd_all ;;
-  *) echo "usage: $0 {doctor|prep|install [apk]|metro|smoke|regression|chat|rejoin|audio-device|fast|flow <file>|net <sub>|all}"; exit 2 ;;
+  *) echo "usage: $0 {doctor|prep|install [apk]|metro|smoke|regression|chat|rejoin|audio-device|buttons|entry-modes|full|fast|flow <file>|net <sub>|all}"; exit 2 ;;
 esac

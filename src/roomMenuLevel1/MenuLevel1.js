@@ -145,7 +145,9 @@ const MenuLevel1 = () => {
         supportedOrientations={['portrait', 'landscape']}
         statusBarTranslucent={true}
       >
-        <TouchableWithoutFeedback onPress={handleClose}>
+        {/* accessible={false}: otherwise iOS collapses the whole menu into one
+            a11y element and its buttons are unreachable (VoiceOver, XCTest/Maestro) */}
+        <TouchableWithoutFeedback onPress={handleClose} accessible={false}>
           <View style={[styles.modalContainer]}>
             {isPortrait ? (
               <MenuPortrait

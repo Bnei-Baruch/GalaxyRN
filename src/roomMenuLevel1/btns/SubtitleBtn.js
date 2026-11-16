@@ -4,12 +4,12 @@ import { Pressable } from 'react-native';
 import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSubtitleStore } from '../../zustand/subtitle';
 import { bottomBar } from '../../roomMenuLevel0/helper';
-export const SubtitleBtn = ({ showtext = true }) => {
+export const SubtitleBtn = ({ showtext = true, testID = 'subtitleBtn' }) => {
   const { toggleIsOpen, lastMsg, isOpen } = useSubtitleStore();
   const { t } = useTranslation();
   const toggle = () => toggleIsOpen();
   return (
-    <Pressable onPress={toggle} style={bottomBar.btn}>
+    <Pressable testID={testID} onPress={toggle} style={bottomBar.btn}>
       <BottomBarIconWithText
         iconName="subtitles"
         text={t('bottomBar.broadcastsubtitles')}
