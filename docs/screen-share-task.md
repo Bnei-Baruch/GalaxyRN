@@ -298,7 +298,6 @@ proven far enough that the `add_remote_publisher` spike above can wait.
 
 Branches:
 
-- `master` — `15e21eb`: the Keycloak secret moved out of the code into the
   `KEYCLOAK_SECRET` env variable (it had been hard-coded in a public repo).
 - `test-feeds` — = master, for the old "test participant" use.
 - `screen-share` — `9877fad`, the share itself (see below).
