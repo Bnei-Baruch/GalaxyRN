@@ -77,6 +77,55 @@ See `sentry-report-2026-11-11.md` for numbers and details.
   - Ten only (`isShidur=false`)
   - …possibly more options to come
 
+- [ ] New-feature hints — option 1 (a "New" badge/dot on a button or menu item)
+  or option 3 (a tooltip/coach mark pointing at the button); write our own,
+  no library (the RN tooltip libs lag behind the new architecture). Rough plan:
+  - Registry `src/shared/featureHints.ts` (`id → { since, i18nKey, anchor }`)
+  - Store `src/zustand/featureHints.ts`: `seen` saved via
+    `setToStorage` (same way as `verboseLogging.ts`), `shouldShow(id)` /
+    `markSeen(id)`
+  - `<NewBadge id>` and/or `<HintAnchor id>` (`measureInWindow` + one shared
+    overlay at the root, not a `Modal` per hint)
+  - Rules: one hint at a time; never while joining a room or on air (show in
+    BeforeRoom or when the room is idle); on a fresh install mark every
+    existing hint as seen; mark seen on dismiss or on first use of the
+    feature; texts via i18n with RTL (Hebrew) mirroring; log
+    `hint_shown` / `hint_dismissed` (→ analytics later).
+  - Effort: about 0.5 day for the badge, 2–3 days for the tooltip; no new
+    dependencies.
+
+## Dependencies (checked 2026-11-16, installed → latest)
+
+- [ ] **react-native-webrtc** 124.0.8 → **155.0.1** (go straight to 155.0.1:
+  155.0.0 had iOS Center Stage enabled, reverted in .0.1). JS API unchanged
+  (`src/` identical); the major = libwebrtc milestone, native engine M124 → M155
+  (`JitsiWebRTC` / `org.jitsi:webrtc`). iOS min 12 → 14 (we're on 15.1).
+  Native `setCodecPreferences` / `RTCCryptoOptions` changes — we use neither.
+  Fixes for us: Android screen-capture `onActivityResult` crash, `getDisplayMedia`
+  crash on API < 31 (our minSdk 26), video-processor frame leak, R8 consumer
+  rules. Still old-arch (`NativeModules` / `requireNativeComponent`, no
+  `codegenConfig`) — runs via interop, no New Arch gain. Upstream tested only an
+  iOS-simulator call. **Verify on device, both platforms**: publish/subscribe,
+  audio in/out, shidur, screen share, Android release (R8) build.
+- [ ] Runtime, minor/patch (low risk): `@sentry/react-native` 7.7 → 7.13
+  (staying on 7.x), `immer` 11.2, `mqtt` 5.16.1, `zustand` 5.1,
+  `react-native-safe-area-context` 5.11, `i18next` 25.x / `react-i18next` 16.x
+  latest patches.
+- [ ] `react-native` 0.86.0 → 0.88.1 — staged (0.87 → 0.88) like the 0.82 → 0.86
+  upgrade (see `NEW_ARCHITECTURE.md`): pin `react` / `react-test-renderer`
+  exactly and bump all `@react-native/*` and `@react-native-community/cli*` (20 → 21)
+  together.
+- [ ] `react-native-app-auth` 8.1.0 → 9.0.0 — 8.4.1 was blocked on
+  `compileSdk 36`; we're on 36 now, so that blocker is gone. Major — check the
+  changelog, test Keycloak login + token refresh.
+- [ ] Runtime majors — read changelogs first: `@sentry/react-native` 8,
+  `react-native-webview` 14, `react-native-url-polyfill` 4, `markdown-it` 15,
+  `jschardet` 4, `i18next` 27 / `react-i18next` 18,
+  `@formatjs/intl-pluralrules` 7.
+- [ ] Dev/tooling majors (separate, low priority): Babel 8, Jest 30 +
+  `babel-jest` 30, ESLint 10, TypeScript 7, `@sentry/cli` 3,
+  `react-native-dotenv` 5.
+
 ## E2E
 
 - [ ] `.env`: `E2E_ROOM` is empty — set it (e.g. `test mobile`), otherwise
@@ -85,3 +134,8 @@ See `sentry-report-2026-11-11.md` for numbers and details.
 - [ ] iOS Simulator runs are flaky for environment reasons: CoreAudio
   `AURemoteIO::Initialize` RPC timeout → SIGABRT on joining a room (WebRTC
   audio), once a Hermes debugger SIGSEGV. Not app bugs; retry, or prefer Android.
+
+## Analytics
+
+- [ ] Product analytics / feature usage — vendor not chosen yet (leaning
+  PostHog). Options, best practices and steps: `docs/analytics-task.md`.

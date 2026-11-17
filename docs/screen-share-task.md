@@ -285,6 +285,78 @@ Spike for A (needs a test Janus and its room secret — backend owner):
       `remove_remote_publisher` ends the share cleanly on both.
 - [ ] If remote publishers are unavailable or reject the RTP → try 2.
 
+### Option A prototype — `webrtc-encoder` (way 2, server-side WebRTC publisher)
+
+Repo: https://github.com/Bnei-Baruch/webrtc-encoder, local clone
+`~/projects/webrtc-encoder`. Go + pion/webrtc + GStreamer (cgo). Before
+2026-11-16 it was amnonbb's test publisher: Keycloak client-credentials
+login → `POST /v2/room_server` → Janus over `ws://<server>.kab.sh:8188` →
+joins as an ordinary user and sends H.264 from a local file. No audio.
+
+Because it already gets into our Janus as a server-side publisher, way 2 is
+proven far enough that the `add_remote_publisher` spike above can wait.
+
+Branches:
+
+- `master` — `15e21eb`: the Keycloak secret moved out of the code into the
+  `KEYCLOAK_SECRET` env variable (it had been hard-coded in a public repo).
+- `test-feeds` — = master, for the old "test participant" use.
+- `screen-share` — `9877fad`, the share itself (see below).
+
+Done on `screen-share` (2026-11-16):
+
+- [x] Joins as a separate publisher shaped like the web screen handle
+      (galaxy3 PR #371): `display = {id: owner, timestamp: <ms now>, role:
+      "screen", display: name, is_group: false, is_desktop: true}`,
+      `metadata = {owner, rfid, display}`, feed id `<owner>-xxx`.
+- [x] H.264 + Opus from one `uridecodebin` source (file path or URL), so
+      sound and picture stay in sync; `-no-video` for sound-only clips.
+- [x] Janus `configure bitrate` cap (600 kbps by default, as web).
+- [x] Clean stop on Ctrl+C / SIGTERM, end of the clip, GStreamer error, ICE
+      failure, failed keepalive: `leave` → `detach` → session destroy.
+- [x] No `PUT /users` (a screen feed is not a user); keepalive every 25 s
+      (was 60 s, the same as Janus' default session timeout).
+- [x] Encoder: `x264` by default, `-encoder qsv` (Intel QuickSync) as before.
+- [x] GStreamer wrapper: several appsinks per pipeline; EOS/errors go back to
+      Go instead of `exit(1)`.
+- [x] Checked: builds and `go vet` passes; in Docker with GStreamer 1.22 a
+      clip with video+sound and an mp3 with `-no-video` play to the end in
+      real time; a missing file and a wrong sink name are reported as errors.
+
+Run: `KEYCLOAK_SECRET=… go run . -room <id> -source <file|URL> -name "Clip"`
+(flags in the repo's `README.md`).
+
+To do:
+
+- [ ] **Rotate the `galaxy_test` client secret in Keycloak** — the old one is
+      still in the public repo's git history (owner: amnonbb).
+- [ ] **First run against a real test room**: login, `room_server`, join,
+      publish; web (PR #371 build) and mobile phase 1 show the clip instead
+      of the broadcast **with sound**, no extra tile in the ten; on stop the
+      broadcast comes back.
+- [ ] Room id is sent as a string (as master did) — confirm Janus accepts it
+      (`string_ids`); otherwise send a number.
+- [ ] Play from an **http(s) URL** (only local files were tested).
+- [ ] A source without one of the streams needs `-no-audio` / `-no-video`,
+      otherwise it never starts — detect the streams automatically (e.g.
+      `uridecodebin` pad-added / a discoverer) instead of flags.
+- [ ] Links to pages of video sites (YouTube etc.): extract the media URL on
+      the server (yt-dlp) before handing it to GStreamer.
+- [ ] **Control API**: start / stop per room over HTTP or MQTT, several shares
+      in one process (today one process = one share, CLI only). Auth: who may
+      start a share in a room.
+- [ ] One share per room: refuse to start if a screen feed is already in the
+      room, and stop if another share wins `pickScreenWinner` (today the
+      encoder does not notice it lost).
+- [ ] **Phone side**: a "Share a link" entry in the room menu that calls the
+      API, plus stop / busy states (the UI items in "Phase 2 → UI" below,
+      without the capture part).
+- [ ] Deployment: host with GStreamer (plugins good/bad/ugly, libav),
+      config instead of hard-coded consts (Keycloak, API base, STUN, Janus
+      domain); `qsv` only on Intel hosts.
+- [ ] Untested: `-encoder qsv`; a source with odd scaled width (x264 needs an
+      even width — may need `width` rounding in the caps).
+
 ### Step 0 — spike: can Android capture a browser's sound?
 
 Chosen 2026-11-11 as the first step of Phase 2: capturing sound from a
@@ -414,6 +486,8 @@ Sharing means leaving the app, and today going to background calls
 
 1. Phase 2: A (server plays the link) or B (every client plays the link in
    sync)? Both need work outside this repo — backend for A, galaxy3 for B.
+   A now has a working prototype (`webrtc-encoder`, branch `screen-share`);
+   the first real-room test decides.
 2. What do the links point to: direct media files, or pages of video sites?
 3. Is capturing the phone's real screen still wanted at all, once links work?
 
@@ -450,3 +524,10 @@ Sharing means leaving the app, and today going to background calls
   concrete; streaming mountpoints are the alternative with small client
   changes. Not tested against our servers. Which spike goes first (Janus
   ingest vs Android capture) is open.
+- 2026-11-16 — Found `Bnei-Baruch/webrtc-encoder`: a working server-side
+  WebRTC publisher into our Janus (option A, way 2). Moved its hard-coded
+  Keycloak secret to `KEYCLOAK_SECRET` (pushed to master, secret still needs
+  rotating). Created branches `test-feeds` and `screen-share`; on
+  `screen-share` it now publishes a file/URL as a `role: "screen"` feed with
+  H.264 + Opus and stops cleanly. Tested in Docker with GStreamer only — not
+  yet against a real room. See "Option A prototype".
