@@ -9,6 +9,7 @@ import Text from '../components/CustomText';
 import TextDisplayWithButton from '../components/TextDisplayWithButton';
 import { baseStyles } from '../constants';
 import { useRoomStore } from '../zustand/fetchRooms';
+import { useSettingsStore } from '../zustand/settings';
 import JoinRoomBtn from './JoinRoomBtn';
 import RoomSelectModal from './RoomSelectModal';
 
@@ -16,9 +17,19 @@ const RoomSelect = () => {
   const { setSelectRoomOpen } = useRoomStore();
 
   const { room } = useRoomStore();
+  const isTen = useSettingsStore(state => state.isTen);
   const { t } = useTranslation();
 
   const toggleOpen = () => setSelectRoomOpen(true);
+
+  // Broadcast-only doesn't join a ten, so there is nothing to pick — just join.
+  if (!isTen) {
+    return (
+      <View style={[styles.container, baseStyles.viewBackground]}>
+        <JoinRoomBtn standalone />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, baseStyles.viewBackground]}>

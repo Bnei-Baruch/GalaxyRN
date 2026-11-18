@@ -38,6 +38,7 @@
     <uses-feature android:name="android.hardware.audio.output" />
     <uses-feature android:name="android.hardware.microphone" android:required="true" />
     <uses-feature android:glEsVersion="0x00020000" android:required="false" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
 
     <application
         android:name=".MainApplication"

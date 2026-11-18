@@ -90,6 +90,7 @@ metro-cache/
 *.tmp
 *.temp
 .cache/
+logs/
 
 # React Native Generated Files
 /ios/Index

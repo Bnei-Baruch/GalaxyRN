@@ -7,20 +7,15 @@ import MyVideo from '../components/MyVideo';
 import PageHeader from '../components/PageHeader';
 import VersionInfo from '../components/VersionInfo';
 import { baseStyles } from '../constants';
-import { useMyStreamStore } from '../zustand/myStream';
 import { useSettingsStore } from '../zustand/settings';
-import LabeledSwitch from './LabeledSwitch';
+import EntryOptions from './EntryOptions';
 import RoomSelect from './RoomSelect';
 import SelectUiLanguage from './SelectUiLanguage';
 
 export const SettingsNotJoinedPortrait = () => {
   const { t } = useTranslation();
-  const { cammute, toggleCammute } = useMyStreamStore();
-  const { audioMode, toggleAudioMode } = useSettingsStore();
-
-  const handleToggleAudioMode = () => toggleAudioMode();
-  const handleCammute = () => toggleCammute();
   const insets = useSafeAreaInsets();
+  const isTen = useSettingsStore(state => state.isTen);
 
   return (
     <View
@@ -39,18 +34,9 @@ export const SettingsNotJoinedPortrait = () => {
         <VersionInfo />
       </View>
       <View style={baseStyles.full}>
-        <MyVideo styles={{ aspectRatio: 9 / 16, height: '100%' }} />
+        <MyVideo styles={isTen ? styles.myVideo : styles.myVideoNoTen} />
       </View>
-      <LabeledSwitch
-        label={t('settings.cammute')}
-        value={cammute}
-        onValueChange={handleCammute}
-      />
-      <LabeledSwitch
-        label={t('settings.audioMode')}
-        value={audioMode}
-        onValueChange={handleToggleAudioMode}
-      />
+      <EntryOptions />
       <View style={styles.divider}></View>
       <RoomSelect />
     </View>
@@ -68,5 +54,13 @@ const styles = StyleSheet.create({
   },
   width100: {
     width: '100%',
+  },
+  myVideo: {
+    aspectRatio: 9 / 16,
+    height: '100%',
+  },
+  myVideoNoTen: {
+    width: '100%',
+    height: '100%',
   },
 });

@@ -15,11 +15,13 @@ public class AudioFocusManager {
     private static final int CONTENT_TYPE = AudioAttributes.CONTENT_TYPE_SPEECH;
     private static final int USAGE_TYPE = AudioAttributes.USAGE_VOICE_COMMUNICATION;
 
+    private final Context context;
     private final AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
     private boolean hasAudioFocus = false;
 
     public AudioFocusManager(@NonNull ReactContext context) {
+        this.context = context.getApplicationContext();
         audioManager = ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE));
         if (audioManager == null) {
             GxyLogger.e(TAG, "Failed to get AudioManager service");
@@ -33,7 +35,7 @@ public class AudioFocusManager {
         }
 
         try {
-            audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+            AudioModeKeeper.enterCommunication(audioManager);
 
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setContentType(CONTENT_TYPE)
@@ -44,11 +46,12 @@ public class AudioFocusManager {
                     .setAudioAttributes(audioAttributes)
                     .setAcceptsDelayedFocusGain(false)
                     .setWillPauseWhenDucked(false)
+                    .setOnAudioFocusChangeListener(this::onAudioFocusChange)
                     .build();
 
             int result = audioManager.requestAudioFocus(audioFocusRequest);
             String resultStr = getAudioFocusResultString(result);
-            GxyLogger.d(TAG, "requestAudioFocus(): result = " + resultStr);
+            GxyLogger.i(TAG, "requestAudioFocus(): result = " + resultStr);
 
             hasAudioFocus = (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
             return hasAudioFocus;
@@ -66,12 +69,36 @@ public class AudioFocusManager {
 
         try {
             audioManager.abandonAudioFocusRequest(audioFocusRequest);
-            audioManager.setMode(AudioManager.MODE_NORMAL);
+            AudioModeKeeper.restore(context, audioManager);
             GxyLogger.d(TAG, "abandonAudioFocus() completed");
 
             hasAudioFocus = false;
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error abandoning audio focus", e);
+        }
+    }
+
+    // Diagnostics only: we don't react to focus changes yet, but losing focus
+    // (e.g. another app/system grabbing it while the screen is locked) is a
+    // suspect for "no sound after lock", so make it visible in the log file.
+    private void onAudioFocusChange(int focusChange) {
+        GxyLogger.i(TAG, "onAudioFocusChange: " + getFocusChangeString(focusChange)
+                + ", mode: " + (audioManager != null ? audioManager.getMode() : -1));
+        hasAudioFocus = focusChange == AudioManager.AUDIOFOCUS_GAIN;
+    }
+
+    private String getFocusChangeString(int focusChange) {
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                return "AUDIOFOCUS_GAIN";
+            case AudioManager.AUDIOFOCUS_LOSS:
+                return "AUDIOFOCUS_LOSS";
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                return "AUDIOFOCUS_LOSS_TRANSIENT";
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                return "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK";
+            default:
+                return "UNKNOWN(" + focusChange + ")";
         }
     }
 

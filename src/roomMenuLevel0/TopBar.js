@@ -3,7 +3,9 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Text from '../components/CustomText';
 import { baseStyles } from '../constants';
+import { useTranslation } from 'react-i18next';
 import { useRoomStore } from '../zustand/fetchRooms';
+import { useSettingsStore } from '../zustand/settings';
 import { useUiActions } from '../zustand/uiActions';
 import { AudioDevicesBtn } from './topBarBtns/AudioDevicesBtn';
 import { LeaveBtn } from './topBarBtns/LeaveBtn';
@@ -11,6 +13,8 @@ import { VerboseLoggingBtn } from './topBarBtns/VerboseLoggingBtn';
 
 export const TopBar = () => {
   const { room } = useRoomStore();
+  const isTen = useSettingsStore(state => state.isTen);
+  const { t } = useTranslation();
   const { showBars, cancelHideBarsTimeout } = useUiActions();
   const insets = useSafeAreaInsets();
 
@@ -32,7 +36,7 @@ export const TopBar = () => {
     >
       <AudioDevicesBtn />
       <Text style={[baseStyles.text, styles.text]} numberOfLines={2}>
-        {room?.description}
+        {isTen ? room?.description : t('bottomBar.shidur')}
       </Text>
       <VerboseLoggingBtn />
       <LeaveBtn />

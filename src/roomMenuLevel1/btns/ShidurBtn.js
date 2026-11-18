@@ -5,10 +5,14 @@ import BottomBarIconWithText from '../../settings/BottomBarIconWithText';
 import { useSettingsStore } from '../../zustand/settings';
 import { bottomBar } from '../../roomMenuLevel0/helper';
 export const ShidurBtn = () => {
-  const { isShidur, toggleIsShidur } = useSettingsStore();
+  const { isShidur, isTen, toggleIsShidur } = useSettingsStore();
   const { t } = useTranslation();
   return (
-    <Pressable onPress={toggleIsShidur} style={bottomBar.btn}>
+    <Pressable
+      onPress={toggleIsShidur}
+      disabled={isShidur && !isTen}
+      style={bottomBar.btn}
+    >
       <BottomBarIconWithText
         iconName="desktop-windows"
         text={t('bottomBar.shidur')}

@@ -112,4 +112,4 @@ const MenuPortrait = ({ animatedBottomPanelStyle }) => {
   );
 };
 
-export default MenuPortrait;
+export default React.memo(MenuPortrait);

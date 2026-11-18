@@ -9,7 +9,11 @@ export const BroadcastMuteBtn = () => {
   const toggleMute = () => setIsMuted();
   const { t } = useTranslation();
   return (
-    <Pressable onPress={toggleMute} style={bottomBar.btn}>
+    <Pressable
+      testID="broadcastMuteBtn"
+      onPress={toggleMute}
+      style={bottomBar.btn}
+    >
       <BottomBarIconWithText
         iconName="volume-up"
         text={t('bottomBar.broadcastsound')}

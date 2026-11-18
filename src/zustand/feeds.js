@@ -1,6 +1,7 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 import { userRolesEnum } from '../enums';
+import i18n from '../i18n/i18n';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
@@ -10,6 +11,12 @@ import logger from '../services/logger';
 import { deepClone, rejectTimeoutPromise } from '../tools';
 import { useRoomStore } from './fetchRooms';
 import { getStream, useMyStreamStore } from './myStream';
+import {
+  getScreenSubscription,
+  isScreenFeed,
+  parseDisplay,
+  useScreenShareStore,
+} from './screenShare';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
 
@@ -24,18 +31,6 @@ let exitWIP = false;
 
 let _subscriberJoined = false;
 let restartCount = 0;
-
-//TODO: Remove this function after string id will deployed
-const patchFeedId = (id) => {
-  logger.debug(NAMESPACE, 'patchFeedId id', id);
-  const isNumber = /^\d+$/.test(id);
-  if (isNumber) {
-    logger.debug(NAMESPACE, 'patchFeedId id is a number', id);
-    return parseInt(id);
-  }
-  logger.debug(NAMESPACE, 'patchFeedId id is not a number', id);
-  return id;
-};
 
 export const useFeedsStore = create((set, get) => ({
   feedById: {},
@@ -104,6 +99,12 @@ export const useFeedsStore = create((set, get) => ({
     const { user } = useUserStore.getState();
     const { geoInfo } = useUserStore.getState();
     const { room } = useRoomStore.getState();
+    if (!room?.room) {
+      // Room was already left (e.g. exit while a restart was in flight) —
+      // nothing to connect to, and throwing would only spin restartFeeds.
+      logger.warn(NAMESPACE, 'initFeeds skipped, no room');
+      return;
+    }
 
     let gxyServer;
     try {
@@ -159,13 +160,19 @@ export const useFeedsStore = create((set, get) => ({
 
     videoroom.unsubFrom = async ids => {
       const params = [];
+      // A shared screen is not in feedById (see makeSubscription).
+      const screenShare = useScreenShareStore.getState();
+      const screenId = ids.find(id => screenShare.isScreenId(id));
+      if (screenId !== undefined) {
+        params.push({ feed: screenId });
+      }
       ids
         .filter(id => id !== get().janusInfo?.rfid)
         .forEach(id => {
           const feed = get().feedById[id];
           if (!feed) return;
 
-          params.push({ feed: patchFeedId(feed.id) });
+          params.push({ feed: feed.id });
           logger.info(
             NAMESPACE,
             `Feed ${feed.id} ${JSON.stringify(
@@ -181,6 +188,10 @@ export const useFeedsStore = create((set, get) => ({
         }
       } catch (error) {
         logger.error(NAMESPACE, 'Error unsubscribing from publishers', error);
+      }
+
+      if (screenId !== undefined) {
+        screenShare.clearScreenFeed();
       }
 
       set(
@@ -244,7 +255,7 @@ export const useFeedsStore = create((set, get) => ({
 
     // Feeds count with user role
     let feeds_count = data.publishers.filter(
-      feed => feed.display.role === userRolesEnum.user
+      feed => parseDisplay(feed.display).role === userRolesEnum.user
     ).length;
     if (feeds_count > 25) {
       alert(i18n.t('messages.maxUsersInRoom'));
@@ -252,6 +263,8 @@ export const useFeedsStore = create((set, get) => ({
     }
 
     await get().makeSubscription(data.publishers.filter(p => p.id !== data.id));
+    // After a restart: the screen share may have ended meanwhile.
+    useScreenShareStore.getState().onFeedsJoined();
     useUserStore.getState().sendUserState();
     const stream = await getStream();
     if (!stream) {
@@ -281,6 +294,11 @@ export const useFeedsStore = create((set, get) => ({
         NAMESPACE,
         `>> Track from feed ${id}: ${JSON.stringify(track)} on: ${on}`
       );
+      const screenShare = useScreenShareStore.getState();
+      if (screenShare.isScreenId(id)) {
+        if (on) screenShare.onScreenTrack(track, stream);
+        return;
+      }
       if (on && track.kind === 'video') {
         let url;
         try {
@@ -304,8 +322,10 @@ export const useFeedsStore = create((set, get) => ({
       if (!streams) return;
 
       const _vOnByFeed = {};
+      const screenShare = useScreenShareStore.getState();
       for (const s of streams) {
         if (!s.feed_id) continue;
+        if (screenShare.isScreenId(s.feed_id)) continue;
 
         if (_vOnByFeed[s.feed_id]) continue;
 
@@ -367,7 +387,43 @@ export const useFeedsStore = create((set, get) => ({
     const subs = [];
     const unsubs = [];
 
+    // A shared screen is published as a separate participant. It is not a
+    // room member: it stays out of feedById and is shown in the broadcast
+    // panel (zustand/screenShare).
+    const screenShare = useScreenShareStore.getState();
+    const members = [];
     for (const pub of pubs) {
+      // An unpublished feed may come without display — match it by id.
+      if (!isScreenFeed(pub) && !screenShare.isScreenId(pub.id)) {
+        // Only real users are shown as feeds. An unpublish event (no
+        // streams) may come without display — let it through to clean up.
+        if (
+          pub.streams &&
+          parseDisplay(pub.display).role !== userRolesEnum.user
+        ) {
+          logger.debug(NAMESPACE, `makeSubscription skip non-user ${pub.id}`);
+          continue;
+        }
+        members.push(pub);
+        continue;
+      }
+      if (!pub.streams) {
+        unsubs.push({ feed: pub.id });
+        screenShare.clearScreenFeed();
+        continue;
+      }
+      const { subscribe, unsubscribeId } = screenShare.handleScreenFeed(pub);
+      if (unsubscribeId !== undefined) {
+        unsubs.push({ feed: unsubscribeId });
+      }
+      if (subscribe) {
+        subs.push(
+          ...getScreenSubscription(pub, screenShare.isVideoWanted())
+        );
+      }
+    }
+
+    for (const pub of members) {
       const { id, display } = pub;
 
       if (!pub.streams) {
@@ -449,7 +505,7 @@ export const useFeedsStore = create((set, get) => ({
     }
     restartWIP = true;
     try {
-      await get().cleanFeeds();
+      await get().cleanFeeds(true);
       await get().initFeeds();
       restartCount = 0;
     } catch (error) {
@@ -466,8 +522,9 @@ export const useFeedsStore = create((set, get) => ({
     await get().restartFeeds();
   },
 
-  cleanFeeds: async () => {
-    logger.debug(NAMESPACE, 'cleanFeeds');
+  // isRestart: the room is rejoined right after, so screen-share mode is kept.
+  cleanFeeds: async (isRestart = false) => {
+    logger.debug(NAMESPACE, 'cleanFeeds', isRestart);
     if (janus) {
       logger.info(NAMESPACE, 'cleanFeeds janus');
       try {
@@ -482,6 +539,23 @@ export const useFeedsStore = create((set, get) => ({
     subscriber = null;
     _subscriberJoined = false;
     set({ feedById: {}, feedIds: [] });
+    useScreenShareStore.getState().reset(isRestart);
+  },
+
+  // Audio mode / app in background: keep the screen's sound, drop its video.
+  setScreenVideo: async on => {
+    const screenShare = useScreenShareStore.getState();
+    screenShare.setVideoOff(!on);
+    const { screenFeed } = screenShare;
+    logger.debug(NAMESPACE, 'setScreenVideo', on, screenFeed?.id);
+    if (!screenFeed?.vMid || !subscriber || !_subscriberJoined) return;
+
+    const params = [{ feed: screenFeed.id, mid: screenFeed.vMid }];
+    if (on) {
+      await subscriber.sub(params);
+    } else {
+      await subscriber.unsub(params);
+    }
   },
 
   feedAudioModeOn: async () => {
@@ -514,7 +588,7 @@ export const useFeedsStore = create((set, get) => ({
       const f = feedById[id];
       logger.debug(NAMESPACE, 'activateFeedsVideos feed', f);
       if (f?.vMid && (f.url || f.camera) && !f.vWIP && !f.vOn) {
-        params.push({ feed: patchFeedId(id), mid: f.vMid });
+        params.push({ feed: id, mid: f.vMid });
       }
     }
 
@@ -538,7 +612,7 @@ export const useFeedsStore = create((set, get) => ({
       const f = feedById[id];
       logger.debug(NAMESPACE, 'deactivateFeedsVideos feed', f);
       if (f?.url && f.vOn && !f.vWIP) {
-        params.push({ feed: patchFeedId(id), mid: f.vMid });
+        params.push({ feed: id, mid: f.vMid });
       }
     }
 

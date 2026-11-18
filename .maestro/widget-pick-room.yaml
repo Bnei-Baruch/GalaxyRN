@@ -8,8 +8,11 @@ env:
 # Pass the room with -e PICK_ROOM=<exact name> (defaults to E2E_ROOM from .env via the env: block).
 # Precondition: Settings screen (joinRoomBtn visible). Ends on Settings with the room selected.
 ---
-- tapOn:
-    text: "Open debugger to view warnings"
+- tapOn:   # close the LogBox toast via its X (tapping the toast body opens DevTools on the host)
+    childOf:
+      text: "!, Open debugger to view .*"   # toast container a11y text; text ends with "."
+    rightOf:
+      text: "Open debugger to view .*"
     optional: true
 - tapOn:
     text: "Dismiss"

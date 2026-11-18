@@ -1,6 +1,9 @@
 module.exports = {
   preset: '@react-native/jest-preset',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // .claude/worktrees holds full repo copies made by agents — don't run their tests.
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/.claude/'],
+  modulePathIgnorePatterns: ['<rootDir>/.claude/'],
   // The whitelist here MUST include `react-native` itself — its entry (react-native/index.js)
   // uses `import typeof`, which needs Babel. Omitting it caused
   // "Cannot use import statement outside a module" on react-native/index.js. Plus the RN-ecosystem

@@ -1,0 +1,36 @@
+appId: ${APP_ID}
+name: ten-on-rejoin — leave room, Ten back ON, rejoin ${E2E_ROOM}
+tags:
+  - feature
+---
+# Precondition: in the room joined with Ten OFF (broadcast-only). Ends in the room with Ten ON.
+- tapOn:
+    id: "leaveBtn"
+- extendedWaitUntil:
+    visible:
+      id: "joinRoomBtn"
+    timeout: 30000
+- takeScreenshot: verify-results/e3-after-leave
+- tapOn:
+    id: "entryModeAll"
+- assertNotVisible:
+    text: ".*won't join the ten.*"
+- assertVisible:
+    id: "entryCammuteBtn"
+- takeScreenshot: verify-results/e3-ten-on
+- runFlow: select-room.yaml
+# Only if the keyboard hides the bar: with no keyboard up, Android hideKeyboard sends BACK, which
+# moves the in-room task to the background (see regression.yaml).
+- runFlow:
+    when:
+      notVisible:
+        id: "moreBtn"
+    commands:
+      - hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible:
+    id: "moreBtn"
+- assertNotVisible:
+    id: "shidurVideoBtn"
+- takeScreenshot: verify-results/e3-room

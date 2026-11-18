@@ -8,7 +8,7 @@ import { bottomBar } from '../helper';
 export const LeaveBtn = () => {
   const { exitRoom } = useInRoomStore();
   const { t } = useTranslation();
-  const handlePress = () => exitRoom();
+  const handlePress = () => exitRoom('leave-button');
 
   return (
     <Pressable testID="leaveBtn" accessibilityLabel="leaveBtn" onPress={handlePress} style={bottomBar.btn}>

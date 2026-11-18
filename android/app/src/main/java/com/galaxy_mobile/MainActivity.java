@@ -1,6 +1,7 @@
 package com.galaxy_mobile;
 
 import android.app.PictureInPictureParams;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import com.galaxy_mobile.logger.SentryUtils;
 import com.galaxy_mobile.permissions.PermissionHelper;
 import com.oney.WebRTCModule.WebRTCModuleOptions;
 import com.galaxy_mobile.uiState.GxyUIStateModule;
+import com.galaxy_mobile.foreground.ForegroundService;
 
 
 import org.webrtc.audio.JavaAudioDeviceModule;
@@ -156,6 +158,12 @@ public class MainActivity extends ReactActivity {
 
         try {
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+            if (isFinishing() && !isChangingConfigurations()) {
+                // User closed the app (back press / finish): don't leave the foreground
+                // service keeping the process alive in the background.
+                GxyLogger.i(TAG, "Activity finishing - stopping ForegroundService");
+                stopService(new Intent(this, ForegroundService.class));
+            }
             GxyLogger.i(TAG, "Activity cleanup completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error during activity cleanup", e);

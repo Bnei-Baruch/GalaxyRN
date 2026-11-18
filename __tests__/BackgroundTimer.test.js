@@ -10,6 +10,7 @@ jest.mock('../src/specs/NativeBackgroundTimerModule', () => ({
   __esModule: true,
   default: {
     setTimeout: jest.fn(),
+    clearTimeout: jest.fn(),
     start: jest.fn(),
     stop: jest.fn(),
     timeout: jest.fn(),
@@ -19,6 +20,7 @@ jest.mock('../src/specs/NativeBackgroundTimer', () => ({
   __esModule: true,
   default: {
     setTimeout: jest.fn(),
+    clearTimeout: jest.fn(),
     timeout: jest.fn(),
   },
 }));
@@ -68,6 +70,7 @@ describe('BackgroundTimer facade', () => {
 
     expect(() => BackgroundTimer._onTimeout(id)).not.toThrow();
     expect(callback).not.toHaveBeenCalled();
+    expect(NativeBackgroundTimerModule.clearTimeout).toHaveBeenCalledWith(id);
     expect(NativeBackgroundTimerModule.setTimeout).not.toHaveBeenCalled();
   });
 
