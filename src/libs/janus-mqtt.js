@@ -60,8 +60,8 @@ export class JanusMqtt {
     try {
       //TODO: check on reconnect to user.id topic you can get message from previous session
       await Promise.all([
-        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 0 }),
-        mqtt.sub(this.rxTopic, { qos: 0 }),
+        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 1 }),
+        mqtt.sub(this.rxTopic, { qos: 1 }),
         mqtt.sub(this.stTopic, { qos: 1 }),
       ]);
       finishSpan(subscribeSpan, 'ok', NAMESPACE);
@@ -749,8 +749,8 @@ export class JanusMqtt {
     try {
       await this._cleanupMqtt();
       await Promise.all([
-        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 0 }),
-        mqtt.sub(this.rxTopic, { qos: 0 }),
+        mqtt.sub(this.rxTopic + '/' + this.user.id, { qos: 1 }),
+        mqtt.sub(this.rxTopic, { qos: 1 }),
         mqtt.sub(this.stTopic, { qos: 1 }),
       ]);
     } catch (e) {

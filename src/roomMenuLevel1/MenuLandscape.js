@@ -125,4 +125,4 @@ const MenuLandscape = ({ animatedBottomPanelStyle }) => {
   );
 };
 
-export default MenuLandscape;
+export default React.memo(MenuLandscape);

@@ -1,6 +1,7 @@
 import { produce } from 'immer';
 import { create } from 'zustand';
 import { userRolesEnum } from '../enums';
+import i18n from '../i18n/i18n';
 import { JanusMqtt } from '../libs/janus-mqtt';
 import { PublisherPlugin } from '../libs/publisher-plugin';
 import { SubscriberPlugin } from '../libs/subscriber-plugin';
@@ -13,6 +14,7 @@ import { getStream, useMyStreamStore } from './myStream';
 import {
   getScreenSubscription,
   isScreenFeed,
+  parseDisplay,
   useScreenShareStore,
 } from './screenShare';
 import { useUiActions } from './uiActions';
@@ -253,7 +255,7 @@ export const useFeedsStore = create((set, get) => ({
 
     // Feeds count with user role
     let feeds_count = data.publishers.filter(
-      feed => feed.display.role === userRolesEnum.user
+      feed => parseDisplay(feed.display).role === userRolesEnum.user
     ).length;
     if (feeds_count > 25) {
       alert(i18n.t('messages.maxUsersInRoom'));
@@ -393,6 +395,15 @@ export const useFeedsStore = create((set, get) => ({
     for (const pub of pubs) {
       // An unpublished feed may come without display — match it by id.
       if (!isScreenFeed(pub) && !screenShare.isScreenId(pub.id)) {
+        // Only real users are shown as feeds. An unpublish event (no
+        // streams) may come without display — let it through to clean up.
+        if (
+          pub.streams &&
+          parseDisplay(pub.display).role !== userRolesEnum.user
+        ) {
+          logger.debug(NAMESPACE, `makeSubscription skip non-user ${pub.id}`);
+          continue;
+        }
         members.push(pub);
         continue;
       }

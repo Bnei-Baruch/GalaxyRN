@@ -69,7 +69,6 @@ const MenuLevel1 = () => {
   );
   const panelEntrance = useRef(new Animated.Value(0)).current;
 
-
   const animatedBottomPanelStyle = useMemo(
     () => ({
       transform: [
