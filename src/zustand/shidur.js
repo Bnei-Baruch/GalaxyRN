@@ -664,6 +664,17 @@ export const useShidurStore = create((set, get) => ({
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
   },
 
+  // Restore only the shidur video (no kli olami, feeds or camera) — used when
+  // returning from background while staying in audio mode.
+  restoreVideo: video => {
+    logger.debug(NAMESPACE, 'restoreVideo', video);
+    if (!useSettingsStore.getState().isShidur || !get().isPlay) {
+      set({ video });
+      return;
+    }
+    get().setVideo(video, false);
+  },
+
   exitAudioMode: async () => {
     const { initKliOlami, isPlay, setVideo } = get();
     try {

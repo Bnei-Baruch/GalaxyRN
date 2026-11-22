@@ -6,6 +6,7 @@ import logger from '../services/logger';
 import { rejectTimeoutPromise } from '../tools';
 
 import { STORAGE_KEYS } from '../constants';
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
@@ -35,6 +36,9 @@ const WAIT_CONNECTION_TIMEOUT_MS = 15000;
 let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
+// Shidur video chosen before going to background, so it can be restored on
+// foreground even when the user stays in audio mode (picked video manually).
+let videoBeforeBackground = null;
 
 export const useInRoomStore = create((set, get) => ({
   isInBackground: false,
@@ -245,6 +249,7 @@ export const useInRoomStore = create((set, get) => ({
   enterBackground: async () => {
     logger.info(NAMESPACE, 'enterBackground', { isInRoom: get().isInRoom });
     set({ isInBackground: true });
+    videoBeforeBackground = useShidurStore.getState().video;
 
     const { isPIPMode } = useSettingsStore.getState();
     if (!isPIPMode && Platform.OS !== 'ios') {
@@ -262,7 +267,17 @@ export const useInRoomStore = create((set, get) => ({
     set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
+    } else if (
+      get().isInRoom &&
+      videoBeforeBackground != null &&
+      videoBeforeBackground !== NO_VIDEO_OPTION_VALUE &&
+      useShidurStore.getState().video !== videoBeforeBackground
+    ) {
+      // Audio mode on but the user had turned shidur video on manually:
+      // bring back only the shidur video, leave feeds and camera as they are.
+      useShidurStore.getState().restoreVideo(videoBeforeBackground);
     }
+    videoBeforeBackground = null;
     addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
