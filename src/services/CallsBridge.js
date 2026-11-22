@@ -24,16 +24,6 @@ try {
 }
 
 const CallsBridge = {
-  startCall: (handle) => {
-    if (NativeCall && NativeCall.startCall) {
-      NativeCall.startCall(handle);
-    }
-  },
-  endCall: () => {
-    if (NativeCall && NativeCall.endCall) {
-      NativeCall.endCall();
-    }
-  },
   raw: NativeCall,
 
   /**

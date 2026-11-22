@@ -15,7 +15,6 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
-import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
@@ -106,9 +105,6 @@ export const useInRoomStore = create((set, get) => ({
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
-
-    const { room } = useRoomStore.getState();
-    CallsBridge.startCall(isTen ? room?.room || 'unknown' : 'broadcast');
   },
 
   safeJoinRoom: async (isPlay = false) => {
@@ -184,7 +180,6 @@ export const useInRoomStore = create((set, get) => ({
     set({ isInRoom: false });
     useSettingsStore.setState({ isPIPMode: false });
     GxyUIStateBridge.updateUIState();
-    CallsBridge.endCall();
   },
 
   exitNetResources: async () => {

@@ -1,66 +1,46 @@
-import AVFoundation
 import CallKit
 import Foundation
 import React
-import UIKit
+import StoreKit
 
+/// Observes system calls (cellular / other VoIP apps) via CXCallObserver and
+/// emits onCallStateChanged so JS can leave the room during a call and rejoin
+/// after it. Observer-only: the app does not report its own calls to CallKit
+/// (no CXProvider), so there is no CallKit call UI.
+///
+/// CallKit is disabled entirely on the China mainland App Store storefront
+/// (MIIT requirement, App Review Guideline 5).
 @objc(CallManager)
 class CallManager: RCTEventEmitter {
     // MARK: - Properties
     var hasListeners = false
-    var audioSession: AVAudioSession?
-    var uuid: UUID = UUID()
 
-    private var isScreenLocked: Bool = false
-    private let callObserver = CXCallObserver()
-    private let callController = CXCallController()
-    private var provider: CXProvider?
+    private var callObserver: CXCallObserver?
 
     // MARK: - Initialization
     override init() {
         super.init()
-        setupModule()
-    }
-
-    // MARK: - Setup
-    private func setupModule() {
-        callObserver.setDelegate(self, queue: nil)
-
-        let configuration = CXProviderConfiguration(localizedName: "Galaxy")
-        configuration.supportsVideo = true
-        configuration.supportedHandleTypes = [.generic]
-
-        let callProvider = CXProvider(configuration: configuration)
-        callProvider.setDelegate(self, queue: nil)
-        provider = callProvider
-    }
-
-    // MARK: - Public Methods
-
-    @objc
-    func startCall(handle: String, isVideo: Bool) async {
-        let cxHandle = CXHandle(type: .generic, value: handle)
-        let action = CXStartCallAction(call: uuid, handle: cxHandle)
-        action.isVideo = isVideo
-        let transaction = CXTransaction(action: action)
-
-        do {
-            try await callController.request(transaction)
-        } catch {
-            NLOG("[callManager swift] startCall error: \(error)")
+        Task { [weak self] in
+            guard let self = self else { return }
+            if await CallManager.isChinaStorefront() {
+                NLOG("[callManager swift] China storefront — CallKit disabled")
+                return
+            }
+            await MainActor.run {
+                let observer = CXCallObserver()
+                observer.setDelegate(self, queue: nil)
+                self.callObserver = observer
+            }
         }
     }
 
-    @objc
-    func endCall() async {
-        let action = CXEndCallAction(call: uuid)
-        let transaction = CXTransaction(action: action)
-
-        do {
-            try await callController.request(transaction)
-        } catch {
-            NLOG("[callManager swift] endCall error: \(error)")
+    /// True for the China mainland App Store. Falls back to the device region
+    /// when the storefront is unavailable, erring on the side of disabling.
+    private static func isChinaStorefront() async -> Bool {
+        if let storefront = await Storefront.current {
+            return storefront.countryCode == "CHN"
         }
+        return Locale.current.regionCode == "CN"
     }
 
     @objc
