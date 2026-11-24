@@ -7,6 +7,7 @@ import { setToStorage } from '../tools';
 import { useFeedsStore } from './feeds';
 import { useInRoomStore } from './inRoom';
 import { useMyStreamStore } from './myStream';
+import { useScreenShareStore } from './screenShare';
 import { useShidurStore } from './shidur';
 import { useUiActions } from './uiActions';
 import { useUserStore } from './user';
@@ -42,17 +43,51 @@ export const useSettingsStore = create((set, get) => ({
     set({ isKliOlamiFullscreen });
   },
 
+  // Room entry presets (chosen before joining, kept in memory only).
+  // At least one of isShidur / isTen stays on.
   isShidur: true,
   toggleIsShidur: async () => {
     const isShidur = !get().isShidur;
     logger.debug(NAMESPACE, 'toggleIsShidur', isShidur);
+    if (!isShidur && !get().isTen) return;
+
+    if (!useInRoomStore.getState().isInRoom) {
+      set({ isShidur });
+      return;
+    }
+
     if (!isShidur) {
       await useShidurStore.getState().cleanShidur();
     } else {
-      await useShidurStore.getState().prepareShidur();
+      // undefined = keep the current play state
+      await useShidurStore
+        .getState()
+        .prepareShidur(useScreenShareStore.getState().resumeIsPlay());
     }
     set({ isShidur });
-    useUiActions.getState().updateWidth(isShidur);
+    // While a screen is shared the panel switches between it and the broadcast.
+    useScreenShareStore.getState().onShidurToggled(isShidur);
+    useUiActions.getState().updateWidth();
+  },
+
+  // false = "broadcast only": don't join the videoroom (no feeds, no
+  // publishing). Only changeable before joining.
+  isTen: true,
+  toggleIsTen: () => {
+    const isTen = !get().isTen;
+    logger.debug(NAMESPACE, 'toggleIsTen', isTen);
+    if (!isTen && !get().isShidur) return;
+    if (useInRoomStore.getState().isInRoom) return;
+    set({ isTen });
+  },
+
+  // Before-room entry mode: one choice instead of two toggles, so an
+  // "everything off" combination can't be expressed.
+  // 'all' = ten + broadcast, 'ten' = ten only, 'broadcast' = broadcast only.
+  setEntryMode: mode => {
+    logger.debug(NAMESPACE, 'setEntryMode', mode);
+    if (useInRoomStore.getState().isInRoom) return;
+    set({ isShidur: mode !== 'ten', isTen: mode !== 'broadcast' });
   },
 
   audioMode: false,
@@ -95,6 +130,7 @@ export const useSettingsStore = create((set, get) => ({
     if (!isPIPMode && useInRoomStore.getState().isInBackground) {
       useMyStreamStore.getState().toggleCammute(true, false)
       useShidurStore.getState().enterAudioMode();
+      useFeedsStore.getState().setScreenVideo(false);
     }
     set({ isPIPMode });
   },

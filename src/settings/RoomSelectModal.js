@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -38,7 +39,7 @@ const RoomSelectModal = () => {
   const filteredOptions = useMemo(() => rooms?.filter(o => {
     if (!_sText) return true;
     return o.description.toLowerCase().includes(_sText);
-  }), [_sText]);
+  }), [rooms, _sText]);
 
   const handleSearch = text => {
     setSearchText(text);
@@ -55,6 +56,7 @@ const RoomSelectModal = () => {
 
   const closeModal = () => {
     logger.debug(NAMESPACE, 'closeModal');
+    Keyboard.dismiss();
     setSelectRoomOpen(false);
   };
 

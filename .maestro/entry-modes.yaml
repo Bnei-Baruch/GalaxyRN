@@ -1,0 +1,15 @@
+appId: ${APP_ID}
+name: entry-modes — entry options, broadcast-only join, Ten back on rejoin
+tags:
+  - feature
+# No `env:` block — creds/room come from `-e` (see login.yaml note).
+---
+# Self-contained wrapper for the precondition-dependent entry-mode flows, chained so each one's
+# end state is the next one's precondition:
+#   Settings (default mode) → entry-options (back to default) → broadcast-only-join (in room,
+#   Ten OFF) → ten-on-rejoin (in room, Ten ON) → leave.
+- runFlow: ensure-logged-in.yaml
+- runFlow: entry-options.yaml
+- runFlow: broadcast-only-join.yaml
+- runFlow: ten-on-rejoin.yaml
+- runFlow: leave-room.yaml

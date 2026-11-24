@@ -69,8 +69,11 @@ public class ForegroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) {
-            GxyLogger.w(TAG, "onStartCommand: null intent (system restart), returning START_STICKY");
-            return START_STICKY;
+            // System restart of a killed process: there is no UI/JS session to protect,
+            // so don't keep a headless process alive in the background.
+            GxyLogger.w(TAG, "onStartCommand: null intent (system restart), stopping");
+            stopSelf();
+            return START_NOT_STICKY;
         }
         String action = intent.getAction();
         GxyLogger.i(TAG, "onStartCommand: " + action);
@@ -81,7 +84,7 @@ public class ForegroundService extends Service {
         }
         if (START_SERVICE_ACTION.equals(action)) {
             start();
-            return START_STICKY;
+            return START_NOT_STICKY;
         }
         GxyLogger.d(TAG, "Invalid action: " + action);
         return START_NOT_STICKY;
@@ -160,15 +163,18 @@ public class ForegroundService extends Service {
         GxyLogger.i(TAG, "onTaskRemoved - app swiped away from recent tasks");
 
         try {
-            // cleanup on swipe close from background
+            // Stop the service BEFORE killing the process: if the process dies while the
+            // service is still started, the system treats it as a crash and restarts it,
+            // leaving the app running in the background after the user closed it.
+            cleanup();
+            stopSelf();
+
+            // cleanup on swipe close from background (terminates the process)
             MainApplication app = MainApplication.getInstance();
             if (app != null) {
                 GxyLogger.i(TAG, "Performing MainApplication cleanup");
                 MainApplication.performCleanup();
             }
-
-            cleanup();
-            stopSelf();
             GxyLogger.i(TAG, "onTaskRemoved completed");
         } catch (Exception e) {
             GxyLogger.e(TAG, "Error in onTaskRemoved", e);

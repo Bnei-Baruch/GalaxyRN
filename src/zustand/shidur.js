@@ -154,15 +154,10 @@ export const useShidurStore = create((set, get) => ({
   isMuted: false,
   shidurWIP: false,
   cleanWIP: false,
-  isAudioSelectOpen: false,
   withRestart: false,
 
   prefetchStrServer,
   clearPrefetchedSrvServer,
-
-  setIsAudioSelectOpen: (isAudioSelectOpen = !get().isAudioSelectOpen) => {
-    set({ isAudioSelectOpen });
-  },
 
   setIsMuted: (isMuted = !get().isMuted) => {
     if (!get().isPlay) {
@@ -667,6 +662,17 @@ export const useShidurStore = create((set, get) => ({
       logger.error(NAMESPACE, 'Error during enterAudioMode:', error);
     }
     get().setVideo(NO_VIDEO_OPTION_VALUE, false);
+  },
+
+  // Restore only the shidur video (no kli olami, feeds or camera) — used when
+  // returning from background while staying in audio mode.
+  restoreVideo: video => {
+    logger.debug(NAMESPACE, 'restoreVideo', video);
+    if (!useSettingsStore.getState().isShidur || !get().isPlay) {
+      set({ video });
+      return;
+    }
+    get().setVideo(video, false);
   },
 
   exitAudioMode: async () => {

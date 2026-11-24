@@ -12,6 +12,7 @@ const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
   const insets = useSafeAreaInsets();
 
   const isShidur = !!shidur;
+  const hasSide = !!members || !!kliOlami;
 
   const handleAnyPress = () => {
     logger.debug(NAMESPACE, 'handleAnyPress');
@@ -22,25 +23,32 @@ const RoomLandscape = ({ shidur, kliOlami, members, subtitle }) => {
     setFeedsScrollY(scrollY);
   };
   return (
-    <View style={[styles.container, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingLeft: insets.left, paddingRight: insets.right },
+      ]}
+    >
       {isShidur && (
         <Pressable onPress={handleAnyPress} style={styles.shidurWrapper}>
           <View style={styles.shidur}>{shidur}</View>
           {subtitle}
         </Pressable>
       )}
-      <View style={isShidur ? { width: width * 2 } : baseStyles.full}>
-        <ScrollView
-          showsHorizontalScrollIndicator={false}
-          style={baseStyles.full}
-          onScroll={handleScroll}
-        >
-          <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
-            {kliOlami}
-            {members}
-          </Pressable>
-        </ScrollView>
-      </View>
+      {(hasSide || !isShidur) && (
+        <View style={isShidur ? { width: width * 2 } : baseStyles.full}>
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            style={baseStyles.full}
+            onScroll={handleScroll}
+          >
+            <Pressable onPress={handleAnyPress} style={styles.scrollContent}>
+              {kliOlami}
+              {members}
+            </Pressable>
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 };

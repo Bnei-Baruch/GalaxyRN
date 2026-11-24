@@ -1,5 +1,4 @@
 import AVFoundation
-import CallKit
 import Foundation
 import React
 import UIKit

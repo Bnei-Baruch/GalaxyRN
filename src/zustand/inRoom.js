@@ -6,6 +6,7 @@ import logger from '../services/logger';
 import { rejectTimeoutPromise } from '../tools';
 
 import { STORAGE_KEYS } from '../constants';
+import { NO_VIDEO_OPTION_VALUE } from '../consts';
 import { waitConnection } from '../libs/connection-monitor';
 import { ROOM_SESSION } from '../libs/sentry/constants';
 import {
@@ -15,7 +16,6 @@ import {
   finishTransaction,
   startTransaction,
 } from '../libs/sentry/sentryHelper';
-import CallsBridge from '../services/CallsBridge';
 import GxyUIStateBridge from '../services/GxyUIStateBridge';
 import { getBooleanFromStorage } from '../tools';
 import { useChatStore } from './chat';
@@ -28,9 +28,17 @@ import { useUiActions } from './uiActions';
 
 const NAMESPACE = 'InRoom';
 
+// Must stay below connection-monitor's MAX_CONNECTION_TIMEOUT (20s), which
+// tears the session down on its own. High-latency links (e.g. AU cellular)
+// routinely need more than 5s to get MQTT connected.
+const WAIT_CONNECTION_TIMEOUT_MS = 15000;
+
 let attempts = 0;
 let restartWIP = false;
 let exitWIP = false;
+// Shidur video chosen before going to background, so it can be restored on
+// foreground even when the user stays in audio mode (picked video manually).
+let videoBeforeBackground = null;
 
 export const useInRoomStore = create((set, get) => ({
   isInBackground: false,
@@ -38,7 +46,7 @@ export const useInRoomStore = create((set, get) => ({
   setIsInRoom: (isInRoom = true) => set({ isInRoom }),
 
   joinRoom: async (isPlay = false) => {
-    logger.debug(NAMESPACE, 'joinRoom', isPlay);
+    logger.info(NAMESPACE, 'joinRoom', isPlay);
 
     startTransaction(ROOM_SESSION, 'Join Room', 'navigation');
 
@@ -53,7 +61,7 @@ export const useInRoomStore = create((set, get) => ({
     if (attempts > 2) {
       logger.warn(NAMESPACE, 'too many attempts, aborting');
       finishTransaction(ROOM_SESSION, 'aborted');
-      get().exitRoom();
+      get().exitRoom('join-too-many-attempts');
       alert('Could not connect to the server, please try again later');
       attempts = 0;
       return;
@@ -61,7 +69,10 @@ export const useInRoomStore = create((set, get) => ({
 
     attempts++;
     try {
-      const connected = await rejectTimeoutPromise(waitConnection(), 5000);
+      const connected = await rejectTimeoutPromise(
+        waitConnection(),
+        WAIT_CONNECTION_TIMEOUT_MS
+      );
       if (!connected) {
         throw new Error('No connection');
       }
@@ -82,27 +93,22 @@ export const useInRoomStore = create((set, get) => ({
       logger.error(NAMESPACE, 'audio focus or keeping screen on', error);
       finishSpan(deviceSpan, 'internal_error', NAMESPACE);
       finishTransaction(ROOM_SESSION, 'internal_error');
-      return get().exitRoom();
+      return get().exitRoom('join-audio-focus-error');
     }
 
     addFinishSpan(ROOM_SESSION, 'janus.inits', { NAMESPACE });
 
+    const { isTen } = useSettingsStore.getState();
+    logger.debug(NAMESPACE, 'joinRoom isTen', isTen);
     await Promise.all([
       useShidurStore.getState().prepareShidur(isPlay),
-      useFeedsStore.getState().safeInitFeeds(),
+      isTen && useFeedsStore.getState().safeInitFeeds(),
     ]);
 
-    try {
-      await get().subscribeMqtt();
-    } catch (error) {
-      throw error;
-    }
+    await get().subscribeMqtt();
 
     attempts = 0;
     GxyUIStateBridge.updateUIState();
-
-    const { room } = useRoomStore.getState();
-    CallsBridge.startCall(room?.room || 'unknown');
   },
 
   safeJoinRoom: async (isPlay = false) => {
@@ -116,6 +122,13 @@ export const useInRoomStore = create((set, get) => ({
 
   subscribeMqtt: async () => {
     logger.debug(NAMESPACE, 'subscribeMqtt');
+    // Broadcast-only doesn't join a ten: no room topics (chat, admin
+    // commands, room state). Also hit on MQTT reconnect (libs/mqtt.js), and a
+    // ten picked earlier may still be in the store.
+    if (!useSettingsStore.getState().isTen) {
+      logger.debug(NAMESPACE, 'subscribeMqtt: broadcast-only, skipping');
+      return;
+    }
     const { room } = useRoomStore.getState();
     const mqttSubscribeSpan = addSpan(ROOM_SESSION, 'mqtt.subscribe');
     try {
@@ -131,8 +144,13 @@ export const useInRoomStore = create((set, get) => ({
     }
   },
 
-  exitRoom: async () => {
-    logger.debug(NAMESPACE, 'exitRoom exitWIP');
+  exitRoom: async (reason = 'unknown') => {
+    logger.info(NAMESPACE, 'exitRoom', {
+      reason,
+      isInRoom: get().isInRoom,
+      exitWIP,
+      isInBackground: get().isInBackground,
+    });
     if (exitWIP || !get().isInRoom) {
       logger.debug(NAMESPACE, 'already exiting room');
       return;
@@ -166,7 +184,6 @@ export const useInRoomStore = create((set, get) => ({
     set({ isInRoom: false });
     useSettingsStore.setState({ isPIPMode: false });
     GxyUIStateBridge.updateUIState();
-    CallsBridge.endCall();
   },
 
   exitNetResources: async () => {
@@ -194,11 +211,16 @@ export const useInRoomStore = create((set, get) => ({
       useChatStore.getState().cleanMessages();
 
       const { room } = useRoomStore.getState();
-      logger.debug(NAMESPACE, 'exitRoom room', room);
-      await Promise.all([
-        mqtt.exit(`galaxy/room/${room.room}`),
-        mqtt.exit(`galaxy/room/${room.room}/chat`),
-      ]);
+      // isTen can't change while in a room, so it matches what joinRoom
+      // subscribed to (broadcast-only subscribes to no room topics).
+      const { isTen } = useSettingsStore.getState();
+      logger.debug(NAMESPACE, 'exitRoom room', room, 'isTen', isTen);
+      if (isTen && room) {
+        await Promise.all([
+          mqtt.exit(`galaxy/room/${room.room}`),
+          mqtt.exit(`galaxy/room/${room.room}/chat`),
+        ]);
+      }
       finishSpan(mqttCleanupSpan, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'Error exiting mqtt rooms', error);
@@ -215,17 +237,19 @@ export const useInRoomStore = create((set, get) => ({
     restartWIP = true;
     const _isPlay = useShidurStore.getState().isPlay;
     try {
-      await get().exitRoom();
+      await get().exitRoom('restart');
       await get().joinRoom(_isPlay);
     } catch (error) {
-      await get().exitRoom();
+      await get().exitRoom('restart-error');
       logger.error(NAMESPACE, 'Error restarting room', error);
     }
     restartWIP = false;
   },
 
   enterBackground: async () => {
+    logger.info(NAMESPACE, 'enterBackground', { isInRoom: get().isInRoom });
     set({ isInBackground: true });
+    videoBeforeBackground = useShidurStore.getState().video;
 
     const { isPIPMode } = useSettingsStore.getState();
     if (!isPIPMode && Platform.OS !== 'ios') {
@@ -239,10 +263,21 @@ export const useInRoomStore = create((set, get) => ({
   },
 
   enterForeground: async () => {
+    logger.info(NAMESPACE, 'enterForeground', { isInRoom: get().isInRoom });
     set({ isInBackground: false });
     if (!useSettingsStore.getState().audioMode) {
       get().exitAudioMode();
+    } else if (
+      get().isInRoom &&
+      videoBeforeBackground != null &&
+      videoBeforeBackground !== NO_VIDEO_OPTION_VALUE &&
+      useShidurStore.getState().video !== videoBeforeBackground
+    ) {
+      // Audio mode on but the user had turned shidur video on manually:
+      // bring back only the shidur video, leave feeds and camera as they are.
+      useShidurStore.getState().restoreVideo(videoBeforeBackground);
     }
+    videoBeforeBackground = null;
     addFinishSpan(ROOM_SESSION, 'foreground', { NAMESPACE });
   },
 
@@ -255,6 +290,7 @@ export const useInRoomStore = create((set, get) => ({
 
       useShidurStore.getState().enterAudioMode();
       useFeedsStore.getState().feedAudioModeOn();
+      useFeedsStore.getState().setScreenVideo(false);
     } catch (error) {
       logger.error(NAMESPACE, 'enterAudioMode error', error);
       finishSpan(span, 'internal_error', NAMESPACE);
@@ -271,6 +307,7 @@ export const useInRoomStore = create((set, get) => ({
       if (!get().isInRoom) return;
 
       useShidurStore.getState().exitAudioMode();
+      useFeedsStore.getState().setScreenVideo(true);
       finishSpan(span, 'ok', NAMESPACE);
     } catch (error) {
       logger.error(NAMESPACE, 'exitAudioMode error', error);

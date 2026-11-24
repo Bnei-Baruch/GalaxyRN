@@ -5,6 +5,7 @@ import logger from '../services/logger';
 import { sleep } from '../tools';
 import { useFeedsStore } from './feeds';
 import { HIDE_BARS_TIMEOUT_MS } from './helper';
+import { useScreenShareStore } from './screenShare';
 import { useSettingsStore } from './settings';
 
 const NAMESPACE = 'UiActions';
@@ -62,7 +63,10 @@ export const useUiActions = create((set, get) => ({
       newWidth = parseInt(width / 2, 10);
     } else {
       const { isShidur: _isShidur, hideSelf } = useSettingsStore.getState();
-      isShidur = isShidur ?? _isShidur;
+      // A shared screen takes the broadcast panel.
+      isShidur =
+        (isShidur ?? _isShidur) ||
+        useScreenShareStore.getState().panelSource === 'screen';
 
       feedLength =
         feedLength ?? Object.keys(useFeedsStore.getState().feedById).length;

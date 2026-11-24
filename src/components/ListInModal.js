@@ -20,6 +20,7 @@ const ListInModal = ({
   renderItem,
   open = false,
   trigger,
+  testID,
 }) => {
   const [visible, setVisible] = useState(open);
   const tooltipRef = useRef(null);
@@ -41,6 +42,7 @@ const ListInModal = ({
     return (
       <View key={key} style={styles.item}>
         <TouchableOpacity
+          testID={testID && `${testID}-${key}`}
           onPress={() => handleSelect(item)}
           style={[
             styles.item,
@@ -55,7 +57,7 @@ const ListInModal = ({
 
   return (
     <View style={styles.container}>
-      <Pressable ref={tooltipRef} onPress={toggleModal}>
+      <Pressable testID={testID} ref={tooltipRef} onPress={toggleModal}>
         {trigger ? trigger : <Text styles={styles.itemText}>{selected}</Text>}
       </Pressable>
       <Modal
@@ -66,10 +68,15 @@ const ListInModal = ({
         onRequestClose={toggleModal}
         supportedOrientations={['portrait', 'landscape']}
       >
-        <TouchableWithoutFeedback onPress={toggleModal}>
+        {/* accessible={false}: keep list items reachable as separate a11y elements on iOS */}
+        <TouchableWithoutFeedback onPress={toggleModal} accessible={false}>
           <View style={styles.modalContainer}>
             <View style={styles.tooltip} pointerEvents="auto">
-              <TouchableOpacity onPress={toggleModal} style={styles.close}>
+              <TouchableOpacity
+                testID={testID && `${testID}-close`}
+                onPress={toggleModal}
+                style={styles.close}
+              >
                 <Icon name="close" size={30} color="white" />
               </TouchableOpacity>
               <ScrollView>{items.map(_renderItem)}</ScrollView>

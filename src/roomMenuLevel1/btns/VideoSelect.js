@@ -65,6 +65,7 @@ const VideoSelect = () => {
       onSelect={handleSetVideo}
       renderItem={renderItem}
       trigger={trigger}
+      testID="videoSelectBtn"
     />
   );
 };

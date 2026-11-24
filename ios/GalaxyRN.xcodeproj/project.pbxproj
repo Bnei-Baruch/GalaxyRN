@@ -13,7 +13,6 @@
 		374C51012DFAD10E00DAE8D9 /* SentryUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */; };
 		374C51022DFAD10E00DAE8D9 /* GxyLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374C50F92DFAD10E00DAE8D9 /* GxyLogger.swift */; };
 		374FCC1C2F44720D00CD2A46 /* CallManager+CallObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374FCC1A2F44720D00CD2A46 /* CallManager+CallObserver.swift */; };
-		374FCC1D2F44720D00CD2A46 /* CallManager+CallProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374FCC1B2F44720D00CD2A46 /* CallManager+CallProvider.swift */; };
 		376193372D9D5C5700F52320 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193182D9D5C5600F52320 /* AudioManager.swift */; };
 		376193382D9D5C5700F52320 /* AudioManager+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */; };
 		376193392D9D5C5700F52320 /* AudioManager+Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3761931A2D9D5C5600F52320 /* AudioManager+Controller.swift */; };
@@ -82,7 +81,6 @@
 		374C50FE2DFAD10E00DAE8D9 /* SentryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentryUtils.swift; sourceTree = "<group>"; };
 		374FCC192F44720D00CD2A46 /* CallManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CallManager.h; sourceTree = "<group>"; };
 		374FCC1A2F44720D00CD2A46 /* CallManager+CallObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CallManager+CallObserver.swift"; sourceTree = "<group>"; };
-		374FCC1B2F44720D00CD2A46 /* CallManager+CallProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CallManager+CallProvider.swift"; sourceTree = "<group>"; };
 		376193182D9D5C5600F52320 /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		376193192D9D5C5600F52320 /* AudioManager+Bridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Bridge.swift"; sourceTree = "<group>"; };
 		3761931A2D9D5C5600F52320 /* AudioManager+Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager+Controller.swift"; sourceTree = "<group>"; };
@@ -215,7 +213,6 @@
 			children = (
 				374FCC192F44720D00CD2A46 /* CallManager.h */,
 				374FCC1A2F44720D00CD2A46 /* CallManager+CallObserver.swift */,
-				374FCC1B2F44720D00CD2A46 /* CallManager+CallProvider.swift */,
 				376193222D9D5C5600F52320 /* CallManager.swift */,
 				376193242D9D5C5600F52320 /* CallManager+Events.swift */,
 				376193252D9D5C5600F52320 /* CallManager+Types.swift */,
@@ -514,7 +511,6 @@
 				FF88202B622183FDF76BC490 /* BackgroundTimer.m in Sources */,
 				709C1553E62A4E48803C8705 /* CallManager.m in Sources */,
 				374FCC1C2F44720D00CD2A46 /* CallManager+CallObserver.swift in Sources */,
-				374FCC1D2F44720D00CD2A46 /* CallManager+CallProvider.swift in Sources */,
 				E5469BD4E21D49813203D166 /* main.mm in Sources */,
 				C013DF8399EB333FCACEBDA5 /* SendLogsModule.m in Sources */,
 				D39F4692889EDB374A9451D1 /* SendLogsModule.swift in Sources */,
@@ -552,7 +548,7 @@
 				CODE_SIGN_ENTITLEMENTS = GalaxyRN/GalaxyRN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 138;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				ENABLE_BITCODE = NO;
@@ -562,7 +558,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.21;
+				MARKETING_VERSION = 2.9.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -589,7 +585,7 @@
 				CODE_SIGN_ENTITLEMENTS = GalaxyRN/GalaxyRN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 138;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
@@ -598,7 +594,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.8.21;
+				MARKETING_VERSION = 2.9.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -794,7 +790,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = GalaxyWidget/GalaxyWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GalaxyWidget/Info.plist;
@@ -804,7 +800,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.8.21;
+				MARKETING_VERSION = 2.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galaxy.mobile.GalaxyWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -821,7 +817,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = GalaxyWidget/GalaxyWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 3ZYLPBKYWW;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = GalaxyWidget/Info.plist;
@@ -831,7 +827,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.8.21;
+				MARKETING_VERSION = 2.9.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.galaxy.mobile.GalaxyWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

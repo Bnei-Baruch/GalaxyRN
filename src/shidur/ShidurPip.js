@@ -6,6 +6,7 @@ import Text from '../components/CustomText';
 import WIP from '../components/WIP';
 import { baseStyles } from '../constants';
 import { NO_VIDEO_OPTION_VALUE } from '../consts';
+import { useScreenShareStore } from '../zustand/screenShare';
 import { useSettingsStore } from '../zustand/settings';
 import { useShidurStore } from '../zustand/shidur';
 import { PlayPauseOverlay } from './PlayPauseOverlay';
@@ -17,6 +18,18 @@ const PipShidur = () => {
     useShidurStore();
   const netWIP = useSettingsStore(state => state.netWIP);
   const { t } = useTranslation();
+  const screenUrl = useScreenShareStore(state =>
+    state.panelSource === 'screen' ? state.screenUrl : null
+  );
+
+  // A shared screen is shown in place of the broadcast.
+  if (screenUrl) {
+    return (
+      <View style={[pipStyles.mainContainer, { backgroundColor: 'black' }]}>
+        <ShidurMemoized streamURL={screenUrl} style={pipStyles.video} />
+      </View>
+    );
+  }
 
   return (
     <View style={[pipStyles.mainContainer, { backgroundColor: 'black' }]}>
